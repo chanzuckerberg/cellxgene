@@ -1,90 +1,16 @@
-import json
-import time
-import uuid
-from datetime import datetime
-import re
-import os
-import pandas as pd
-from hashlib import blake2b
 import base64
+import os
+import re
+import threading
+from datetime import datetime
+from hashlib import blake2b
 
-import tiledb
+import pandas as pd
+from flask import session, has_request_context, current_app
 
 from server import __version__ as cellxgene_version
-import threading
-from server.common.errors import AnnotationsError, OntologyLoadFailure
-from server.common.utils import series_to_schema
-import fsspec
-import fastobo
-from flask import session, current_app, has_request_context
-from abc import ABCMeta, abstractmethod
-
-from server.converters.cxgtool import cxg_dtype, generate_schema_hints_and_convert_value_types, \
-    sanitize_keys
-from server.db.cellxgene_orm import Annotation, CellxGeneDataset
-
-
-class Annotations(metaclass=ABCMeta):
-    """ baseclass for annotations, including ontologies"""
-
-    """ our default ontology is the PURL for the Cell Ontology.
-    See http://www.obofoundry.org/ontology/cl.html """
-    DefaultOnotology = "http://purl.obolibrary.org/obo/cl.obo"
-
-    def __init__(self):
-        self.ontology_data = None
-
-    def load_ontology(self, path):
-        """Load and parse ontologies - currently support OBO files only."""
-        if path is None:
-            path = self.DefaultOnotology
-
-        try:
-            with fsspec.open(path) as f:
-                obo = fastobo.iter(f)
-                terms = filter(lambda stanza: type(stanza) is fastobo.term.TermFrame, obo)
-                names = [tag.name for term in terms for tag in term if type(tag) is fastobo.term.NameClause]
-                self.ontology_data = names
-
-        except FileNotFoundError as e:
-            raise OntologyLoadFailure("Unable to find OBO ontology path") from e
-
-        except SyntaxError as e:
-            raise OntologyLoadFailure("Syntax error loading OBO ontology") from e
-
-        except Exception as e:
-            raise OntologyLoadFailure("Error loading OBO file") from e
-
-    def get_schema(self, data_adaptor):
-        schema = []
-        labels = self.read_labels(data_adaptor)
-        if labels is not None and not labels.empty:
-            for col in labels.columns:
-                col_schema = dict(name=col, writable=True)
-                col_schema.update(series_to_schema(labels[col]))
-                schema.append(col_schema)
-
-        return schema
-
-    @abstractmethod
-    def set_collection(self, name):
-        """set or create a new annotation collection"""
-        pass
-
-    @abstractmethod
-    def read_labels(self, data_adaptor):
-        """Return the labels as a pandas.DataFrame"""
-        pass
-
-    @abstractmethod
-    def write_labels(self, df, data_adaptor):
-        """Write the labels (df) to a persistent storage such that it can later be read"""
-        pass
-
-    @abstractmethod
-    def update_parameters(self, parameters, data_adaptor):
-        """Update configuration parameters that describe information about the annotations feature"""
-        pass
+from server.common.annotations.annotations import Annotations
+from server.common.errors import AnnotationsError
 
 
 class AnnotationsLocalFile(Annotations):
@@ -268,102 +194,3 @@ class AnnotationsLocalFile(Annotations):
                 params["annotations-data-collection-name"] = collection
 
         parameters.update(params)
-
-
-class AnnotationsHostedTileDB(Annotations):
-    def __init__(self, directory_path, db, user_id):
-        super().__init__()
-        self.db = db
-        self.directory_path = directory_path
-        # lock used to protect label file write ops
-        self.label_lock = threading.RLock()
-        self.user_id = user_id
-
-    def check_category_names(self, df):
-        sanitize_keys(df.keys().to_list(), False)
-
-    def set_collection(self, name):
-        pass
-
-    def read_labels(self, data_adaptor):
-        dataset_name = data_adaptor.get_location()
-        dataset_id = str(self.db.query(
-            table_args=[CellxGeneDataset],
-            filter_args=[CellxGeneDataset.name == dataset_name]
-        )[0].id)
-
-        annotation_object = self.db.query_for_most_recent(
-            Annotation, [Annotation.user_id == self.user_id, Annotation.dataset_id == dataset_id]
-        )
-        df = tiledb.open(annotation_object.tiledb_uri)
-        pandas_df = self.convert_to_pandas_df(df)
-        return pandas_df
-
-    def convert_to_pandas_df(self, tileDBArray):
-        repr_meta = None
-        index_dims = None
-        if '__pandas_attribute_repr' in tileDBArray.meta:
-            # backwards compatibility... unsure if necessary at this point
-            repr_meta = json.loads(tileDBArray.meta['__pandas_attribute_repr'])
-        if '__pandas_index_dims' in tileDBArray.meta:
-            index_dims = json.loads(tileDBArray.meta['__pandas_index_dims'])
-
-        data = tileDBArray[:]
-        indexes = list()
-
-        for col_name, col_val in data.items():
-            if repr_meta and col_name in repr_meta:
-                new_col = pd.Series(col_val, dtype=repr_meta[col_name])
-                data[col_name] = new_col
-            elif index_dims and col_name in index_dims:
-                new_col = pd.Series(col_val, dtype=index_dims[col_name])
-                data[col_name] = new_col
-                indexes.append(col_name)
-
-        new_df = pd.DataFrame.from_dict(data)
-        if len(indexes) > 0:
-            new_df.set_index(indexes, inplace=True)
-
-        return new_df
-
-    def write_labels(self, df, data_adaptor):
-        timestamp = time.time()
-        dataset_name = data_adaptor.get_location()
-        try:
-            dataset_id = self.db.query(
-                table_args=[CellxGeneDataset], filter_args=[CellxGeneDataset.name == dataset_name]
-            )[0].id
-        except IndexError:
-            dataset_id = uuid.uuid4()
-            dataset = CellxGeneDataset(id=dataset_id, name=dataset_name)
-            self.db.session.add(dataset)
-            self.db.session.commit()
-
-        uri = f"{self.directory_path}/{dataset_name}/{self.user_id}/{timestamp}"
-        if "s3" in uri:
-            pass
-        else:
-            os.makedirs(uri, exist_ok=True)
-        schema_hints, values = generate_schema_hints_and_convert_value_types(df)
-
-        annotation = Annotation(
-            tiledb_uri=uri,
-            user_id=self.user_id,
-            dataset_id=str(dataset_id),
-            schema_hints=json.dumps(schema_hints)
-        )
-        with self.label_lock:
-            if not df.empty:
-                self.check_category_names(df)
-                # convert to tiledb datatypes
-                for col in df:
-                    df[col] = df[col].astype(cxg_dtype(df[col]))
-                try:
-                    tiledb.from_pandas(uri, df)
-                except Exception as e:
-                    print(e)
-        self.db.session.add(annotation)
-        self.db.session.commit()
-
-    def update_parameters(self, parameters, data_adaptor):
-        pass

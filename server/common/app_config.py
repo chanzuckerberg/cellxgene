@@ -12,7 +12,8 @@ from server.common.errors import ConfigurationError, DatasetAccessError, Ontolog
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataCacheManager, MatrixDataType
 from server.common.utils import find_available_port, is_port_available
 import warnings
-from server.common.annotations import AnnotationsLocalFile, AnnotationsHostedTileDB
+from server.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
+from server.common.annotations.local_file_csv import AnnotationsLocalFile
 from server.common.utils import custom_format_warning
 import server.compute.diffexp_cxg as diffexp_tiledb
 from server.common.data_locator import discover_s3_region_name
@@ -738,8 +739,8 @@ class DatasetConfig(BaseConfig):
             self.user_annotations__local_file_csv__file = dc["user_annotations"]["local_file_csv"]["file"]
             self.user_annotations__ontology__enable = dc["user_annotations"]["ontology"]["enable"]
             self.user_annotations__ontology__obo_location = dc["user_annotations"]["ontology"]["obo_location"]
-            self.user_annotations__db_uri = dc["user_annotations"]["db_uri"]
-            self.user_annotations__hosted_file_directory = dc["user_annotations"]["hosted_file_directory"]
+            self.user_annotations__hosted_tiledb_array__db_uri = dc["user_annotations"]["hosted_tiledb_array"]["db_uri"]
+            self.user_annotations__hosted_tiledb_array__hosted_file_directory = dc["user_annotations"]["hosted_tiledb_array"]["hosted_file_directory"]  # noqa E501
 
             self.embeddings__names = dc["embeddings"]["names"]
             self.embeddings__enable_reembedding = dc["embeddings"]["enable_reembedding"]
@@ -790,8 +791,8 @@ class DatasetConfig(BaseConfig):
         self.check_attr("user_annotations__local_file_csv__file", (type(None), str))
         self.check_attr("user_annotations__ontology__enable", bool)
         self.check_attr("user_annotations__ontology__obo_location", (type(None), str))
-        self.check_attr("user_annotations__db_uri", (type(None), str))
-        self.check_attr("user_annotations__hosted_file_directory", (type(None), str))
+        self.check_attr("user_annotations__hosted_tiledb_array__db_uri", (type(None), str))
+        self.check_attr("user_annotations__hosted_tiledb_array__hosted_file_directory", (type(None), str))
 
         if self.user_annotations__enable:
             server_config = self.app_config.server_config
@@ -838,12 +839,11 @@ class DatasetConfig(BaseConfig):
                     except OntologyLoadFailure as e:
                         raise ConfigurationError("Unable to load ontology terms\n" + str(e))
             elif self.user_annotations__type == "hosted_tiledb_array":
-                self.check_attr("user_annotations__db_uri", str)
-                self.check_attr("user_annotations__hosted_file_directory", str)
+                self.check_attr("user_annotations__hosted_tiledb_array__db_uri", str)
+                self.check_attr("user_annotations__hosted_tiledb_array__hosted_file_directory", str)
                 self.user_annotations = AnnotationsHostedTileDB(
-                    directory_path=self.user_annotations__hosted_file_directory,
-                    db=DbUtils(self.user_annotations__db_uri),
-                    user_id=self.app_config.server_config.auth.get_user_id()
+                    directory_path=self.user_annotations__hosted_tiledb_array__hosted_file_directory,
+                    db=DbUtils(self.user_annotations__hosted_tiledb_array__db_uri),
                 )
             else:
                 raise ConfigurationError('The only annotation type support is "local_file_csv" or "hosted_tiledb_array')
