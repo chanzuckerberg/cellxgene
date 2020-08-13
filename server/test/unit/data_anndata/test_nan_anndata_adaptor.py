@@ -22,8 +22,9 @@ class NaNTest(unittest.TestCase):
             self.data._create_schema()
 
     def test_load(self):
-        with self.assertWarns(UserWarning):
+        with self.assertLogs(level="WARN") as logger:
             self.data = AnndataAdaptor(self.data_locator, self.config)
+            self.assertTrue(logger.output)
 
     def test_init(self):
         self.assertEqual(self.data.cell_count, 100)

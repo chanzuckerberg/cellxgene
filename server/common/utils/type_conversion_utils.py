@@ -18,6 +18,11 @@ def get_dtype_and_schema_of_array(array: pd.Series):
 
 
 def get_dtype_from_dtype(dtype, array_values=None):
+    """
+    Given a data type, finds the equivalent data type that the array should be encoded as. Notably, this is relevant
+    for 64 bit values which will get downcast to 32 bit.
+    """
+
     dtype_name = dtype.name
     dtype_kind = dtype.kind
 
@@ -39,6 +44,11 @@ def get_dtype_from_dtype(dtype, array_values=None):
 
 
 def get_schema_type_hint_from_dtype(dtype, array_values=None):
+    """
+    Returns a dictionary that contains type hints about the data type given, especially if the data type is 64 bit
+    and will be downcast to 32 bit.
+    """
+
     dtype_name = dtype.name
     dtype_kind = dtype.kind
 
@@ -68,6 +78,11 @@ def can_cast_to_float32(dtype):
 
 
 def can_cast_to_int32(dtype, array_values=None):
+    """
+    A type can be cast to 32 bit, overriding the numpy `cast_cast` function if the values in the array that are of
+    the higher precision type has values that are entirely within the range of the downcast type.
+    """
+
     if dtype.kind in ["i", "u"]:
         if np.can_cast(dtype, np.int32):
             return True
