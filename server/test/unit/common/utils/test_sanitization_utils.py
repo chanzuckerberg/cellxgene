@@ -11,7 +11,7 @@ class TestSanitizationUtils(unittest.TestCase):
         with self.assertRaises(Exception) as exception_context:
             sanitize_values_in_list(keys_to_sanitize)
 
-            self.assertIn("must contain all strings", exception_context.exception)
+        self.assertIn("must contain all strings", str(exception_context.exception))
 
     def test__sanitize_values_in_list__not_all_strings_raises_exception(self):
         keys_to_sanitize = ["1", "2", 3]
@@ -19,7 +19,7 @@ class TestSanitizationUtils(unittest.TestCase):
         with self.assertRaises(Exception) as exception_context:
             sanitize_values_in_list(keys_to_sanitize)
 
-            self.assertIn("must contain all strings", exception_context.exception)
+        self.assertIn("must contain all strings", str(exception_context.exception))
 
     def test__sanitize_values_in_list__replace_non_ascii_character_with_underscore(self):
         keys_to_sanitize = ["abc.", "~abc", "a~b/c"]
@@ -44,7 +44,7 @@ class TestSanitizationUtils(unittest.TestCase):
         with self.assertRaises(Exception) as exception_context:
             sanitize_keys_in_dictionary(dictionary_to_sanitize)
 
-            self.assertIn("must contain all strings", exception_context.exception)
+        self.assertIn("must contain all strings", str(exception_context.exception))
 
     def test__sanitize_keys_in_dictionary__replace_only_some_keys(self):
         dictionary_to_sanitize = {"abc": 3, "~abc": 4, "a~b/c": 5}
