@@ -73,8 +73,7 @@ def handle_config_from_secret(app_config):
 
     keyattrs = (
         ("flask_secret_key", "app__flask_secret_key"),
-        ("oauth_client_secret", "authentication__params_oauth__client_secret"),
-        ("db_uri", "user_annotations__hosted_tiledb_array__db_uri"),
+        ("oauth_client_secret", "authentication__params_oauth__client_secret")
     )
 
     for key, attr in keyattrs:
