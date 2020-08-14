@@ -42,7 +42,7 @@ def is_matrix_sparse(matrix: np.ndarray, sparse_threshold):
         if number_of_non_zero_elements > maximum_number_of_non_zero_elements_in_matrix:
             if end_row_index != total_number_of_rows:
                 percentage_of_non_zero_elements = 100 * number_of_non_zero_elements / (
-                        end_row_index * total_number_of_columns)
+                    end_row_index * total_number_of_columns)
                 logging.info(
                     f"Matrix is not sparse. Percentage of non-zero elements (estimate): "
                     f"{percentage_of_non_zero_elements:6.2f}")
