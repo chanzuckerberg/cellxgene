@@ -1,87 +1,16 @@
 import base64
-import json
 import os
 import re
 import threading
-import time
-import uuid
-from abc import ABCMeta, abstractmethod
 from datetime import datetime
 from hashlib import blake2b
 
-import fastobo
-import fsspec
 import pandas as pd
-from flask import session, current_app, has_request_context
+from flask import session, has_request_context, current_app
 
 from server import __version__ as cellxgene_version
-from server.common.errors import AnnotationsError, OntologyLoadFailure
-from server.common.utils.type_conversion_utils import get_schema_type_hint_of_array
-from server.db.cellxgene_orm import CellxGeneDataset, Annotation
-from server.db.db_utils import DbUtils
-
-
-class Annotations(metaclass=ABCMeta):
-    """ baseclass for annotations, including ontologies"""
-
-    """ our default ontology is the PURL for the Cell Ontology.
-    See http://www.obofoundry.org/ontology/cl.html """
-    DefaultOnotology = "http://purl.obolibrary.org/obo/cl.obo"
-
-    def __init__(self):
-        self.ontology_data = None
-
-    def load_ontology(self, path):
-        """Load and parse ontologies - currently support OBO files only."""
-        if path is None:
-            path = self.DefaultOnotology
-
-        try:
-            with fsspec.open(path) as f:
-                obo = fastobo.iter(f)
-                terms = filter(lambda stanza: type(stanza) is fastobo.term.TermFrame, obo)
-                names = [tag.name for term in terms for tag in term if type(tag) is fastobo.term.NameClause]
-                self.ontology_data = names
-
-        except FileNotFoundError as e:
-            raise OntologyLoadFailure("Unable to find OBO ontology path") from e
-
-        except SyntaxError as e:
-            raise OntologyLoadFailure("Syntax error loading OBO ontology") from e
-
-        except Exception as e:
-            raise OntologyLoadFailure("Error loading OBO file") from e
-
-    def get_schema(self, data_adaptor):
-        schema = []
-        labels = self.read_labels(data_adaptor)
-        if labels is not None and not labels.empty:
-            for col in labels.columns:
-                col_schema = dict(name=col, writable=True)
-                col_schema.update(get_schema_type_hint_of_array(labels[col]))
-                schema.append(col_schema)
-
-        return schema
-
-    @abstractmethod
-    def set_collection(self, name):
-        """set or create a new annotation collection"""
-        pass
-
-    @abstractmethod
-    def read_labels(self, data_adaptor):
-        """Return the labels as a pandas.DataFrame"""
-        pass
-
-    @abstractmethod
-    def write_labels(self, df, data_adaptor):
-        """Write the labels (df) to a persistent storage such that it can later be read"""
-        pass
-
-    @abstractmethod
-    def update_parameters(self, parameters, data_adaptor):
-        """Update configuration parameters that describe information about the annotations feature"""
-        pass
+from server.common.annotations.annotations import Annotations
+from server.common.errors import AnnotationsError
 
 
 class AnnotationsLocalFile(Annotations):
@@ -101,7 +30,6 @@ class AnnotationsLocalFile(Annotations):
     def is_safe_collection_name(self, name):
         """
         return true if this is a safe collection name
-
         this is ultra conservative. If we want to allow full legal file name syntax,
         we could look at modules like `pathvalidate`
         """
@@ -265,55 +193,3 @@ class AnnotationsLocalFile(Annotations):
                 params["annotations-data-collection-name"] = collection
 
         parameters.update(params)
-
-
-class AnnotationsHostedTileDB(Annotations):
-    def __init__(self, directory_path: str, db: DbUtils):
-        super().__init__()
-        self.db = db
-        self.directory_path = directory_path
-
-    def set_collection(self, name):
-        pass
-
-    def read_labels(self, data_adaptor):
-        uid = current_app.auth.get_user_id()
-        dataset_name = data_adaptor.get_location()
-        dataset = self.db.query(table_args=[CellxGeneDataset], filter_args=[CellxGeneDataset.name == dataset_name])
-        # Todo @madison retrieve latest based on timestamp
-        annotation_object = self.db.query_for_most_recent(  # noqa F841
-            Annotation, [Annotation.user_id == uid, Annotation.dataset == dataset]
-        )
-        # Todo in future pr, retrieve dataframe from tiledb uri
-
-    def write_labels(self, df, data_adaptor):
-        uid = current_app.auth.get_user_id()
-        timestamp = time.time()
-        dataset_name = data_adaptor.get_location()
-        try:
-            dataset_id = self.db.query(
-                table_args=[CellxGeneDataset], filter_args=[CellxGeneDataset.name == dataset_name]
-            )[0].id
-        except IndexError:
-            dataset_id = uuid.uuid4()
-            dataset = CellxGeneDataset(id=dataset_id, name=dataset_name)
-            self.db.session.add(dataset)
-
-        uri = f"{self.directory_path}/{dataset_name}/{uid}/{timestamp}"
-        if "s3" in uri:
-            pass
-        else:
-            os.makedirs(uri, exist_ok=True)
-        schema_hints = {}
-        annotation = Annotation(
-            tiledb_uri=uri,
-            user_id=uid,
-            dataset_id=str(dataset_id),
-            schema_hints=json.dumps(schema_hints)
-        )
-        # todo in future pr -- write df to tiledb, store at uri
-        self.db.session.add(annotation)
-        self.db.session.commit()
-
-    def update_parameters(self, parameters, data_adaptor):
-        pass

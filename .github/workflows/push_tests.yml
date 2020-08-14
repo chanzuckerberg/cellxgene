@@ -73,6 +73,7 @@ jobs:
 
   smoke-tests:
     runs-on: macos-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
@@ -102,6 +103,7 @@ jobs:
 
   smoke-tests-annotations:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7

@@ -73,7 +73,8 @@ def handle_config_from_secret(app_config):
 
     keyattrs = (
         ("flask_secret_key", "app__flask_secret_key"),
-        ("oauth_client_secret", "authentication__params_oauth__client_secret")
+        ("oauth_client_secret", "authentication__params_oauth__client_secret"),
+        ("db_uri", "user_annotations__hosted_tiledb_array__db_uri"),
     )
 
     for key, attr in keyattrs:
@@ -98,14 +99,19 @@ class WSGIServer(Server):
         server_config = app_config.server_config
         # This hash should be in sync with the script within
         # `client/configuration/webpack/obsoleteHTMLTemplate.html`
-        obsolete_browser_script_hash = ["'SHA25-0028D52E332C015C3ED9929926F4000BB4020B8CB85C1F5769D6AA3BA711F58E'"]
+
+        # It is _very_ difficult to generate the correct hash manually,
+        # consider forcing CSP to fail on the local server by intercepting the response via Requestly
+        # this should print the failing script's hash to console.
+        # See more here: https://github.com/chanzuckerberg/cellxgene/pull/1745
+        obsolete_browser_script_hash = ["'sha256-/rmgOi/skq9MpiZxPv6lPb1PNSN+Uf4NaUHO/IjyfwM='"]
         csp = {
             "default-src": ["'self'"],
             "connect-src": ["'self'"],
-            "script-src": ["'self'", "'unsafe-eval'", "'unsafe-inline'"]
+            "script-src": ["'self'", "'unsafe-eval'"]
             + obsolete_browser_script_hash + script_hashes,
             "style-src": ["'self'", "'unsafe-inline'"],
-            "img-src": ["'self'", "'https://cellxgene.cziscience.com'", "data:"],
+            "img-src": ["'self'", "https://cellxgene.cziscience.com", "data:"],
             "object-src": ["'none'"],
             "base-uri": ["'none'"],
             "frame-ancestors": ["'none'"],

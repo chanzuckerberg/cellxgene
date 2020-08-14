@@ -15,7 +15,7 @@ import json
 from scipy.stats import mode
 
 from server.common.colors import convert_anndata_category_colors_to_cxg_category_colors
-from server.common.errors import ColorFormatException
+from server.common.errors import ColorFormatException, AnnotationCategoryNameError
 from server.common.corpora import (
     corpora_get_props_from_anndata,
     corpora_get_versions_from_anndata,
@@ -291,20 +291,26 @@ def alias_index_col(df, df_name, index_col_name):
     return (df, index_col_name)
 
 
+def generate_schema_hints_and_convert_value_types(df):
+    value = {}
+    schema_hints = {}
+    for k, v in df.items():
+        dtype, hints = cxg_type(v)
+        value[k] = v.to_numpy(dtype=dtype)
+        if hints:
+            schema_hints.update({k: hints})
+    return schema_hints, value
+
+
 def save_dataframe(container, name, df, index_col_name, ctx):
     A_name = f"{container}/{name}"
     (df, index_col_name) = alias_index_col(df, name, index_col_name)
     create_dataframe(A_name, df, ctx=ctx)
     with tiledb.DenseArray(A_name, mode="w", ctx=ctx) as A:
-        value = {}
-        schema_hints = {}
-        for k, v in df.items():
-            dtype, hints = cxg_type(v)
-            value[k] = v.to_numpy(dtype=dtype)
-            if hints:
-                schema_hints.update({k: hints})
-
+        schema_hints, value = generate_schema_hints_and_convert_value_types(df)
         schema_hints.update({"index": index_col_name})
+        # convert all values in all cols to a numpy version of cxg datatypes,
+        # then store the contents in the tiledb array A
         A[:] = value
         A.meta["cxg_schema"] = json.dumps(schema_hints)
 
@@ -598,7 +604,7 @@ def create_cxg_group_metadata(adata, basefname, title=None, about=None, corpora_
     return cxg_group_metadata
 
 
-def sanitize_keys(keys):
+def sanitize_keys(keys, update_keys=True):
     """
     We need names to be safe to use as attribute names in tiledb.  See:
         TileDB-Inc/TileDB#1575
@@ -635,6 +641,8 @@ def sanitize_keys(keys):
 
     for k, v, in clean_unique_keys.items():
         if k != v:
+            if update_keys is False:
+                raise AnnotationCategoryNameError(f"{k} not a valid category name, please resubmit")
             log(1, f"Renaming {k} to {v}")
     return clean_unique_keys
 

@@ -171,6 +171,9 @@ dataset:
   user_annotations:
     enable: true
     type: local_file_csv
+    hosted_tiledb_array:
+        db_uri: null
+        hosted_file_directory: null
     local_file_csv:
       directory: null
       file: null
