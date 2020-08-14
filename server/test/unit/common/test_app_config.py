@@ -3,10 +3,11 @@ import unittest
 from unittest import mock
 from unittest.mock import patch
 
+import requests
+
 from server.common.app_config import AppConfig
 from server.common.errors import ConfigurationError
 from server.test import PROJECT_ROOT, test_server, FIXTURES_ROOT
-import requests
 
 
 # NOTE, there are more tests that should be written for AppConfig.
@@ -119,7 +120,6 @@ class AppConfigTest(unittest.TestCase):
         config = AppConfig()
 
         with self.assertLogs(level="INFO") as logger:
-
             from server.common.aws_secret_utils import handle_config_from_secret
             # should not throw error
             # "AttributeError: 'XConfig' object has no attribute 'x'"
@@ -133,4 +133,3 @@ class AppConfigTest(unittest.TestCase):
             self.assertEqual(config.server_config.app__flask_secret_key, "mock_flask_secret")
             self.assertEqual(config.server_config.authentication__params_oauth__client_secret, "mock_oauth_secret")
             self.assertEqual(config.default_dataset_config.user_annotations__hosted_tiledb_array__db_uri, "mock_db_uri")
-

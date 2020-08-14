@@ -1,23 +1,23 @@
-from server import display_version as cellxgene_display_version
-from flatten_dict import flatten, unflatten
-import os
-from os.path import splitext, basename, isdir
-import sys
-from urllib.parse import urlparse, quote_plus
-import yaml
 import copy
-
-from server.common.default_config import get_default_config
-from server.common.errors import ConfigurationError, DatasetAccessError, OntologyLoadFailure
-from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataCacheManager, MatrixDataType
-from server.common.utils import find_available_port, is_port_available
+import os
+import sys
 import warnings
+from os.path import splitext, basename, isdir
+from urllib.parse import urlparse, quote_plus
+
+import yaml
+from flatten_dict import flatten, unflatten
+
+import server.compute.diffexp_cxg as diffexp_tiledb
+from server import display_version as cellxgene_display_version
+from server.auth.auth import AuthTypeFactory
 from server.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
 from server.common.annotations.local_file_csv import AnnotationsLocalFile
-from server.common.utils import custom_format_warning
-import server.compute.diffexp_cxg as diffexp_tiledb
 from server.common.data_locator import discover_s3_region_name
-from server.auth.auth import AuthTypeFactory
+from server.common.default_config import get_default_config
+from server.common.errors import ConfigurationError, DatasetAccessError, OntologyLoadFailure
+from server.common.utils.utils import custom_format_warning, find_available_port, is_port_available
+from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataCacheManager, MatrixDataType
 from server.db.db_utils import DbUtils
 
 DEFAULT_SERVER_PORT = 5005
@@ -150,7 +150,6 @@ class AppConfig(object):
         parameters is done"""
 
         if messagefn is None:
-
             def noop(message):
                 pass
 
@@ -284,7 +283,7 @@ class AppConfig(object):
             if auth.requires_client_login():
                 config["authentication"].update({
                     "login": auth.get_login_url(data_adaptor),
-                    "logout" : auth.get_logout_url(data_adaptor),
+                    "logout": auth.get_logout_url(data_adaptor),
                 })
 
         return c
@@ -748,7 +747,8 @@ class DatasetConfig(BaseConfig):
             self.user_annotations__ontology__enable = dc["user_annotations"]["ontology"]["enable"]
             self.user_annotations__ontology__obo_location = dc["user_annotations"]["ontology"]["obo_location"]
             self.user_annotations__hosted_tiledb_array__db_uri = dc["user_annotations"]["hosted_tiledb_array"]["db_uri"]
-            self.user_annotations__hosted_tiledb_array__hosted_file_directory = dc["user_annotations"]["hosted_tiledb_array"]["hosted_file_directory"]  # noqa E501
+            self.user_annotations__hosted_tiledb_array__hosted_file_directory = \
+            dc["user_annotations"]["hosted_tiledb_array"]["hosted_file_directory"]  # noqa E501
 
             self.embeddings__names = dc["embeddings"]["names"]
             self.embeddings__enable_reembedding = dc["embeddings"]["enable_reembedding"]
@@ -896,7 +896,7 @@ class DatasetConfig(BaseConfig):
         server_config = self.app_config.server_config
         if server_config.single_dataset__datapath:
             with server_config.matrix_data_cache_manager.data_adaptor(
-                self.tag, server_config.single_dataset__datapath, self.app_config
+                    self.tag, server_config.single_dataset__datapath, self.app_config
             ) as data_adaptor:
                 if self.diffexp__enable and data_adaptor.parameters.get("diffexp_may_be_slow", False):
                     context["messagefn"](

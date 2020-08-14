@@ -14,7 +14,6 @@ from server.common.errors import AnnotationsError
 
 
 class AnnotationsLocalFile(Annotations):
-
     CXG_ANNO_COLLECTION = "cxg_anno_collection"
 
     def __init__(self, output_dir, output_file):

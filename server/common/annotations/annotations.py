@@ -2,9 +2,9 @@ from abc import ABCMeta, abstractmethod
 
 import fastobo
 import fsspec
-from server.common.errors import OntologyLoadFailure
 
-from server.common.utils import series_to_schema
+from server.common.errors import OntologyLoadFailure
+from server.common.utils.type_conversion_utils import get_schema_type_hint_of_array
 
 
 class Annotations(metaclass=ABCMeta):
@@ -44,7 +44,7 @@ class Annotations(metaclass=ABCMeta):
         if labels is not None and not labels.empty:
             for col in labels.columns:
                 col_schema = dict(name=col, writable=True)
-                col_schema.update(series_to_schema(labels[col]))
+                col_schema.update(get_schema_type_hint_of_array(labels[col]))
                 schema.append(col_schema)
 
         return schema
