@@ -1,11 +1,19 @@
+import os
 import unittest
+from unittest import mock
+from unittest.mock import patch
+
 from server.common.app_config import AppConfig
 from server.common.errors import ConfigurationError
 from server.test import PROJECT_ROOT, test_server, FIXTURES_ROOT
 import requests
 
+
 # NOTE, there are more tests that should be written for AppConfig.
 # this is just a start.
+
+def mockenv(**envvars):
+    return mock.patch.dict(os.environ, envvars)
 
 
 class AppConfigTest(unittest.TestCase):
@@ -98,3 +106,25 @@ class AppConfigTest(unittest.TestCase):
 
             r = session.get(f"{server}/health")
             assert r.json()["status"] == "pass"
+
+    @mockenv(CXG_AWS_SECRET_NAME="TESTING", CXG_AWS_SECRET_REGION_NAME="TEST_REGION")
+    @patch('server.common.aws_secret_utils.get_secret_key')
+    def test_get_config_vars_from_aws_secrets(self, mock_get_secret_key):
+        mock_get_secret_key.return_value = {
+            "flask_secret_key": "mock_flask_secret",
+            "oauth_client_secret": "mock_oauth_secret"
+        }
+
+        config = AppConfig()
+
+        with self.assertLogs(level="ERROR") as logger:
+
+            from server.common.aws_secret_utils import handle_config_from_secret
+            # should not throw error
+            # "AttributeError: 'ServerConfig' object has no attribute 'user_annotations__hosted_tiledb_array__db_uri'"
+            handle_config_from_secret(config)
+
+            # should throw 2 errors (one for each var set from a secret)
+            self.assertEqual(len(logger.output), 2)
+            self.assertIn('ERROR:root:set app__flask_secret_key from secret', logger.output[0])
+            self.assertIn('ERROR:root:set authentication__params_oauth__client_secret from secret', logger.output[1])
