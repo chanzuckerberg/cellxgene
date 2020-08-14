@@ -8,6 +8,7 @@ from flask import json
 from server.common.data_locator import discover_s3_region_name
 from server.common.errors import SecretKeyRetrievalError
 
+
 def handle_config_from_secret(app_config):
     """Update configuration from the secret manager"""
     secret_name = os.getenv("CXG_AWS_SECRET_NAME")
