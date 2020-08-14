@@ -51,7 +51,7 @@ def handle_config_from_secret(app_config):
         # replace the attr with the secret if it is not set
         val = secrets.get(key)
         if val:
-            logging.error(f"set {attr} from secret")
+            logging.info(f"set {attr} from secret")
             app_config.update_server_config(**{attr : val})
 
     # update default dataset configuration attributes
@@ -63,7 +63,7 @@ def handle_config_from_secret(app_config):
         # replace the attr with the secret if it is not set
         val = secrets.get(key)
         if val:
-            logging.error(f"set {attr} from secret")
+            logging.info(f"set {attr} from secret")
             app_config.update_default_dataset_config(**{attr : val})
 
 
