@@ -15,6 +15,7 @@ import requests
 def mockenv(**envvars):
     return mock.patch.dict(os.environ, envvars)
 
+
 class AppConfigTest(unittest.TestCase):
     def test_update(self):
         c = AppConfig()
