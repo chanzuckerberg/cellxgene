@@ -459,6 +459,7 @@ class ServerConfig(BaseConfig):
 
     def complete_config(self, context):
         self.handle_app(context)
+        self.handle_data_source(context)
         self.handle_authentication(context)
         self.handle_data_locator(context)
         self.handle_adaptor(context)  # may depend on data_locator
@@ -572,12 +573,9 @@ class ServerConfig(BaseConfig):
                 region_name = None
             self.data_locator__s3__region_name = region_name
 
-    def handle_single_dataset(self, context):
+    def handle_data_source(self, context):
         self.check_attr("single_dataset__datapath", (str, type(None)))
-        self.check_attr("single_dataset__title", (str, type(None)))
-        self.check_attr("single_dataset__about", (str, type(None)))
-        self.check_attr("single_dataset__obs_names", (str, type(None)))
-        self.check_attr("single_dataset__var_names", (str, type(None)))
+        self.check_attr("multi_dataset__dataroot", (type(None), dict, str))
 
         if self.single_dataset__datapath is None:
             if self.multi_dataset__dataroot is None:
@@ -587,6 +585,16 @@ class ServerConfig(BaseConfig):
         else:
             if self.multi_dataset__dataroot is not None:
                 raise ConfigurationError("must supply only one of datapath or dataroot")
+
+    def handle_single_dataset(self, context):
+        self.check_attr("single_dataset__datapath", (str, type(None)))
+        self.check_attr("single_dataset__title", (str, type(None)))
+        self.check_attr("single_dataset__about", (str, type(None)))
+        self.check_attr("single_dataset__obs_names", (str, type(None)))
+        self.check_attr("single_dataset__var_names", (str, type(None)))
+
+        if self.single_dataset__datapath is None:
+            return
 
         # create the matrix data cache manager:
         if self.matrix_data_cache_manager is None:
