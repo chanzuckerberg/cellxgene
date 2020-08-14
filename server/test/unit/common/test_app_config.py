@@ -112,7 +112,8 @@ class AppConfigTest(unittest.TestCase):
     def test_get_config_vars_from_aws_secrets(self, mock_get_secret_key):
         mock_get_secret_key.return_value = {
             "flask_secret_key": "mock_flask_secret",
-            "oauth_client_secret": "mock_oauth_secret"
+            "oauth_client_secret": "mock_oauth_secret",
+            "db_uri": "mock_db_uri"
         }
 
         config = AppConfig()
@@ -121,10 +122,11 @@ class AppConfigTest(unittest.TestCase):
 
             from server.common.aws_secret_utils import handle_config_from_secret
             # should not throw error
-            # "AttributeError: 'ServerConfig' object has no attribute 'user_annotations__hosted_tiledb_array__db_uri'"
+            # "AttributeError: 'XConfig' object has no attribute 'x'"
             handle_config_from_secret(config)
 
             # should throw 2 errors (one for each var set from a secret)
-            self.assertEqual(len(logger.output), 2)
+            self.assertEqual(len(logger.output), 3)
             self.assertIn('ERROR:root:set app__flask_secret_key from secret', logger.output[0])
             self.assertIn('ERROR:root:set authentication__params_oauth__client_secret from secret', logger.output[1])
+            self.assertIn('ERROR:root:set user_annotations__hosted_tiledb_array__db_uri from secret', logger.output[2])

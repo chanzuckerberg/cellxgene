@@ -9,6 +9,8 @@ import logging
 from flask_talisman import Talisman
 
 from server.common.aws_secret_utils import handle_config_from_secret
+from server.common.errors import SecretKeyRetrievalError
+
 
 if os.path.isdir("/opt/python/log"):
     # This is the standard location where Amazon EC2 instances store the application logs.
@@ -149,7 +151,10 @@ try:
         app_config.update_server_config(multi_dataset__dataroot=dataroot)
 
     # update from secret manager
-    handle_config_from_secret(app_config)
+    try:
+        handle_config_from_secret(app_config)
+    except SecretKeyRetrievalError:
+        sys.exit(1)
 
     # features are unsupported in the current hosted server
     app_config.update_default_dataset_config(
