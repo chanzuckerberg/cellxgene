@@ -3,10 +3,11 @@ import unittest
 from unittest import mock
 from unittest.mock import patch
 
+import requests
+
 from server.common.app_config import AppConfig
 from server.common.errors import ConfigurationError
 from server.test import PROJECT_ROOT, test_server, FIXTURES_ROOT
-import requests
 
 
 # NOTE, there are more tests that should be written for AppConfig.
@@ -118,7 +119,6 @@ class AppConfigTest(unittest.TestCase):
         config = AppConfig()
 
         with self.assertLogs(level="ERROR") as logger:
-
             from server.common.aws_secret_utils import handle_config_from_secret
             # should not throw error
             # "AttributeError: 'ServerConfig' object has no attribute 'user_annotations__hosted_tiledb_array__db_uri'"
