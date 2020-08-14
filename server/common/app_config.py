@@ -12,11 +12,13 @@ from server.common.errors import ConfigurationError, DatasetAccessError, Ontolog
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataCacheManager, MatrixDataType
 from server.common.utils import find_available_port, is_port_available
 import warnings
-from server.common.annotations import AnnotationsLocalFile
+from server.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
+from server.common.annotations.local_file_csv import AnnotationsLocalFile
 from server.common.utils import custom_format_warning
 import server.compute.diffexp_cxg as diffexp_tiledb
 from server.common.data_locator import discover_s3_region_name
 from server.auth.auth import AuthTypeFactory
+from server.db.db_utils import DbUtils
 
 DEFAULT_SERVER_PORT = 5005
 # anything bigger than this will generate a special message
@@ -301,6 +303,7 @@ class AppConfig(object):
             userinfo["userinfo"] = {
                 "is_authenticated": auth.is_user_authenticated(),
                 "username": auth.get_user_name(),
+                "user_id": auth.get_user_id()
             }
             return userinfo
         else:
@@ -476,6 +479,7 @@ class ServerConfig(BaseConfig):
 
     def complete_config(self, context):
         self.handle_app(context)
+        self.handle_data_source(context)
         self.handle_authentication(context)
         self.handle_data_locator(context)
         self.handle_adaptor(context)  # may depend on data_locator
@@ -589,12 +593,9 @@ class ServerConfig(BaseConfig):
                 region_name = None
             self.data_locator__s3__region_name = region_name
 
-    def handle_single_dataset(self, context):
+    def handle_data_source(self, context):
         self.check_attr("single_dataset__datapath", (str, type(None)))
-        self.check_attr("single_dataset__title", (str, type(None)))
-        self.check_attr("single_dataset__about", (str, type(None)))
-        self.check_attr("single_dataset__obs_names", (str, type(None)))
-        self.check_attr("single_dataset__var_names", (str, type(None)))
+        self.check_attr("multi_dataset__dataroot", (type(None), dict, str))
 
         if self.single_dataset__datapath is None:
             if self.multi_dataset__dataroot is None:
@@ -604,6 +605,16 @@ class ServerConfig(BaseConfig):
         else:
             if self.multi_dataset__dataroot is not None:
                 raise ConfigurationError("must supply only one of datapath or dataroot")
+
+    def handle_single_dataset(self, context):
+        self.check_attr("single_dataset__datapath", (str, type(None)))
+        self.check_attr("single_dataset__title", (str, type(None)))
+        self.check_attr("single_dataset__about", (str, type(None)))
+        self.check_attr("single_dataset__obs_names", (str, type(None)))
+        self.check_attr("single_dataset__var_names", (str, type(None)))
+
+        if self.single_dataset__datapath is None:
+            return
 
         # create the matrix data cache manager:
         if self.matrix_data_cache_manager is None:
@@ -756,6 +767,8 @@ class DatasetConfig(BaseConfig):
             self.user_annotations__local_file_csv__file = dc["user_annotations"]["local_file_csv"]["file"]
             self.user_annotations__ontology__enable = dc["user_annotations"]["ontology"]["enable"]
             self.user_annotations__ontology__obo_location = dc["user_annotations"]["ontology"]["obo_location"]
+            self.user_annotations__hosted_tiledb_array__db_uri = dc["user_annotations"]["hosted_tiledb_array"]["db_uri"]
+            self.user_annotations__hosted_tiledb_array__hosted_file_directory = dc["user_annotations"]["hosted_tiledb_array"]["hosted_file_directory"]  # noqa E501
 
             self.embeddings__names = dc["embeddings"]["names"]
             self.embeddings__enable_reembedding = dc["embeddings"]["enable_reembedding"]
@@ -806,6 +819,8 @@ class DatasetConfig(BaseConfig):
         self.check_attr("user_annotations__local_file_csv__file", (type(None), str))
         self.check_attr("user_annotations__ontology__enable", bool)
         self.check_attr("user_annotations__ontology__obo_location", (type(None), str))
+        self.check_attr("user_annotations__hosted_tiledb_array__db_uri", (type(None), str))
+        self.check_attr("user_annotations__hosted_tiledb_array__hosted_file_directory", (type(None), str))
 
         if self.user_annotations__enable:
             server_config = self.app_config.server_config
@@ -817,43 +832,49 @@ class DatasetConfig(BaseConfig):
 
             # TODO, replace this with a factory pattern once we have more than one way
             # to do annotations.  currently only local_file_csv
-            if self.user_annotations__type != "local_file_csv":
-                raise ConfigurationError('The only annotation type support is "local_file_csv"')
+            if self.user_annotations__type == "local_file_csv":
+                dirname = self.user_annotations__local_file_csv__directory
+                filename = self.user_annotations__local_file_csv__file
 
-            dirname = self.user_annotations__local_file_csv__directory
-            filename = self.user_annotations__local_file_csv__file
+                if filename is not None and dirname is not None:
+                    raise ConfigurationError("'annotations-file' and 'annotations-dir' may not be used together.")
 
-            if filename is not None and dirname is not None:
-                raise ConfigurationError("'annotations-file' and 'annotations-dir' may not be used together.")
+                if filename is not None:
+                    lf_name, lf_ext = splitext(filename)
+                    if lf_ext and lf_ext != ".csv":
+                        raise ConfigurationError(f"annotation file type must be .csv: {filename}")
 
-            if filename is not None:
-                lf_name, lf_ext = splitext(filename)
-                if lf_ext and lf_ext != ".csv":
-                    raise ConfigurationError(f"annotation file type must be .csv: {filename}")
+                if dirname is not None and not isdir(dirname):
+                    try:
+                        os.mkdir(dirname)
+                    except OSError:
+                        raise ConfigurationError("Unable to create directory specified by --annotations-dir")
 
-            if dirname is not None and not isdir(dirname):
-                try:
-                    os.mkdir(dirname)
-                except OSError:
-                    raise ConfigurationError("Unable to create directory specified by --annotations-dir")
+                self.user_annotations = AnnotationsLocalFile(dirname, filename)
 
-            self.user_annotations = AnnotationsLocalFile(dirname, filename)
+                # if the user has specified a fixed label file, go ahead and validate it
+                # so that we can remove errors early in the process.
+                server_config = self.app_config.server_config
+                if server_config.single_dataset__datapath and self.user_annotations__local_file_csv__file:
+                    with server_config.matrix_data_cache_manager.data_adaptor(
+                            self.tag, server_config.single_dataset__datapath, self.app_config
+                    ) as data_adaptor:
+                        data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
 
-            # if the user has specified a fixed label file, go ahead and validate it
-            # so that we can remove errors early in the process.
-            server_config = self.app_config.server_config
-            if server_config.single_dataset__datapath and self.user_annotations__local_file_csv__file:
-                with server_config.matrix_data_cache_manager.data_adaptor(
-                    self.tag, server_config.single_dataset__datapath, self.app_config
-                ) as data_adaptor:
-                    data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
-
-            if self.user_annotations__ontology__enable or self.user_annotations__ontology__obo_location:
-                try:
-                    self.user_annotations.load_ontology(self.user_annotations__ontology__obo_location)
-                except OntologyLoadFailure as e:
-                    raise ConfigurationError("Unable to load ontology terms\n" + str(e))
-
+                if self.user_annotations__ontology__enable or self.user_annotations__ontology__obo_location:
+                    try:
+                        self.user_annotations.load_ontology(self.user_annotations__ontology__obo_location)
+                    except OntologyLoadFailure as e:
+                        raise ConfigurationError("Unable to load ontology terms\n" + str(e))
+            elif self.user_annotations__type == "hosted_tiledb_array":
+                self.check_attr("user_annotations__hosted_tiledb_array__db_uri", str)
+                self.check_attr("user_annotations__hosted_tiledb_array__hosted_file_directory", str)
+                self.user_annotations = AnnotationsHostedTileDB(
+                    directory_path=self.user_annotations__hosted_tiledb_array__hosted_file_directory,
+                    db=DbUtils(self.user_annotations__hosted_tiledb_array__db_uri),
+                )
+            else:
+                raise ConfigurationError('The only annotation type support is "local_file_csv" or "hosted_tiledb_array')
         else:
             if self.user_annotations__type == "local_file_csv":
                 dirname = self.user_annotations__local_file_csv__directory

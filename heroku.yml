@@ -1,5 +1,0 @@
-build:
-  docker:
-    web: experiments/heroku/Dockerfile
-run:
-  web: cellxgene launch $DATASET --host 0.0.0.0 --port $PORT

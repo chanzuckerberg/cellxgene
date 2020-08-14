@@ -11,16 +11,48 @@ from contextlib import contextmanager
 
 import pandas as pd
 
-from server.common.annotations import AnnotationsLocalFile
+from server.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
+from server.common.annotations.local_file_csv import AnnotationsLocalFile
+
 from server.common.data_locator import DataLocator
 from server.common.app_config import AppConfig, DEFAULT_SERVER_PORT
 from server.common.utils import find_available_port
 from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
-
+from server.db.db_utils import DbUtils
 
 PROJECT_ROOT = popen("git rev-parse --show-toplevel").read().strip()
 FIXTURES_ROOT = PROJECT_ROOT + "/server/test/fixtures"
+
+
+def data_with_tmp_tiledb_annotations(ext: MatrixDataType):
+    tmp_dir = tempfile.mkdtemp()
+    fname = {
+        MatrixDataType.H5AD: f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
+        MatrixDataType.CXG: "test/fixtures/pbmc3k.cxg",
+    }[ext]
+    data_locator = DataLocator(fname)
+    config = AppConfig()
+    config.update_server_config(
+        multi_dataset__dataroot=data_locator.path, authentication__type="test"
+    )
+    config.update_default_dataset_config(
+        embeddings__names=["umap"],
+        presentation__max_categories=100,
+        diffexp__lfc_cutoff=0.01,
+        user_annotations__type="hosted_tiledb_array",
+        user_annotations__hosted_tiledb_array__db_uri="postgresql://postgres:test_pw@localhost:5432",
+        user_annotations__hosted_tiledb_array__hosted_file_directory=tmp_dir
+    )
+
+    config.complete_config()
+
+    data = MatrixDataLoader(data_locator.abspath()).open(config)
+    annotations = AnnotationsHostedTileDB(
+        tmp_dir,
+        DbUtils("postgresql://postgres:test_pw@localhost:5432")
+    )
+    return data, tmp_dir, annotations
 
 
 def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
@@ -40,6 +72,7 @@ def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
     config.update_default_dataset_config(
         embeddings__names=["umap"], presentation__max_categories=100, diffexp__lfc_cutoff=0.01,
     )
+
     config.complete_config()
     data = MatrixDataLoader(data_locator.abspath()).open(config)
     annotations = AnnotationsLocalFile(None, annotations_file)
