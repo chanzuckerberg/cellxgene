@@ -54,3 +54,4 @@ define_request_exception(
 define_exception("OntologyLoadFailure", "Raised when reading the ontology file fails")
 define_exception("ConfigurationError", "Raised when checking configuration errors")
 define_exception("PrepareError", "Raised when data is misprepared")
+define_exception("SecretKeyRetrievalError", "Raised when get_secret_key from AWS fails")
