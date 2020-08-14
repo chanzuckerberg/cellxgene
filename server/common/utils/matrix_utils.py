@@ -57,7 +57,7 @@ def is_matrix_sparse(matrix: np.ndarray, sparse_threshold):
     return is_sparse
 
 
-def get_column_shift_encode_for_matrix_if_sparse_with_column_shift(matrix, sparse_threshold):
+def get_column_shift_encode_for_matrix(matrix, sparse_threshold):
     """
     Returns a column shift if there is a column shift that allows the given matrix to be considered as sparse. Column
     shift encoding works by taking the most common value in each column, then subtracting that value from each  element
