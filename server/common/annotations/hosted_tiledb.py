@@ -10,7 +10,7 @@ from flask import current_app
 from server.common.annotations.annotations import Annotations
 from server.common.errors import AnnotationCategoryNameError
 from server.common.utils.sanitization_utils import sanitize_values_in_list
-from server.common.utils.type_conversion_utils import get_dtype_and_schema_of_array, get_dtype_of_array
+from server.common.utils.type_conversion_utils import get_dtypes_and_schemas_of_dataframe, get_dtype_of_array
 from server.db.cellxgene_orm import CellxGeneDataset, Annotation
 
 
@@ -101,13 +101,13 @@ class AnnotationsHostedTileDB(Annotations):
             pass
         else:
             os.makedirs(uri, exist_ok=True)
-        schema_hints, values = get_dtype_and_schema_of_array(df)
+        _, dataframe_schema_type_hints = get_dtypes_and_schemas_of_dataframe(df)
 
         annotation = Annotation(
             tiledb_uri=uri,
             user_id=user_id,
             dataset_id=str(dataset_id),
-            schema_hints=json.dumps(schema_hints)
+            schema_hints=json.dumps(dataframe_schema_type_hints)
         )
         if not df.empty:
             self.check_category_names(df)

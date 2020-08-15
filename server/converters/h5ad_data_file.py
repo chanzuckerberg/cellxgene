@@ -16,7 +16,7 @@ from server.common.utils.cxg_generation_utils import (
     convert_ndarray_to_cxg_dense_array,
     convert_matrix_to_cxg_array,
 )
-from server.common.utils.matrix_utils import is_matrix_sparse, is_matrix_sparse_with_column_shift_encoding
+from server.common.utils.matrix_utils import is_matrix_sparse, get_column_shift_encode_for_matrix
 
 
 class H5ADDataFile:
@@ -87,7 +87,7 @@ class H5ADDataFile:
         x_matrix_data = self.anndata.X
         is_sparse = is_matrix_sparse(x_matrix_data, sparse_threshold)
         if not is_sparse:
-            col_shift = is_matrix_sparse_with_column_shift_encoding(x_matrix_data, sparse_threshold)
+            col_shift = get_column_shift_encode_for_matrix(x_matrix_data, sparse_threshold)
             is_sparse = col_shift is not None
         else:
             col_shift = None

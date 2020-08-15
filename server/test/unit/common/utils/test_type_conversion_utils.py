@@ -2,10 +2,10 @@ import unittest
 from unittest.mock import patch
 
 import numpy as np
-from pandas import Series
+from pandas import Series, DataFrame
 
 from server.common.utils.type_conversion_utils import can_cast_to_float32, can_cast_to_int32, get_dtype_of_array, \
-    get_schema_type_hint_of_array
+    get_schema_type_hint_of_array, get_dtypes_and_schemas_of_dataframe
 
 
 class TestTypeConversionUtils(unittest.TestCase):
@@ -119,3 +119,17 @@ class TestTypeConversionUtils(unittest.TestCase):
                     i=test_type_index):
                 array = Series(data=[], dtype=types[test_type_index])
                 self.assertEqual(get_schema_type_hint_of_array(array), expected_schema_hints[test_type_index])
+
+    def test__get_dtypes_and_schemas_of_dataframe__dtype_and_schema_returns_as_expected(self):
+        float_array = Series(data=[1, 2, 3], dtype=np.dtype(np.float64))
+        category_array = Series(data=["a", "b", "b"], dtype="category")
+        dataframe = DataFrame({"float_array": float_array, "category_array": category_array})
+
+        expected_data_types_dict = {"float_array": np.float32, "category_array": np.unicode}
+        expected_schema_type_hints_dict = {"float_array": {"type": "float32"},
+                                           "category_array": {"type": "categorical", "categories": ["a", "b"]}}
+
+        actual_dataframe_data_types, actual_dataframe_schema_type_hints = get_dtypes_and_schemas_of_dataframe(dataframe)
+
+        self.assertEqual(expected_data_types_dict, actual_dataframe_data_types)
+        self.assertEqual(expected_schema_type_hints_dict, actual_dataframe_schema_type_hints)
