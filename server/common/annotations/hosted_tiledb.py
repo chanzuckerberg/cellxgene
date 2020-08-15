@@ -8,7 +8,9 @@ import tiledb
 from flask import current_app
 
 from server.common.annotations.annotations import Annotations
-from server.converters.cxgtool import sanitize_keys, generate_schema_hints_and_convert_value_types, cxg_dtype
+from server.common.errors import AnnotationCategoryNameError
+from server.common.utils.sanitization_utils import sanitize_values_in_list
+from server.common.utils.type_conversion_utils import get_dtype_and_schema_of_array, get_dtype_of_array
 from server.db.cellxgene_orm import CellxGeneDataset, Annotation
 
 
@@ -21,7 +23,12 @@ class AnnotationsHostedTileDB(Annotations):
         self.directory_path = directory_path
 
     def check_category_names(self, df):
-        sanitize_keys(df.keys().to_list(), False)
+        original_category_names = df.keys().to_list()
+        sanitized_category_names = set(sanitize_values_in_list(original_category_names))
+        unsanitary_original_category_names = set(original_category_names).difference(sanitized_category_names)
+        if unsanitary_original_category_names:
+            raise AnnotationCategoryNameError(
+                f"{unsanitary_original_category_names} are not valid category names, please resubmit")
 
     def is_safe_collection_name(self, name):
         """
@@ -94,7 +101,7 @@ class AnnotationsHostedTileDB(Annotations):
             pass
         else:
             os.makedirs(uri, exist_ok=True)
-        schema_hints, values = generate_schema_hints_and_convert_value_types(df)
+        schema_hints, values = get_dtype_and_schema_of_array(df)
 
         annotation = Annotation(
             tiledb_uri=uri,
@@ -106,7 +113,7 @@ class AnnotationsHostedTileDB(Annotations):
             self.check_category_names(df)
             # convert to tiledb datatypes
             for col in df:
-                df[col] = df[col].astype(cxg_dtype(df[col]))
+                df[col] = df[col].astype(get_dtype_of_array(df[col]))
             tiledb.from_pandas(uri, df)
 
         self.db.session.add(annotation)
