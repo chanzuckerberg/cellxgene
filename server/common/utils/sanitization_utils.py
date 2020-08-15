@@ -7,7 +7,7 @@ def sanitize_values_in_list(list_of_keys: list):
     safe and unique.
     """
 
-    if not [all(isinstance(key, str) for key in list_of_keys)]:
+    if not all([isinstance(key, str) for key in list_of_keys]):
         raise Exception("List of keys to sanitize must contain all strings.")
 
     # Mask out [~/.] and anything outside the ASCII range.

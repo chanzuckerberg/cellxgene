@@ -1,7 +1,7 @@
 import os
 import json
 import logging
-from server.common.utils.type_conversion_utils import dtype_to_schema
+from server.common.utils.type_conversion_utils import get_schema_type_hint_from_dtype
 from server.common.errors import DatasetAccessError, ConfigurationError
 from server.common.utils.utils import path_join
 from server.common.constants import Axis
@@ -389,7 +389,7 @@ class CxgAdaptor(DataAdaptor):
                     if schema["type"] == "categorical" and "categories" in type_hint:
                         schema["categories"] = type_hint["categories"]
                 else:
-                    schema.update(dtype_to_schema(attr.dtype))
+                    schema.update(get_schema_type_hint_from_dtype(attr.dtype))
                 cols.append(schema)
 
             annotations[ax] = dict(columns=cols)

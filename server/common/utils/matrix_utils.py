@@ -4,7 +4,7 @@ import numpy as np
 from scipy.stats import mode
 
 
-def is_matrix_sparse(matrix, sparse_threshold):
+def is_matrix_sparse(matrix: np.ndarray, sparse_threshold):
     """
     Returns whether `matrix` is sparse or not (i.e. dense). This is determined by figuring out whether the matrix has
     a sparsity percentage below the sparse_threshold, returning the number of non-zeros encountered and number of
@@ -41,22 +41,23 @@ def is_matrix_sparse(matrix, sparse_threshold):
         number_of_non_zero_elements += np.count_nonzero(matrix_subset)
         if number_of_non_zero_elements > maximum_number_of_non_zero_elements_in_matrix:
             if end_row_index != total_number_of_rows:
+                percentage_of_non_zero_elements = 100 * number_of_non_zero_elements / (
+                        end_row_index * total_number_of_columns)
                 logging.info(
-                    "Matrix is not sparse. Percentage of non-zero elements (estimate): %6.2f"
-                    % (100 * number_of_non_zero_elements / (end_row_index * total_number_of_columns))
-                )
+                    f"Matrix is not sparse. Percentage of non-zero elements (estimate): "
+                    f"{percentage_of_non_zero_elements:6.2f}")
             else:
+                percentage_of_non_zero_elements = 100 * number_of_non_zero_elements / total_number_of_matrix_elements
                 logging.info(
-                    "Matrix is not sparse. Percentage of non-zero elements (exact): %6.2f"
-                    % (100 * number_of_non_zero_elements / total_number_of_matrix_elements)
-                )
+                    f"Matrix is not sparse. Percentage of non-zero elements (exact): "
+                    f"{percentage_of_non_zero_elements:6.2f}")
             return False
 
     is_sparse = (100.0 * number_of_non_zero_elements / total_number_of_matrix_elements) < sparse_threshold
     return is_sparse
 
 
-def is_matrix_sparse_with_column_shift_encoding(matrix, sparse_threshold):
+def get_column_shift_encode_for_matrix(matrix, sparse_threshold):
     """
     Returns a column shift if there is a column shift that allows the given matrix to be considered as sparse. Column
     shift encoding works by taking the most common value in each column, then subtracting that value from each  element
