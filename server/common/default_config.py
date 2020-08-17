@@ -5,7 +5,7 @@ server:
   app:
     verbose: false
     debug: false
-    host: "127.0.0.1"
+    host: localhost
     port : null
     open_browser: false
     force_https: false
@@ -13,6 +13,35 @@ server:
     generate_cache_control_headers: false
     server_timing_headers: false
     csp_directives: null
+
+  authentication:
+    # The authentication types may be "none", "session", "oauth"
+    # none:  No authentication support, features like user_annotations must not be enabled.
+    # session:  A session based userid is automatically generated. (no params needed)
+    # oauth: oauth2 is used for authentication;  parameters are defined in params_oauth.
+    type: session
+
+    params_oauth:
+       # url to the auth server
+       api_base_url: null
+       # client_id of this app
+       client_id: null
+       # the client_secret known to the auth server and this app
+       client_secret: null
+       # cellxgene server location;
+       # the browser will be redirected to locations relative to this location during login and logout.
+       # A value of None, indicates the client and server are on the localhost.  http://localhost:<port> will be used.
+       callback_base_url: null
+
+       # if true, the jwt containing the id_token is stored in a session cookie
+       session_cookie:  true
+
+       # if session_cookie is false, then a regular cookie will be used.  In that case
+       # the cookie will be defined by a dictionary of parameters.
+       # The keys of the dictionary match the parameters of the flask set_cookie api
+       # (https://flask.palletsprojects.com/en/1.1.x/api/), and with the same meaning.
+       # legal keys:  key, max_age, expires, path, domain, secure, httponly, and samesite.
+       cookie:  null
 
   multi_dataset:
     # If dataroot is set, then cellxgene may serve multiple datasets.  This parameter is not
@@ -132,6 +161,9 @@ dataset:
     about_legal_tos: null
     about_legal_privacy: null
 
+    # allow authentication support
+    authentication_enable: true
+
   presentation:
     max_categories: 1000
     custom_colors: true
@@ -139,6 +171,9 @@ dataset:
   user_annotations:
     enable: true
     type: local_file_csv
+    hosted_tiledb_array:
+        db_uri: null
+        hosted_file_directory: null
     local_file_csv:
       directory: null
       file: null

@@ -12,6 +12,7 @@ import { loadUserColorConfig } from "../util/stateManager/colorHelpers";
 import * as selnActions from "./selection";
 import * as annoActions from "./annotation";
 import * as viewActions from "./viewStack";
+import * as embActions from "./embedding";
 
 /*
 return promise fetching user-configured colors
@@ -40,6 +41,15 @@ async function configFetch(dispatch) {
   });
 }
 
+function prefetchEmbeddings(annoMatrix) {
+  /*
+  prefetch requests for all embeddings
+  */
+  const { schema } = annoMatrix;
+  const available = schema.layout.obs.map((v) => v.name);
+  available.forEach((embName) => annoMatrix.prefetch("emb", embName));
+}
+
 /*
 Application bootstrap
 */
@@ -48,7 +58,7 @@ const doInitialDataLoad = () =>
     dispatch({ type: "initial data load start" });
 
     try {
-      const [, schema] = await Promise.all([
+      const [config, schema] = await Promise.all([
         configFetch(dispatch),
         schemaFetch(dispatch),
         userColorsFetchAndLoad(dispatch),
@@ -57,12 +67,23 @@ const doInitialDataLoad = () =>
       const baseDataUrl = `${globals.API.prefix}${globals.API.version}`;
       const annoMatrix = new AnnoMatrixLoader(baseDataUrl, schema.schema);
       const obsCrossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
+      prefetchEmbeddings(annoMatrix);
+
       dispatch({
         type: "annoMatrix: init complete",
         annoMatrix,
         obsCrossfilter,
       });
       dispatch({ type: "initial data load complete" });
+
+      const defaultEmbedding = config?.parameters?.["default_embedding"];
+      const layoutSchema = schema?.schema?.layout?.obs ?? [];
+      if (
+        defaultEmbedding &&
+        layoutSchema.some((s) => s.name === defaultEmbedding)
+      ) {
+        dispatch(embActions.layoutChoiceAction(defaultEmbedding));
+      }
     } catch (error) {
       dispatch({ type: "initial data load error", error });
     }
@@ -210,6 +231,6 @@ export default {
   annotationLabelCurrentSelection: annoActions.annotationLabelCurrentSelection,
   saveObsAnnotationsAction: annoActions.saveObsAnnotationsAction,
   needToSaveObsAnnotations: annoActions.needToSaveObsAnnotations,
-  layoutChoiceAction: selnActions.layoutChoiceAction,
+  layoutChoiceAction: embActions.layoutChoiceAction,
   setCellSetFromSelection: selnActions.setCellSetFromSelection,
 };

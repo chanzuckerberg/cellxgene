@@ -48,27 +48,15 @@ const LayoutChoice = (
     }
 
     case "reembed: add reembedding": {
+      const { schema } = nextSharedState.annoMatrix;
       const { name } = action.schema;
       const available = Array.from(new Set(state.available).add(name));
+      const currentDimNames = schema.layout.obsByName[name].dims;
       return {
         ...state,
         available,
-      };
-    }
-
-    case "reembed: clear all reembeddings": {
-      const { annoMatrix } = nextSharedState;
-      const { current } = state;
-      const dflt = setToDefaultLayout(annoMatrix.schema);
-      if (dflt.available.includes(current)) {
-        return {
-          ...state,
-          available: dflt.available,
-        };
-      }
-      return {
-        ...state,
-        ...dflt,
+        current: name,
+        currentDimNames,
       };
     }
 

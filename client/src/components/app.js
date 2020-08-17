@@ -11,6 +11,7 @@ import Legend from "./continuousLegend";
 import Graph from "./graph/graph";
 import MenuBar from "./menubar";
 import Autosave from "./autosave";
+import Embedding from "./embedding";
 import TermsOfServicePrompt from "./termsPrompt";
 
 import actions from "../actions";
@@ -73,6 +74,7 @@ class App extends React.Component {
             {(viewportRef) => (
               <>
                 <MenuBar />
+                <Embedding />
                 <Autosave />
                 <TermsOfServicePrompt />
                 <Legend viewportRef={viewportRef} />

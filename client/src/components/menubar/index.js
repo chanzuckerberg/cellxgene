@@ -6,11 +6,13 @@ import * as globals from "../../globals";
 import styles from "./menubar.css";
 import actions from "../../actions";
 import Clip from "./clip";
-import Embedding from "./embedding";
+import AuthButtons from "./authButtons";
 import InformationMenu from "./infoMenu";
 import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
 import DiffexpButtons from "./diffexpButtons";
+import Reembedding from "./reembedding";
+import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
 
 @connect((state) => {
   const { annoMatrix } = state;
@@ -18,9 +20,11 @@ import DiffexpButtons from "./diffexpButtons";
   const selectedCount = crossfilter.countSelected();
 
   const subsetPossible =
-    selectedCount !== 0 && selectedCount !== crossfilter.size(); // ie, not all are selected
-  const subsetResetPossible =
-    annoMatrix.nObs !== annoMatrix.schema.dataframe.nObs;
+    selectedCount !== 0 && selectedCount !== crossfilter.size(); // ie, not all and not none are selected
+  const embSubsetView = getEmbSubsetView(annoMatrix);
+  const subsetResetPossible = !embSubsetView
+    ? annoMatrix.nObs !== annoMatrix.schema.dataframe.nObs
+    : annoMatrix.nObs !== embSubsetView.nObs;
 
   return {
     subsetPossible,
@@ -37,6 +41,7 @@ import DiffexpButtons from "./diffexpButtons";
     celllist1: state.differential.celllist1,
     celllist2: state.differential.celllist2,
     libraryVersions: state.config?.["library_versions"],
+    auth: state.config?.authentication,
     undoDisabled: state["@@undoable/past"].length === 0,
     redoDisabled: state["@@undoable/future"].length === 0,
     aboutLink: state.config?.links?.["about-dataset"],
@@ -47,6 +52,8 @@ import DiffexpButtons from "./diffexpButtons";
     tosURL: state.config?.parameters?.["about_legal_tos"],
     privacyURL: state.config?.parameters?.["about_legal_privacy"],
     categoricalSelection: state.categoricalSelection,
+    enableReembedding:
+      state.config?.parameters?.["enable-reembedding"] ?? false,
   };
 })
 class MenuBar extends React.PureComponent {
@@ -212,6 +219,8 @@ class MenuBar extends React.PureComponent {
       colorAccessor,
       subsetPossible,
       subsetResetPossible,
+      enableReembedding,
+      auth,
     } = this.props;
     const { pendingClipPercentiles } = this.state;
 
@@ -237,6 +246,7 @@ class MenuBar extends React.PureComponent {
           zIndex: 3,
         }}
       >
+        <AuthButtons auth={auth} />
         <InformationMenu
           libraryVersions={libraryVersions}
           aboutLink={aboutLink}
@@ -264,7 +274,7 @@ class MenuBar extends React.PureComponent {
             this.handleClipPercentileMinValueChange
           }
         />
-        <Embedding />
+        {enableReembedding ? <Reembedding /> : null}
         <Tooltip
           content="When a category is colored by, show labels on the graph"
           position="bottom"

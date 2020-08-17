@@ -1,70 +1,9 @@
 """
 This program converts an [AnnData H5AD](https://anndata.readthedocs.io/en/stable/)
-into a cellxgene TileDB structure, aka a 'CXG'.
+into a cellxgene TileDB structure, aka a [CXG](../../dev_docs/cxg.md).
 
-The organization of the TileDB structure is:
-
-    the.cxg                         TileDB Group
-    ├─ obs                          TileDB array containing cell (row) attributes, one attribute per
-    │                               dataframe column, shape (n_obs,)
-    ├─ var                          TileDB array containing gene (column) attributes, with one attribute per
-    │                               dataframe column, shape (n_var,)
-    ├─ X                            Main count matrix as a 2D TileDB array, single unnamed numeric attribute
-    ├─ X_col_shift                  TilebDB Array used in column shift encoding, shape (n_var,), dtype = X.dtype.
-    │                               Single unnamed numeric attribute.  If this array is sparse, and X_col_shift exists,
-    │                               then all values in the i'th column were subtracted by X_col_shift[i].
-    ├─ emb                          TileDB group, storing optional embeddings (group may be empty)
-    │  └─ <name1>                   TileDB Array, single anon attribute, ND numeric array, shape (n_obs, N)
-    └─ cxg_group_metadata           Empty array used only to stash metadata about the overall object.
-       └─ cxg_category_colors       CXG colors object as described below:
-                                        {
-                                             "<category_name>": {
-                                                 "<label_name>": "<color_hex_code>",
-                                                 ...
-                                             },
-                                             ...
-                                        }
-    ...
-
-All arrays are defined to have a uint32 domain, zero based.  All X counts and embedding
-coordinates are coerced to float32, which is ample precision for visualization purposes.
-Dataframe (metadata) types are generally preserved, or where that is not possible,
-converted to something with equal representative value in the cellxgene application
-(eg, categorical types are converted to string, bools to uint8, etc).
-
-The following objects are also decorated with auxiliary metadata using TileDB
-array metadata:
-
-* cxg_group_metadata: minimally, will contain a 'cxg_version' field, which
-  is a semver string identifying the version number of the CXG layout.
-  It may also contain 'cxg_parameters', a JSON-encoded parameter list
-  describing CXG-wide dataset parameters.
-
-* obs, var: both contain an optional 'cxg_schema' field that is a json string,
-  containing per-column (attribute) schema hinting.  This is used where the TileDB
-  native typing information is insufficient to reconstruct useful information
-  such as categorical typing from Pandas DataFrames, and to communicate which column
-  is the preferred human-readable index for obs & var.
-
-This file also embodies a number of empirically derived tiledb schema parameters,
-including the global data layout, spatial tile size, and the like. The CXG is
-self-describing in these areas, and the actual values (eg, tile size) are empirically
-derived from benchmarking. They may change in the future.
-
-cxgtool.py will extract color information stored in arrays in the 'uns' anndata
-property with the key "{category_name}_colors". For this to work, the following
-command must result in a mapping from category names to matplotlib-compatible colors:
-
-```
-dict(zip(adata.obs[cat].cat.categories, adata.uns[f"{cat}_colors"]))
-```
-
----
-
-TODO/ISSUES:
-* add sub-command structure to argparse, for future sub-commands
-* Possible future work: accept Loom files
-
+IF YOU UPDATE THIS FILE, IN ANY WAY THAT MODIFIES THE CXG FORMAT or CONTENTS,
+YOU MUST UPDATE THE CXG SPECIFICATION and VERSION NUMBER.
 """
 import re
 import anndata
@@ -76,11 +15,17 @@ import json
 from scipy.stats import mode
 
 from server.common.colors import convert_anndata_category_colors_to_cxg_category_colors
-from server.common.errors import ColorFormatException
+from server.common.errors import ColorFormatException, AnnotationCategoryNameError
+from server.common.corpora import (
+    corpora_get_props_from_anndata,
+    corpora_get_versions_from_anndata,
+    corpora_is_version_supported,
+)
 
 
-# the CXG container version number.  Must be a semver string.
-CXG_VERSION = "0.1"
+# the CXG container version number.  Must be a semver string (major.minor.patch)
+# DO NOT UPDATE THIS WITHOUT ALSO UPDATING THE CXG SPECIFICATION.
+CXG_VERSION = "0.2.0"
 
 # log_level must have a default
 log_level = 3
@@ -125,6 +70,12 @@ def main():
         default=0.0,  # force dense by default
         help="The X array will be sparse if the percent of non-zeros falls below this value",
     )
+    parser.add_argument(
+        "--disable-corpora",
+        action="store_true",
+        default=False,
+        help="Disable extraction and storing of Corpora schema information.",
+    )
     args = parser.parse_args()
 
     global log_level
@@ -136,25 +87,30 @@ def main():
     basefname = splitext(basename(args.h5ad))[0]
     out = args.out if args.out is not None else basefname
     container = out if splitext(out)[1] == ".cxg" else out + ".cxg"
-    title = args.title if args.title is not None else basefname
+
+    corpora_props = load_corpora_props(args, adata) if not args.disable_corpora else None
+    cxg_group_metadata = create_cxg_group_metadata(
+        adata,
+        basefname,
+        title=args.title,
+        about=args.about,
+        corpora_props=corpora_props,
+        extract_colors=not args.disable_custom_colors,
+    )
 
     write_cxg(
         adata,
         container,
-        title,
+        cxg_group_metadata=cxg_group_metadata,
         var_names=args.var_names,
         obs_names=args.obs_names,
-        about=args.about,
-        extract_colors=not args.disable_custom_colors,
         sparse_threshold=args.sparse_threshold,
     )
 
     log(1, "done")
 
 
-def write_cxg(
-    adata, container, title, var_names=None, obs_names=None, about=None, extract_colors=False, sparse_threshold=5.0
-):
+def write_cxg(adata, container, cxg_group_metadata, var_names=None, obs_names=None, sparse_threshold=5.0):
     if not adata.var.index.is_unique:
         raise ValueError("Variable index is not unique - unable to convert.")
     if not adata.obs.index.is_unique:
@@ -179,19 +135,7 @@ def write_cxg(
     log(1, f"\t...group created, with name {container}")
 
     # dataset metadata
-    metadata_dict = dict(cxg_version=CXG_VERSION, cxg_properties=json.dumps({"title": title, "about": about}))
-    if extract_colors:
-        try:
-            metadata_dict["cxg_category_colors"] = json.dumps(
-                convert_anndata_category_colors_to_cxg_category_colors(adata)
-            )
-        except ColorFormatException:
-            log(
-                0,
-                "Warning: failed to extract colors from h5ad file! "
-                "Fix the h5ad file or rerun with --disable-custom-colors. See help for details.",
-            )
-    save_metadata(container, metadata_dict)
+    save_metadata(container, cxg_group_metadata)
     log(1, "\t...dataset metadata saved")
 
     # var/gene dataframe
@@ -347,20 +291,26 @@ def alias_index_col(df, df_name, index_col_name):
     return (df, index_col_name)
 
 
+def generate_schema_hints_and_convert_value_types(df):
+    value = {}
+    schema_hints = {}
+    for k, v in df.items():
+        dtype, hints = cxg_type(v)
+        value[k] = v.to_numpy(dtype=dtype)
+        if hints:
+            schema_hints.update({k: hints})
+    return schema_hints, value
+
+
 def save_dataframe(container, name, df, index_col_name, ctx):
     A_name = f"{container}/{name}"
     (df, index_col_name) = alias_index_col(df, name, index_col_name)
     create_dataframe(A_name, df, ctx=ctx)
     with tiledb.DenseArray(A_name, mode="w", ctx=ctx) as A:
-        value = {}
-        schema_hints = {}
-        for k, v in df.items():
-            dtype, hints = cxg_type(v)
-            value[k] = v.to_numpy(dtype=dtype)
-            if hints:
-                schema_hints.update({k: hints})
-
+        schema_hints, value = generate_schema_hints_and_convert_value_types(df)
         schema_hints.update({"index": index_col_name})
+        # convert all values in all cols to a numpy version of cxg datatypes,
+        # then store the contents in the tiledb array A
         A[:] = value
         A.meta["cxg_schema"] = json.dumps(schema_hints)
 
@@ -601,7 +551,60 @@ def save_metadata(container, metadata_dict):
             A.meta[k] = v
 
 
-def sanitize_keys(keys):
+def load_corpora_props(args, adata):
+    versions = corpora_get_versions_from_anndata(adata)
+    if versions is None:
+        return None
+
+    [corpora_schema_version, corpora_encoding_version] = versions
+    corpora_props = corpora_get_props_from_anndata(adata)
+    version_is_supported = corpora_is_version_supported(corpora_schema_version, corpora_encoding_version)
+    if not version_is_supported or not corpora_props:
+        log(0, "ERROR: Unknown source file schema version is unsupported")
+        raise ValueError("Unsupported Corpora schema version")
+
+    log(1, "FYI, file appears to be encoded using Corpora schema standards...")
+    if args.title is not None or args.about is not None:
+        log(0, "Warning: explicit specification of --title or --about will override Corpora schema fields.")
+
+    return corpora_props
+
+
+def create_cxg_group_metadata(adata, basefname, title=None, about=None, corpora_props=None, extract_colors=True):
+
+    if corpora_props is not None:
+        # clobber encoding version to be OUR version, not the source H5AD encoding
+        corpora_props["version"].update({"corpora_encoding_version": CXG_VERSION})
+        corpora_project_links = corpora_props.get("project_links", [])
+        corpora_about_link = next(
+            (link for link in corpora_project_links if (link.get("link_type", None) == "SUMMARY")), {}
+        )
+    else:
+        corpora_about_link = {}
+
+    title = title or corpora_about_link.get("link_name", basefname)
+    about = about or corpora_about_link.get("link_url")
+
+    cxg_group_metadata = {"cxg_version": CXG_VERSION, "cxg_properties": json.dumps({"title": title, "about": about})}
+    if corpora_props is not None:
+        cxg_group_metadata.update({"corpora": json.dumps(corpora_props)})
+
+    if extract_colors:
+        try:
+            cxg_group_metadata["cxg_category_colors"] = json.dumps(
+                convert_anndata_category_colors_to_cxg_category_colors(adata)
+            )
+        except ColorFormatException:
+            log(
+                0,
+                "Warning: failed to extract colors from h5ad file! "
+                "Fix the h5ad file or rerun with --disable-custom-colors. See help for details.",
+            )
+
+    return cxg_group_metadata
+
+
+def sanitize_keys(keys, update_keys=True):
     """
     We need names to be safe to use as attribute names in tiledb.  See:
         TileDB-Inc/TileDB#1575
@@ -638,6 +641,8 @@ def sanitize_keys(keys):
 
     for k, v, in clean_unique_keys.items():
         if k != v:
+            if update_keys is False:
+                raise AnnotationCategoryNameError(f"{k} not a valid category name, please resubmit")
             log(1, f"Renaming {k} to {v}")
     return clean_unique_keys
 

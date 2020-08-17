@@ -66,9 +66,14 @@ export function _isContinuousType(schema) {
 
 export function _normalizeCategoricalSchema(colSchema, col) {
   const { type, writable } = colSchema;
-  if (type === "string" || type === "boolean" || type === "categorical") {
+  if (
+    type === "string" ||
+    type === "boolean" ||
+    type === "categorical" ||
+    writable
+  ) {
     const categorySet = new Set(
-      col.summarize().categories.concat(colSchema.categories ?? [])
+      col.summarizeCategorical().categories.concat(colSchema.categories ?? [])
     );
     if (writable && !categorySet.has(unassignedCategoryLabel)) {
       categorySet.add(unassignedCategoryLabel);
@@ -79,4 +84,5 @@ export function _normalizeCategoricalSchema(colSchema, col) {
   if (colSchema.categories) {
     colSchema.categories = catLabelSort(writable, colSchema.categories);
   }
+  return colSchema;
 }

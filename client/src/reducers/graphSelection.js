@@ -7,6 +7,7 @@ const GraphSelection = (
 ) => {
   switch (action.type) {
     case "set clip quantiles":
+    case "subset to selection":
     case "reset subset":
     case "set layout choice": {
       return {

@@ -203,7 +203,7 @@ $ EB_INSTANCE=m5.large
 $ CXG_DATAROOT=<location to your S3 bucket>
 $ CXG_CONFIG_FILE=<location to your config file>
 
-# Potentially also set envvars for the sercret key.
+# Potentially also set envvars for the secret key.
 
 $ eb create $EB_ENV --instance-type $EB_INSTANCE \
    --envvars CXG_DATAROOT=$CXG_DATAROOT,CXG_CONFIG_FILE=$CXG_CONFIG_FILE

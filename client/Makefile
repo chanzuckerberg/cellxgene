@@ -1,6 +1,6 @@
 include ../common.mk
 
-ANNOTATIONS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../server/test/test_datasets/pbmc3k-annotations.csv)
+ANNOTATIONS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../server/test/fixtures/pbmc3k-annotations.csv)
 ANNOTATIONS_FILENAME := $(shell basename $(ANNOTATIONS))
 
 # Packaging

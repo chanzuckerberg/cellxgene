@@ -18,7 +18,7 @@ import autosave from "./autosave";
 import ontology from "./ontology";
 import centroidLabels from "./centroidLabels";
 import pointDialation from "./pointDilation";
-import { reembedController, reembedding } from "./reembed";
+import { reembedController } from "./reembed";
 import { gcMiddleware as annoMatrixGC } from "../annoMatrix";
 
 import undoableConfig from "./undoableConfig";
@@ -30,7 +30,6 @@ const Reducer = undoable(
     ["obsCrossfilter", obsCrossfilter],
     ["ontology", ontology],
     ["annotations", annotations],
-    ["reembedding", reembedding],
     ["layoutChoice", layoutChoice],
     ["categoricalSelection", categoricalSelection],
     ["continuousSelection", continuousSelection],
@@ -55,7 +54,6 @@ const Reducer = undoable(
     "layoutChoice",
     "centroidLabels",
     "annotations",
-    "reembedding",
   ],
   undoableConfig
 );

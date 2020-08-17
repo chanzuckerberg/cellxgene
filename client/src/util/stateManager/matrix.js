@@ -170,11 +170,11 @@ export function encodeMatrixFBS(df) {
 
 function promoteTypedArray(o) {
   /*
-  Decide what internal data type to use for the data returned from 
+  Decide what internal data type to use for the data returned from
   the server.
 
   TODO - future optimization: not all int32/uint32 data series require
-  promotion to float64.  We COULD simply look at the data to decide. 
+  promotion to float64.  We COULD simply look at the data to decide.
   */
   if (isFpTypedArray(o) || Array.isArray(o)) return o;
 
