@@ -106,7 +106,7 @@ class DiffExpTest(unittest.TestCase):
             h5ad_file_to_convert = H5ADDataFile(h5adfile_path, use_corpora_schema=False)
 
             sparsename = os.path.join(dirname, "sparse.cxg")
-            h5ad_file_to_convert.to_cxg(sparsename, True, 11)
+            h5ad_file_to_convert.to_cxg(sparsename, 11, True)
 
             adaptor_anndata = self.load_dataset(h5adfile_path, extra_dataset_config=dict(embeddings__names=[]))
 
