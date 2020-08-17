@@ -24,7 +24,7 @@ class AnnotationsHostedTileDB(Annotations):
 
     def check_category_names(self, df):
         original_category_names = df.keys().to_list()
-        sanitized_category_names = set(sanitize_values_in_list(original_category_names))
+        sanitized_category_names = set(sanitize_values_in_list(original_category_names).values())
         unsanitary_original_category_names = set(original_category_names).difference(sanitized_category_names)
         if unsanitary_original_category_names:
             raise AnnotationCategoryNameError(
