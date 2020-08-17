@@ -110,6 +110,17 @@ def convert_ndarray_to_cxg_dense_array(ndarray_name, ndarray, ctx):
 def convert_matrix_to_cxg_array(
         matrix_name, matrix, encode_as_sparse_array, ctx, column_shift_for_sparse_encoding=None
 ):
+    """
+    Converts a numpy array matrix into a TileDB SparseArray of DenseArray based on whether `encode_as_sparse_array`
+    is true or not. Note that when the matrix is encoded as a SparseArray, it only writes the values that are
+    nonzero. This means that if you count the number of elements in the SparseArray, it will not equal the total
+    number of elements in the matrix, only the number of nonzero elements.
+
+    Furthermore, if the `column_shift_for_sparse_encoding` matrix is not None, this function will subtract the sparse
+    encoding from the original given matrix and as previously stated, only write the nonzero values to the TileDB
+    SparseArray.
+    """
+
     def create_matrix_array(matrix_name, number_of_rows, number_of_columns, encode_as_sparse_array):
         filters = tiledb.FilterList([tiledb.ZstdFilter()])
         attrs = [tiledb.Attr(dtype=np.float32, filters=filters)]

@@ -208,7 +208,7 @@ class TestH5ADDataFile(unittest.TestCase):
         obs = obs_dataframe
 
         # Create vars
-        random_int_category = Series(data=[3, 1, 2, 4], dtype=np.float32)
+        random_int_category = Series(data=[3, 1, 2, 4], dtype=np.int32)
         random_bool_category = Series(data=[True, True, False, True], dtype=np.bool_)
         var_dataframe = DataFrame(data={"int_category": random_int_category, "bool_category": random_bool_category})
         var = var_dataframe

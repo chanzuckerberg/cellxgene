@@ -50,6 +50,14 @@ class H5ADDataFile:
         self.validate_anndata()
 
     def to_cxg(self, output_cxg_directory, sparse_threshold, convert_anndata_colors_to_cxg_colors=True):
+        """
+        Writes the following attributes of the anndata to CXG: 1) the metadata as metadata attached to an empty
+        DenseArray, 2) the obs DataFrame as a DenseArray, 3) the var DataFrame as a DenseArray, 4) all valid
+        embeddings stored in obsm, each one as a DenseArray, 5) the main X matrix of the anndata as either a
+        SparseArray or DenseArray based on the `sparse_threshold`, and optionally 6) the column shift of the main X
+        matrix that might turn an otherwise Dense matrix into a Sparse matrix.
+        """
+
         logging.info("Beginning writing to CXG.")
         ctx = tiledb.Ctx(
             {
@@ -130,8 +138,7 @@ class H5ADDataFile:
     def generate_cxg_metadata(self, convert_anndata_colors_to_cxg_colors):
         """
         Return a dictionary containing metadata about CXG dataset. This include data about the version as well as
-        Corpora
-        schema properties if they exist, among other pieces of metadata.
+        Corpora schema properties if they exist, among other pieces of metadata.
         """
 
         cxg_group_metadata = {
