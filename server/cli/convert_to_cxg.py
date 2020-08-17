@@ -104,7 +104,8 @@ def convert_to_cxg(
     # Get the directory that will hold all the CXG files
     cxg_output_container = get_output_directory(input_file, output_directory, should_overwrite)
 
-    h5ad_data_file.to_cxg(cxg_output_container, not disable_custom_colors, sparse_threshold)
+    h5ad_data_file.to_cxg(cxg_output_container, sparse_threshold,
+                          convert_anndata_colors_to_cxg_colors=not disable_custom_colors)
 
 
 def get_output_directory(input_filename, output_directory, should_overwrite):

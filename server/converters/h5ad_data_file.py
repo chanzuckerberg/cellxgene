@@ -49,7 +49,7 @@ class H5ADDataFile:
 
         self.validate_anndata()
 
-    def to_cxg(self, output_cxg_directory, convert_anndata_colors_to_cxg_colors, sparse_threshold):
+    def to_cxg(self, output_cxg_directory, sparse_threshold, convert_anndata_colors_to_cxg_colors=True):
         logging.info("Beginning writing to CXG.")
         ctx = tiledb.Ctx(
             {
@@ -92,22 +92,10 @@ class H5ADDataFile:
         else:
             col_shift = None
 
-        if is_sparse:
-            if col_shift is not None:
-                logging.info("Converting matrix X as sparse matrix with column shift encoding")
-                x_col_shift_name = f"{output_cxg_directory}/X_col_shift"
-                filters = tiledb.FilterList([tiledb.ZstdFilter()])
-                attrs = [tiledb.Attr(dtype=np.float32, filters=filters)]
-                domain = tiledb.Domain(
-                    tiledb.Dim(
-                        domain=(0, x_matrix_data.shape[1] - 1), tile=min(x_matrix_data.shape[1], 5000), dtype=np.uint32
-                    )
-                )
-                schema = tiledb.ArraySchema(domain=domain, attrs=attrs)
-                tiledb.DenseArray.create(x_col_shift_name, schema)
-                with tiledb.DenseArray(x_col_shift_name, mode="w", ctx=ctx) as x_col_shift:
-                    x_col_shift[:] = col_shift
-                tiledb.consolidate(x_col_shift_name, ctx=ctx)
+        if col_shift is not None:
+            logging.info("Converting matrix X as sparse matrix with column shift encoding")
+            x_col_shift_name = f"{output_cxg_directory}/X_col_shift"
+            convert_ndarray_to_cxg_dense_array(x_col_shift_name, col_shift, ctx)
 
         convert_matrix_to_cxg_array(matrix_container, x_matrix_data, is_sparse, ctx, col_shift)
 
@@ -141,10 +129,10 @@ class H5ADDataFile:
 
     def generate_cxg_metadata(self, convert_anndata_colors_to_cxg_colors):
         """
-            Return a dictionary containing metadata about CXG dataset. This include data about the version as well as
-            Corpora
-            schema properties if they exist, among other pieces of metadata.
-            """
+        Return a dictionary containing metadata about CXG dataset. This include data about the version as well as
+        Corpora
+        schema properties if they exist, among other pieces of metadata.
+        """
 
         cxg_group_metadata = {
             "cxg_version": CxgConstants.CXG_VERSION,
