@@ -3,10 +3,11 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
+import emoji from "react-easy-emoji";
+import { Button } from "@blueprintjs/core";
 import HistogramBrush from "../brushableHistogram";
 import * as globals from "../../globals";
 import GeneSet from "./geneSet";
-import AddGenes from "./addGenes";
 
 import testGeneSets from "./test_data";
 
@@ -14,6 +15,7 @@ import testGeneSets from "./test_data";
   return {
     userDefinedGenes: state.controls.userDefinedGenes,
     differential: state.differential,
+    genesets: state.genesets,
   };
 })
 class GeneExpression extends React.Component {
@@ -29,8 +31,15 @@ class GeneExpression extends React.Component {
     return sets;
   };
 
+  handleActivateCreateGenesetMode = () => {
+    const { dispatch } = this.props;
+    dispatch({ type: "geneset: activate add new geneset mode" });
+  };
+
   render() {
     const { userDefinedGenes, differential } = this.props;
+    const geneSetsFeatureEnabledTODO = true;
+    console.log("genesets", this.props);
     return (
       <div
         style={{
@@ -38,7 +47,28 @@ class GeneExpression extends React.Component {
         }}
       >
         <div>
-          <AddGenes />
+          {geneSetsFeatureEnabledTODO ? (
+            <div>
+              <Button
+                data-testid="open-create-geneset-dialog"
+                onClick={this.handleActivateCreateGenesetMode}
+                intent="none"
+              >
+                <span
+                  style={{
+                    marginRight: 4,
+                    position: "relative",
+                    top: 1,
+                    left: -1,
+                  }}
+                >
+                  {emoji("🧬")}
+                </span>
+                Create new <strong>geneset</strong>
+              </Button>
+            </div>
+          ) : null}
+          {/* <AddGenes /> */}
           {userDefinedGenes.length > 0
             ? _.map(userDefinedGenes, (geneName, index) => {
                 return (

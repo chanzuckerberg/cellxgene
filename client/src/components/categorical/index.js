@@ -2,6 +2,7 @@
 import React from "react";
 import { Button } from "@blueprintjs/core";
 import { connect } from "react-redux";
+import emoji from "react-easy-emoji";
 import * as globals from "../../globals";
 import Category from "./category";
 import { AnnotationsHelpers, ControlsHelpers } from "../../util/stateManager";
@@ -207,9 +208,19 @@ class Categories extends React.Component {
             <Button
               data-testid="open-annotation-dialog"
               onClick={this.handleEnableAnnoMode}
-              intent="primary"
+              intent="none"
             >
-              Create new category
+              <span
+                style={{
+                  marginRight: 4,
+                  position: "relative",
+                  top: 1,
+                  left: -1,
+                }}
+              >
+                {emoji("🧫")}
+              </span>
+              Create new <strong>category</strong>
             </Button>
           </div>
         ) : null}

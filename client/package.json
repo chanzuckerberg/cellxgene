@@ -57,6 +57,7 @@
     "react": "^16.13.1",
     "react-async": "^10.0.1",
     "react-dom": "^16.13.1",
+    "react-easy-emoji": "^1.4.0",
     "react-flip-toolkit": "^7.0.12",
     "react-helmet": "^5.2.1",
     "react-icons": "^3.10.0",

@@ -14,6 +14,7 @@ import differential from "./differential";
 import layoutChoice from "./layoutChoice";
 import controls from "./controls";
 import annotations from "./annotations";
+import genesets from "./genesets";
 import autosave from "./autosave";
 import ontology from "./ontology";
 import centroidLabels from "./centroidLabels";
@@ -30,6 +31,7 @@ const Reducer = undoable(
     ["obsCrossfilter", obsCrossfilter],
     ["ontology", ontology],
     ["annotations", annotations],
+    ["genesets", genesets],
     ["layoutChoice", layoutChoice],
     ["categoricalSelection", categoricalSelection],
     ["continuousSelection", continuousSelection],

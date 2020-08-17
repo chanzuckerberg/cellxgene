@@ -22,6 +22,7 @@ class RightSidebar extends React.Component {
           overflowY: "inherit",
           height: "inherit",
           width: "inherit",
+          padding: globals.leftSidebarSectionPadding,
         }}
       >
         <GeneExpression />
