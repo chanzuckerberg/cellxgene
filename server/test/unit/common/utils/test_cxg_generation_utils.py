@@ -122,7 +122,8 @@ class TestCxgGenerationUtils(unittest.TestCase):
         # a matrix of zeros which is sparse.
         column_shift = np.ones((3, 2))
 
-        convert_matrix_to_cxg_array(matrix_name, matrix, True, tiledb.Ctx(), column_shift_for_sparse_encoding=column_shift)
+        convert_matrix_to_cxg_array(matrix_name, matrix, True, tiledb.Ctx(),
+                                    column_shift_for_sparse_encoding=column_shift)
 
         actual_stored_array = tiledb.open(matrix_name)
 
