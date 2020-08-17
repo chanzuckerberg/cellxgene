@@ -174,18 +174,18 @@ class TestH5ADDataFile(unittest.TestCase):
 
         # Obs files
         obs_files = []
-        obs_files.append(f"name_0.tdb")
-        obs_files.append(f"name_0_var.tdb")
-        obs_files.append(f"string_category.tdb")
-        obs_files.append(f"string_category_var.tdb")
-        obs_files.append(f"float_category.tdb")
+        obs_files.append("name_0.tdb")
+        obs_files.append("name_0_var.tdb")
+        obs_files.append("string_category.tdb")
+        obs_files.append("string_category_var.tdb")
+        obs_files.append("float_category.tdb")
 
         # Var files
         var_files = []
-        var_files.append(f"name_0.tdb")
-        var_files.append(f"name_0_var.tdb")
-        var_files.append(f"bool_category.tdb")
-        var_files.append(f"int_category.tdb")
+        var_files.append("name_0.tdb")
+        var_files.append("name_0_var.tdb")
+        var_files.append("bool_category.tdb")
+        var_files.append("int_category.tdb")
 
         return [metadata_directory, main_x_directory, overall_embedding_directory, specific_embedding_directory,
                 obs_directory, var_directory], obs_files, var_files

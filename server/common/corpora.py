@@ -38,10 +38,10 @@ def corpora_get_versions_from_anndata(adata):
 
 def corpora_is_version_supported(corpora_schema_version, corpora_encoding_version):
     return (
-            corpora_schema_version
-            and corpora_encoding_version
-            and corpora_schema_version.startswith("1.")
-            and corpora_encoding_version.startswith("0.1.")
+        corpora_schema_version
+        and corpora_encoding_version
+        and corpora_schema_version.startswith("1.")
+        and corpora_encoding_version.startswith("0.1.")
     )
 
 

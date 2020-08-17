@@ -6,7 +6,7 @@ import tiledb
 from server.common.utils.type_conversion_utils import get_dtype_of_array, get_dtype_and_schema_of_array
 
 
-def convert_dictionary_to_cxg_group(cxg_container, metadata_dict):
+def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="cxg_group_metadata"):
     """
     Saves the contents of the dictionary to the CXG output directory specified.
 
@@ -17,7 +17,7 @@ def convert_dictionary_to_cxg_group(cxg_container, metadata_dict):
     For more information, visit https://github.com/TileDB-Inc/TileDB-Py/issues/254.
     """
 
-    array_name = f"{cxg_container}/cxg_group_metadata"
+    array_name = f"{cxg_container}/{group_metadata_name}"
     with tiledb.from_numpy(array_name, np.zeros((1,))):
         pass
     with tiledb.DenseArray(array_name, mode="w") as metadata_array:
