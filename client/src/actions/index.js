@@ -41,6 +41,17 @@ async function configFetch(dispatch) {
   });
 }
 
+async function userInfoFetch(dispatch) {
+  return fetchJson("userinfo").then((response) => {
+    const userinfo = { ...response.userinfo };
+    dispatch({
+      type: "userinfo load complete",
+      userinfo,
+    });
+    return userinfo;
+  });
+}
+
 function prefetchEmbeddings(annoMatrix) {
   /*
   prefetch requests for all embeddings
@@ -62,6 +73,7 @@ const doInitialDataLoad = () =>
         configFetch(dispatch),
         schemaFetch(dispatch),
         userColorsFetchAndLoad(dispatch),
+        userInfoFetch(dispatch),
       ]);
 
       const baseDataUrl = `${globals.API.prefix}${globals.API.version}`;
