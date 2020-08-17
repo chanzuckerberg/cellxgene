@@ -18,8 +18,12 @@ def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata
     """
 
     array_name = f"{cxg_container}/{group_metadata_name}"
-    with tiledb.from_numpy(array_name, np.zeros((1,))):
-        pass
+
+    # Because TileDB does not allow one to attach metadata directly to a CXG group, we need to have a workaround
+    # where we create an empty array and attached the metadata onto to this empty array. Below we construct this empty
+    # array.
+    tiledb.from_numpy(array_name, np.zeros((1,)))
+
     with tiledb.DenseArray(array_name, mode="w") as metadata_array:
         for key, value in metadata_dict.items():
             metadata_array.meta[key] = value

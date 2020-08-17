@@ -55,11 +55,15 @@ from server.converters.h5ad_data_file import H5ADDataFile
     default=0.0,
     show_default=True,
 )
-@click.option("--obs-names", help="The name of the observation annotations.")  # TODO expand this
-@click.option("--var-names", help="The name of the variables annotations.")  # TODO expand this
+@click.option("--obs-names",
+              help="Name to a column in the obs dataframe that will be used as the index for the dataframe instead of "
+                   "the one designated by the dataframe generated-index.")
+@click.option("--var-names",
+              help="Name to a column in the var dataframe that will be used as the index for the dataframe instead of "
+                   "the one designated by the dataframe generated-index.")
 @click.option(
     "--disable-custom-colors",
-    help="When set, conversion process will not extract scanpy-compatible category colors from the H5AD " "file.",
+    help="When set, conversion process will not extract scanpy-compatible category colors from the H5AD file.",
     default=False,
     show_default=True,
     is_flag=True,
@@ -99,7 +103,8 @@ def convert_to_cxg(
     Convert a dataset file into CXG.
     """
 
-    h5ad_data_file = H5ADDataFile(input_file, backed, title, about, obs_names, var_names, not disable_corpora_schema)
+    h5ad_data_file = H5ADDataFile(input_file, backed, title, about, obs_names, var_names,
+                                  use_corpora_schema=not disable_corpora_schema)
 
     # Get the directory that will hold all the CXG files
     cxg_output_container = get_output_directory(input_file, output_directory, should_overwrite)
@@ -113,11 +118,11 @@ def get_output_directory(input_filename, output_directory, should_overwrite):
     Get the name of the CXG output directory to be created/populated during the dataset conversion.
     """
 
-    if not path.isfile(output_directory) or (path.isfile(output_directory) and should_overwrite):
+    if not path.isdir(output_directory) or (path.isdir(output_directory) and should_overwrite):
         if output_directory.endswith(".cxg"):
             return output_directory
         return output_directory + ".cxg"
-    if path.isfile(output_directory) and not should_overwrite:
+    if path.isdir(output_directory) and not should_overwrite:
         raise click.BadParameter(
             f"Output directory {output_directory} already exists. If you'd like to overwrite, then run the command "
             f"with the --overwrite flag."
