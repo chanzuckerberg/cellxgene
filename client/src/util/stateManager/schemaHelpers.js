@@ -13,22 +13,21 @@ import catLabelSort from "../catLabelSort";
 System wide schema assumptions:
   - schema and data wil be consistent (eg, for user-created annotations)
   - schema will be internally self-consistent (eg, index matches columns)
-  - world & universe schema are same - only data is subset
 */
 
 export function indexEntireSchema(schema) {
   /* Index schema for ease of use */
   schema.annotations.obsByName = fromEntries(
-    schema.annotations.obs.columns.map((v) => [v.name, v])
+    schema.annotations?.obs?.columns?.map((v) => [v.name, v]) ?? []
   );
   schema.annotations.varByName = fromEntries(
-    schema.annotations.var.columns.map((v) => [v.name, v])
+    schema.annotations?.var?.columns?.map((v) => [v.name, v]) ?? []
   );
   schema.layout.obsByName = fromEntries(
-    schema.layout.obs.map((v) => [v.name, v])
+    schema.layout?.obs?.map((v) => [v.name, v]) ?? []
   );
   schema.layout.varByName = fromEntries(
-    schema.layout.var.map((v) => [v.name, v])
+    schema.layout?.var?.map((v) => [v.name, v]) ?? []
   );
 
   return schema;

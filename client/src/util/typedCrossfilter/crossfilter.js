@@ -60,6 +60,9 @@ export default class ImmutableTypedCrossfilter {
   }
 
   setData(data) {
+    if (this.data === data) return this;
+    // please leave, WIP
+    // console.log("...crossfilter set data, will drop cache");
     return new ImmutableTypedCrossfilter(data, this.dimensions);
   }
 
@@ -192,6 +195,7 @@ export default class ImmutableTypedCrossfilter {
       adds = PositiveIntervals.difference(newSeln.ranges, oldSeln.ranges);
       dels = PositiveIntervals.difference(oldSeln.ranges, newSeln.ranges);
     } else {
+      // please leave, WIP
       // console.log("suboptimal selection update - index changed");
       adds = newSeln.ranges;
       dels = oldSeln.ranges;
@@ -503,7 +507,10 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
 
   selectExact(spec) {
     const { enumIndex } = this;
-    const { values } = spec;
+    let { values } = spec;
+    if (!Array.isArray(values)) {
+      values = [values];
+    }
     return super.selectExact({
       mode: spec.mode,
       values: values.map((v) =>

@@ -71,4 +71,26 @@ describe("PromiseLimit", () => {
     ]);
     expect(result).toEqual(["OK", "not OK", "OK", "not OK"]);
   });
+
+  test("priority queue", async () => {
+    const plimit = new PromiseLimit(1);
+
+    let finishOrder = 0;
+    const callback = () => async () => {
+      await delay(100);
+      const result = finishOrder;
+      finishOrder += 1;
+      return result;
+    };
+
+    const result = await Promise.all([
+      plimit.add(callback()),
+      plimit.priorityAdd(4, callback()),
+      plimit.priorityAdd(0, callback()),
+      plimit.priorityAdd(1, callback()),
+      plimit.priorityAdd(-1, callback()),
+    ]);
+
+    expect(result).toEqual([0, 4, 2, 3, 1]);
+  });
 });

@@ -14,32 +14,47 @@ Whether you need to visualize one thousand cells or one million, cellxgene helps
 <img src="https://github.com/chanzuckerberg/cellxgene/raw/main/docs/images/crossfilter.gif" width="350" height="200" hspace="30"><img src="https://github.com/chanzuckerberg/cellxgene/raw/main/docs/images/category-breakdown.gif" width="350" height="200" hspace="30">
 
 # Getting started
+
 ### The comprehensive guide to cellxgene
+
 [The cellxgene documentation is your one-stop-shop for information about cellxgene](https://chanzuckerberg.github.io/cellxgene/)! You may be particularly interested in:
-* Seeing [what cellxgene can do](https://chanzuckerberg.github.io/cellxgene/posts/gallery)  
-* Learning more about cellxgene [installation](https://chanzuckerberg.github.io/cellxgene/posts/install) and [usage](https://chanzuckerberg.github.io/cellxgene/posts/launch)
-* [Preparing your own data](https://chanzuckerberg.github.io/cellxgene/posts/prepare) for use in cellxgene
-* Checking out [our roadmap](https://chanzuckerberg.github.io/cellxgene/posts/roadmap) for future development
-* [Contributing](https://chanzuckerberg.github.io/cellxgene/posts/contribute) to cellxgene
+
+- Seeing [what cellxgene can do](https://chanzuckerberg.github.io/cellxgene/posts/gallery)
+- Learning more about cellxgene [installation](https://chanzuckerberg.github.io/cellxgene/posts/install) and [usage](https://chanzuckerberg.github.io/cellxgene/posts/launch)
+- [Preparing your own data](https://chanzuckerberg.github.io/cellxgene/posts/prepare) for use in cellxgene
+- Checking out [our roadmap](https://chanzuckerberg.github.io/cellxgene/posts/roadmap) for future development
+- [Contributing](https://chanzuckerberg.github.io/cellxgene/posts/contribute) to cellxgene
 
 ### Quick start
 
 To install cellxgene you need Python 3.6+. We recommend [installing cellxgene into a conda or virtual environment.](https://chanzuckerberg.github.io/cellxgene/posts/install)
 
 Install the package.
-``` bash
+
+```bash
 pip install cellxgene
 ```
 
 Launch cellxgene with an example [anndata](https://anndata.readthedocs.io/en/latest/) file
 
-``` bash
+```bash
 cellxgene launch https://cellxgene-example-data.czi.technology/pbmc3k.h5ad
 ```
 
 To explore more datasets already formatted for cellxgene, check out the [Demo data](https://chanzuckerberg.github.io/cellxgene/posts/demo-data) or
 see [Preparing your data](https://chanzuckerberg.github.io/cellxgene/posts/prepare) to learn more about formatting your own
 data for cellxgene.
+
+### Supported browsers
+
+cellxgene currently supports the following browsers:
+
+- Google Chrome 61+
+- Edge 15+
+- Firefox 60+
+- Safari 10.1+
+
+Please [file an issue](https://github.com/chanzuckerberg/cellxgene/issues/new/choose) if you would like us to add support for an unsupported browser.
 
 ### Finding help
 
@@ -51,6 +66,7 @@ For any errors, [report bugs on Github](https://github.com/chanzuckerberg/cellxg
 # Developing with cellxgene
 
 ### Contributing
+
 We warmly welcome contributions from the community! Please see our [contributing guide](https://chanzuckerberg.github.io/cellxgene/posts/contribute) and don't hesitate to open an issue or send a pull request to improve cellxgene.
 
 This project adheres to the Contributor Covenant [code of conduct](https://github.com/chanzuckerberg/.github/blob/master/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to opensource@chanzuckerberg.com.
@@ -64,6 +80,7 @@ This project was started with the sole goal of empowering the scientific communi
 If you believe you have found a security issue, we would appreciate notification. Please send email to <security@chanzuckerberg.com>.
 
 # About
+
 ### Core team
 
 The current core team:

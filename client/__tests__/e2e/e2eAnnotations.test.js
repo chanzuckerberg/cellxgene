@@ -297,6 +297,28 @@ describe.each([
     expect(result).toMatchSnapshot();
   });
 
+  test("truncate midpoint whitespace", async () => {
+    await setup(config);
+    const newLabelName = "123 456";
+    await renameLabel(perTestCategoryName, perTestLabelName, newLabelName);
+    const value = await waitByID(
+      `categorical-value-${perTestCategoryName}-${newLabelName}`
+    );
+    const result = await page.evaluate((elem) => elem.outerHTML, value);
+    expect(result).toMatchSnapshot();
+  });
+
+  test("truncate single character", async () => {
+    await setup(config);
+    const newLabelName = "T";
+    await renameLabel(perTestCategoryName, perTestLabelName, newLabelName);
+    const value = await waitByID(
+      `categorical-value-${perTestCategoryName}-${newLabelName}`
+    );
+    const result = await page.evaluate((elem) => elem.outerHTML, value);
+    expect(result).toMatchSnapshot();
+  });
+
   async function assertCategoryExists(categoryName) {
     const handle = await waitByID(`${categoryName}:category-label`);
 
@@ -304,7 +326,7 @@ describe.each([
       node.getAttribute("aria-label")
     );
 
-    expect(result).toBe(categoryName);
+    return expect(result).toBe(categoryName);
   }
 
   async function assertLabelExists(categoryName, labelName) {

@@ -5,3 +5,4 @@ export {
   KeyIndex,
   isLabelIndex,
 } from "./labelIndex";
+export { default as dataframeMemo } from "./cache";

@@ -1,4 +1,3 @@
-// jshint esversion: 6
 import React from "react";
 import {
   Position,
@@ -11,7 +10,7 @@ import {
 import { tooltipHoverOpenDelay } from "../../globals";
 import styles from "./menubar.css";
 
-function Clip(props) {
+const Clip = React.memo((props) => {
   const {
     pendingClipPercentiles,
     clipPercentileMin,
@@ -129,6 +128,6 @@ function Clip(props) {
       />
     </div>
   );
-}
+});
 
 export default Clip;

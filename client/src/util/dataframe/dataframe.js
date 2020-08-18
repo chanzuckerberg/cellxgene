@@ -5,6 +5,7 @@ import {
   isArrayOrTypedArray,
   callOnceLazy,
   memoize,
+  __getMemoId,
 } from "./util";
 import {
   summarizeContinuous,
@@ -73,17 +74,6 @@ Dataframe
 
 class Dataframe {
   /**
-  memoization helpers.
-  **/
-  static __DataframeId__ = 0;
-
-  static __getId() {
-    const id = Dataframe.__DataframeId__;
-    Dataframe.__DataframeId__ += 1;
-    return id;
-  }
-
-  /**
   Constructors & factories
   **/
 
@@ -126,7 +116,7 @@ class Dataframe {
     this.length = nRows; // convenience accessor for row dimension
     this.rowIndex = rowIndex;
     this.colIndex = colIndex;
-    this.__id = Dataframe.__getId();
+    this.__id = __getMemoId();
 
     this.__compile(__columnsAccessor);
     Object.freeze(this);
@@ -202,7 +192,7 @@ class Dataframe {
 
     */
     const { length } = column;
-    const __id = Dataframe.__getId();
+    const __id = __getMemoId();
 
     /* get value by row label */
     const get = function get(rlabel) {
@@ -557,12 +547,14 @@ class Dataframe {
     const dims = [...this.dims];
 
     /* subset columns */
-    let { __columns, colIndex } = this;
+    let { __columns, colIndex, __columnsAccessor } = this;
     if (newColIndex) {
       const colOffsets = this.colIndex.getOffsets(newColIndex.labels());
       __columns = new Array(colOffsets.length);
+      __columnsAccessor = new Array(colOffsets.length);
       for (let i = 0, l = colOffsets.length; i < l; i += 1) {
         __columns[i] = this.__columns[colOffsets[i]];
+        __columnsAccessor[i] = this.__columnsAccessor[colOffsets[i]];
       }
       colIndex = newColIndex;
       dims[1] = colOffsets.length;
@@ -580,10 +572,17 @@ class Dataframe {
       });
       rowIndex = newRowIndex;
       dims[0] = rowOffsets.length;
+      __columnsAccessor = []; // force a recompile
     }
 
     if (dims[0] === 0 || dims[1] === 0) return Dataframe.empty();
-    return new Dataframe(dims, __columns, rowIndex, colIndex);
+    return new Dataframe(
+      dims,
+      __columns,
+      rowIndex,
+      colIndex,
+      __columnsAccessor
+    );
   }
 
   subset(rowLabels, colLabels = null, withRowIndex = null) {
@@ -792,7 +791,9 @@ class Dataframe {
 
     callback MUST not modify the column, but instead return a mutated copy.
     */
-    const columns = this.__columns.map(callback);
+    const columns = this.__columns.map((colData, colIdx) =>
+      callback(colData, colIdx, this)
+    );
     const columnsAccessor = columns.map((c, idx) =>
       this.__columns[idx] === c ? this.__columnsAccessor[idx] : undefined
     );

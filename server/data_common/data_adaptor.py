@@ -1,14 +1,15 @@
 from abc import ABCMeta, abstractmethod
-from server_timing import Timing as ServerTiming
-import numpy as np
-import pandas as pd
 from os.path import basename, splitext
 
-from server.data_common.fbs.matrix import encode_matrix_fbs
+import numpy as np
+import pandas as pd
+from server_timing import Timing as ServerTiming
+
+from server.common.app_config import AppFeature, AppConfig
 from server.common.constants import Axis
 from server.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError
-from server.common.utils import jsonify_numpy
-from server.common.app_config import AppFeature, AppConfig
+from server.common.utils.utils import jsonify_numpy
+from server.data_common.fbs.matrix import encode_matrix_fbs
 
 
 class DataAdaptor(metaclass=ABCMeta):
@@ -28,6 +29,11 @@ class DataAdaptor(metaclass=ABCMeta):
 
         # parameters set by this data adaptor based on the data.
         self.parameters = {}
+        self.uri_path = None
+
+    def set_uri_path(self, path):
+        # uri path to the dataset, e.g. /d/<datasetname>
+        self.uri_path = path
 
     @staticmethod
     @abstractmethod
@@ -66,8 +72,7 @@ class DataAdaptor(metaclass=ABCMeta):
 
     @abstractmethod
     def compute_embedding(self, method, filter):
-        """compute a new embedding on the specified obs subset, and return a
-           tuple of (schema, fbs)."""
+        """compute a new embedding on the specified obs subset, and return the embedding schema. """
         pass
 
     @abstractmethod
@@ -130,6 +135,9 @@ class DataAdaptor(metaclass=ABCMeta):
             location = location[:-1]
         return splitext(basename(location))[0]
 
+    def get_corpora_props(self):
+        return None
+
     @abstractmethod
     def get_schema(self):
         """
@@ -165,7 +173,7 @@ class DataAdaptor(metaclass=ABCMeta):
         mask = np.zeros((count,), dtype=np.bool)
         for i in filter:
             if type(i) == list:
-                mask[i[0] : i[1]] = True
+                mask[i[0]: i[1]] = True
             else:
                 mask[i] = True
         return mask
@@ -306,7 +314,7 @@ class DataAdaptor(metaclass=ABCMeta):
             top_n = self.dataset_config.diffexp__top_n
 
         if self.server_config.exceeds_limit(
-            "diffexp_cellcount_max", np.count_nonzero(obs_mask_A) + np.count_nonzero(obs_mask_B)
+                "diffexp_cellcount_max", np.count_nonzero(obs_mask_A) + np.count_nonzero(obs_mask_B)
         ):
             raise ExceedsLimitError("Diffexp request exceeds max cell count limit")
 
@@ -328,8 +336,14 @@ class DataAdaptor(metaclass=ABCMeta):
         """
 
         # scale isotropically
-        min = embedding.min(axis=0)
-        max = embedding.max(axis=0)
+        try:
+            min = np.nanmin(embedding, axis=0)
+            max = np.nanmax(embedding, axis=0)
+        except RuntimeError:
+            # indicates entire array was NaN, which should propagate
+            min = np.NaN
+            max = np.NaN
+
         scale = np.amax(max - min)
         normalized_layout = (embedding - min) / scale
 

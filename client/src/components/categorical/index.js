@@ -1,6 +1,6 @@
 // jshint esversion: 6
 import React from "react";
-import { Button } from "@blueprintjs/core";
+import { AnchorButton, Tooltip, Position } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import Category from "./category";
@@ -9,11 +9,13 @@ import AnnoDialog from "./annoDialog";
 import AnnoSelect from "./annoSelect";
 import LabelInput from "./labelInput";
 import { labelPrompt } from "./labelUtil";
+import actions from "../../actions";
 
 @connect((state) => ({
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
-  schema: state.world?.schema,
+  schema: state.annoMatrix?.schema,
   ontology: state.ontology,
+  userinfo: state.userinfo,
 }))
 class Categories extends React.Component {
   constructor(props) {
@@ -29,11 +31,12 @@ class Categories extends React.Component {
   handleCreateUserAnno = (e) => {
     const { dispatch } = this.props;
     const { newCategoryText, categoryToDuplicate } = this.state;
-    dispatch({
-      type: "annotation: create category",
-      data: newCategoryText,
-      categoryToDuplicate,
-    });
+    dispatch(
+      actions.annotationCreateCategoryAction(
+        newCategoryText,
+        categoryToDuplicate
+      )
+    );
     this.setState({
       createAnnoModeActive: false,
       categoryToDuplicate: null,
@@ -125,7 +128,12 @@ class Categories extends React.Component {
       newCategoryText,
       expandedCats,
     } = this.state;
-    const { writableCategoriesEnabled, schema, ontology } = this.props;
+    const {
+      writableCategoriesEnabled,
+      schema,
+      ontology,
+      userinfo,
+    } = this.props;
     const ontologyEnabled = ontology?.enabled ?? false;
     /* all names, sorted in display order.  Will be rendered in this order */
     const allCategoryNames = ControlsHelpers.selectableCategoryNames(
@@ -201,15 +209,30 @@ class Categories extends React.Component {
         )}
 
         {writableCategoriesEnabled ? (
-          <div>
-            <Button
+          <Tooltip
+            content={
+              userinfo.is_authenticated
+                ? "Create a new category"
+                : "You must be logged in to create new categorical fields"
+            }
+            position={Position.RIGHT}
+            boundary="viewport"
+            hoverOpenDelay={globals.tooltipHoverOpenDelay}
+            modifiers={{
+              preventOverflow: { enabled: false },
+              hide: { enabled: false },
+            }}
+          >
+            <AnchorButton
+              type="button"
               data-testid="open-annotation-dialog"
               onClick={this.handleEnableAnnoMode}
               intent="primary"
+              disabled={!userinfo.is_authenticated}
             >
               Create new category
-            </Button>
-          </div>
+            </AnchorButton>
+          </Tooltip>
         ) : null}
       </div>
     );

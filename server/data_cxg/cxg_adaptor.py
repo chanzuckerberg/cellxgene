@@ -1,9 +1,9 @@
 import os
 import json
 import logging
-from server.common.utils import dtype_to_schema
+from server.common.utils.type_conversion_utils import get_schema_type_hint_from_dtype
 from server.common.errors import DatasetAccessError, ConfigurationError
-from server.common.utils import path_join
+from server.common.utils.utils import path_join
 from server.common.constants import Axis
 from server.data_common.data_adaptor import DataAdaptor
 from server.data_common.fbs.matrix import encode_matrix_fbs
@@ -73,6 +73,9 @@ class CxgAdaptor(DataAdaptor):
 
     def get_title(self):
         return self.title if self.title else super().get_title()
+
+    def get_corpora_props(self):
+        return self.corpora_props if self.corpora_props else super().get_corpora_props()
 
     def get_name(self):
         return "cellxgene cxg adaptor version"
@@ -144,26 +147,31 @@ class CxgAdaptor(DataAdaptor):
         * version 0.1 -- metadata attache to cxg_group_metadata array.
           Same as 0, except it adds group metadata.
         """
+        title = None
+        about = None
+        corpora_props = None
         if self.has_array("cxg_group_metadata"):
             # version >0
             gmd = self.open_array("cxg_group_metadata")
             cxg_version = gmd.meta["cxg_version"]
-            if cxg_version == "0.1":
+            # version 0.1 used a malformed/shorthand semver string.
+            if cxg_version == "0.1" or cxg_version == "0.2.0":
                 cxg_properties = json.loads(gmd.meta["cxg_properties"])
                 title = cxg_properties.get("title", None)
                 about = cxg_properties.get("about", None)
+            if cxg_version == "0.2.0":
+                corpora_props = json.loads(gmd.meta["corpora"]) if "corpora" in gmd.meta else None
         else:
             # version 0
             cxg_version = "0.0"
-            title = None
-            about = None
 
-        if cxg_version not in ["0.0", "0.1"]:
+        if cxg_version not in ["0.0", "0.1", "0.2.0"]:
             raise DatasetAccessError(f"cxg matrix is not valid: {self.url}")
 
         self.title = title
         self.about = about
         self.cxg_version = cxg_version
+        self.corpora_props = corpora_props
 
     @staticmethod
     def _open_array(uri, tiledb_ctx):
@@ -381,7 +389,7 @@ class CxgAdaptor(DataAdaptor):
                     if schema["type"] == "categorical" and "categories" in type_hint:
                         schema["categories"] = type_hint["categories"]
                 else:
-                    schema.update(dtype_to_schema(attr.dtype))
+                    schema.update(get_schema_type_hint_from_dtype(attr.dtype))
                 cols.append(schema)
 
             annotations[ax] = dict(columns=cols)

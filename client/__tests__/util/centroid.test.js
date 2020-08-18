@@ -1,40 +1,36 @@
 import _ from "lodash";
 
 import calcCentroid from "../../src/util/centroid";
-
 import quantile from "../../src/util/quantile";
-import * as Universe from "../../src/util/stateManager/universe";
 import { matrixFBSToDataframe } from "../../src/util/stateManager/matrix";
-import * as World from "../../src/util/stateManager/world";
 import * as REST from "./stateManager/sampleResponses";
+import { indexEntireSchema } from "../../src/util/stateManager/schemaHelpers";
+import { _normalizeCategoricalSchema } from "../../src/annoMatrix/schema";
 
 describe("centroid", () => {
-  let world;
+  let schema;
+  let obsAnnotations;
+  let obsLayout;
 
   beforeAll(() => {
-    // Create world + universe
-    let universe = Universe.createUniverseFromResponse(
-      _.cloneDeep(REST.config),
-      _.cloneDeep(REST.schema)
-    );
+    schema = indexEntireSchema(_.cloneDeep(REST.schema.schema));
+    obsAnnotations = matrixFBSToDataframe(REST.annotationsObs);
+    obsLayout = matrixFBSToDataframe(REST.layoutObs);
 
-    universe = {
-      ...universe,
-      ...Universe.addObsAnnotations(
-        universe,
-        matrixFBSToDataframe(REST.annotationsObs)
-      ),
-      ...Universe.addVarAnnotations(
-        universe,
-        matrixFBSToDataframe(REST.annotationsVar)
-      ),
-      ...Universe.addObsLayout(universe, matrixFBSToDataframe(REST.layoutObs)),
-    };
-    world = World.createWorldFromEntireUniverse(universe);
+    _normalizeCategoricalSchema(
+      schema.annotations.obsByName.field3,
+      obsAnnotations.col("field3")
+    );
   });
 
   test("field4 (categorical obsAnnotation)", () => {
-    const centroidResult = calcCentroid(world, "field4", ["umap_0", "umap_1"]);
+    const centroidResult = calcCentroid(
+      schema,
+      "field4",
+      obsAnnotations,
+      { current: "umap", currentDimNames: ["umap_0", "umap_1"] },
+      obsLayout
+    );
 
     // Check to see that a centroid has been calculated for every categorical value
     const keysAsArray = Array.from(centroidResult.keys());
@@ -44,8 +40,8 @@ describe("centroid", () => {
 
     // This expected result assumes that all cells belong in all categorical values inside of sample response
     const expectedResult = [
-      quantile([0.5], world.obsLayout.col("umap_0").asArray())[0],
-      quantile([0.5], world.obsLayout.col("umap_1").asArray())[0],
+      quantile([0.5], obsLayout.col("umap_0").asArray())[0],
+      quantile([0.5], obsLayout.col("umap_1").asArray())[0],
     ];
 
     centroidResult.forEach((coordinate) => {
@@ -54,7 +50,13 @@ describe("centroid", () => {
   });
 
   test("field3 (boolean obsAnnotation)", () => {
-    const centroidResult = calcCentroid(world, "field3", ["umap_0", "umap_1"]);
+    const centroidResult = calcCentroid(
+      schema,
+      "field3",
+      obsAnnotations,
+      { current: "umap", currentDimNames: ["umap_0", "umap_1"] },
+      obsLayout
+    );
 
     // Check to see that a centroid has been calculated for every categorical value
     const keysAsArray = Array.from(centroidResult.keys());
@@ -62,8 +64,8 @@ describe("centroid", () => {
 
     // This expected result assumes that all cells belong in all categorical values inside of sample response
     const expectedResult = [
-      quantile([0.5], world.obsLayout.col("umap_0").asArray())[0],
-      quantile([0.5], world.obsLayout.col("umap_1").asArray())[0],
+      quantile([0.5], obsLayout.col("umap_0").asArray())[0],
+      quantile([0.5], obsLayout.col("umap_1").asArray())[0],
     ];
 
     centroidResult.forEach((coordinate) => {

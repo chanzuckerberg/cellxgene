@@ -19,36 +19,40 @@ import Truncate from "../../util/truncate";
 
 import { AnnotationsHelpers } from "../../../util/stateManager";
 import { labelPrompt, isLabelErroneous } from "../labelUtil";
+import actions from "../../../actions";
 import MiniHistogram from "../../miniHistogram";
 import MiniStackedBar from "../../miniStackedBar";
+import { CategoryCrossfilterContext } from "../categoryContext";
 
 const VALUE_HEIGHT = 11;
 const CHART_WIDTH = 100;
 
 /* this is defined outside of the class so we can use it in connect() */
 function _currentLabelAsString(ownProps) {
-  const { categorySummary, categoryIndex } = ownProps;
+  const { label } = ownProps;
   // when called as a function, the String() constructor performs type conversion,
   // and returns a primitive string.
-  return String(categorySummary.categoryValues[categoryIndex]);
+  return String(label);
 }
 
 @connect((state, ownProps) => {
   const { pointDilation, categoricalSelection } = state;
-  const { metadataField } = ownProps;
+  const { metadataField, categorySummary, categoryIndex } = ownProps;
   const isDilated =
     pointDilation.metadataField === metadataField &&
     pointDilation.categoryField === _currentLabelAsString(ownProps);
+
+  const category = categoricalSelection[metadataField];
+  const label = categorySummary.categoryValues[categoryIndex];
+  const isSelected = category.get(label) ?? true;
+
   return {
-    categoricalSelection,
     annotations: state.annotations,
-    colorScale: state.colors.scale,
-    colorAccessor: state.colors.colorAccessor,
-    schema: state.world?.schema,
-    world: state.world,
-    crossfilter: state.crossfilter,
+    schema: state.annoMatrix?.schema,
     ontology: state.ontology,
     isDilated,
+    isSelected,
+    label,
   };
 })
 class CategoryValue extends React.Component {
@@ -60,14 +64,8 @@ class CategoryValue extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    const {
-      categoricalSelection,
-      metadataField,
-      categoryIndex,
-      categorySummary,
-    } = this.props;
+    const { metadataField, categoryIndex, categorySummary } = this.props;
     if (
-      prevProps.categoricalSelection !== categoricalSelection ||
       prevProps.metadataField !== metadataField ||
       prevProps.categoryIndex !== categoryIndex ||
       prevProps.categorySummary !== categorySummary
@@ -86,59 +84,36 @@ class CategoryValue extends React.Component {
     return colorAccessor && !isColorBy && !annotations.isEditingLabelName;
   }
 
-  getLabel() {
-    const { categoryIndex, categorySummary } = this.props;
-    const label = categorySummary.categoryValues[categoryIndex];
-    return label;
-  }
-
   handleDeleteValue = () => {
-    const { dispatch, metadataField } = this.props;
-    const label = this.getLabel();
-    dispatch({
-      type: "annotation: delete label",
-      metadataField,
-      label,
-    });
+    const { dispatch, metadataField, label } = this.props;
+    dispatch(actions.annotationDeleteLabelFromCategory(metadataField, label));
   };
 
   handleAddCurrentSelectionToThisLabel = () => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
-    const label = this.getLabel();
-    dispatch({
-      type: "annotation: label current cell selection",
-      metadataField,
-      categoryIndex,
-      label,
-    });
+    const { dispatch, metadataField, label } = this.props;
+    dispatch(actions.annotationLabelCurrentSelection(metadataField, label));
   };
 
   handleEditValue = (e) => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
+    const { dispatch, metadataField, label } = this.props;
     const { editedLabelText } = this.state;
-    const label = this.getLabel();
     this.cancelEditMode();
-    dispatch({
-      type: "annotation: label edited",
-      editedLabel: editedLabelText,
-      metadataField,
-      categoryIndex,
-      label,
-    });
+    dispatch(
+      actions.annotationRenameLabelInCategory(
+        metadataField,
+        label,
+        editedLabelText
+      )
+    );
     e.preventDefault();
   };
 
   handleCreateArbitraryLabel = (txt) => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
-    const label = this.getLabel();
+    const { dispatch, metadataField, label } = this.props;
     this.cancelEditMode();
-    dispatch({
-      type: "annotation: label edited",
-      metadataField,
-      editedLabel: txt,
-      categoryIndex,
-      label,
-    });
+    dispatch(
+      actions.annotationRenameLabelInCategory(metadataField, label, txt)
+    );
   };
 
   labelNameError = (name) => {
@@ -152,8 +127,7 @@ class CategoryValue extends React.Component {
   };
 
   activateEditLabelMode = () => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
-    const label = this.getLabel();
+    const { dispatch, metadataField, categoryIndex, label } = this.props;
     dispatch({
       type: "annotation: activate edit label mode",
       metadataField,
@@ -163,8 +137,7 @@ class CategoryValue extends React.Component {
   };
 
   cancelEditMode = () => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
-    const label = this.getLabel();
+    const { dispatch, metadataField, categoryIndex, label } = this.props;
     this.setState({
       editedLabelText: this.currentLabelAsString(),
     });
@@ -183,15 +156,16 @@ class CategoryValue extends React.Component {
       categoryIndex,
       categorySummary,
     } = this.props;
-    const labels = categorySummary.categoryValues;
-    const label = labels[categoryIndex];
-    dispatch({
-      type: "categorical metadata filter deselect",
-      metadataField,
-      categoryIndex,
-      label,
-      labels,
-    });
+    const label = categorySummary.categoryValues[categoryIndex];
+    dispatch(
+      actions.selectCategoricalMetadataAction(
+        "categorical metadata filter deselect",
+        metadataField,
+        categorySummary.allCategoryValues,
+        label,
+        false
+      )
+    );
   };
 
   shouldComponentUpdate = (nextProps, nextState) => {
@@ -205,30 +179,20 @@ class CategoryValue extends React.Component {
     If and only if true, update the component
     */
     const { props, state } = this;
-    const {
-      metadataField,
-      categoryIndex,
-      categoricalSelection,
-      categorySummary,
-    } = props;
+    const { categoryIndex, categorySummary, isSelected } = props;
     const {
       categoryIndex: newCategoryIndex,
-      categoricalSelection: newCategoricalSelection,
       categorySummary: newCategorySummary,
+      isSelected: newIsSelected,
     } = nextProps;
 
     const label = categorySummary.categoryValues[categoryIndex];
     const newLabel = newCategorySummary.categoryValues[newCategoryIndex];
     const labelChanged = label !== newLabel;
-    const valueSelectionChange =
-      categoricalSelection[metadataField].get(label) !==
-      newCategoricalSelection[metadataField].get(newLabel);
+    const valueSelectionChange = isSelected !== newIsSelected;
 
-    const worldChange = props.world !== nextProps.world;
     const colorAccessorChange = props.colorAccessor !== nextProps.colorAccessor;
     const annotationsChange = props.annotations !== nextProps.annotations;
-    const crossfilterChange =
-      props.isUserAnno && props.crossfilter !== nextProps.crossfilter;
     const editingLabel = state.editedLabelText !== nextState.editedLabelText;
     const dilationChange = props.isDilated !== nextProps.isDilated;
 
@@ -239,10 +203,8 @@ class CategoryValue extends React.Component {
     return (
       labelChanged ||
       valueSelectionChange ||
-      worldChange ||
       colorAccessorChange ||
       annotationsChange ||
-      crossfilterChange ||
       editingLabel ||
       dilationChange ||
       countChanged
@@ -256,20 +218,20 @@ class CategoryValue extends React.Component {
       categoryIndex,
       categorySummary,
     } = this.props;
-    const labels = categorySummary.categoryValues;
-    const label = labels[categoryIndex];
-    dispatch({
-      type: "categorical metadata filter select",
-      metadataField,
-      categoryIndex,
-      label,
-      labels,
-    });
+    const label = categorySummary.categoryValues[categoryIndex];
+    dispatch(
+      actions.selectCategoricalMetadataAction(
+        "categorical metadata filter select",
+        metadataField,
+        categorySummary.allCategoryValues,
+        label,
+        true
+      )
+    );
   };
 
   handleMouseEnter = () => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
-    const label = this.getLabel();
+    const { dispatch, metadataField, categoryIndex, label } = this.props;
     dispatch({
       type: "category value mouse hover start",
       metadataField,
@@ -279,8 +241,7 @@ class CategoryValue extends React.Component {
   };
 
   handleMouseExit = () => {
-    const { dispatch, metadataField, categoryIndex } = this.props;
-    const label = this.getLabel();
+    const { dispatch, metadataField, categoryIndex, label } = this.props;
     dispatch({
       type: "category value mouse hover end",
       metadataField,
@@ -299,10 +260,11 @@ class CategoryValue extends React.Component {
   };
 
   createHistogramBins = (
-    world,
     metadataField,
+    categoryData,
     colorAccessor,
-    value,
+    colorData,
+    categoryValue,
     width,
     height
   ) => {
@@ -311,12 +273,8 @@ class CategoryValue extends React.Component {
       createHistogramBins fetches the continuous data in relation to the cells relevant to the category value.
       It then separates that data into 50 bins for drawing the mini-histogram
     */
-    const groupBy = world.obsAnnotations.col(metadataField);
-
-    const col =
-      world.obsAnnotations.col(colorAccessor) ||
-      world.varData.col(colorAccessor);
-
+    const groupBy = categoryData.col(metadataField);
+    const col = colorData.icol(0);
     const range = col.summarize();
 
     const histogramMap = col.histogram(
@@ -325,8 +283,8 @@ class CategoryValue extends React.Component {
       groupBy
     ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
 
-    const bins = histogramMap.has(value)
-      ? histogramMap.get(value)
+    const bins = histogramMap.has(categoryValue)
+      ? histogramMap.get(categoryValue)
       : new Array(50).fill(0);
 
     const xScale = d3.scaleLinear().domain([0, bins.length]).range([0, width]);
@@ -343,10 +301,13 @@ class CategoryValue extends React.Component {
   };
 
   createStackedGraphBins = (
-    world,
     metadataField,
+    categoryData,
     colorAccessor,
+    colorData,
     categoryValue,
+    colorTable,
+    schema,
     width
   ) => {
     /*
@@ -354,10 +315,8 @@ class CategoryValue extends React.Component {
       createOccupancyStack obtains a map showing the number if cells per colored value
       Using the colorScale a stack of colored bars is drawn representing the map
      */
-    const { schema } = world;
-
-    const groupBy = world.obsAnnotations.col(metadataField);
-    const occupancyMap = world.obsAnnotations
+    const groupBy = categoryData.col(metadataField);
+    const occupancyMap = colorData
       .col(colorAccessor)
       .histogramCategorical(groupBy);
 
@@ -373,7 +332,7 @@ class CategoryValue extends React.Component {
       const categories =
         schema.annotations.obsByName[colorAccessor]?.categories;
 
-      const dfColumn = world.obsAnnotations.col(colorAccessor);
+      const dfColumn = colorData.col(colorAccessor);
       const categoryValues = dfColumn.summarizeCategorical().categories;
 
       return {
@@ -390,13 +349,13 @@ class CategoryValue extends React.Component {
     return _currentLabelAsString(this.props);
   }
 
-  isAddCurrentSelectionDisabled(category, value) {
+  isAddCurrentSelectionDisabled(crossfilter, category, value) {
     /*
     disable "add current selection to label", if one of the following is true:
     1. no cells are selected
     2. all currently selected cells already have this label, on this category
     */
-    const { crossfilter, world } = this.props;
+    const { categoryData } = this.props;
 
     // 1. no cells selected?
     if (crossfilter.countSelected() === 0) {
@@ -405,12 +364,7 @@ class CategoryValue extends React.Component {
     // 2. all selected cells already have the label
     const mask = crossfilter.allSelectedMask();
     if (
-      AnnotationsHelpers.allHaveLabelByMask(
-        world.obsAnnotations,
-        category,
-        value,
-        mask
-      )
+      AnnotationsHelpers.allHaveLabelByMask(categoryData, category, value, mask)
     ) {
       return true;
     }
@@ -418,20 +372,21 @@ class CategoryValue extends React.Component {
     return false;
   }
 
-  renderMiniStackedBar = (categoryValue) => {
+  renderMiniStackedBar = () => {
     const {
-      categoricalSelection,
       colorAccessor,
-      colorScale,
       metadataField,
-      world,
+      categoryData,
+      colorData,
+      colorTable,
+      schema,
+      label,
     } = this.props;
-
     const isColorBy = metadataField === colorAccessor;
 
     if (
       !this.shouldRenderStackedBarOrHistogram ||
-      !categoricalSelection[colorAccessor] ||
+      !AnnotationsHelpers.isCategoricalAnnotation(schema, colorAccessor) ||
       isColorBy
     ) {
       return null;
@@ -439,10 +394,13 @@ class CategoryValue extends React.Component {
 
     const { domainValues, scale, domain, occupancy } =
       this.createStackedGraphBins(
-        world,
         metadataField,
+        categoryData,
         colorAccessor,
-        categoryValue,
+        colorData,
+        label,
+        colorTable,
+        schema,
         CHART_WIDTH
       ) ?? {};
 
@@ -454,7 +412,7 @@ class CategoryValue extends React.Component {
       <MiniStackedBar
         /* eslint-disable react/jsx-props-no-spreading -- Disable unneeded on next release of eslint-config-airbnb */
         {...{
-          colorScale,
+          colorTable,
           domainValues,
           scale,
           domain,
@@ -467,31 +425,37 @@ class CategoryValue extends React.Component {
     );
   };
 
-  renderMiniHistogram = (categoryValue) => {
+  renderMiniHistogram = () => {
     const {
-      categoricalSelection,
       colorAccessor,
-      colorScale,
-      world,
       metadataField,
+      colorData,
+      categoryData,
+      colorTable,
+      schema,
+      label,
     } = this.props;
+    const colorScale = colorTable?.scale;
 
     if (
       !this.shouldRenderStackedBarOrHistogram ||
-      categoricalSelection[colorAccessor]
+      !AnnotationsHelpers.isContinuousAnnotation(schema, colorAccessor)
     ) {
       return null;
     }
 
     const { xScale, yScale, bins } =
       this.createHistogramBins(
-        world,
         metadataField,
+        categoryData,
         colorAccessor,
-        categoryValue,
+        colorData,
+        label,
         CHART_WIDTH,
         VALUE_HEIGHT
-      ) ?? {};
+      ) ?? {}; // if createHistogramBins returns empty object assign null to deconstructed
+
+    if (!xScale || !yScale || !bins) return null;
 
     return (
       <MiniHistogram
@@ -504,7 +468,7 @@ class CategoryValue extends React.Component {
         }}
         /* eslint-enable react/jsx-props-no-spreading -- enable */
         obsOrVarContinuousFieldDisplayName={colorAccessor}
-        domainLabel={categoryValue}
+        domainLabel={label}
         height={VALUE_HEIGHT}
         width={CHART_WIDTH}
       />
@@ -513,41 +477,29 @@ class CategoryValue extends React.Component {
 
   render() {
     const {
-      categoricalSelection,
       metadataField,
       categoryIndex,
       colorAccessor,
-      colorScale,
-      i,
-      schema,
+      colorTable,
       isUserAnno,
       annotations,
       ontology,
-      // flippedProps is potentially brittle, their docs want {...flippedProps} on our div,
-      // our lint doesn't like jsx spread, we are version pinned to prevent api change on their part
-      flippedProps,
       isDilated,
+      isSelected,
       categorySummary,
+      label,
     } = this.props;
+    const colorScale = colorTable?.scale;
     const ontologyEnabled = ontology?.enabled ?? false;
 
     const { editedLabelText } = this.state;
 
-    if (!categoricalSelection) return null;
-
-    const category = categoricalSelection[metadataField];
-    const selected = category.get(this.getLabel()) ?? true;
     const count = categorySummary.categoryValueCounts[categoryIndex];
-    const value = categorySummary.categoryValues[categoryIndex];
     const displayString = this.currentLabelAsString();
 
     /* this is the color scale, so add swatches below */
     const isColorBy = metadataField === colorAccessor;
-    let categories = null;
-
-    if (isColorBy && schema) {
-      categories = schema.annotations.obsByName[colorAccessor]?.categories;
-    }
+    const { categoryValueIndices } = categorySummary;
 
     const editModeActive =
       isUserAnno &&
@@ -555,7 +507,7 @@ class CategoryValue extends React.Component {
       annotations.isEditingLabelName &&
       annotations.labelEditable.label === categoryIndex;
 
-    const valueToggleLabel = `value-toggle-checkbox-${displayString}`;
+    const valueToggleLabel = `value-toggle-checkbox-${metadataField}-${displayString}`;
 
     const LEFT_MARGIN = 60;
     const CHECKBOX = 26;
@@ -581,10 +533,6 @@ class CategoryValue extends React.Component {
 
     return (
       <div
-        key={i}
-        data-flip-config={flippedProps["data-flip-config"]}
-        data-flip-id={flippedProps["data-flip-id"]}
-        data-portal-key={flippedProps["data-portal-key"]}
         className={
           /* This code is to change the styles on centroid label hover is causing over-rendering */
           `${styles.value}${isDilated ? ` ${styles.hover}` : ""}`
@@ -619,10 +567,10 @@ class CategoryValue extends React.Component {
             >
               <input
                 id={valueToggleLabel}
-                onChange={selected ? this.toggleOff : this.toggleOn}
+                onChange={isSelected ? this.toggleOff : this.toggleOn}
                 data-testclass="categorical-value-select"
                 data-testid={`categorical-value-select-${metadataField}-${displayString}`}
-                checked={selected}
+                checked={isSelected}
                 type="checkbox"
               />
               <span
@@ -695,8 +643,8 @@ class CategoryValue extends React.Component {
             ) : null}
           </div>
           <span style={{ flexShrink: 0 }}>
-            {this.renderMiniStackedBar(value)}
-            {this.renderMiniHistogram(value)}
+            {this.renderMiniStackedBar()}
+            {this.renderMiniHistogram()}
           </span>
         </div>
         <div>
@@ -719,14 +667,14 @@ class CategoryValue extends React.Component {
             </span>
 
             <svg
-              display={isColorBy && categories ? "auto" : "none"}
+              display={isColorBy && categoryValueIndices ? "auto" : "none"}
               style={{
                 marginLeft: 5,
                 width: VALUE_HEIGHT,
                 height: VALUE_HEIGHT,
                 backgroundColor:
-                  isColorBy && categories
-                    ? colorScale(categories.indexOf(value))
+                  isColorBy && categoryValueIndices
+                    ? colorScale(categoryValueIndices.get(label))
                     : "inherit",
               }}
             />
@@ -741,32 +689,37 @@ class CategoryValue extends React.Component {
                   position={Position.RIGHT_TOP}
                   content={
                     <Menu>
-                      <MenuItem
-                        icon="plus"
-                        data-testclass="handleAddCurrentSelectionToThisLabel"
-                        data-testid={`${metadataField}:${displayString}:add-current-selection-to-this-label`}
-                        onClick={this.handleAddCurrentSelectionToThisLabel}
-                        text={
-                          <span>
-                            Re-label currently selected cells as
-                            <span
-                              style={{
-                                fontStyle:
-                                  displayString ===
-                                  globals.unassignedCategoryLabel
-                                    ? "italic"
-                                    : "auto",
-                              }}
-                            >
-                              {` ${displayString}`}
-                            </span>
-                          </span>
-                        }
-                        disabled={this.isAddCurrentSelectionDisabled(
-                          metadataField,
-                          value
+                      <CategoryCrossfilterContext.Consumer>
+                        {(crossfilter) => (
+                          <MenuItem
+                            icon="plus"
+                            data-testclass="handleAddCurrentSelectionToThisLabel"
+                            data-testid={`${metadataField}:${displayString}:add-current-selection-to-this-label`}
+                            onClick={this.handleAddCurrentSelectionToThisLabel}
+                            text={
+                              <span>
+                                Re-label currently selected cells as
+                                <span
+                                  style={{
+                                    fontStyle:
+                                      displayString ===
+                                      globals.unassignedCategoryLabel
+                                        ? "italic"
+                                        : "auto",
+                                  }}
+                                >
+                                  {` ${displayString}`}
+                                </span>
+                              </span>
+                            }
+                            disabled={this.isAddCurrentSelectionDisabled(
+                              crossfilter,
+                              metadataField,
+                              label
+                            )}
+                          />
                         )}
-                      />
+                      </CategoryCrossfilterContext.Consumer>
                       {displayString !== globals.unassignedCategoryLabel ? (
                         <MenuItem
                           icon="edit"

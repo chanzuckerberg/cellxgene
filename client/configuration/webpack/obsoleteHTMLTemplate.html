@@ -1,0 +1,82 @@
+<script>
+  /** Reflect ANY changes to this script in the script hash in `server/eb/app.py` **/
+  var root = document.getElementById("root");
+  root.remove();
+  var portals = document.getElementsByClassName("bp3-portal");
+  for (var i = 0; i < portals.length; i += 1) {
+    portals[i].remove();
+  }
+</script>
+<div
+  style="
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    background: #8080801a;
+    font-family: 'Roboto Condensed, sans serif';
+  "
+>
+  <img
+    src="https://cellxgene.cziscience.com/s3/cellxgene/static/images/cellxgene-logo.png"
+    style="width: 320px;"
+  />
+  <div
+    style="
+      margin-top: 16px;
+      background: white;
+      width: 40vw;
+      border-radius: 4px;
+      padding: 24px 64px;
+      -webkit-box-shadow: 0px 0px 3px 2px rgba(0, 0, 0, 0.38);
+      -moz-box-shadow: 0px 0px 3px 2px rgba(0, 0, 0, 0.38);
+      box-shadow: 0px 0px 3px 2px rgba(0, 0, 0, 0.38);
+      max-width: 550px;
+    "
+  >
+    <div style="margin-bottom: 0; font-weight: bolder; font-size: 1.2em;">
+      Unsupported Browser
+    </div>
+    <div style="margin-top: 0;">
+      cellxgene is currently supported on the following browsers
+    </div>
+    <div
+      style="display: flex; justify-content: space-around; margin-top: 16px;"
+    >
+      <a
+        href="https://www.google.com/chrome/?hl=en%22"
+        aria-label="Download Google Chrome"
+      >
+        <img
+          src="https://cellxgene.cziscience.com/s3/cellxgene/static/images/chrome.png"
+          style="width: 80px; height: 80px;"
+        />
+        <div>Chrome &gt; 60</div>
+      </a>
+      <a href="https://www.apple.com/safari/" aria-label="Download Safari">
+        <img
+          src="https://cellxgene.cziscience.com/s3/cellxgene/static/images/safari.png"
+          style="width: 80px; height: 80px;"
+        />
+        <div>Safari ≥ 10.1</div>
+      </a>
+      <a href="https://www.mozilla.com/firefox/" aria-label="Download Firefox">
+        <img
+          src="https://cellxgene.cziscience.com/s3/cellxgene/static/images/firefox.png"
+          style="width: 80px; height: 80px;"
+        />
+        <div>Firefox ≥ 60</div>
+      </a>
+      <a href="//www.microsoft.com/edge" aria-label="Download Edge">
+        <img
+          src="https://cellxgene.cziscience.com/s3/cellxgene/static/images/edge.png"
+          style="width: 80px; height: 80px;"
+        />
+        <div>Edge ≥ 79</div>
+      </a>
+    </div>
+  </div>
+</div>

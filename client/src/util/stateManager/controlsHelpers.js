@@ -7,10 +7,6 @@ import _ from "lodash";
 import * as globals from "../../globals";
 import { rangeFill as fillRange } from "../range";
 import fromEntries from "../fromEntries";
-import {
-  userDefinedDimensionName,
-  diffexpDimensionName,
-} from "../nameCreators";
 import { isCategoricalAnnotation } from "./annotationsHelpers";
 
 /*
@@ -40,33 +36,40 @@ Remember that option values can be ANY js type, except undefined/null.
   }
 */
 function topNCategories(colSchema, summary, N) {
-  /* return top N by occurrences in the data, preserving original category order */
-  const { categories } = colSchema;
-  const counts = categories.map((cat) => summary.categoryCounts.get(cat) ?? 0);
+  /* return top N categories by occurrences in the data */
+  const { categories: allCategories } = colSchema;
+  const counts = allCategories.map(
+    (cat) => summary.categoryCounts.get(cat) ?? 0
+  );
 
-  if (categories.length <= N) {
-    return [categories, counts];
+  if (allCategories.length <= N) {
+    return [allCategories, allCategories, counts];
   }
 
-  const sortIndex = fillRange(new Array(categories.length)).sort(
+  const sortIndex = fillRange(new Array(allCategories.length)).sort(
     (a, b) => counts[b] - counts[a]
   );
   const topNindices = new Set(sortIndex.slice(0, N));
 
   const _topNCategories = [];
   const topNCounts = [];
-  for (let i = 0; i < categories.length; i += 1) {
+  for (let i = 0; i < allCategories.length; i += 1) {
     if (topNindices.has(i)) {
-      _topNCategories.push(categories[i]);
+      _topNCategories.push(allCategories[i]);
       topNCounts.push(counts[i]);
     }
   }
-  return [_topNCategories, topNCounts];
+  return [allCategories, _topNCategories, topNCounts];
 }
 
 export function isSelectableCategoryName(schema, name) {
   const { index } = schema.annotations.obs;
-  return name && name !== index && isCategoricalAnnotation(schema, name);
+  const colSchema = schema.annotations.obsByName[name];
+  return (
+    name &&
+    name !== index &&
+    (isCategoricalAnnotation(schema, name) || colSchema.writable)
+  );
 }
 
 export function selectableCategoryNames(schema, names) {
@@ -81,72 +84,38 @@ export function selectableCategoryNames(schema, names) {
   return names.filter((name) => isSelectableCategoryName(schema, name));
 }
 
-export function createCategorySummary(world, name) {
+export function createCategorySummaryFromDfCol(dfCol, colSchema) {
   const N = globals.maxCategoricalOptionsToDisplay;
-  const { obsAnnotations, schema } = world;
-
-  const colSchema = schema.annotations.obsByName[name];
   const { writable: isUserAnno } = colSchema;
 
   /*
-  Summarize the annotation data currently in world.  Must return categoryValues
-  in sorted order, and must include all category values even if they are not
-  actively used in the current world.
+  Summarize the annotation data currently in dataframe column.  Must return
+  categoryValues in sorted order, and must include all category values even
+  if they are not actively used in the current annoMatrix view.
   */
-  const summary = obsAnnotations.col(name).summarizeCategorical();
-  const [categoryValues, categoryValueCounts] = topNCategories(
-    colSchema,
-    summary,
-    N
-  );
+  const summary = dfCol.summarizeCategorical();
+  const [
+    allCategoryValues,
+    categoryValues,
+    categoryValueCounts,
+  ] = topNCategories(colSchema, summary, N);
   const categoryValueIndices = new Map(categoryValues.map((v, i) => [v, i]));
   const numCategoryValues = categoryValueIndices.size;
   const isTruncated = categoryValues.length < summary.numCategories;
 
   return {
-    categoryValues, // array: of natively typed category values
-    categoryValueIndices, // map: category value (native type) -> category index
-    numCategoryValues, // number: of values in the category
-    isTruncated, // bool: true if list was truncated
-    categoryValueCounts, // array: cardinality of each category,
+    allCategoryValues, // array: of natively typed category values (all of them)
+    categoryValues, // array: of natively typed category values (top N only)
+    categoryValueIndices, // map: category value (native type) -> category index (top N only)
+    numCategoryValues, // number: of values in the category (top N)
+    isTruncated, // bool: true if list was truncated (ie, if topN != all)
+    categoryValueCounts, // array: cardinality of each category, (top N)
     isUserAnno, // bool
   };
 }
 
 export function createCategoricalSelection(names) {
   return fromEntries(names.map((name) => [name, new Map()]));
-}
-
-/*
-build a crossfilter dimensions for all gene expression related dimensions.
-*/
-export function createGeneDimensions(
-  userDefinedGenes,
-  diffexpGenes,
-  world,
-  crossfilter
-) {
-  crossfilter = userDefinedGenes.reduce(
-    (xflt, gene) =>
-      xflt.addDimension(
-        userDefinedDimensionName(gene),
-        "scalar",
-        world.varData.col(gene).asArray(),
-        Float32Array
-      ),
-    crossfilter
-  );
-  crossfilter = diffexpGenes.reduce(
-    (xflt, gene) =>
-      xflt.addDimension(
-        diffexpDimensionName(gene),
-        "scalar",
-        world.varData.col(gene).asArray(),
-        Float32Array
-      ),
-    crossfilter
-  );
-  return crossfilter;
 }
 
 export function pruneVarDataCache(varData, needed) {

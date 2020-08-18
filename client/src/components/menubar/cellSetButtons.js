@@ -2,31 +2,19 @@
 import React from "react";
 import { AnchorButton, Tooltip } from "@blueprintjs/core";
 import { connect } from "react-redux";
-import { World } from "../../util/stateManager";
 import { tooltipHoverOpenDelay } from "../../globals";
+import actions from "../../actions";
 
-@connect()
+@connect((state) => ({
+  differential: state.differential,
+}))
 class CellSetButton extends React.PureComponent {
   set() {
-    const {
-      differential,
-      crossfilter,
-      dispatch,
-      eitherCellSetOneOrTwo,
-    } = this.props;
-
-    // Reducer and components assume that value will be null if
-    // no selection made.  World..getSelectedByIndex() returns a
-    // zero length TypedArray when nothing is selected.
-    let set = World.getSelectedByIndex(crossfilter);
-    if (set.length === 0) set = null;
+    const { differential, dispatch, eitherCellSetOneOrTwo } = this.props;
 
     if (!differential.diffExp) {
-      /* diffexp needs to be cleared before we store a new set */
-      dispatch({
-        type: `store current cell selection as differential set ${eitherCellSetOneOrTwo}`,
-        data: set,
-      });
+      // disallow this action if the user has active differential expression results
+      dispatch(actions.setCellSetFromSelection(eitherCellSetOneOrTwo));
     }
   }
 

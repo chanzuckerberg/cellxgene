@@ -6,8 +6,14 @@ import { postNetworkErrorToast } from "../components/framework/toasters";
 dispatch an action error to the user.   Currently we use
 async toasts.
 */
-export const dispatchNetworkErrorMessageToUser = (message) =>
-  postNetworkErrorToast(message);
+let networkErrorToastKey = null;
+export const dispatchNetworkErrorMessageToUser = (message) => {
+  if (!networkErrorToastKey) {
+    networkErrorToastKey = postNetworkErrorToast(message);
+  } else {
+    postNetworkErrorToast(message, networkErrorToastKey);
+  }
+};
 
 /*
 Catch unexpected errors and make sure we don't lose them!

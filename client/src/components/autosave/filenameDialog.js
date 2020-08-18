@@ -11,13 +11,10 @@ import {
 } from "@blueprintjs/core";
 
 @connect((state) => ({
-  universe: state.universe,
   idhash: state.config?.parameters?.["annotations-user-data-idhash"] ?? null,
   annotations: state.annotations,
-  obsAnnotations: state.universe.obsAnnotations,
-  saveInProgress: state.autosave?.saveInProgress ?? false,
-  lastSavedObsAnnotations: state.autosave?.lastSavedObsAnnotations,
-  error: state.autosave?.error,
+  auth: state.config?.authentication,
+  userinfo: state.userinfo,
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
 }))
 class FilenameDialog extends React.Component {
@@ -95,12 +92,18 @@ class FilenameDialog extends React.Component {
   };
 
   render() {
-    const { writableCategoriesEnabled, annotations, idhash } = this.props;
+    const {
+      writableCategoriesEnabled,
+      annotations,
+      idhash,
+      userinfo,
+    } = this.props;
     const { filenameText } = this.state;
 
     return writableCategoriesEnabled &&
       !annotations.dataCollectionNameIsReadOnly &&
-      !annotations.dataCollectionName ? (
+      !annotations.dataCollectionName &&
+      userinfo.is_authenticated ? (
       <Dialog
         icon="tag"
         title="Annotations Collection"
