@@ -158,7 +158,7 @@ try:
 
     # features are unsupported in the current hosted server
     app_config.update_default_dataset_config(
-        user_annotations__enable=False, embeddings__enable_reembedding=False,
+        embeddings__enable_reembedding=False,
     )
     app_config.update_server_config(multi_dataset__allowed_matrix_types=["cxg"],)
     app_config.complete_config(logging.info)
