@@ -1,14 +1,16 @@
+import os
+import tempfile
 import unittest
-from server.data_common.matrix_loader import MatrixDataLoader
-from server.test import PROJECT_ROOT, app_config, FIXTURES_ROOT
+
+import numpy as np
+
 import server.compute.diffexp_cxg as diffexp_cxg
 import server.compute.diffexp_generic as diffexp_generic
-from server.converters.cxgtool import write_cxg, create_cxg_group_metadata
-from server.test.performance.create_test_matrix import create_test_h5ad
+from server.converters.h5ad_data_file import H5ADDataFile
 from server.data_common.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
-import numpy as np
-import tempfile
-import os
+from server.data_common.matrix_loader import MatrixDataLoader
+from server.test import PROJECT_ROOT, app_config, FIXTURES_ROOT
+from server.test.performance.create_test_matrix import create_test_h5ad
 
 
 class DiffExpTest(unittest.TestCase):
@@ -98,21 +100,22 @@ class DiffExpTest(unittest.TestCase):
     def sparse_diffexp(self, apply_col_shift):
         with tempfile.TemporaryDirectory() as dirname:
             # create a sparse matrix
-            h5adfile = os.path.join(dirname, "sparse.h5ad")
-            create_test_h5ad(h5adfile, 2000, 2000, 10, apply_col_shift)
-            adaptor_anndata = self.load_dataset(h5adfile, extra_dataset_config=dict(embeddings__names=[]))
-            adata = adaptor_anndata.data
+            h5adfile_path = os.path.join(dirname, "sparse.h5ad")
+            create_test_h5ad(h5adfile_path, 2000, 2000, 10, apply_col_shift)
+
+            h5ad_file_to_convert = H5ADDataFile(h5adfile_path, use_corpora_schema=False)
 
             sparsename = os.path.join(dirname, "sparse.cxg")
-            cxg_group_metadata = create_cxg_group_metadata(adata=adata, basefname="sparse.h5ad", title="sparse",)
-            write_cxg(adata=adata, container=sparsename, cxg_group_metadata=cxg_group_metadata, sparse_threshold=11)
+            h5ad_file_to_convert.to_cxg(sparsename, 11, True)
+
+            adaptor_anndata = self.load_dataset(h5adfile_path, extra_dataset_config=dict(embeddings__names=[]))
+
             adaptor_sparse = self.load_dataset(sparsename)
             assert adaptor_sparse.open_array("X").schema.sparse
             assert adaptor_sparse.has_array("X_col_shift") == apply_col_shift
 
             densename = os.path.join(dirname, "dense.cxg")
-            cxg_group_metadata = create_cxg_group_metadata(adata=adata, basefname="dense.h5ad", title="dense",)
-            write_cxg(adata=adata, container=densename, cxg_group_metadata=cxg_group_metadata, sparse_threshold=0)
+            h5ad_file_to_convert.to_cxg(densename, True, 0)
             adaptor_dense = self.load_dataset(densename)
             assert not adaptor_dense.open_array("X").schema.sparse
             assert not adaptor_dense.has_array("X_col_shift")

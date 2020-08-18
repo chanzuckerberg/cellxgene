@@ -768,7 +768,7 @@ class DatasetConfig(BaseConfig):
             self.user_annotations__ontology__obo_location = dc["user_annotations"]["ontology"]["obo_location"]
             self.user_annotations__hosted_tiledb_array__db_uri = dc["user_annotations"]["hosted_tiledb_array"]["db_uri"]
             self.user_annotations__hosted_tiledb_array__hosted_file_directory = \
-            dc["user_annotations"]["hosted_tiledb_array"]["hosted_file_directory"]  # noqa E501
+                dc["user_annotations"]["hosted_tiledb_array"]["hosted_file_directory"]  # noqa E501
 
             self.embeddings__names = dc["embeddings"]["names"]
             self.embeddings__enable_reembedding = dc["embeddings"]["enable_reembedding"]

@@ -4,6 +4,17 @@ import numpy as np
 import pandas as pd
 
 
+def get_dtypes_and_schemas_of_dataframe(dataframe: pd.DataFrame):
+    dtypes_by_column_name = {}
+    schema_type_hints_by_column_name = {}
+
+    for column_name, column_values in dataframe.items():
+        dtypes_by_column_name[column_name], schema_type_hints_by_column_name[column_name] = \
+            get_dtype_and_schema_of_array(column_values)
+
+    return dtypes_by_column_name, schema_type_hints_by_column_name
+
+
 def get_dtype_of_array(array: pd.Series):
     return get_dtype_and_schema_of_array(array)[0]
 

@@ -1,9 +1,10 @@
-import unittest
-import anndata
 import json
-import tempfile
 import shutil
+import tempfile
+import unittest
 from http import HTTPStatus
+
+import anndata
 import requests
 
 from server.common.corpora import (
@@ -104,7 +105,7 @@ class CorporaRESTAPITest(unittest.TestCase):
             "project_links": json.dumps([
                 {"link_name": "test link", "link_type": "SUMMARY", "link_url": "https://a.u.r.l/"}
             ]),
-            "default_embedding": "X_tsne"
+            "default_embedding": "X_tsne",
         }
         adata.uns.update(corpora_props)
         adata.write(path)
