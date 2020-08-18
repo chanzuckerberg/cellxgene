@@ -2,12 +2,15 @@
 Script to create a sparse dataset in CXG format based on an input dataset in CXG format.
 The input dataset is not modified.
 """
+import argparse
 import os
 import shutil
-import tiledb
-import argparse
 import sys
-import server.converters.cxgtool as cxgtool
+
+import tiledb
+
+from server.common.utils.cxg_generation_utils import convert_ndarray_to_cxg_dense_array, convert_matrix_to_cxg_array
+from server.common.utils.matrix_utils import is_matrix_sparse, get_column_shift_encode_for_matrix
 
 
 def main():
@@ -49,9 +52,25 @@ def main():
     )
 
     with tiledb.DenseArray(os.path.join(args.input, "X"), mode="r", ctx=ctx) as X_in:
-        is_sparse = cxgtool.save_X(args.output, X_in, ctx, args.sparse_threshold, expect_sparse=True)
+        x_matrix_data = X_in[:, :]
+        matrix_container = args.output
 
-    if is_sparse is False:
+        is_sparse = is_matrix_sparse(x_matrix_data, args.sparse_threshold)
+        if not is_sparse:
+            col_shift = get_column_shift_encode_for_matrix(x_matrix_data, args.sparse_threshold)
+            is_sparse = col_shift is not None
+        else:
+            col_shift = None
+
+        if col_shift is not None:
+            x_col_shift_name = f"{args.output}/X_col_shift"
+            convert_ndarray_to_cxg_dense_array(x_col_shift_name, col_shift, ctx)
+            tiledb.consolidate(matrix_container, ctx=ctx)
+        if is_sparse:
+            convert_matrix_to_cxg_array(matrix_container, x_matrix_data, is_sparse, ctx, col_shift)
+            tiledb.consolidate(matrix_container, ctx=ctx)
+
+    if not is_sparse:
         print("The array is not sparse, cleaning up, abort.")
         shutil.rmtree(args.output)
         sys.exit(1)
