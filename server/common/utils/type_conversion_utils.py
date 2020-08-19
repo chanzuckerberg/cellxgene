@@ -37,21 +37,19 @@ def get_dtype_from_dtype(dtype, array_values=None):
     dtype_name = dtype.name
     dtype_kind = dtype.kind
 
-    if dtype == np.float32 or dtype == np.int32:
-        return dtype
     if dtype_name == "bool":
         return np.uint8
     if dtype_name == "object" and dtype_kind == "O":
         return np.unicode
     if dtype_name == "category":
-        return get_dtype_from_dtype(dtype.categories.dtype, dtype.categories)
+        return get_dtype_from_dtype(dtype.categories.dtype, array_values)
 
-    if dtype_kind == "f" and can_cast_to_float32(dtype, array_values):
-        return np.float32
-    if dtype_kind == "f" and not can_cast_to_float32(dtype, array_values):
-        return np.float64
     if can_cast_to_int32(dtype, array_values):
         return np.int32
+    if can_cast_to_float32(dtype, array_values):
+        return np.float32
+    if not can_cast_to_float32(dtype, array_values):
+        return np.float64
 
     raise TypeError(f"Annotations of type {dtype} are unsupported.")
 
