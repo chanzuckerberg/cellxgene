@@ -13,27 +13,34 @@ class TestTypeConversionUtils(unittest.TestCase):
     def test__can_cast_to_float32__string_is_false(self):
         array_to_convert = Series(data=["1", "2", "3"], dtype=str)
 
-        can_cast = can_cast_to_float32(array_to_convert.dtype)
+        can_cast = can_cast_to_float32(array_to_convert.dtype, array_to_convert)
 
         self.assertFalse(can_cast)
 
-    def test__can_cast_to_float32__int_is_true_warning_outputted(self):
+    def test__can_cast_to_float32__float64_is_true_warning_outputted(self):
         array_to_convert = Series(data=[1, 2, 3], dtype=np.dtype(np.float64))
 
         with self.assertLogs(level="WARN") as logger:
-            can_cast = can_cast_to_float32(array_to_convert.dtype)
+            can_cast = can_cast_to_float32(array_to_convert.dtype, array_to_convert)
             self.assertIn("may lose precision", logger.output[0])
 
         self.assertTrue(can_cast)
 
     @patch("logging.warning")
-    def test__can_cast_to_float64__int_is_false(self, mock_log_warning):
+    def test__can_cast_to_float32__float32_is_false(self, mock_log_warning):
         array_to_convert = Series(data=[1, 2, 3], dtype=np.dtype(np.float32))
 
-        can_cast = can_cast_to_float32(array_to_convert.dtype)
+        can_cast = can_cast_to_float32(array_to_convert.dtype, array_to_convert)
 
         self.assertTrue(can_cast)
         assert not mock_log_warning.called
+
+    def test__can_cast_to_float32__categorical_float64_is_false(self):
+        array_to_convert = Series(data=[1.1, 2.2, 3.3], dtype="category")
+
+        can_cast = can_cast_to_float32(array_to_convert.dtype, array_to_convert)
+
+        self.assertFalse(can_cast)
 
     def test__can_cast_to_int32__string_is_false(self):
         array_to_convert = Series(data=["1", "2", "3"], dtype=str)
