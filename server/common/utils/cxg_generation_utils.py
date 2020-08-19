@@ -67,7 +67,6 @@ def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, ind
         schema_hints = {}
         for column_name, column_values in dataframe.items():
             dtype, hints = get_dtype_and_schema_of_array(column_values)
-
             value[column_name] = column_values.to_numpy(dtype=dtype)
             if hints:
                 schema_hints.update({column_name: hints})

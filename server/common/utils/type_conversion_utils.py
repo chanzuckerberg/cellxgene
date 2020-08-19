@@ -46,8 +46,10 @@ def get_dtype_from_dtype(dtype, array_values=None):
     if dtype_name == "category":
         return get_dtype_from_dtype(dtype.categories.dtype, dtype.categories)
 
-    if can_cast_to_float32(dtype):
+    if dtype_kind == "f" and can_cast_to_float32(dtype, array_values):
         return np.float32
+    if dtype_kind == "f" and not can_cast_to_float32(dtype, array_values):
+        return np.float64
     if can_cast_to_int32(dtype, array_values):
         return np.int32
 
@@ -72,18 +74,23 @@ def get_schema_type_hint_from_dtype(dtype, array_values=None):
     if dtype_name == "category":
         return {"type": "categorical", "categories": dtype.categories.tolist()}
 
-    if can_cast_to_float32(dtype):
+    if dtype_kind == "f" and can_cast_to_float32(dtype, array_values):
         return {"type": "float32"}
+    if dtype_kind == "f" and not can_cast_to_float32(dtype, array_values):
+        return {"type": "float64"}
     if can_cast_to_int32(dtype, array_values):
         return {"type": "int32"}
 
     raise TypeError(f"Annotations of type {dtype} are unsupported.")
 
 
-def can_cast_to_float32(dtype):
+def can_cast_to_float32(dtype, array_values):
     if dtype.kind == "f":
-        if not np.can_cast(dtype, np.float32):
-            logging.warning(f"Type {dtype.name} will be converted to 32 bit float and may lose precision.")
+        # Try to convert the array to float32
+        converted_float32_values = array_values.to_numpy(np.float32)
+        original_values = array_values.to_numpy()
+        if not (converted_float32_values == original_values).all():
+            return False
         return True
     return False
 
