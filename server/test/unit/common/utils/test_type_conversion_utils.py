@@ -1,9 +1,10 @@
 import unittest
+from time import time
 from unittest.mock import patch
 
 import numpy as np
 from pandas import Series, DataFrame
-from time import time
+
 from server.common.utils.type_conversion_utils import can_cast_to_float32, can_cast_to_int32, get_dtype_of_array, \
     get_schema_type_hint_of_array, get_dtypes_and_schemas_of_dataframe, convert_pandas_series_to_numpy
 
@@ -124,6 +125,8 @@ class TestTypeConversionUtils(unittest.TestCase):
 
         with self.assertRaises(TypeError) as exception_context:
             get_dtype_of_array(unsupported_array)
+
+        self.assertIn("unsupported", str(exception_context.exception))
 
     def test__get_schema_type_hint_of_array__supported_dtypes_return_as_expected(self):
         types = [np.float32, np.int32, np.bool_, str]
