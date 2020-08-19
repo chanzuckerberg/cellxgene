@@ -85,7 +85,7 @@ def serialize_typed_array(builder, source_array, encoding_info):
 def column_encoding(arr):
     column_encoding_type_map = {
         # array protocol string:  ( array_type, as_type )
-        np.dtype(np.float64).str: (TypedArray.TypedArray.Float32Array, np.float32),
+        np.dtype(np.float64).str: (TypedArray.TypedArray.Float64Array, np.float64),
         np.dtype(np.float32).str: (TypedArray.TypedArray.Float32Array, np.float32),
         np.dtype(np.float16).str: (TypedArray.TypedArray.Float32Array, np.float32),
         np.dtype(np.int8).str: (TypedArray.TypedArray.Int32Array, np.int32),
