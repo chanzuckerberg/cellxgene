@@ -76,7 +76,7 @@ def get_schema_type_hint_from_dtype(dtype, array_values=None):
         return {"type": "int32"}
     if can_cast_to_float32(dtype, array_values):
         return {"type": "float32"}
-    if not can_cast_to_float32(dtype, array_values):
+    if dtype_kind== "f" and not can_cast_to_float32(dtype, array_values):
         return {"type": "float64"}
 
     raise TypeError(f"Annotations of type {dtype} are unsupported.")

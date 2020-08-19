@@ -1,7 +1,6 @@
 import math
 import unittest
 import warnings
-from unittest.mock import patch
 
 import pytest
 
@@ -22,10 +21,10 @@ class NaNTest(unittest.TestCase):
             self.data = AnndataAdaptor(self.data_locator, self.config)
             self.data._create_schema()
 
-    @patch("logging.warning")
-    def test_load(self, mock_log_warning):
-        self.data = AnndataAdaptor(self.data_locator, self.config)
-        assert not mock_log_warning.called
+    def test_load(self):
+        with self.assertLogs(level="WARN") as logger:
+            self.data = AnndataAdaptor(self.data_locator, self.config)
+            self.assertTrue(logger.output)
 
     def test_init(self):
         self.assertEqual(self.data.cell_count, 100)

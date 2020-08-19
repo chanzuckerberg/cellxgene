@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import numpy as np
 from pandas import Series, DataFrame
-
+from time import time
 from server.common.utils.type_conversion_utils import can_cast_to_float32, can_cast_to_int32, get_dtype_of_array, \
     get_schema_type_hint_of_array, get_dtypes_and_schemas_of_dataframe, convert_pandas_series_to_numpy
 
@@ -101,16 +101,6 @@ class TestTypeConversionUtils(unittest.TestCase):
                 array = Series(data=[], dtype=types[test_type_index])
                 self.assertEqual(get_dtype_of_array(array), expected_dtypes[test_type_index])
 
-    def test__get_schema_type_hint_of_array__supported_dtypes_return_as_expected(self):
-        types = [np.float32, np.int32, np.bool_, str]
-        expected_schema_hints = [{"type": "float32"}, {"type": "int32"}, {"type": "boolean"}, {"type": "string"}]
-
-        for test_type_index in range(len(types)):
-            with self.subTest(f"Testing get_schema_type_hint_of_array with type {types[test_type_index].__name__}",
-                              i=test_type_index):
-                array = Series(data=[], dtype=types[test_type_index])
-                self.assertEqual(get_schema_type_hint_of_array(array), expected_schema_hints[test_type_index])
-
     def test__get_dtype_of_array__categories_return_as_expected(self):
         array = Series(data=["a", "b", "c"], dtype="category")
         expected_dtype = np.unicode
@@ -118,14 +108,6 @@ class TestTypeConversionUtils(unittest.TestCase):
         actual_dtype = get_dtype_of_array(array)
 
         self.assertEqual(expected_dtype, actual_dtype)
-
-    def test__get_schema_type_hint_of_array__categories_return_as_expected(self):
-        array = Series(data=["a", "b", "b"], dtype="category")
-        expected_schema_hint = {"type": "categorical", "categories": ["a", "b"]}
-
-        actual_schema_hint = get_schema_type_hint_of_array(array)
-
-        self.assertEqual(expected_schema_hint, actual_schema_hint)
 
     def test__get_dtype_of_array__castable_dtypes_return_as_expected(self):
         types = [np.float64, np.int64]
@@ -136,6 +118,30 @@ class TestTypeConversionUtils(unittest.TestCase):
                               i=test_type_index):
                 array = Series(data=[], dtype=types[test_type_index])
                 self.assertEqual(get_dtype_of_array(array), expected_dtypes[test_type_index])
+
+    def test__get_dtype_of_array__unsupported_type_raises_exception(self):
+        unsupported_array = Series(list([time() for _ in range(2)]), dtype="datetime64[ns]")
+
+        with self.assertRaises(TypeError) as exception_context:
+            get_dtype_of_array(unsupported_array)
+
+    def test__get_schema_type_hint_of_array__supported_dtypes_return_as_expected(self):
+        types = [np.float32, np.int32, np.bool_, str]
+        expected_schema_hints = [{"type": "float32"}, {"type": "int32"}, {"type": "boolean"}, {"type": "string"}]
+
+        for test_type_index in range(len(types)):
+            with self.subTest(f"Testing get_schema_type_hint_of_array with type {types[test_type_index].__name__}",
+                              i=test_type_index):
+                array = Series(data=[], dtype=types[test_type_index])
+                self.assertEqual(get_schema_type_hint_of_array(array), expected_schema_hints[test_type_index])
+
+    def test__get_schema_type_hint_of_array__categories_return_as_expected(self):
+        array = Series(data=["a", "b", "b"], dtype="category")
+        expected_schema_hint = {"type": "categorical", "categories": ["a", "b"]}
+
+        actual_schema_hint = get_schema_type_hint_of_array(array)
+
+        self.assertEqual(expected_schema_hint, actual_schema_hint)
 
     def test__get_schema_type_hint_of_array__castable_dtypes_return_as_expected(self):
         types = [np.float64, np.int64]
