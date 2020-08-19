@@ -74,28 +74,43 @@ def get_schema_type_hint_from_dtype(dtype, array_values=None):
     if dtype_name == "category":
         return {"type": "categorical", "categories": dtype.categories.tolist()}
 
-    if dtype_kind == "f" and can_cast_to_float32(dtype, array_values):
-        return {"type": "float32"}
-    if dtype_kind == "f" and not can_cast_to_float32(dtype, array_values):
-        return {"type": "float64"}
     if can_cast_to_int32(dtype, array_values):
         return {"type": "int32"}
+    if can_cast_to_float32(dtype, array_values):
+        return {"type": "float32"}
+    if not can_cast_to_float32(dtype, array_values):
+        return {"type": "float64"}
 
     raise TypeError(f"Annotations of type {dtype} are unsupported.")
 
 
 def can_cast_to_float32(dtype, array_values):
+    """
+    A dtype can be cast to float32 if it is a float type and converting it to float32 presents the same output as the
+    original values. Note that NaNs fail equality (i.e. np.NaN != np.NaN) so we use np.testing.assert_equal to ensure
+    that the arrays are equal minus NaNs.
+
+    We also handle a special case here where the array is a Series object with integer categorical values AND NaNs.
+    Since NaNs are floating points in numpy, we upcast the integer array to float32.
+    """
+
     if dtype.kind == "f":
         # Try to convert the array to float32
         converted_float32_values = array_values.to_numpy(np.float32)
         original_values = array_values.to_numpy()
-        if not (converted_float32_values == original_values).all():
+
+        # Verify that the two arrays are equal except for NaNs (which will equate to be unequal).
+        if not ((converted_float32_values != original_values) == np.isnan(original_values)).all():
             return False
 
         if dtype != np.float32:
             logging.warning(f"Type {dtype.name} will be converted to 32 bit float and may lose precision.")
 
         return True
+
+    if dtype.kind == "O" and array_values.hasnans:
+        return True
+
     return False
 
 
@@ -105,6 +120,9 @@ def can_cast_to_int32(dtype, array_values=None):
     the higher precision type has values that are entirely within the range of the downcast type.
     """
 
+    if array_values.hasnans:
+        return False
+
     if dtype.kind in ["i", "u"]:
         if np.can_cast(dtype, np.int32):
             return True
@@ -113,3 +131,10 @@ def can_cast_to_int32(dtype, array_values=None):
                 array_values.min() >= ii32.min and array_values.max() <= ii32.max) or array_values.empty:
             return True
     return False
+
+
+def convert_pandas_series_to_numpy(series_to_convert: pd.Series, dtype):
+    if series_to_convert.hasnans and dtype == np.int32:
+        logging.error("Cannot convert a pandas Series object to an integer dtype if it contains NaNs.")
+
+    return series_to_convert.to_numpy(dtype)

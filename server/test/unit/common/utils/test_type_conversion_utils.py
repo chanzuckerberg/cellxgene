@@ -5,7 +5,7 @@ import numpy as np
 from pandas import Series, DataFrame
 
 from server.common.utils.type_conversion_utils import can_cast_to_float32, can_cast_to_int32, get_dtype_of_array, \
-    get_schema_type_hint_of_array, get_dtypes_and_schemas_of_dataframe
+    get_schema_type_hint_of_array, get_dtypes_and_schemas_of_dataframe, convert_pandas_series_to_numpy
 
 
 class TestTypeConversionUtils(unittest.TestCase):
@@ -42,6 +42,20 @@ class TestTypeConversionUtils(unittest.TestCase):
 
         self.assertFalse(can_cast)
 
+    def test__can_cast_to_float32__categorical_int64_with_nans_is_true(self):
+        array_to_convert = Series(data=[1, 2, np.NaN], dtype="category")
+
+        can_cast = can_cast_to_float32(array_to_convert.dtype, array_to_convert)
+
+        self.assertTrue(can_cast)
+
+    def test__can_cast_to_float_32__float_32_with_nans_is_true(self):
+        array_to_convert = Series(data=[1, 2, np.NaN], dtype=np.dtype(np.float32))
+
+        can_cast = can_cast_to_float32(array_to_convert.dtype, array_to_convert)
+
+        self.assertTrue(can_cast)
+
     def test__can_cast_to_int32__string_is_false(self):
         array_to_convert = Series(data=["1", "2", "3"], dtype=str)
 
@@ -65,6 +79,13 @@ class TestTypeConversionUtils(unittest.TestCase):
 
     def test__can_cast_to_int32__int64_with_large_value_is_false(self):
         array_to_convert = Series(data=["3000000000", "2", "3"], dtype=np.dtype(np.int64))
+
+        can_cast = can_cast_to_int32(array_to_convert.dtype, array_to_convert)
+
+        self.assertFalse(can_cast)
+
+    def test__can_cast_to_int32__int64_with_nans_is_false(self):
+        array_to_convert = Series(data=[np.NaN, "2", "3"], dtype="category")
 
         can_cast = can_cast_to_int32(array_to_convert.dtype, array_to_convert)
 
@@ -140,3 +161,28 @@ class TestTypeConversionUtils(unittest.TestCase):
 
         self.assertEqual(expected_data_types_dict, actual_dataframe_data_types)
         self.assertEqual(expected_schema_type_hints_dict, actual_dataframe_schema_type_hints)
+
+    def test__convert_pandas_series_to_numpy__categorical_float64_to_float64_with_nans(self):
+        expected_float_array = np.array([1.1, 2.2, np.NaN], dtype=np.float64)
+        float_series = Series(data=[1.1, 2.2, np.NaN], dtype="category")
+
+        actual_float_array = convert_pandas_series_to_numpy(float_series, np.float64)
+
+        np.testing.assert_equal(expected_float_array, actual_float_array)
+
+    def test__convert_pandas_series_to_numpy__float64_to_float64(self):
+        expected_float_array = np.array([1.1, 2.2], dtype=np.float64)
+        float_series = Series(data=[1.1, 2.2], dtype=np.dtype(np.float64))
+
+        actual_float_array = convert_pandas_series_to_numpy(float_series, np.float64)
+
+        np.testing.assert_equal(expected_float_array, actual_float_array)
+
+    def test__convert_pandas_series_to_numpy__int64_to_int32_with_nans_throws_error(self):
+        int_series = Series(data=[1, 2, np.NaN], dtype="category")
+
+        with self.assertLogs(level="ERROR") as logger:
+            convert_pandas_series_to_numpy(int_series, np.int32)
+
+            self.assertIn("Cannot convert a pandas Series object to an integer dtype if it contains NaNs",
+                          logger.output[0])
