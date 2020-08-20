@@ -93,6 +93,9 @@ def dataset_index(url_dataroot=None, dataset=None):
             e.status_code, f"Invalid dataset {dataset}: {e.message}", loglevel=logging.INFO, include_exc_info=True
         )
 
+@webbp.route("/", methods=["GET"])
+def do_stuff(filename):
+
 
 @webbp.route("/health", methods=["GET"])
 @cache_control_always(no_store=True)
@@ -336,7 +339,7 @@ class Server:
         pass
 
     def __init__(self, app_config):
-        self.app = Flask(__name__, static_folder="../common/web/static")
+        self.app = Flask(__name__, static_folder=None)
         self._before_adding_routes(self.app, app_config)
         self.app.json_encoder = Float32JSONEncoder
         server_config = app_config.server_config
@@ -354,7 +357,6 @@ class Server:
 
         api_version = "/api/v0.2"
         if app_config.is_multi_dataset():
-            print("Is multidataset")
             # NOTE:  These routes only allow the dataset to be in the directory
             # of the dataroot, and not a subdirectory.  We may want to change
             # the route format at some point
@@ -371,11 +373,15 @@ class Server:
                     lambda dataset, url_dataroot=url_dataroot: dataset_index(url_dataroot, dataset),
                     methods=["GET"],
                 )
-                #self.app.add_url_rule(
-                #    f"/{dataroot_dict['base_url']}/<dataset>/<path:filename>",
-                #    view_func=lambda filename: send_from_directory("../common/web/static", filename),
-                #    methods=["GET"]
-                #)
+                print("Did I make it here")
+                print(f"Base url is: {url_dataroot}")
+                print(f"Uh... /{url_dataroot}/<dataset>/<path:filename>")
+                self.app.add_url_rule(
+                    f"/{url_dataroot}/<dataset>/<path:filename>",
+                    view_func=lambda filename: send_from_directory("../common/web/static", filename),
+                    methods=["GET"]
+                )
+                print("Maybe didn't make it ihere")
 
         else:
             bp_api = Blueprint("api", __name__, url_prefix=api_version)
@@ -395,3 +401,5 @@ class Server:
         if auth.requires_client_login():
             auth.add_url_rules(self.app)
         auth.complete_setup(self.app)
+
+
