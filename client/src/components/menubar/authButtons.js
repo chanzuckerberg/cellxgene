@@ -19,7 +19,7 @@ const Auth = React.memo((props) => {
           type="button"
           data-testid="auth-button"
           disabled={false}
-          icon={!userinfo["is_authenticated"] ? "log-in" : "log-out"}
+          icon={!userinfo.is_authenticated ? "log-in" : "log-out"}
           href={!userinfo.is_authenticated ? auth.login : auth.logout}
         >
           {!userinfo.is_authenticated ? "Log In" : "Log Out"}

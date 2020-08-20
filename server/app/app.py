@@ -3,7 +3,8 @@ import logging
 from functools import wraps
 from http import HTTPStatus
 
-from flask import Flask, redirect, current_app, make_response, render_template, abort, Blueprint, request
+from flask import Flask, redirect, current_app, make_response, render_template, abort, Blueprint, request, \
+    send_from_directory
 from flask_restful import Api, Resource
 from server_timing import Timing as ServerTiming
 
@@ -353,6 +354,7 @@ class Server:
 
         api_version = "/api/v0.2"
         if app_config.is_multi_dataset():
+            print("Is multidataset")
             # NOTE:  These routes only allow the dataset to be in the directory
             # of the dataroot, and not a subdirectory.  We may want to change
             # the route format at some point
@@ -369,11 +371,21 @@ class Server:
                     lambda dataset, url_dataroot=url_dataroot: dataset_index(url_dataroot, dataset),
                     methods=["GET"],
                 )
+                #self.app.add_url_rule(
+                #    f"/{dataroot_dict['base_url']}/<dataset>/<path:filename>",
+                #    view_func=lambda filename: send_from_directory("../common/web/static", filename),
+                #    methods=["GET"]
+                #)
 
         else:
             bp_api = Blueprint("api", __name__, url_prefix=api_version)
             resources = get_api_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)
+            self.app.add_url_rule(
+                "/<path:filename>",
+                view_func=lambda filename: send_from_directory("../common/web/static", filename),
+                methods=["GET"]
+            )
 
         self.app.matrix_data_cache_manager = server_config.matrix_data_cache_manager
         self.app.app_config = app_config
