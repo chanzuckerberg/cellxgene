@@ -72,7 +72,7 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
             self.assertEqual(type(df), tiledb.array.SparseArray)
 
             # convert to pandas df
-            pandas_df = self.annotations.convert_to_pandas_df(df)
+            pandas_df = self.annotations.convert_to_pandas_df(df, annotation.schema_hints)
             self.assertEqual(type(pandas_df), pd.DataFrame)
 
     def test_write_labels_creates_a_dataset_if_it_doesnt_exist(self):

@@ -5,6 +5,7 @@ import time
 
 import pandas as pd
 import tiledb
+import numpy as np
 from flask import current_app
 
 from server.common.annotations.annotations import Annotations
@@ -56,13 +57,35 @@ class AnnotationsHostedTileDB(Annotations):
         )
         if annotation_object:
             df = tiledb.open(annotation_object.tiledb_uri)
-            pandas_df = self.convert_to_pandas_df(df)
+            pandas_df = self.convert_to_pandas_df(df, annotation_object.schema_hints)
             return pandas_df
         else:
             return None
 
-    def convert_to_pandas_df(self, tileDBArray):
-        repr_meta = None
+    def convert_to_pandas_df(self, tileDBArray, schema_hints):
+        values = tileDBArray[:]
+        index_column_name = schema_hints.get("index")
+
+        dataframe_data = {}
+        for column_name, column_values in values.items():
+            type_hint = schema_hints.get(column_name)
+            type = type_hint.get("type")
+            if type == "boolean":
+                series = pd.Series(column_values, dtype=np.bool_)
+            elif type== "float32":
+                series = pd.Series(column_values, dtype=np.float32)
+            elif type=="int32":
+                series = pd.Series(column_values, dtype=np.int32)
+            else:
+                series = pd.Series(column_values, dtype=type)
+            dataframe_data[column_name] = series
+
+        # Create index
+        dataframe = pd.DataFrame(data=dataframe_data)
+        dataframe.set_index(index_column_name)
+
+        return dataframe
+        """repr_meta = None
         index_dims = None
         if '__pandas_attribute_repr' in tileDBArray.meta:
             # backwards compatibility... unsure if necessary at this point
@@ -78,6 +101,7 @@ class AnnotationsHostedTileDB(Annotations):
                 new_col = pd.Series(col_val, dtype=repr_meta[col_name])
                 data[col_name] = new_col
             elif index_dims and col_name in index_dims:
+                print(index_dims[col_name])
                 new_col = pd.Series(col_val, dtype=index_dims[col_name])
                 data[col_name] = new_col
                 indexes.append(col_name)
@@ -86,7 +110,7 @@ class AnnotationsHostedTileDB(Annotations):
         if len(indexes) > 0:
             new_df.set_index(indexes, inplace=True)
 
-        return new_df
+        return new_df"""
 
     def write_labels(self, df, data_adaptor):
 
