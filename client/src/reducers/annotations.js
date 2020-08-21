@@ -26,6 +26,7 @@ const Annotations = (
     categoryBeingEdited: null,
     categoryAddingNewLabel: null,
     labelEditable: { category: null, label: null },
+    promptForFilename: true,
   },
   action
 ) => {
@@ -37,10 +38,13 @@ const Annotations = (
         action.config.parameters?.[
           "annotations-data-collection-name-is-read-only"
         ] ?? false;
+      const promptForFilename =
+        action.config.parameters?.["user_annotation_collection_name_enabled"];
       return {
         ...state,
         dataCollectionNameIsReadOnly,
         dataCollectionName,
+        promptForFilename,
       };
     }
 
