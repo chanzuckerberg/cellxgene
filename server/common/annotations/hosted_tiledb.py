@@ -5,7 +5,6 @@ import time
 
 import pandas as pd
 import tiledb
-import numpy as np
 from flask import current_app
 
 from server.common.annotations.annotations import Annotations
@@ -57,39 +56,37 @@ class AnnotationsHostedTileDB(Annotations):
         )
         if annotation_object:
             df = tiledb.open(annotation_object.tiledb_uri)
-            pandas_df = self.convert_to_pandas_df(df, annotation_object.schema_hints)
+            pandas_df = self.convert_to_pandas_df(df)
             return pandas_df
         else:
             return None
 
-    def convert_to_pandas_df(self, tileDBArray, schema_hints):
-        print("AM I HERE?")
-        values = tileDBArray[:]
-        print(schema_hints)
-        print("lalalaal")
-        index_column_name = None
+    def convert_to_pandas_df(self, tileDBArray):
+        repr_meta = None
+        index_dims = None
+        if '__pandas_attribute_repr' in tileDBArray.meta:
+            # backwards compatibility... unsure if necessary at this point
+            repr_meta = json.loads(tileDBArray.meta['__pandas_attribute_repr'])
+        if '__pandas_index_dims' in tileDBArray.meta:
+            index_dims = json.loads(tileDBArray.meta['__pandas_index_dims'])
 
-        dataframe_data = {}
-        for column_name, column_values in values.items():
-            type_hint = schema_hints.get(column_name)
-            print(type_hint)
-            type = type_hint.get("type")
-            if type == "boolean":
-                series = pd.Series(column_values, dtype=np.bool_)
-            elif type== "float32":
-                series = pd.Series(column_values, dtype=np.float32)
-            elif type=="int32":
-                series = pd.Series(column_values, dtype=np.int32)
-            else:
-                series = pd.Series(column_values, dtype=type)
-            dataframe_data[column_name] = series
+        data = tileDBArray[:]
+        indexes = list()
 
-        # Create index
-        dataframe = pd.DataFrame(data=dataframe_data)
-        if index_column_name:
-            dataframe.set_index(index_column_name)
+        for col_name, col_val in data.items():
+            if repr_meta and col_name in repr_meta:
+                new_col = pd.Series(col_val, dtype=repr_meta[col_name])
+                data[col_name] = new_col
+            elif index_dims and col_name in index_dims:
+                new_col = pd.Series(col_val, dtype=np.unicode)
+                data[col_name] = new_col
+                indexes.append(col_name)
 
-        return dataframe
+        new_df = pd.DataFrame.from_dict(data)
+        if len(indexes) > 0:
+            new_df.set_index(indexes, inplace=True)
+
+        return new_df
 
     def write_labels(self, df, data_adaptor):
 
