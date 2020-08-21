@@ -63,13 +63,16 @@ class AnnotationsHostedTileDB(Annotations):
             return None
 
     def convert_to_pandas_df(self, tileDBArray, schema_hints):
+        print("AM I HERE?")
         values = tileDBArray[:]
         print(schema_hints)
-        index_column_name = schema_hints.get("index")
+        print("lalalaal")
+        index_column_name = None
 
         dataframe_data = {}
         for column_name, column_values in values.items():
             type_hint = schema_hints.get(column_name)
+            print(type_hint)
             type = type_hint.get("type")
             if type == "boolean":
                 series = pd.Series(column_values, dtype=np.bool_)
@@ -87,32 +90,6 @@ class AnnotationsHostedTileDB(Annotations):
             dataframe.set_index(index_column_name)
 
         return dataframe
-        """repr_meta = None
-        index_dims = None
-        if '__pandas_attribute_repr' in tileDBArray.meta:
-            # backwards compatibility... unsure if necessary at this point
-            repr_meta = json.loads(tileDBArray.meta['__pandas_attribute_repr'])
-        if '__pandas_index_dims' in tileDBArray.meta:
-            index_dims = json.loads(tileDBArray.meta['__pandas_index_dims'])
-
-        data = tileDBArray[:]
-        indexes = list()
-
-        for col_name, col_val in data.items():
-            if repr_meta and col_name in repr_meta:
-                new_col = pd.Series(col_val, dtype=repr_meta[col_name])
-                data[col_name] = new_col
-            elif index_dims and col_name in index_dims:
-                print(index_dims[col_name])
-                new_col = pd.Series(col_val, dtype=index_dims[col_name])
-                data[col_name] = new_col
-                indexes.append(col_name)
-
-        new_df = pd.DataFrame.from_dict(data)
-        if len(indexes) > 0:
-            new_df.set_index(indexes, inplace=True)
-
-        return new_df"""
 
     def write_labels(self, df, data_adaptor):
 
