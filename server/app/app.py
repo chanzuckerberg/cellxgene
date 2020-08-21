@@ -372,6 +372,7 @@ class Server:
                 )
                 self.app.add_url_rule(
                     f"/{url_dataroot}/<dataset>/static/<path:filename>",
+                    f"static_assets_{url_dataroot}",
                     view_func=lambda dataset, filename: send_from_directory("../common/web/static", filename),
                     methods=["GET"]
                 )
@@ -382,6 +383,7 @@ class Server:
             self.app.register_blueprint(resources.blueprint)
             self.app.add_url_rule(
                 "/static/<path:filename>",
+                "static_assets",
                 view_func=lambda filename: send_from_directory("../common/web/static", filename),
                 methods=["GET"]
             )
