@@ -88,7 +88,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
 
   addObsColumn(colSchema, Ctor, value) {
     /*
-		add a column to field, initializing with value.  Value may 
+		add a column to field, initializing with value.  Value may
     be one of:
       * an array of values
       * a primitive type, including null or undefined.
