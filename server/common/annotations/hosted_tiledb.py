@@ -3,6 +3,7 @@ import os
 import re
 import time
 
+import numpy as np
 import pandas as pd
 import tiledb
 from flask import current_app
