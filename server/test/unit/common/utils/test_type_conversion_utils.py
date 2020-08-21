@@ -110,6 +110,14 @@ class TestTypeConversionUtils(unittest.TestCase):
 
         self.assertEqual(expected_dtype, actual_dtype)
 
+    def test__get_dtype_of_array__unordered_integer_categories_return_as_expected(self):
+        array = Series(data=[2, 3, 1, 3, 1, 2], dtype="category")
+        expected_dtype = np.int32
+
+        actual_dtype = get_dtype_of_array(array)
+
+        self.assertEqual(expected_dtype, actual_dtype)
+
     def test__get_dtype_of_array__castable_dtypes_return_as_expected(self):
         types = [np.float64, np.int64]
         expected_dtypes = [np.float32, np.int32]

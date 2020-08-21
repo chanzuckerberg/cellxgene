@@ -118,15 +118,24 @@ def can_cast_to_int32(dtype, array_values=None):
     the higher precision type has values that are entirely within the range of the downcast type.
     """
 
+    # Since a NaN is technically a float, any array that contains NaNs cannot be cast to an integer so immediately
+    # return False.
     if array_values.hasnans:
         return False
+
+    # If the array is categorical, then we need to order the array values so that functions min and max that occur
+    # later, can function. They do not function on unordered categories.
+    ordered_array_values = array_values
+    if array_values.dtype.name == "category" and not array_values.cat.ordered:
+        ordered_array_values = array_values.cat.as_ordered()
 
     if dtype.kind in ["i", "u"]:
         if np.can_cast(dtype, np.int32):
             return True
         ii32 = np.iinfo(np.int32)
-        if not array_values.empty and (
-                array_values.min() >= ii32.min and array_values.max() <= ii32.max) or array_values.empty:
+        if not ordered_array_values.empty and (
+                ordered_array_values.min() >= ii32.min and ordered_array_values.max() <= ii32.max) or \
+                ordered_array_values.empty:
             return True
     return False
 
