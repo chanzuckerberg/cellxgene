@@ -114,6 +114,9 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
 
             self.assertEqual(pandas_df.shape, (self.n_rows, 2))
             self.assertEqual(set(pandas_df.columns), {"cat_A", "cat_B"})
+            print("Should cause flake")
+            print(self.data.original_obs_index)
+            print(pandas_df.index)
             self.assertTrue(self.data.original_obs_index.equals(pandas_df.index))
             self.assertTrue(np.all(pandas_df["cat_A"] == ["label_A"] * self.n_rows))
             self.assertTrue(np.all(pandas_df["cat_B"] == ["label_B"] * self.n_rows))
