@@ -64,6 +64,7 @@ class AnnotationsHostedTileDB(Annotations):
 
     def convert_to_pandas_df(self, tileDBArray, schema_hints):
         values = tileDBArray[:]
+        print(schema_hints)
         index_column_name = schema_hints.get("index")
 
         dataframe_data = {}
@@ -82,7 +83,8 @@ class AnnotationsHostedTileDB(Annotations):
 
         # Create index
         dataframe = pd.DataFrame(data=dataframe_data)
-        dataframe.set_index(index_column_name)
+        if index_column_name:
+            dataframe.set_index(index_column_name)
 
         return dataframe
         """repr_meta = None
