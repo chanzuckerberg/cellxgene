@@ -93,9 +93,6 @@ def dataset_index(url_dataroot=None, dataset=None):
             e.status_code, f"Invalid dataset {dataset}: {e.message}", loglevel=logging.INFO, include_exc_info=True
         )
 
-@webbp.route("/", methods=["GET"])
-def do_stuff(filename):
-
 
 @webbp.route("/health", methods=["GET"])
 @cache_control_always(no_store=True)
@@ -373,22 +370,18 @@ class Server:
                     lambda dataset, url_dataroot=url_dataroot: dataset_index(url_dataroot, dataset),
                     methods=["GET"],
                 )
-                print("Did I make it here")
-                print(f"Base url is: {url_dataroot}")
-                print(f"Uh... /{url_dataroot}/<dataset>/<path:filename>")
                 self.app.add_url_rule(
-                    f"/{url_dataroot}/<dataset>/<path:filename>",
-                    view_func=lambda filename: send_from_directory("../common/web/static", filename),
+                    f"/{url_dataroot}/<dataset>/static/<path:filename>",
+                    view_func=lambda dataset, filename: send_from_directory("../common/web/static", filename),
                     methods=["GET"]
                 )
-                print("Maybe didn't make it ihere")
 
         else:
             bp_api = Blueprint("api", __name__, url_prefix=api_version)
             resources = get_api_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)
             self.app.add_url_rule(
-                "/<path:filename>",
+                "/static/<path:filename>",
                 view_func=lambda filename: send_from_directory("../common/web/static", filename),
                 methods=["GET"]
             )
@@ -401,5 +394,3 @@ class Server:
         if auth.requires_client_login():
             auth.add_url_rules(self.app)
         auth.complete_setup(self.app)
-
-
