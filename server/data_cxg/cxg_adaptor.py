@@ -1,24 +1,25 @@
-import os
 import json
 import logging
-from server.common.utils.type_conversion_utils import get_schema_type_hint_from_dtype
-from server.common.errors import DatasetAccessError, ConfigurationError
-from server.common.utils.utils import path_join
+import os
+import threading
+
+import numpy as np
+import pandas as pd
+import tiledb
+from server_timing import Timing as ServerTiming
+
+import server.compute.diffexp_cxg as diffexp_cxg
 from server.common.constants import Axis
+from server.common.errors import DatasetAccessError, ConfigurationError
+from server.common.immutable_kvcache import ImmutableKVCache
+from server.common.utils.type_conversion_utils import get_schema_type_hint_from_dtype
+from server.common.utils.utils import path_join
 from server.data_common.data_adaptor import DataAdaptor
 from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.data_cxg.cxg_util import pack_selector_from_mask
-import server.compute.diffexp_cxg as diffexp_cxg
-from server.common.immutable_kvcache import ImmutableKVCache
-import tiledb
-import numpy as np
-import pandas as pd
-from server_timing import Timing as ServerTiming
-import threading
 
 
 class CxgAdaptor(DataAdaptor):
-
     # TODO:  The tiledb context parameters should be a configuration option
     tiledb_ctx = tiledb.Ctx(
         {"sm.tile_cache_size": 8 * 1024 * 1024 * 1024, "sm.num_reader_threads": 32, "vfs.s3.region": "us-east-1"}
@@ -336,32 +337,6 @@ class CxgAdaptor(DataAdaptor):
         if len(embeddings) == 0:
             raise DatasetAccessError("cxg matrix missing embeddings")
         return embeddings
-
-    @staticmethod
-    def _get_col_type(attr, schema_hints={}):
-        type_hint = schema_hints.get(attr.name, {})
-        dtype = attr.dtype
-        schema = {}
-        # type hints take precedence
-        if "type" in type_hint:
-            schema["type"] = type_hint["type"]
-        elif dtype == np.float32:
-            schema["type"] = "float32"
-        elif dtype == np.int32:
-            schema["type"] = "int32"
-        elif dtype == np.bool_:
-            schema["type"] = "boolean"
-        elif dtype == np.str:
-            schema["type"] = "string"
-        elif dtype == "category":
-            schema["type"] = "categorical"
-            schema["categories"] = dtype.categories.tolist()
-        else:
-            raise TypeError(f"Annotations of type {dtype} are unsupported.")
-
-        if schema["type"] == "categorical" and "categories" in schema_hints:
-            schema["categories"] = schema_hints["categories"]
-        return schema
 
     def _get_schema(self):
         if self.schema:
