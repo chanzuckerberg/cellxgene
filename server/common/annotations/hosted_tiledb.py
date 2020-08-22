@@ -70,6 +70,7 @@ class AnnotationsHostedTileDB(Annotations):
         dataframe_data = {}
 
         for column_name, column_values in values.items():
+            print(column_name)
             if column_name == 'index':
                 index = pd.Series(column_values, dtype=np.unicode, name=column_name)
                 index = index.astype(np.unicode)
@@ -90,7 +91,7 @@ class AnnotationsHostedTileDB(Annotations):
                 else:
                     series = pd.Series(column_values, dtype=column_values.dtype, name=column_name)
 
-            dataframe_data[column_name] = series
+                dataframe_data[column_name] = series
 
         dataframe = pd.DataFrame(data=dataframe_data)
         if index is not None:
