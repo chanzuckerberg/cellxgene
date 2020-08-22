@@ -3,7 +3,6 @@ import os
 import re
 import time
 
-import numpy as np
 import pandas as pd
 import tiledb
 from flask import current_app
@@ -83,7 +82,7 @@ class AnnotationsHostedTileDB(Annotations):
                 new_col = pd.Series(col_val, dtype=repr_meta[col_name])
                 data[col_name] = new_col
             elif index_dims and col_name in index_dims:
-                new_col = pd.Series(col_val, dtype=np.unicode)
+                new_col = pd.Series(col_val, dtype=index_dims[col_name])
                 data[col_name] = new_col
                 indexes.append(col_name)
 
