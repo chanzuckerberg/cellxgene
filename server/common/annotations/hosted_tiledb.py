@@ -72,6 +72,8 @@ class AnnotationsHostedTileDB(Annotations):
         for column_name, column_values in values.items():
             print(column_name)
             if column_name == 'index':
+                if isinstance(column_values[0], bytes):
+                    print("hello!")
                 index = pd.Series(column_values, dtype=np.unicode, name=column_name)
                 index = index.astype(np.unicode)
             else:
