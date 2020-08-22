@@ -72,7 +72,7 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
             self.assertEqual(type(df), tiledb.array.SparseArray)
 
             # convert to pandas df
-            pandas_df = self.annotations.convert_to_pandas_df(df, annotation.schema_hints)
+            pandas_df = self.annotations.convert_to_pandas_df(df)
             self.assertEqual(type(pandas_df), pd.DataFrame)
 
     def test_write_labels_creates_a_dataset_if_it_doesnt_exist(self):
@@ -114,9 +114,6 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
 
             self.assertEqual(pandas_df.shape, (self.n_rows, 2))
             self.assertEqual(set(pandas_df.columns), {"cat_A", "cat_B"})
-            print("Should cause flake")
-            print(self.data.original_obs_index[0])
-            print(pandas_df.index[0])
             self.assertTrue(self.data.original_obs_index.equals(pandas_df.index))
             self.assertTrue(np.all(pandas_df["cat_A"] == ["label_A"] * self.n_rows))
             self.assertTrue(np.all(pandas_df["cat_B"] == ["label_B"] * self.n_rows))
