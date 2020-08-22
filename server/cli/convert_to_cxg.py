@@ -16,12 +16,11 @@ from server.converters.h5ad_data_file import H5ADDataFile
 @click.argument(
     "input-file",
     nargs=1,
-    help="Path to the H5AD input file to be converted.",
     type=click.Path(exists=True, dir_okay=False),
 )
 @click.option(
     "-o",
-    "--output-dir",
+    "--output-directory",
     help="Name of the output CXG directory. If not provided, will default to be the input filename with a "
          "CXG extension.",
 )
@@ -70,9 +69,9 @@ from server.converters.h5ad_data_file import H5ADDataFile
 )
 @click.option(
     "--disable-corpora-schema",
-    "When set, conversion process will neither extract nor store Corpora schema information. See "
-    "https://github.com/chanzuckerberg/corpora-data-portal/blob/main/backend/schema/corpora_schema.md for "
-    "more information.",
+    help="When set, conversion process will neither extract nor store Corpora schema information. See "
+         "https://github.com/chanzuckerberg/corpora-data-portal/blob/main/backend/schema/corpora_schema.md for more "
+         "information.",
     default=False,
     show_default=True,
     is_flag=True,
@@ -84,7 +83,6 @@ from server.converters.h5ad_data_file import H5ADDataFile
     show_default=True,
     is_flag=True,
 )
-@click.option("-v", "--verbose", count=True)
 @click.help_option("--help", "-h", help="Show this message and exit.")
 def convert_to_cxg(
         input_file,
@@ -97,7 +95,7 @@ def convert_to_cxg(
         var_names,
         disable_custom_colors,
         disable_corpora_schema,
-        should_overwrite,
+        overwrite,
 ):
     """
     Convert a dataset file into CXG.
@@ -107,7 +105,7 @@ def convert_to_cxg(
                                   use_corpora_schema=not disable_corpora_schema)
 
     # Get the directory that will hold all the CXG files
-    cxg_output_container = get_output_directory(input_file, output_directory, should_overwrite)
+    cxg_output_container = get_output_directory(input_file, output_directory, overwrite)
 
     h5ad_data_file.to_cxg(cxg_output_container, sparse_threshold,
                           convert_anndata_colors_to_cxg_colors=not disable_custom_colors)
@@ -118,14 +116,14 @@ def get_output_directory(input_filename, output_directory, should_overwrite):
     Get the name of the CXG output directory to be created/populated during the dataset conversion.
     """
 
-    if not path.isdir(output_directory) or (path.isdir(output_directory) and should_overwrite):
+    if output_directory and (not path.isdir(output_directory) or (path.isdir(output_directory) and should_overwrite)):
         if output_directory.endswith(".cxg"):
             return output_directory
         return output_directory + ".cxg"
-    if path.isdir(output_directory) and not should_overwrite:
+    if output_directory and path.isdir(output_directory) and not should_overwrite:
         raise click.BadParameter(
             f"Output directory {output_directory} already exists. If you'd like to overwrite, then run the command "
             f"with the --overwrite flag."
         )
 
-    return path.splitext(input_filename)[1] + ".cxg"
+    return path.splitext(input_filename)[0] + ".cxg"

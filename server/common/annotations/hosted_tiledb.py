@@ -74,6 +74,10 @@ class AnnotationsHostedTileDB(Annotations):
         indexes = list()
 
         for col_name, col_val in data.items():
+            # If the column values are byte literals, decode them
+            if isinstance(col_val[0], bytes):
+                col_val = [value.decode('utf-8') for value in col_val]
+
             if repr_meta and col_name in repr_meta:
                 new_col = pd.Series(col_val, dtype=repr_meta[col_name])
                 data[col_name] = new_col

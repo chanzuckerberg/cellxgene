@@ -1,22 +1,20 @@
 import json
-from os import path, listdir
+import shutil
 import unittest
+from os import path, listdir
 from unittest.mock import MagicMock, patch
 
+import numpy as np
+import pandas as pd
 import tiledb
 from flask import Flask
 
 import server.test.unit.decode_fbs as decode_fbs
-import shutil
-
-import numpy as np
-import pandas as pd
-
+from server.common.errors import AnnotationCategoryNameError
 from server.common.rest import schema_get_helper, annotations_put_fbs_helper
+from server.data_common.matrix_loader import MatrixDataType
 from server.db.cellxgene_orm import CellxGeneDataset, Annotation
 from server.test import data_with_tmp_annotations, make_fbs, data_with_tmp_tiledb_annotations
-from server.data_common.matrix_loader import MatrixDataType
-from server.common.errors import AnnotationCategoryNameError
 
 
 class auth(object):
@@ -77,7 +75,6 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
 
     def test_write_labels_creates_a_dataset_if_it_doesnt_exist(self):
         with self.app.test_request_context():
-
             new_name = 'new_dataset/location'
             self.data.get_location = MagicMock(return_value=new_name)
             num_datasets = len(self.db.query([CellxGeneDataset]))
