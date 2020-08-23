@@ -1,13 +1,10 @@
 import json
-import logging
 import os
 import re
 import time
 
 import pandas as pd
-import numpy as np
 import tiledb
-import numpy as np
 from flask import current_app
 from tiledb.libtiledb import TileDBError
 
@@ -16,7 +13,6 @@ from server.common.errors import AnnotationCategoryNameError
 from server.common.utils.sanitization_utils import sanitize_values_in_list
 from server.common.utils.type_conversion_utils import get_dtypes_and_schemas_of_dataframe, get_dtype_of_array
 from server.db.cellxgene_orm import Annotation
-logger = logging.getLogger(__name__)
 
 
 class AnnotationsHostedTileDB(Annotations):
