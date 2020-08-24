@@ -872,6 +872,7 @@ class DatasetConfig(BaseConfig):
                 self.user_annotations = AnnotationsHostedTileDB(
                     directory_path=self.user_annotations__hosted_tiledb_array__hosted_file_directory,
                     db=DbUtils(self.user_annotations__hosted_tiledb_array__db_uri),
+                    server_config=self.app_config.server_config
                 )
             else:
                 raise ConfigurationError('The only annotation type support is "local_file_csv" or "hosted_tiledb_array')

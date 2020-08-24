@@ -18,15 +18,17 @@ from server.db.cellxgene_orm import Annotation
 class AnnotationsHostedTileDB(Annotations):
     CXG_ANNO_COLLECTION = "cxg_anno_collection"
 
-    def __init__(self, directory_path, db):
+    def __init__(self, directory_path, db, server_config):
         super().__init__()
         self.db = db
-        self.directory_path = directory_path
-        config = tiledb.Config()
-        config["vfs.s3.region"] = "us-west-2"
-        self.ctx = tiledb.Ctx(config=config)
+        if directory_path[-1] == "/":
+            self.directory_path = directory_path
+        else:
+            self.directory_path = directory_path + "/"
+        tiledb_config = server_config.adaptor__cxg_adaptor__tiledb_ctx
+        self.ctx = tiledb.Ctx(config=tiledb_config)
         try:
-            tiledb.default_ctx(config)
+            tiledb.default_ctx(tiledb_config)
         except TileDBError:
             pass
 
@@ -107,14 +109,21 @@ class AnnotationsHostedTileDB(Annotations):
         return new_df
 
     def write_labels(self, df, data_adaptor):
-        user_id = current_app.auth.get_user_id()
-        user_name = current_app.auth.get_user_name().replace(' ', '')
+        auth_user_id = current_app.auth.get_user_id()
+        user_name = current_app.auth.get_user_name()
         timestamp = time.time()
         dataset_location = data_adaptor.get_location()
         dataset_id = self.db.get_or_create_dataset(dataset_location)
         dataset_name = data_adaptor.get_title()
-        user_id = self.db.get_or_create_user(user_id)
+        user_id = self.db.get_or_create_user(auth_user_id)
+        """
+        NOTE: The uri contains the dataset name, user name and a timestamp as a convenience for debugging purposes.
+        People may have the same name and time.time() can be server dependent. 
+        see - https://docs.python.org/2/library/time.html#time.time
 
+        The annotations objects in the database should be used as the source of truth about who an annotation belongs 
+        to (for authorization purposes) and what time it was created (for garbage collection).
+        """
         uri = f"{self.directory_path}{dataset_name}/{user_name}/{timestamp}"
         if uri.startswith("s3://"):
             pass
