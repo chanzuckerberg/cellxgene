@@ -6,7 +6,6 @@ import time
 import pandas as pd
 import tiledb
 from flask import current_app
-from tiledb.libtiledb import TileDBError
 
 from server.common.annotations.annotations import Annotations
 from server.common.errors import AnnotationCategoryNameError
@@ -18,19 +17,13 @@ from server.db.cellxgene_orm import Annotation
 class AnnotationsHostedTileDB(Annotations):
     CXG_ANNO_COLLECTION = "cxg_anno_collection"
 
-    def __init__(self, directory_path, db, server_config):
+    def __init__(self, directory_path, db):
         super().__init__()
         self.db = db
         if directory_path[-1] == "/":
             self.directory_path = directory_path
         else:
             self.directory_path = directory_path + "/"
-        tiledb_config = server_config.adaptor__cxg_adaptor__tiledb_ctx
-        self.ctx = tiledb.Ctx(config=tiledb_config)
-        try:
-            tiledb.default_ctx(tiledb_config)
-        except TileDBError:
-            pass
 
     def check_category_names(self, df):
         original_category_names = df.keys().to_list()
@@ -64,7 +57,7 @@ class AnnotationsHostedTileDB(Annotations):
             Annotation, [Annotation.user_id == user_id, Annotation.dataset_id == dataset_id]
         )
         if annotation_object:
-            df = tiledb.open(annotation_object.tiledb_uri, ctx=self.ctx)
+            df = tiledb.open(annotation_object.tiledb_uri)
             pandas_df = self.convert_to_pandas_df(df, annotation_object.schema_hints)
             return pandas_df
         else:
@@ -142,7 +135,7 @@ class AnnotationsHostedTileDB(Annotations):
 
             for col in df:
                 df[col] = df[col].astype(get_dtype_of_array(df[col]))
-            tiledb.from_pandas(uri, df, ctx=self.ctx)
+            tiledb.from_pandas(uri, df)
 
         self.db.session.add(annotation)
         self.db.session.commit()
