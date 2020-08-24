@@ -45,7 +45,11 @@ const prodConfig = {
         test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2|otf)$/i,
         loader: "file-loader",
         include: [nodeModules, fonts],
-        query: { name: "static/assets/[name]-[contenthash].[ext]" },
+        query: {
+          name: "static/assets/[name]-[contenthash].[ext]",
+          // (thuang): This is needed to make sure @font url path is '../static/assets/'
+          publicPath: "static/",
+        },
       },
     ],
   },
