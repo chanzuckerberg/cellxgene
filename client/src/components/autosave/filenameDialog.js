@@ -101,6 +101,7 @@ class FilenameDialog extends React.Component {
     const { filenameText } = this.state;
 
     return writableCategoriesEnabled &&
+      annotations.promptForFilename &&
       !annotations.dataCollectionNameIsReadOnly &&
       !annotations.dataCollectionName &&
       userinfo.is_authenticated ? (
