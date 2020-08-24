@@ -118,10 +118,10 @@ class AnnotationsHostedTileDB(Annotations):
         user_id = self.db.get_or_create_user(auth_user_id)
         """
         NOTE: The uri contains the dataset name, user name and a timestamp as a convenience for debugging purposes.
-        People may have the same name and time.time() can be server dependent. 
-        see - https://docs.python.org/2/library/time.html#time.time
+        People may have the same name and time.time() can be server dependent.
+        See - https://docs.python.org/2/library/time.html#time.time
 
-        The annotations objects in the database should be used as the source of truth about who an annotation belongs 
+        The annotations objects in the database should be used as the source of truth about who an annotation belongs
         to (for authorization purposes) and what time it was created (for garbage collection).
         """
         uri = f"{self.directory_path}{dataset_name}/{user_name}/{timestamp}"
