@@ -64,15 +64,7 @@ class Annotations(metaclass=ABCMeta):
         """Write the labels (df) to a persistent storage such that it can later be read"""
         pass
 
+    @abstractmethod
     def update_parameters(self, parameters, data_adaptor):
         """Update configuration parameters that describe information about the annotations feature"""
-        params = {}
-        params["annotations"] = True
-
-        if self.ontology_data:
-            params["annotations_cell_ontology_enabled"] = True
-            params["annotations_cell_ontology_terms"] = self.ontology_data
-        else:
-            params["annotations_cell_ontology_enabled"] = False
-
-        parameters.update(params)
+        pass

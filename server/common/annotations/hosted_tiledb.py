@@ -137,3 +137,16 @@ class AnnotationsHostedTileDB(Annotations):
 
         self.db.session.add(annotation)
         self.db.session.commit()
+
+    def update_parameters(self, parameters, data_adaptor):
+        params = {}
+        params["annotations"] = True
+        params["user_annotation_collection_name_enabled"] = False
+
+        if self.ontology_data:
+            params["annotations_cell_ontology_enabled"] = True
+            params["annotations_cell_ontology_terms"] = self.ontology_data
+        else:
+            params["annotations_cell_ontology_enabled"] = False
+
+        parameters.update(params)
