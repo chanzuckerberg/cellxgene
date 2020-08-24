@@ -11,7 +11,7 @@ from server.common.annotations.annotations import Annotations
 from server.common.errors import AnnotationCategoryNameError
 from server.common.utils.sanitization_utils import sanitize_values_in_list
 from server.common.utils.type_conversion_utils import get_dtypes_and_schemas_of_dataframe, get_dtype_of_array
-from server.db.cellxgene_orm import CellxGeneDataset, Annotation
+from server.db.cellxgene_orm import Annotation
 
 
 class AnnotationsHostedTileDB(Annotations):
@@ -20,7 +20,10 @@ class AnnotationsHostedTileDB(Annotations):
     def __init__(self, directory_path, db):
         super().__init__()
         self.db = db
-        self.directory_path = directory_path
+        if directory_path[-1] == "/":
+            self.directory_path = directory_path
+        else:
+            self.directory_path = directory_path + "/"
 
     def check_category_names(self, df):
         original_category_names = df.keys().to_list()
@@ -45,25 +48,26 @@ class AnnotationsHostedTileDB(Annotations):
 
     def read_labels(self, data_adaptor):
         user_id = current_app.auth.get_user_id()
+        if user_id is None:
+            return
         dataset_name = data_adaptor.get_location()
-        dataset_id = str(self.db.query(
-            table_args=[CellxGeneDataset],
-            filter_args=[CellxGeneDataset.name == dataset_name]
-        )[0].id)
+        dataset_id = self.db.get_or_create_dataset(dataset_name)
 
         annotation_object = self.db.query_for_most_recent(
             Annotation, [Annotation.user_id == user_id, Annotation.dataset_id == dataset_id]
         )
         if annotation_object:
             df = tiledb.open(annotation_object.tiledb_uri)
-            pandas_df = self.convert_to_pandas_df(df)
+            pandas_df = self.convert_to_pandas_df(df, annotation_object.schema_hints)
             return pandas_df
         else:
             return None
 
-    def convert_to_pandas_df(self, tileDBArray):
+    def convert_to_pandas_df(self, tileDBArray, schema_hints):
         repr_meta = None
         index_dims = None
+        schema_hints = json.loads(schema_hints)
+
         if '__pandas_attribute_repr' in tileDBArray.meta:
             # backwards compatibility... unsure if necessary at this point
             repr_meta = json.loads(tileDBArray.meta['__pandas_attribute_repr'])
@@ -78,7 +82,12 @@ class AnnotationsHostedTileDB(Annotations):
             if isinstance(col_val[0], bytes):
                 col_val = [value.decode('utf-8') for value in col_val]
 
-            if repr_meta and col_name in repr_meta:
+            if schema_hints and col_name in schema_hints:
+                type = schema_hints.get(col_name).get("type")
+                if type and type == "categorical":
+                    new_col = pd.Series(col_val, dtype='category')
+                    data[col_name] = new_col
+            elif repr_meta and col_name in repr_meta:
                 new_col = pd.Series(col_val, dtype=repr_meta[col_name])
                 data[col_name] = new_col
             elif index_dims and col_name in index_dims:
@@ -93,20 +102,27 @@ class AnnotationsHostedTileDB(Annotations):
         return new_df
 
     def write_labels(self, df, data_adaptor):
-
-        user_id = current_app.auth.get_user_id()
+        auth_user_id = current_app.auth.get_user_id()
+        user_name = current_app.auth.get_user_name()
         timestamp = time.time()
-        dataset_name = data_adaptor.get_location()
-        dataset_id = self.db.get_or_create_dataset(dataset_name)
-        user_id = self.db.get_or_create_user(user_id)
+        dataset_location = data_adaptor.get_location()
+        dataset_id = self.db.get_or_create_dataset(dataset_location)
+        dataset_name = data_adaptor.get_title()
+        user_id = self.db.get_or_create_user(auth_user_id)
+        """
+        NOTE: The uri contains the dataset name, user name and a timestamp as a convenience for debugging purposes.
+        People may have the same name and time.time() can be server dependent.
+        See - https://docs.python.org/2/library/time.html#time.time
 
-        uri = f"{self.directory_path}-{dataset_name}-{user_id}-{timestamp}"
+        The annotations objects in the database should be used as the source of truth about who an annotation belongs
+        to (for authorization purposes) and what time it was created (for garbage collection).
+        """
+        uri = f"{self.directory_path}{dataset_name}/{user_name}/{timestamp}"
         if uri.startswith("s3://"):
             pass
         else:
             os.makedirs(uri, exist_ok=True)
         _, dataframe_schema_type_hints = get_dtypes_and_schemas_of_dataframe(df)
-
         annotation = Annotation(
             tiledb_uri=uri,
             user_id=user_id,
@@ -116,9 +132,23 @@ class AnnotationsHostedTileDB(Annotations):
         if not df.empty:
             self.check_category_names(df)
             # convert to tiledb datatypes
+
             for col in df:
                 df[col] = df[col].astype(get_dtype_of_array(df[col]))
             tiledb.from_pandas(uri, df)
 
         self.db.session.add(annotation)
         self.db.session.commit()
+
+    def update_parameters(self, parameters, data_adaptor):
+        params = {}
+        params["annotations"] = True
+        params["user_annotation_collection_name_enabled"] = False
+
+        if self.ontology_data:
+            params["annotations_cell_ontology_enabled"] = True
+            params["annotations_cell_ontology_terms"] = self.ontology_data
+        else:
+            params["annotations_cell_ontology_enabled"] = False
+
+        parameters.update(params)

@@ -51,8 +51,14 @@ class CxgAdaptor(DataAdaptor):
         """Set the tiledb context.  This should be set before any instances of CxgAdaptor are created"""
         try:
             CxgAdaptor.tiledb_ctx = tiledb.Ctx(context_params)
+            tiledb.default_ctx(context_params)
+
         except tiledb.libtiledb.TileDBError as e:
-            raise ConfigurationError(f"Invalid tiledb context: {str(e)}")
+            if e.message == "Global context already initialized!":
+                if tiledb.default_ctx().config().dict() != CxgAdaptor.tiledb_ctx.config().dict():
+                    raise ConfigurationError("Cannot change tiledb configuration once it is set")
+            else:
+                raise ConfigurationError(f"Invalid tiledb context: {str(e)}")
 
     @staticmethod
     def pre_load_validation(data_locator):

@@ -171,6 +171,7 @@ class AnnotationsLocalFile(Annotations):
     def update_parameters(self, parameters, data_adaptor):
         params = {}
         params["annotations"] = True
+        params["user_annotation_collection_name_enabled"] = True
 
         if self.ontology_data:
             params["annotations_cell_ontology_enabled"] = True

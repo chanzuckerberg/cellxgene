@@ -249,7 +249,7 @@ class UserInfoAPI(DatasetResource):
 
 
 class AnnotationsObsAPI(DatasetResource):
-    @cache_control(public=True, max_age=ONE_WEEK)
+    @cache_control(public=True, no_store=True)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.annotations_obs_get(request, data_adaptor)
