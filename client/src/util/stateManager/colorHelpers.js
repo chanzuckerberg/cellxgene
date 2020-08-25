@@ -94,15 +94,26 @@ export const createColorTable = memoize(_createColorTable);
 export function loadUserColorConfig(userColors) {
   const convertedUserColors = {};
   Object.keys(userColors).forEach((category) => {
-    const [colors, scaleMap] = Object.keys(userColors[category]).reduce(
-      (acc, label, i) => {
-        const color = parseRGB(userColors[category][label]);
-        acc[0][label] = color;
-        acc[1][i] = d3.rgb(255 * color[0], 255 * color[1], 255 * color[2]);
-        return acc;
-      },
-      [{}, {}]
-    );
+    // We cannot iterate over keys without sorting
+    // because we handle categorical values in alphabetical order __ignoring case__
+    //  while Object.keys() _usually_ is ordered alphabetically where all upper characters are less than lowercase (A, B, C, a, b, c)
+    const [colors, scaleMap] = Object.keys(userColors[category])
+      .sort((a, b) => {
+        a = a.toLowerCase();
+        b = b.toLowerCase();
+        if (a === b) return 0;
+        if (a > b) return 1;
+        return -1;
+      })
+      .reduce(
+        (acc, label, i) => {
+          const color = parseRGB(userColors[category][label]);
+          acc[0][label] = color;
+          acc[1][i] = d3.rgb(255 * color[0], 255 * color[1], 255 * color[2]);
+          return acc;
+        },
+        [{}, {}]
+      );
     const scale = (i) => scaleMap[i];
     convertedUserColors[category] = { colors, scale };
   });
