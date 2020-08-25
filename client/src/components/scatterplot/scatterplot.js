@@ -528,8 +528,8 @@ class Scatterplot extends React.PureComponent {
                 return (
                   <ScatterplotAxis
                     minimized={minimized}
-                    scatterplotYYaccessor={scatterplotXXaccessor}
-                    scatterplotXXaccessor={scatterplotYYaccessor}
+                    scatterplotYYaccessor={scatterplotYYaccessor}
+                    scatterplotXXaccessor={scatterplotXXaccessor}
                     xScale={asyncProps.xScale}
                     yScale={asyncProps.yScale}
                   />

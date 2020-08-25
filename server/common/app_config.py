@@ -275,10 +275,7 @@ class AppConfig(object):
 
         if dataset_config.app__authentication_enable and auth.is_valid_authentication_type():
             config["authentication"] = {
-                "is_authenticated": auth.is_user_authenticated(),
                 "requires_client_login": auth.requires_client_login(),
-                "username": auth.get_user_name(),
-                "user_id": auth.get_user_id()
             }
             if auth.requires_client_login():
                 config["authentication"].update({
@@ -287,6 +284,29 @@ class AppConfig(object):
                 })
 
         return c
+
+    def get_client_userinfo(self, data_adaptor):
+        """
+        Return the userinfo as required by the /userinfo REST route
+        """
+
+        server_config = self.server_config
+        dataset_config = data_adaptor.dataset_config
+        auth = server_config.auth
+
+        # make sure the configuration has been checked.
+        self.check_config()
+
+        if dataset_config.app__authentication_enable and auth.is_valid_authentication_type():
+            userinfo = {}
+            userinfo["userinfo"] = {
+                "is_authenticated": auth.is_user_authenticated(),
+                "username": auth.get_user_name(),
+                "user_id": auth.get_user_id()
+            }
+            return userinfo
+        else:
+            return None
 
 
 class BaseConfig(object):
@@ -748,7 +768,7 @@ class DatasetConfig(BaseConfig):
             self.user_annotations__ontology__obo_location = dc["user_annotations"]["ontology"]["obo_location"]
             self.user_annotations__hosted_tiledb_array__db_uri = dc["user_annotations"]["hosted_tiledb_array"]["db_uri"]
             self.user_annotations__hosted_tiledb_array__hosted_file_directory = \
-            dc["user_annotations"]["hosted_tiledb_array"]["hosted_file_directory"]  # noqa E501
+                dc["user_annotations"]["hosted_tiledb_array"]["hosted_file_directory"]  # noqa E501
 
             self.embeddings__names = dc["embeddings"]["names"]
             self.embeddings__enable_reembedding = dc["embeddings"]["enable_reembedding"]

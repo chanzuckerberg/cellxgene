@@ -21,9 +21,10 @@ class AuthTest(unittest.TestCase):
 
         with test_server(app_config=c) as server:
             session = requests.Session()
-            r = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/config")
-            data_config = r.json()
-            assert "authentication" not in data_config["config"]
+            config = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
+            self.assertNotIn("authentication", config["config"])
+            self.assertIsNone(userinfo)
 
     def test_auth_session(self):
         c = AppConfig()
@@ -35,11 +36,12 @@ class AuthTest(unittest.TestCase):
 
         with test_server(app_config=c) as server:
             session = requests.Session()
-            r = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/config")
-            data_config = r.json()
-            assert data_config["config"]["authentication"]["is_authenticated"]
-            assert not data_config["config"]["authentication"]["requires_client_login"]
-            assert data_config["config"]["authentication"]["username"] == "anonymous"
+            config = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
+
+            self.assertFalse(config["config"]["authentication"]["requires_client_login"])
+            self.assertTrue(userinfo["userinfo"]["is_authenticated"])
+            self.assertEqual(userinfo["userinfo"]["username"], "anonymous")
 
     def test_auth_test(self):
         c = AppConfig()
@@ -61,45 +63,46 @@ class AuthTest(unittest.TestCase):
             session = requests.Session()
 
             # auth datasets
-            r = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config")
-            data_config = r.json()
-            assert not data_config["config"]["authentication"]["is_authenticated"]
-            assert data_config["config"]["authentication"]["requires_client_login"]
-            assert data_config["config"]["authentication"]["username"] is None
-            assert data_config["config"]["parameters"]["annotations"]
+            config = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/userinfo").json()
 
-            login_uri = data_config["config"]["authentication"]["login"]
-            logout_uri = data_config["config"]["authentication"]["logout"]
+            self.assertFalse(userinfo["userinfo"]["is_authenticated"])
+            self.assertIsNone(userinfo["userinfo"]["username"])
+            self.assertTrue(config["config"]["authentication"]["requires_client_login"])
+            self.assertTrue(config["config"]["parameters"]["annotations"])
 
-            assert login_uri == "/login?dataset=auth/pbmc3k.cxg"
-            assert logout_uri == "/logout?dataset=auth/pbmc3k.cxg"
+            login_uri = config["config"]["authentication"]["login"]
+            logout_uri = config["config"]["authentication"]["logout"]
+
+            self.assertEqual(login_uri, "/login?dataset=auth/pbmc3k.cxg")
+            self.assertEqual(logout_uri, "/logout?dataset=auth/pbmc3k.cxg")
 
             r = session.get(f"{server}/{login_uri}")
             # check that the login redirect worked
-            assert r.history[0].status_code == 302
-            assert r.url == f"{server}/auth/pbmc3k.cxg/"
+            self.assertEqual(r.history[0].status_code, 302)
+            self.assertEqual(r.url, f"{server}/auth/pbmc3k.cxg/")
 
-            r = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config")
-            data_config = r.json()
-            assert data_config["config"]["authentication"]["is_authenticated"]
-            assert data_config["config"]["authentication"]["username"] == "test_account"
-            assert data_config["config"]["parameters"]["annotations"]
+            config = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/userinfo").json()
+            self.assertTrue(userinfo["userinfo"]["is_authenticated"])
+            self.assertEqual(userinfo["userinfo"]["username"], "test_account")
+            self.assertTrue(config["config"]["parameters"]["annotations"])
 
             r = session.get(f"{server}/{logout_uri}")
             # check that the logout redirect worked
-            assert r.history[0].status_code == 302
-            assert r.url == f"{server}/auth/pbmc3k.cxg/"
-            r = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config")
-            data_config = r.json()
-            assert not data_config["config"]["authentication"]["is_authenticated"]
-            assert data_config["config"]["authentication"]["username"] is None
-            assert data_config["config"]["parameters"]["annotations"]
+            self.assertEqual(r.history[0].status_code, 302)
+            self.assertEqual(r.url, f"{server}/auth/pbmc3k.cxg/")
+            config = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/userinfo").json()
+            self.assertFalse(userinfo["userinfo"]["is_authenticated"])
+            self.assertIsNone(userinfo["userinfo"]["username"])
+            self.assertTrue(config["config"]["parameters"]["annotations"])
 
             # no-auth datasets
-            r = session.get(f"{server}/no-auth/pbmc3k.cxg/api/v0.2/config")
-            data_config = r.json()
-            assert "authentication" not in data_config["config"]
-            assert not data_config["config"]["parameters"]["annotations"]
+            config = session.get(f"{server}/no-auth/pbmc3k.cxg/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/no-auth/pbmc3k.cxg/api/v0.2/userinfo").json()
+            self.assertIsNone(userinfo)
+            self.assertFalse(config["config"]["parameters"]["annotations"])
 
     def test_auth_test_single(self):
         c = AppConfig()
@@ -111,37 +114,36 @@ class AuthTest(unittest.TestCase):
 
         with test_server(app_config=c) as server:
             session = requests.Session()
+            config = session.get(f"{server}/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/api/v0.2/userinfo").json()
+            self.assertFalse(userinfo["userinfo"]["is_authenticated"])
+            self.assertIsNone(userinfo["userinfo"]["username"])
+            self.assertTrue(config["config"]["authentication"]["requires_client_login"])
+            self.assertTrue(config["config"]["parameters"]["annotations"])
 
-            r = session.get(f"{server}/api/v0.2/config")
-            data_config = r.json()
-            assert not data_config["config"]["authentication"]["is_authenticated"]
-            assert data_config["config"]["authentication"]["requires_client_login"]
-            assert data_config["config"]["authentication"]["username"] is None
-            assert data_config["config"]["parameters"]["annotations"]
+            login_uri = config["config"]["authentication"]["login"]
+            logout_uri = config["config"]["authentication"]["logout"]
 
-            login_uri = data_config["config"]["authentication"]["login"]
-            logout_uri = data_config["config"]["authentication"]["logout"]
-
-            assert login_uri == "/login"
-            assert logout_uri == "/logout"
+            self.assertEqual(login_uri, "/login")
+            self.assertEqual(logout_uri, "/logout")
 
             r = session.get(f"{server}/{login_uri}")
             # check that the login redirect worked
-            assert r.history[0].status_code == 302
-            assert r.url == f"{server}/"
+            self.assertEqual(r.history[0].status_code, 302)
+            self.assertEqual(r.url, f"{server}/")
 
-            r = session.get(f"{server}/api/v0.2/config")
-            data_config = r.json()
-            assert data_config["config"]["authentication"]["is_authenticated"]
-            assert data_config["config"]["authentication"]["username"] == "test_account"
-            assert data_config["config"]["parameters"]["annotations"]
+            config = session.get(f"{server}/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/api/v0.2/userinfo").json()
+            self.assertTrue(userinfo["userinfo"]["is_authenticated"])
+            self.assertEqual(userinfo["userinfo"]["username"], "test_account")
+            self.assertTrue(config["config"]["parameters"]["annotations"])
 
             r = session.get(f"{server}/{logout_uri}")
             # check that the logout redirect worked
-            assert r.history[0].status_code == 302
-            assert r.url == f"{server}/"
-            r = session.get(f"{server}/api/v0.2/config")
-            data_config = r.json()
-            assert not data_config["config"]["authentication"]["is_authenticated"]
-            assert data_config["config"]["authentication"]["username"] is None
-            assert data_config["config"]["parameters"]["annotations"]
+            self.assertEqual(r.history[0].status_code, 302)
+            self.assertEqual(r.url, f"{server}/")
+            config = session.get(f"{server}/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/api/v0.2/userinfo").json()
+            self.assertFalse(userinfo["userinfo"]["is_authenticated"])
+            self.assertIsNone(userinfo["userinfo"]["username"])
+            self.assertTrue(config["config"]["parameters"]["annotations"])

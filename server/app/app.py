@@ -3,7 +3,8 @@ import logging
 from functools import wraps
 from http import HTTPStatus
 
-from flask import Flask, redirect, current_app, make_response, render_template, abort, Blueprint, request
+from flask import Flask, redirect, current_app, make_response, render_template, abort, Blueprint, request, \
+    send_from_directory
 from flask_restful import Api, Resource
 from server_timing import Timing as ServerTiming
 
@@ -240,8 +241,15 @@ class ConfigAPI(DatasetResource):
         return common_rest.config_get(current_app.app_config, data_adaptor)
 
 
+class UserInfoAPI(DatasetResource):
+    @cache_control_always(no_store=True)
+    @rest_get_data_adaptor
+    def get(self, data_adaptor):
+        return common_rest.userinfo_get(current_app.app_config, data_adaptor)
+
+
 class AnnotationsObsAPI(DatasetResource):
-    @cache_control(public=True, max_age=ONE_WEEK)
+    @cache_control(public=True, no_store=True)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.annotations_obs_get(request, data_adaptor)
@@ -308,6 +316,7 @@ def get_api_resources(bp_api, url_dataroot=None):
     # Initialization routes
     add_resource(SchemaAPI, "/schema")
     add_resource(ConfigAPI, "/config")
+    add_resource(UserInfoAPI, "/userinfo")
     # Data routes
     add_resource(AnnotationsObsAPI, "/annotations/obs")
     add_resource(AnnotationsVarAPI, "/annotations/var")
@@ -327,7 +336,7 @@ class Server:
         pass
 
     def __init__(self, app_config):
-        self.app = Flask(__name__, static_folder="../common/web/static")
+        self.app = Flask(__name__, static_folder=None)
         self._before_adding_routes(self.app, app_config)
         self.app.json_encoder = Float32JSONEncoder
         server_config = app_config.server_config
@@ -361,11 +370,23 @@ class Server:
                     lambda dataset, url_dataroot=url_dataroot: dataset_index(url_dataroot, dataset),
                     methods=["GET"],
                 )
+                self.app.add_url_rule(
+                    f"/{url_dataroot}/<dataset>/static/<path:filename>",
+                    f"static_assets_{url_dataroot}",
+                    view_func=lambda dataset, filename: send_from_directory("../common/web/static", filename),
+                    methods=["GET"]
+                )
 
         else:
             bp_api = Blueprint("api", __name__, url_prefix=api_version)
             resources = get_api_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)
+            self.app.add_url_rule(
+                "/static/<path:filename>",
+                "static_assets",
+                view_func=lambda filename: send_from_directory("../common/web/static", filename),
+                methods=["GET"]
+            )
 
         self.app.matrix_data_cache_manager = server_config.matrix_data_cache_manager
         self.app.app_config = app_config

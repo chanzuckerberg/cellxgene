@@ -1,9 +1,11 @@
+Authlib>=0.14.3
 black
 bumpversion>=0.5
-parameterized>=0.7.0
-pytest>=3.6.3
-twine>=1.12.1
 codecov>=2.0.15
-scanpy>=1.4.6
+parameterized>=0.7.0
 psycopg2==2.7.7
+pytest>=3.6.3
+python-jose>=3.2.0
+scanpy>=1.4.6
+twine>=1.12.1
 -r requirements.txt

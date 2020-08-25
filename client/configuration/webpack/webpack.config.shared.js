@@ -7,7 +7,7 @@ const ScriptExtHtmlWebpackPlugin = require("script-ext-html-webpack-plugin");
 const src = path.resolve("src");
 const nodeModules = path.resolve("node_modules");
 
-const publicPath = "/";
+const publicPath = "";
 
 const rawObsoleteHTMLTemplate = fs.readFileSync(
   `${__dirname}/obsoleteHTMLTemplate.html`,

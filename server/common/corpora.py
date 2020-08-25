@@ -9,6 +9,7 @@ import collections
 import json
 
 from server.cli.upgrade import validate_version_str
+from server.common.utils.corpora_constants import CorporaConstants
 
 
 def corpora_get_versions_from_anndata(adata):
@@ -56,26 +57,13 @@ def corpora_get_props_from_anndata(adata):
     if not version_is_supported:
         raise ValueError("Unsupported Corpora schema version")
 
-    required_simple_fields = [
-        "version",
-        "title",
-        "layer_descriptions",
-        "organism",
-        "organism_ontology_term_id",
-        "project_name",
-        "project_description",
-    ]
-    # Spec says some values encoded as JSON due to the inability of AnnData to store complex types.
-    required_json_fields = ["contributors", "project_links"]
-    optional_simple_fields = ["preprint_doi", "publication_doi", "default_embedding", "default_field", "tags"]
-
     corpora_props = {}
-    for key in required_simple_fields:
+    for key in CorporaConstants.REQUIRED_SIMPLE_METADATA_FIELDS:
         if key not in adata.uns:
             raise KeyError(f"missing Corpora schema field {key}")
         corpora_props[key] = adata.uns[key]
 
-    for key in required_json_fields:
+    for key in CorporaConstants.REQUIRED_JSON_ENCODED_METADATA_FIELD:
         if key not in adata.uns:
             raise KeyError(f"missing Corpora schema field {key}")
         try:
@@ -83,7 +71,7 @@ def corpora_get_props_from_anndata(adata):
         except json.JSONDecodeError:
             raise json.JSONDecodeError(f"Corpora schema field {key} is expected to be a valid JSON string")
 
-    for key in optional_simple_fields:
+    for key in CorporaConstants.OPTIONAL_SIMPLE_METADATA_FIELDS:
         if key in adata.uns:
             corpora_props[key] = adata.uns[key]
 

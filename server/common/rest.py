@@ -121,6 +121,11 @@ def config_get(app_config, data_adaptor):
     return make_response(jsonify(config), HTTPStatus.OK)
 
 
+def userinfo_get(app_config, data_adaptor):
+    config = app_config.get_client_userinfo(data_adaptor)
+    return make_response(jsonify(config), HTTPStatus.OK)
+
+
 def annotations_obs_get(request, data_adaptor):
     fields = request.args.getlist("annotation-name", None)
     num_columns_requested = len(data_adaptor.get_obs_keys()) if len(fields) == 0 else len(fields)

@@ -64,6 +64,12 @@ module.exports = {
       "LabeledStatement",
       "WithStatement",
     ],
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        devDependencies: true,
+      },
+    ],
   },
   overrides: [
     {

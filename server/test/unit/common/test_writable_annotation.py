@@ -1,27 +1,28 @@
 import json
-from os import path, listdir
+import shutil
 import unittest
+from os import path, listdir
 from unittest.mock import MagicMock, patch
 
+import numpy as np
+import pandas as pd
 import tiledb
 from flask import Flask
 
 import server.test.unit.decode_fbs as decode_fbs
-import shutil
-
-import numpy as np
-import pandas as pd
-
+from server.common.errors import AnnotationCategoryNameError
 from server.common.rest import schema_get_helper, annotations_put_fbs_helper
+from server.data_common.matrix_loader import MatrixDataType
 from server.db.cellxgene_orm import CellxGeneDataset, Annotation
 from server.test import data_with_tmp_annotations, make_fbs, data_with_tmp_tiledb_annotations
-from server.data_common.matrix_loader import MatrixDataType
-from server.common.errors import AnnotationCategoryNameError
 
 
 class auth(object):
     def get_user_id():
         return "1234"
+
+    def get_user_name():
+        return "person name"
 
 
 class WritableTileDBStoredAnnotationTest(unittest.TestCase):
@@ -72,12 +73,11 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
             self.assertEqual(type(df), tiledb.array.SparseArray)
 
             # convert to pandas df
-            pandas_df = self.annotations.convert_to_pandas_df(df)
+            pandas_df = self.annotations.convert_to_pandas_df(df, annotation.schema_hints)
             self.assertEqual(type(pandas_df), pd.DataFrame)
 
     def test_write_labels_creates_a_dataset_if_it_doesnt_exist(self):
         with self.app.test_request_context():
-
             new_name = 'new_dataset/location'
             self.data.get_location = MagicMock(return_value=new_name)
             num_datasets = len(self.db.query([CellxGeneDataset]))
@@ -114,7 +114,9 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
 
             self.assertEqual(pandas_df.shape, (self.n_rows, 2))
             self.assertEqual(set(pandas_df.columns), {"cat_A", "cat_B"})
+
             self.assertTrue(self.data.original_obs_index.equals(pandas_df.index))
+
             self.assertTrue(np.all(pandas_df["cat_A"] == ["label_A"] * self.n_rows))
             self.assertTrue(np.all(pandas_df["cat_B"] == ["label_B"] * self.n_rows))
 
