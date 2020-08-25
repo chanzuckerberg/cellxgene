@@ -670,8 +670,8 @@ class CategoryValue extends React.Component {
               display={isColorBy && categoryValueIndices ? "auto" : "none"}
               style={{
                 marginLeft: 5,
-                width: VALUE_HEIGHT,
-                height: VALUE_HEIGHT,
+                width: 15,
+                height: 15,
                 backgroundColor:
                   isColorBy && categoryValueIndices
                     ? colorScale(categoryValueIndices.get(label))

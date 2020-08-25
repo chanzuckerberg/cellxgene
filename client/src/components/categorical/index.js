@@ -2,7 +2,6 @@
 import React from "react";
 import { Button } from "@blueprintjs/core";
 import { connect } from "react-redux";
-import emoji from "react-easy-emoji";
 import * as globals from "../../globals";
 import Category from "./category";
 import { AnnotationsHelpers, ControlsHelpers } from "../../util/stateManager";
@@ -141,6 +140,17 @@ class Categories extends React.Component {
           padding: globals.leftSidebarSectionPadding,
         }}
       >
+        {writableCategoriesEnabled ? (
+          <div>
+            <Button
+              data-testid="open-annotation-dialog"
+              onClick={this.handleEnableAnnoMode}
+              intent="primary"
+            >
+              Create new <strong>category</strong>
+            </Button>
+          </div>
+        ) : null}
         <AnnoDialog
           isActive={createAnnoModeActive}
           title="Create new category"
@@ -202,28 +212,6 @@ class Categories extends React.Component {
             />
           ) : null
         )}
-
-        {writableCategoriesEnabled ? (
-          <div>
-            <Button
-              data-testid="open-annotation-dialog"
-              onClick={this.handleEnableAnnoMode}
-              intent="none"
-            >
-              <span
-                style={{
-                  marginRight: 4,
-                  position: "relative",
-                  top: 1,
-                  left: -1,
-                }}
-              >
-                {emoji("🧫")}
-              </span>
-              Create new <strong>category</strong>
-            </Button>
-          </div>
-        ) : null}
       </div>
     );
   }

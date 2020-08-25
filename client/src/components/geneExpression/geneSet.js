@@ -4,18 +4,21 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
-import { Icon } from "@blueprintjs/core";
-import * as globals from "../../globals";
+import { AnchorButton } from "@blueprintjs/core";
+import { FaChevronRight, FaChevronDown } from "react-icons/fa";
 import actions from "../../actions";
 import Gene from "./gene";
 import { memoize } from "../../util/dataframe/util";
 import Truncate from "../util/truncate";
+import TestMiniHisto from "./test_miniHisto";
+import * as globals from "../../globals";
 
-@connect((state) => {
+@connect((state, ownProps) => {
   return {
     world: state.world,
     userDefinedGenes: state.controls.userDefinedGenes,
     userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
+    isColorAccessor: state.colors.colorAccessor === ownProps.setName,
   };
 })
 class GeneSet extends React.Component {
@@ -89,43 +92,74 @@ class GeneSet extends React.Component {
     }
   };
 
+  onColorChangeClick = () => {
+    const { dispatch, setName } = this.props;
+    dispatch({
+      type: "color by gene set",
+      colorAccessor: setName,
+    });
+  };
+
   render() {
-    const { setName, setGenes } = this.props;
+    const { setName, setGenes, isColorAccessor } = this.props;
     const { isOpen } = this.state;
-    // console.log("geneSet setGenes variable: ", setGenes);
     return (
-      <div>
-        <span
-          role="menuitem"
-          tabIndex="0"
-          data-testclass="geneset-expand"
-          data-testid={`${setName}:geneset-expand`}
-          onKeyPress={/* todo */ () => {}}
+      <div style={{ marginBottom: 3 }}>
+        <div
           style={{
-            cursor: "pointer",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline",
           }}
-          onClick={this.onGenesetMenuClick}
         >
-          <Truncate>
-            <span
-              style={{
-                maxWidth: globals.leftSidebarWidth - 150,
-              }}
-              data-testid={`${setName}:geneset-label`}
-            >
-              {setName}
-            </span>
-          </Truncate>
-          <Icon
-            data-testclass={
-              isOpen
-                ? "geneset-expand-is-expanded"
-                : "geneset-expand-is-not-expanded"
-            }
-            icon={isOpen ? "caret-down" : "caret-right"}
-            iconSize={14}
-          />
-        </span>
+          <span
+            role="menuitem"
+            tabIndex="0"
+            data-testclass="geneset-expand"
+            data-testid={`${setName}:geneset-expand`}
+            onKeyPress={/* todo_genesets */ () => {}}
+            style={{
+              cursor: "pointer",
+            }}
+            onClick={this.onGenesetMenuClick}
+          >
+            {isOpen ? (
+              <FaChevronDown
+                data-testclass="geneset-expand-is-expanded"
+                style={{ fontSize: 10, marginRight: 5 }}
+              />
+            ) : (
+              <FaChevronRight
+                data-testclass="geneset-expand-is-not-expanded"
+                style={{ fontSize: 10, marginRight: 5 }}
+              />
+            )}
+            <Truncate>
+              <span
+                style={{
+                  maxWidth:
+                    globals.leftSidebarWidth -
+                    200 /* todo_genesets this magic number determines how much of a long geneset name we see, and will be tweaked as we build */,
+                }}
+                data-testid={`${setName}:geneset-label`}
+              >
+                {setName}
+              </span>
+            </Truncate>
+          </span>
+          <div>
+            <TestMiniHisto />
+
+            <AnchorButton
+              data-testclass="colorby"
+              data-testid={`colorby-${setName}`}
+              onClick={this.onColorChangeClick}
+              active={isColorAccessor}
+              intent={isColorAccessor ? "primary" : "none"}
+              icon="tint"
+            />
+          </div>
+        </div>
 
         {isOpen
           ? _.map(setGenes, (gene) => {

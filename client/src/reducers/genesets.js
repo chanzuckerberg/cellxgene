@@ -3,9 +3,10 @@ Reducers for geneset UI-state.
 */
 const GeneSets = (
   state = {
-    addGenesetModeActive: false,
+    createGenesetModeActive: false,
     isEditingGenesetName: false,
     genesetAddingNewGenes: null,
+    userCreatedGenesets: {},
   },
   action
 ) => {
@@ -13,10 +14,25 @@ const GeneSets = (
     case "geneset: activate add new geneset mode": {
       return {
         ...state,
-        addGenesetModeActive: true,
+        createGenesetModeActive: true,
       };
     }
-
+    case "geneset: disable create geneset mode": {
+      return {
+        ...state,
+        createGenesetModeActive: false,
+      };
+    }
+    case "geneset: create": {
+      return {
+        ...state,
+        userCreatedGenesets: Object.assign(
+          {},
+          { [action.genesetName]: {} },
+          ...state.userCreatedGenesets
+        ),
+      };
+    }
     default:
       return state;
   }

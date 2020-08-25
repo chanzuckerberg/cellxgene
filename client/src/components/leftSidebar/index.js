@@ -5,6 +5,7 @@ import Categorical from "../categorical";
 import * as globals from "../../globals";
 import DynamicScatterplot from "../scatterplot/scatterplot";
 import TopLeftLogoAndTitle from "./topLeftLogoAndTitle";
+import Continuous from "../continuous/continuous";
 
 @connect((state) => ({
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
@@ -32,6 +33,7 @@ class LeftSideBar extends React.Component {
           }}
         >
           <Categorical />
+          <Continuous />
         </div>
         {scatterplotXXaccessor && scatterplotYYaccessor ? (
           <DynamicScatterplot />

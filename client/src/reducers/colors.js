@@ -66,6 +66,7 @@ const ColorsReducer = (
       };
     }
 
+    case "color by gene set":
     case "color by categorical metadata":
     case "color by continuous metadata": {
       /* toggle between this mode and reset */

@@ -1,117 +1,83 @@
-// import React from "react";
-// import { connect } from "react-redux";
-// import AnnoDialog from "../annoDialog";
-// // import LabelInput from "../labelInput";
-// // import { labelPrompt, isLabelErroneous } from "../labelUtil";
-// import actions from "../../actions";
+import React from "react";
+import { connect } from "react-redux";
+import AnnoDialog from "../categorical/annoDialog";
+// import LabelInput from "../labelInput";
+// import { genesetPrompt, isGenesetErroneous } from "../genesetUtil";
 
-// @connect((state) => ({
-//   annotations: state.annotations,
-//   schema: state.annoMatrix?.schema,
-//   ontology: state.ontology,
-//   obsCrossfilter: state.obsCrossfilter,
-// }))
-// class CreateGenesetDialogue extends React.PureComponent {
-//   constructor(props) {
-//     super(props);
-//     this.state = {
-//       newLabelText: "",
-//     };
-//   }
+@connect((state) => ({
+  annotations: state.annotations,
+  schema: state.annoMatrix?.schema,
+  ontology: state.ontology,
+  obsCrossfilter: state.obsCrossfilter,
+  genesets: state.genesets,
+}))
+class CreateGenesetDialogue extends React.PureComponent {
+  constructor(props) {
+    super(props);
+    this.state = {
+      genesetName: "",
+    };
+  }
 
-//   disableAddNewLabelMode = (e) => {
-//     const { dispatch } = this.props;
-//     this.setState({
-//       newLabelText: "",
-//     });
-//     dispatch({
-//       type: "annotation: disable add new label mode",
-//     });
-//     if (e) e.preventDefault();
-//   };
+  disableCreateGenesetMode = (e) => {
+    const { dispatch } = this.props;
+    this.setState({
+      genesetName: "",
+    });
+    dispatch({
+      type: "geneset: disable create geneset mode",
+    });
+    if (e) e.preventDefault();
+  };
 
-//   handleAddNewLabelToCategory = (e) => {
-//     const { dispatch, metadataField } = this.props;
-//     const { newLabelText } = this.state;
+  createGeneset = (e) => {
+    const { dispatch } = this.props;
+    const { genesetName } = this.state;
 
-//     this.disableAddNewLabelMode();
-//     dispatch(
-//       actions.annotationCreateLabelInCategory(
-//         metadataField,
-//         newLabelText,
-//         false
-//       )
-//     );
-//     e.preventDefault();
-//   };
+    dispatch({ type: "geneset: create", genesetName });
+    e.preventDefault();
+  };
 
-//   addLabelAndAssignCells = (e) => {
-//     const { dispatch, metadataField } = this.props;
-//     const { newLabelText } = this.state;
+  genesetNameError = () => {
+    /* todo genesets validation */
+    return false;
+  };
 
-//     this.disableAddNewLabelMode();
-//     dispatch(
-//       actions.annotationCreateLabelInCategory(metadataField, newLabelText, true)
-//     );
-//     e.preventDefault();
-//   };
+  instruction = () => {
+    return "New, unique geneset";
+    /* todo genesets */
+    // return genesetPrompt(this.genesetNameError(geneset), "New, unique geneset", ":");
+  };
 
-//   labelNameError = (name) => {
-//     const { metadataField, ontology, schema } = this.props;
-//     return isLabelErroneous(name, metadataField, ontology, schema);
-//   };
+  render() {
+    const { genesetName } = this.state;
+    const { metadataField, genesets } = this.props;
+    console.log("dialogue", this.props);
 
-//   instruction = (label) => {
-//     return labelPrompt(this.labelNameError(label), "New, unique label", ":");
-//   };
+    return (
+      <>
+        <AnnoDialog
+          isActive={genesets.createGenesetModeActive}
+          inputProps={{ "data-testid": `${metadataField}:create-label-dialog` }}
+          primaryButtonProps={{
+            "data-testid": `${metadataField}:submit-label`,
+          }}
+          title="Create new gene set"
+          instruction="Give your geneset a name" /* todo genesets this.instruction(genesetName) */
+          cancelTooltipContent="Close this dialog without creating a gene set."
+          primaryButtonText="Create geneset"
+          handleSecondaryButtonSubmit={this.addLabelAndAssignCells}
+          text={genesetName}
+          validationError={() => {
+            /* todo genesets this.labelNameError(genesetName) */
+            return false;
+          }}
+          handleSubmit={this.handleAddNewLabelToCategory}
+          handleCancel={this.disableCreateGenesetMode}
+        />
+      </>
+    );
+  }
+}
 
-//   handleChangeOrSelect = (label) => {
-//     this.setState({ newLabelText: label });
-//   };
-
-//   render() {
-//     const { newLabelText } = this.state;
-//     const { metadataField, annotations, ontology, obsCrossfilter } = this.props;
-//     const ontologyEnabled = ontology?.enabled ?? false;
-
-//     return (
-//       <>
-//         <AnnoDialog
-//           isActive={
-//             annotations.isAddingNewLabel &&
-//             annotations.categoryAddingNewLabel === metadataField
-//           }
-//           inputProps={{ "data-testid": `${metadataField}:create-label-dialog` }}
-//           primaryButtonProps={{
-//             "data-testid": `${metadataField}:submit-label`,
-//           }}
-//           title="Add new label to category"
-//           instruction={this.instruction(newLabelText)}
-//           cancelTooltipContent="Close this dialog without adding a label."
-//           primaryButtonText="Add label"
-//           secondaryButtonText={`Add label & assign ${obsCrossfilter.countSelected()} selected cells`}
-//           handleSecondaryButtonSubmit={this.addLabelAndAssignCells}
-//           text={newLabelText}
-//           validationError={this.labelNameError(newLabelText)}
-//           handleSubmit={this.handleAddNewLabelToCategory}
-//           handleCancel={this.disableAddNewLabelMode}
-//           annoInput={
-//             <LabelInput
-//               labelSuggestions={ontologyEnabled ? ontology.terms : null}
-//               onChange={this.handleChangeOrSelect}
-//               onSelect={this.handleChangeOrSelect}
-//               inputProps={{
-//                 "data-testid": `${metadataField}:new-label-name`,
-//                 leftIcon: "tag",
-//                 intent: "none",
-//                 autoFocus: true,
-//               }}
-//             />
-//           }
-//         />
-//       </>
-//     );
-//   }
-// }
-
-// export default CreateGenesetDialogue;
+export default CreateGenesetDialogue;

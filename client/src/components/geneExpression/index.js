@@ -3,13 +3,12 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
-import emoji from "react-easy-emoji";
 import { Button } from "@blueprintjs/core";
 import HistogramBrush from "../brushableHistogram";
-import * as globals from "../../globals";
 import GeneSet from "./geneSet";
 
 import testGeneSets from "./test_data";
+import CreateGenesetDialogue from "./createGenesetDialogue";
 
 @connect((state) => {
   return {
@@ -39,35 +38,21 @@ class GeneExpression extends React.Component {
   render() {
     const { userDefinedGenes, differential } = this.props;
     const geneSetsFeatureEnabledTODO = true;
-    console.log("genesets", this.props);
     return (
-      <div
-        style={{
-          borderBottom: `1px solid ${globals.lighterGrey}`,
-        }}
-      >
+      <div>
         <div>
           {geneSetsFeatureEnabledTODO ? (
-            <div>
+            <div style={{ marginBottom: 10, position: "relative", top: -2 }}>
               <Button
                 data-testid="open-create-geneset-dialog"
                 onClick={this.handleActivateCreateGenesetMode}
-                intent="none"
+                intent="primary"
               >
-                <span
-                  style={{
-                    marginRight: 4,
-                    position: "relative",
-                    top: 1,
-                    left: -1,
-                  }}
-                >
-                  {emoji("🧬")}
-                </span>
-                Create new <strong>geneset</strong>
+                Create new <strong>gene set</strong>
               </Button>
             </div>
           ) : null}
+          <CreateGenesetDialogue />
           {/* <AddGenes /> */}
           {userDefinedGenes.length > 0
             ? _.map(userDefinedGenes, (geneName, index) => {
