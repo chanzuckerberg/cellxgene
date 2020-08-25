@@ -43,7 +43,7 @@ def scanpy_umap(adata, obs_mask=None, pca_options={}, neighbors_options={}, umap
     for k in list(adata.uns.keys()):
         del adata.uns[k]
 
-    sc.pp.pca(adata, zero_center=None, n_comps=min(adata.n_obs - 1, 50), **pca_options)
+    sc.pp.pca(adata, zero_center=None, n_comps=min(adata.n_vars - 1, 50), **pca_options)
     sc.pp.neighbors(adata, **neighbors_options)
     sc.tl.umap(adata, **umap_options)
 
