@@ -31,7 +31,11 @@ const devConfig = {
         test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2|otf)$/i,
         loader: "file-loader",
         include: [nodeModules, fonts],
-        query: { name: "static/assets/[name].[ext]" },
+        query: {
+          name: "static/assets/[name].[ext]",
+          // (thuang): This is needed to make sure @font url path is '/static/assets/'
+          publicPath: "/",
+        },
       },
     ],
   },
