@@ -43,7 +43,7 @@ async function configFetch(dispatch) {
 
 async function userInfoFetch(dispatch) {
   return fetchJson("userinfo").then((response) => {
-    const userinfo = { ...response.userinfo };
+    const { userinfo } = response || {};
     dispatch({
       type: "userinfo load complete",
       userinfo,
