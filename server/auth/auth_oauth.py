@@ -29,7 +29,9 @@ class Tokens:
         self.id_token = id_token
         self.refresh_token = refresh_token
         self.expires_at = expires_at
-        if not (access_token and id_token and refresh_token and expires_at):
+
+        # expires_at may be None after a token refresh, and so it is not checked here
+        if not (access_token and id_token and refresh_token):
             raise KeyError(str(self.__dict__))
 
 
