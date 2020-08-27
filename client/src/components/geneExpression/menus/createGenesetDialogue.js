@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import AnnoDialog from "../categorical/annoDialog";
+import AnnoDialog from "../../categorical/annoDialog";
 // import LabelInput from "../labelInput";
 // import { genesetPrompt, isGenesetErroneous } from "../genesetUtil";
 
@@ -52,7 +52,6 @@ class CreateGenesetDialogue extends React.PureComponent {
   render() {
     const { genesetName } = this.state;
     const { metadataField, genesets } = this.props;
-    console.log("dialogue", this.props);
 
     return (
       <>

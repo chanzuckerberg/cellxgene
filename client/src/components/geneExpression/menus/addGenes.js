@@ -12,14 +12,14 @@ import {
   InputGroup,
   ControlGroup,
 } from "@blueprintjs/core";
-import * as globals from "../../globals";
-import actions from "../../actions";
+import * as globals from "../../../globals";
+import actions from "../../../actions";
 import {
   postUserErrorToast,
   keepAroundErrorToast,
-} from "../framework/toasters";
+} from "../../framework/toasters";
 
-import { memoize } from "../../util/dataframe/util";
+import { memoize } from "../../../util/dataframe/util";
 
 const renderGene = (fuzzySortResult, { handleClick, modifiers }) => {
   if (!modifiers.matchesPredicate) {

@@ -4,7 +4,7 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
-import { AnchorButton } from "@blueprintjs/core";
+import { AnchorButton, Icon } from "@blueprintjs/core";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
 import actions from "../../actions";
 import Gene from "./gene";
@@ -12,6 +12,7 @@ import { memoize } from "../../util/dataframe/util";
 import Truncate from "../util/truncate";
 import TestMiniHisto from "./test_miniHisto";
 import * as globals from "../../globals";
+import GenesetMenus from "./menus/genesetMenus";
 
 @connect((state, ownProps) => {
   return {
@@ -139,7 +140,7 @@ class GeneSet extends React.Component {
                 style={{
                   maxWidth:
                     globals.leftSidebarWidth -
-                    200 /* todo_genesets this magic number determines how much of a long geneset name we see, and will be tweaked as we build */,
+                    240 /* todo_genesets this magic number determines how much of a long geneset name we see, and will be tweaked as we build */,
                 }}
                 data-testid={`${setName}:geneset-label`}
               >
@@ -149,21 +150,21 @@ class GeneSet extends React.Component {
           </span>
           <div>
             <TestMiniHisto />
-
+            <GenesetMenus genesetsEditable geneset={setName} />
             <AnchorButton
               data-testclass="colorby"
               data-testid={`colorby-${setName}`}
               onClick={this.onColorChangeClick}
               active={isColorAccessor}
               intent={isColorAccessor ? "primary" : "none"}
-              icon="tint"
+              icon={<Icon icon="tint" iconSize={16} />}
             />
           </div>
         </div>
 
         {isOpen
           ? _.map(setGenes, (gene) => {
-              return <Gene key={gene} gene={gene} />;
+              return <Gene key={gene} gene={gene} geneset={setName} />;
             })
           : null}
       </div>

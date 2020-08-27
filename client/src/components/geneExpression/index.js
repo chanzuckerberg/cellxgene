@@ -8,7 +8,7 @@ import HistogramBrush from "../brushableHistogram";
 import GeneSet from "./geneSet";
 
 import testGeneSets from "./test_data";
-import CreateGenesetDialogue from "./createGenesetDialogue";
+import CreateGenesetDialogue from "./menus/createGenesetDialogue";
 
 @connect((state) => {
   return {
