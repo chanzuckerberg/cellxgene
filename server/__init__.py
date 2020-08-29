@@ -3,7 +3,7 @@ import sys
 
 from server.common.utils.utils import import_plugins
 
-__version__ = "0.16.1-rc.2"
+__version__ = "0.16.1-rc.3"
 display_version = "cellxgene v" + __version__
 
 try:
