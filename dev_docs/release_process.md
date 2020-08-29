@@ -70,7 +70,7 @@ To make a bugfix release (a point release/patch release) when there are already 
     -   Wait for release to pass the tests.
 10.  Publish to PyPI (prod) (assuming you that you have registered for PyPI, and that you have write access to the cellxgene pypi package) by running `make release-final`.
 11. Test the installation in a fresh virtual environment by running `pip install --no-cache-dir cellxgene`.
-7.  Create Github release using the version number and release notes
+12.  Create Github release using the version number and release notes
     ([instructions](https://help.github.com/articles/creating-releases/)).
     -   Draft new release
     -   Type version name matching release version number from (1)
