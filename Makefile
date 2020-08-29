@@ -160,7 +160,7 @@ bump-release-candidate:
 # Finalizes the release candidate by removing the release candidate tag (i.e. 0.16.2-rc.2 -> 0.16.2).
 .PHONY: bump-release
 bump-release:
-    bumpversion --config-file .bumpversion.cfg prerel --allow-dirty
+	bumpversion --config-file .bumpversion.cfg prerel --allow-dirty
 
 .PHONY: twine
 twine:
