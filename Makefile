@@ -99,22 +99,32 @@ pydist: build
 
 # RELEASE HELPERS
 
-# create new version to commit to main
-.PHONY: release-stage-1
-release-stage-1: dev-env bump clean-lite gen-package-lock
+# Create new version to commit to main
+.PHONY: create-release-candidate
+create-release-candidate: dev-env bump-version clean-lite gen-package-lock
 	@echo "Version bumped part:$(PART) and client built. Ready to commit and push"
 
-# build dist and release to dev pypi
-.PHONY: release-stage-2
-release-stage-2: dev-env pydist twine
+# Bump the release candidate version if needed (i.e. the previous release candidate had errors).
+.PHONY: recreate-release-candidate
+recreate-release-candidate: dev-env bump-release-candidate clean-lite gen-package-lock
+	@echo "Version bumped part:$(PART) and client built. Ready to commit and push"
+
+# Build dist and release to Test PyPI
+.PHONY: release-candidate-to-test-pypi
+release-candidate-to-test-pypi: dev-env pydist twine
 	@echo "Dist built and uploaded to test.pypi.org"
 	@echo "Test the install:"
 	@echo "    make install-release-test"
-	@echo "Then upload to Pypi prod:"
-	@echo "    make twine-prod"
 
-.PHONY: release-stage-final
-release-stage-final: twine-prod
+# Build final dist (gets rid of the rc tag) and release final candidate to TestPyPI
+.PHONY: release-final-to-test-pypi
+release-final-to-test-pypi: dev-env bump-release clean-lite gen-package-lock pydist twine
+	@echo "Final release dist built and uploaded to test.pypi.org"
+	@echo "Test the install:"
+	@echo "    make install-release-test"
+
+.PHONY: release-final
+release-final: twine-prod
 	@echo "Release uploaded to pypi.org"
 
 # DANGER: releases directly to prod
@@ -136,10 +146,21 @@ dev-env-client:
 dev-env-server:
 	pip install -r server/requirements-dev.txt
 
-# give PART=[major, minor, part] as param to make bump
-.PHONY: bump
-bump:
+# Set PART=[major, minor, patch] as param to make bump.
+# This will create a release candidate. (i.e. 0.16.1 -> 0.16.2-rc.0 for a patch bump)
+.PHONY: bump-version
+bump-version:
 	bumpversion --config-file .bumpversion.cfg $(PART)
+
+# Increments the release candidate version (i.e. 0.16.2-rc.1 -> 0.16.2-rc.2)
+.PHONY: bump-release-candidate
+bump-release-candidate:
+	bumpversion --config-file .bumpversion.cfg prerelversion --allow-dirty
+
+# Finalizes the release candidate by removing the release candidate tag (i.e. 0.16.2-rc.2 -> 0.16.2).
+.PHONY: bump-release
+bump-release:
+    bumpversion --config-file .bumpversion.cfg prerel --allow-dirty
 
 .PHONY: twine
 twine:
