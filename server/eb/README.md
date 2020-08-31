@@ -95,7 +95,7 @@ To use this feature, do the following:
 
 * In this directory, create a sub directory called "customize/deploy/".
 * Copy the files you want to serve into this directory
-* modify your configuration file to set the location to these file:  /static/deploy/<filename>
+* modify your configuration file to set the location to these file:  /static/cellxgene/deploy/<filename>
 
 Example:  you want to include an "about_legal_tos" and "about_legal_privacy" page to cellxgene.
 Assume files called "tos.html" and "privacy.html" exist.
@@ -106,9 +106,9 @@ $ cp <source_dir>/tos.html customize/deploy/tos.html
 $ cp <source_dir>/privacy.html customize/deploy/privacy.html
 
 # edit config.yaml
-$ grep "/static/deploy" config.yaml
-about_legal_tos: /static/deploy/tos.html
-about_legal_privacy: /static/deploy/privacy.html
+$ grep "/static/cellxgene/deploy" config.yaml
+about_legal_tos: /static/cellxgene/deploy/tos.html
+about_legal_privacy: /static/cellxgene/deploy/privacy.html
 ```
 
 #### Inline javascript scripts
