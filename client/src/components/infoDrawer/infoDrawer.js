@@ -10,7 +10,6 @@ class InfoDrawer extends PureComponent {
     super(props);
 
     this.state = {
-      // CHANGE BACK TO FALSE BEFORE MERGE
       isOpen: false,
     };
   }
