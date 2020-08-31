@@ -1,6 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import AnnoDialog from "../../categorical/annoDialog";
+import LabelInput from "../../categorical/labelInput";
 // import LabelInput from "../labelInput";
 // import { genesetPrompt, isGenesetErroneous } from "../genesetUtil";
 
@@ -43,6 +44,14 @@ class CreateGenesetDialogue extends React.PureComponent {
     return false;
   };
 
+  handleChange = () => {
+    return () => {};
+  };
+
+  handleSelect = () => {
+    return () => {};
+  };
+
   instruction = () => {
     return "New, unique geneset";
     /* todo genesets */
@@ -71,6 +80,19 @@ class CreateGenesetDialogue extends React.PureComponent {
             /* todo genesets this.labelNameError(genesetName) */
             return false;
           }}
+          annoInput={
+            <LabelInput
+              onChange={this.handleChange}
+              onSelect={this.handleSelect}
+              inputProps={{
+                "data-testid": "add-genes",
+                leftIcon: "manually-entered-data",
+                intent: "none",
+                autoFocus: true,
+              }}
+              newLabelMessage="New category"
+            />
+          }
           handleSubmit={this.handleAddNewLabelToCategory}
           handleCancel={this.disableCreateGenesetMode}
         />
