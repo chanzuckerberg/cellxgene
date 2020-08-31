@@ -8,10 +8,12 @@ const Metadata = (
   const { singleValueCategories } = state;
   switch (action.type) {
     case "add singleValueCategory":
-      return {
-        ...state,
-        singleValueCategories: singleValueCategories.set(category, value),
-      };
+      if (value)
+        return {
+          ...state,
+          singleValueCategories: singleValueCategories.set(category, value),
+        };
+      return state;
     default:
       return state;
   }
