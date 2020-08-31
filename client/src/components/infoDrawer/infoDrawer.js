@@ -11,7 +11,7 @@ class InfoDrawer extends PureComponent {
 
     this.state = {
       // CHANGE BACK TO FALSE BEFORE MERGE
-      isOpen: true,
+      isOpen: false,
     };
   }
 
@@ -48,12 +48,12 @@ class InfoDrawer extends PureComponent {
         <Drawer {...{ isOpen, position, title }}>
           <div style={{ margin: 24 }}>
             <H1>{datasetTitle}</H1>
-            {singleValueCategories.length > 0 ? (
+            {singleValueCategories.size > 0 ? (
               <>
                 <H3>Dataset Metadata</H3>
                 <UL>
                   {Array.from(singleValueCategories).map((pair) => {
-                    return <div key={pair[0]}>{`${pair[0]}: ${pair[1]}`}</div>;
+                    return <li key={pair[0]}>{`${pair[0]}: ${pair[1]}`}</li>;
                   })}
                 </UL>
               </>
