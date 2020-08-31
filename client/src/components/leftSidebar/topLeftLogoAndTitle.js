@@ -68,19 +68,11 @@ class LeftSideBar extends React.Component {
               wordBreak: "break-all",
             }}
           >
-            {aboutURL ? (
-              <Truncate>
-                <span style={{ width: 185 }} data-testid="header">
-                  {datasetTitle}
-                </span>
-              </Truncate>
-            ) : (
-              <Truncate>
-                <span style={{ width: 185 }} data-testid="header">
-                  {datasetTitle}
-                </span>
-              </Truncate>
-            )}
+            <Truncate>
+              <span style={{ width: 185 }} data-testid="header">
+                {datasetTitle}
+              </span>
+            </Truncate>
           </div>
         </div>
       </InfoDrawer>
