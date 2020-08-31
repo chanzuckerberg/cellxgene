@@ -1,6 +1,6 @@
 import React, { PureComponent } from "react";
 import { connect } from "react-redux";
-import { Drawer, H3 } from "@blueprintjs/core";
+import { Drawer, H3, H1, UL } from "@blueprintjs/core";
 
 @connect((state) => {
   return { singleValueCategories: state.metadata.singleValueCategories };
@@ -10,7 +10,8 @@ class InfoDrawer extends PureComponent {
     super(props);
 
     this.state = {
-      isOpen: false,
+      // CHANGE BACK TO FALSE BEFORE MERGE
+      isOpen: true,
     };
   }
 
@@ -45,26 +46,27 @@ class InfoDrawer extends PureComponent {
       >
         {children}
         <Drawer {...{ isOpen, position, title }}>
-          <a
-            style={{ width: 185 }}
-            href={aboutURL}
-            data-testid="header"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {datasetTitle}
-          </a>
-          <H3>Dataset Metadata</H3>
-          {Array.from(singleValueCategories).map((pair) => {
-            return (
-              <div key={pair[0]} style={{ marginBottom: 10, marginTop: 4 }}>
-                <span style={{ maxWidth: 150, fontWeight: 700 }}>
-                  {pair[0]}
-                </span>
-                <span style={{ maxWidth: 150 }}>{`: ${pair[1]}`}</span>
-              </div>
-            );
-          })}
+          <div style={{ margin: 24 }}>
+            <H1>{datasetTitle}</H1>
+            {singleValueCategories.length > 0 ? (
+              <>
+                <H3>Dataset Metadata</H3>
+                <UL>
+                  {Array.from(singleValueCategories).map((pair) => {
+                    return <div key={pair[0]}>{`${pair[0]}: ${pair[1]}`}</div>;
+                  })}
+                </UL>
+              </>
+            ) : null}
+            {aboutURL ? (
+              <>
+                <H3>More Info</H3>
+                <a href={aboutURL} target="_blank" rel="noopener noreferrer">
+                  {aboutURL}
+                </a>
+              </>
+            ) : null}
+          </div>
         </Drawer>
       </div>
     );
