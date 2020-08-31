@@ -19,6 +19,7 @@ import autosave from "./autosave";
 import ontology from "./ontology";
 import centroidLabels from "./centroidLabels";
 import pointDialation from "./pointDilation";
+import metadata from "./metadata";
 import { reembedController } from "./reembed";
 import { gcMiddleware as annoMatrixGC } from "../annoMatrix";
 
@@ -35,6 +36,7 @@ const Reducer = undoable(
     ["categoricalSelection", categoricalSelection],
     ["continuousSelection", continuousSelection],
     ["graphSelection", graphSelection],
+    ["metadata", metadata],
     ["colors", colors],
     ["controls", controls],
     ["differential", differential],

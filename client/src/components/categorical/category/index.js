@@ -129,6 +129,11 @@ class Category extends React.PureComponent {
     };
   };
 
+  dispatchSingleValueCategory = (category, value) => {
+    const { dispatch } = this.props;
+    dispatch({ type: "add singleValueCategory", category, value });
+  };
+
   async fetchData(annoMatrix, metadataField, colors) {
     /*
     fetch our data and the color-by data if appropriate, and then build a summary
@@ -261,6 +266,7 @@ class Category extends React.PureComponent {
                   colorAccessor={colorAccessor}
                   colorData={colorData}
                   colorTable={colorTable}
+                  dispatchSingleValueCategory={this.dispatchSingleValueCategory}
                   onColorChangeClick={this.handleColorChange}
                   onCategoryToggleAllClick={handleCategoryToggleAllClick}
                   onCategoryMenuClick={this.handleCategoryClick}
@@ -480,6 +486,7 @@ const CategoryRender = React.memo(
     onCategoryMenuClick,
     onCategoryMenuKeyPress,
     onCategoryToggleAllClick,
+    dispatchSingleValueCategory,
   }) => {
     /*
     Render the core of the category, including checkboxes, controls, etc.
@@ -492,18 +499,8 @@ const CategoryRender = React.memo(
       Entire category has a single value, special case.
       */
       const theOneValue = categorySummary.categoryValues[0];
-      return (
-        <div style={{ marginBottom: 10, marginTop: 4 }}>
-          <Truncate>
-            <span style={{ maxWidth: 150, fontWeight: 700 }}>
-              {metadataField}
-            </span>
-          </Truncate>
-          <Truncate>
-            <span style={{ maxWidth: 150 }}>{`: ${theOneValue}`}</span>
-          </Truncate>
-        </div>
-      );
+      dispatchSingleValueCategory(metadataField, theOneValue);
+      return null;
     }
 
     /*

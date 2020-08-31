@@ -1,7 +1,11 @@
 import React, { PureComponent } from "react";
-import { Drawer } from "@blueprintjs/core";
+import { connect } from "react-redux";
+import { Drawer, H3 } from "@blueprintjs/core";
 
-export default class InfoDrawer extends PureComponent {
+@connect((state) => {
+  return { singleValueCategories: state.metadata.singleValueCategories };
+})
+class InfoDrawer extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -30,10 +34,8 @@ export default class InfoDrawer extends PureComponent {
       datasetTitle,
       title,
       children,
-      metadataField,
-      theOneValue,
+      singleValueCategories,
     } = this.props;
-
     return (
       <div
         role="menuitem"
@@ -43,7 +45,6 @@ export default class InfoDrawer extends PureComponent {
       >
         {children}
         <Drawer {...{ isOpen, position, title }}>
-          Here is a test
           <a
             style={{ width: 185 }}
             href={aboutURL}
@@ -53,16 +54,20 @@ export default class InfoDrawer extends PureComponent {
           >
             {datasetTitle}
           </a>
-          (
-          <div style={{ marginBottom: 10, marginTop: 4 }}>
-            <span style={{ maxWidth: 150, fontWeight: 700 }}>
-              {metadataField}
-            </span>
-            <span style={{ maxWidth: 150 }}>{`: ${theOneValue}`}</span>
-          </div>
-          );
+          <H3>Dataset Metadata</H3>
+          {Array.from(singleValueCategories).map((pair) => {
+            return (
+              <div key={pair[0]} style={{ marginBottom: 10, marginTop: 4 }}>
+                <span style={{ maxWidth: 150, fontWeight: 700 }}>
+                  {pair[0]}
+                </span>
+                <span style={{ maxWidth: 150 }}>{`: ${pair[1]}`}</span>
+              </div>
+            );
+          })}
         </Drawer>
       </div>
     );
   }
 }
+export default InfoDrawer;
