@@ -81,7 +81,7 @@ class CategoryValue extends React.Component {
   get shouldRenderStackedBarOrHistogram() {
     const { colorAccessor, isColorBy, annotations } = this.props;
 
-    return colorAccessor && !isColorBy && !annotations.isEditingLabelName;
+    return !!colorAccessor && !isColorBy && !annotations.isEditingLabelName;
   }
 
   handleDeleteValue = () => {
@@ -439,7 +439,9 @@ class CategoryValue extends React.Component {
 
     if (
       !this.shouldRenderStackedBarOrHistogram ||
-      !AnnotationsHelpers.isContinuousAnnotation(schema, colorAccessor)
+      // This function returns true on categorical annotations(when stacked bar should not render),
+      //  in cases where the colorAccessor is a gene this function will return undefined since genes do not live on the schema
+      AnnotationsHelpers.isCategoricalAnnotation(schema, colorAccessor) === true
     ) {
       return null;
     }
