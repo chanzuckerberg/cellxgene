@@ -81,7 +81,7 @@ class CategoryValue extends React.Component {
   get shouldRenderStackedBarOrHistogram() {
     const { colorAccessor, isColorBy, annotations } = this.props;
 
-    return colorAccessor && !isColorBy && !annotations.isEditingLabelName;
+    return !!colorAccessor && !isColorBy && !annotations.isEditingLabelName;
   }
 
   handleDeleteValue = () => {
