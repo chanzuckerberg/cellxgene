@@ -899,19 +899,20 @@ class DatasetConfig(BaseConfig):
         self.check_attr("embeddings__enable_reembedding", bool)
 
         server_config = self.app_config.server_config
-        if server_config.single_dataset__datapath:
-            if self.embeddings__enable_reembedding:
+        if self.embeddings__enable_reembedding:
+            if server_config.single_dataset__datapath:
                 matrix_data_loader = MatrixDataLoader(
                     server_config.single_dataset__datapath, app_config=self.app_config
                 )
                 if matrix_data_loader.matrix_data_type != MatrixDataType.H5AD:
-                    raise ConfigurationError("'enable-reembedding is only supported with H5AD files.")
+                    raise ConfigurationError("enable-reembedding is only supported with H5AD files.")
                 if server_config.adaptor__anndata_adaptor__backed:
                     raise ConfigurationError("enable-reembedding is not supported when run in --backed mode.")
-        try:
-            server.compute.scanpy.get_scanpy_module()
-        except NotImplementedError:
-            raise ConfigurationError("Please install scanpy to enable UMAP re-embedding")
+
+            try:
+                server.compute.scanpy.get_scanpy_module()
+            except NotImplementedError:
+                raise ConfigurationError("Please install scanpy to enable UMAP re-embedding")
 
     def handle_diffexp(self, context):
         self.check_attr("diffexp__enable", bool)
