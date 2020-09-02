@@ -9,6 +9,7 @@ import yaml
 from flatten_dict import flatten, unflatten
 
 import server.compute.diffexp_cxg as diffexp_tiledb
+import server.compute.scanpy
 from server import display_version as cellxgene_display_version
 from server.auth.auth import AuthTypeFactory
 from server.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
@@ -907,6 +908,10 @@ class DatasetConfig(BaseConfig):
                     raise ConfigurationError("'enable-reembedding is only supported with H5AD files.")
                 if server_config.adaptor__anndata_adaptor__backed:
                     raise ConfigurationError("enable-reembedding is not supported when run in --backed mode.")
+        try:
+            server.compute.scanpy.get_scanpy_module()
+        except NotImplementedError:
+            raise ConfigurationError("Please install scanpy to enable UMAP re-embedding")
 
     def handle_diffexp(self, context):
         self.check_attr("diffexp__enable", bool)
