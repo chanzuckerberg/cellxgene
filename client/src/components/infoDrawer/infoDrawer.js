@@ -123,18 +123,17 @@ class InfoDrawer extends PureComponent {
   }
 }
 
+const NUM_CATEGORIES = 8;
+
+const singleValueCategoriesPlaceholder = Array.from(Array(NUM_CATEGORIES)).map(
+  (_, index) => {
+    return [index, index];
+  }
+);
+
 const InfoFormat = ({
   datasetTitle,
-  singleValueCategories = new Map([
-    ["cellxgene", "cellxgene"],
-    ["cellxgenecellxgene", "cellxgene cellxgene"],
-    ["cellxgene cellxgene", "cellxgene"],
-    ["cell", "cellxgene cellxgene"],
-    ["xgene", "cellxgene"],
-    ["cellcellxgenecellxgene", "cellxgene cellxgene cell"],
-    ["cellxgene cellxgene cell", "cellxgene"],
-    ["cellx", "cellxgene cellxgene"],
-  ]),
+  singleValueCategories = new Map(singleValueCategoriesPlaceholder),
   aboutURL = "thisisabouthtelengthofaurl",
   skeleton = false,
 }) => {
