@@ -50,6 +50,7 @@ class InfoDrawer extends PureComponent {
       const categorySummary = createCategorySummaryFromDfCol(column, colSchema);
 
       const { numCategoryValues } = categorySummary;
+      //  Add to the array if the category has only one value
       if (numCategoryValues === 1) {
         acc.set(catName, categorySummary.allCategoryValues[0]);
       }
