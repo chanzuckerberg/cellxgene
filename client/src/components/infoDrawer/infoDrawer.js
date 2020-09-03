@@ -128,18 +128,18 @@ class InfoDrawer extends PureComponent {
 
 const InfoFormat = ({
   datasetTitle,
-  singleValueCategories = {
-    cellxgene: "cellxgene",
-    cellxgenecellxgene: "cellxgene cellxgene",
-    "cellxgene cellxgene": "cellxgene",
-    cell: "cellxgene cellxgene",
-    xgene: "cellxgene",
-    cellcellxgenecellxgene: "cellxgene cellxgene cell",
-    "cellxgene cellxgene cell": "cellxgene",
-    cellx: "cellxgene cellxgene",
-  },
+  singleValueCategories = new Map([
+    ["cellxgene", "cellxgene"],
+    ["cellxgenecellxgene", "cellxgene cellxgene"],
+    ["cellxgene cellxgene", "cellxgene"],
+    ["cell", "cellxgene cellxgene"],
+    ["xgene", "cellxgene"],
+    ["cellcellxgenecellxgene", "cellxgene cellxgene cell"],
+    ["cellxgene cellxgene cell", "cellxgene"],
+    ["cellx", "cellxgene cellxgene"],
+  ]),
   aboutURL = "thisisabouthtelengthofaurl",
-  skeleton,
+  skeleton = false,
 }) => {
   return (
     <div style={{ margin: 24 }}>
@@ -149,7 +149,7 @@ const InfoFormat = ({
           <H3 className={skeleton ? Classes.SKELETON : null}>
             Dataset Metadata
           </H3>
-          <UL className={skeleton ? Classes.SKELETON : null}>
+          <UL>
             {Array.from(singleValueCategories).map((pair) => {
               return (
                 <li
