@@ -34,15 +34,11 @@ class InfoDrawer extends PureComponent {
 
     const allCategoryNames = selectableCategoryNames(schema).sort();
 
-    const nonUserAnnoCategories = [];
-
-    for (let i = 0; i < allCategoryNames.length; i += 1) {
-      const catName = allCategoryNames[i];
+    const nonUserAnnoCategories = allCategoryNames.map((catName) => {
       const isUserAnno = schema?.annotations?.obsByName[catName]?.writable;
-      if (!isUserAnno)
-        nonUserAnnoCategories.push(annoMatrix.fetch("obs", catName));
-      else nonUserAnnoCategories.push(null);
-    }
+      if (!isUserAnno) return annoMatrix.fetch("obs", catName);
+      return nonUserAnnoCategories.push(null);
+    });
     const singleValueCategories = (
       await Promise.all(nonUserAnnoCategories)
     ).reduce((acc, categoryData, i) => {
