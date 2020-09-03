@@ -140,7 +140,7 @@ const InfoFormat = ({
   return (
     <div style={{ margin: 24 }}>
       <H1 className={skeleton ? Classes.SKELETON : null}>{datasetTitle}</H1>
-      {singleValueCategories.size > 0 ? (
+      {singleValueCategories.size > 0 && (
         <>
           <H3 className={skeleton ? Classes.SKELETON : null}>
             Dataset Metadata
@@ -156,8 +156,8 @@ const InfoFormat = ({
             })}
           </UL>
         </>
-      ) : null}
-      {aboutURL ? (
+      )}
+      {aboutURL && (
         <>
           <H3 className={skeleton ? Classes.SKELETON : null}>More Info</H3>
           <a
@@ -169,7 +169,7 @@ const InfoFormat = ({
             {aboutURL}
           </a>
         </>
-      ) : null}
+      )}
     </div>
   );
 };
