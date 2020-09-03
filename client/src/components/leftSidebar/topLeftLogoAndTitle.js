@@ -11,16 +11,15 @@ const DATASET_TITLE_FONT_SIZE = 14;
 
 @connect((state) => ({
   datasetTitle: state.config?.displayNames?.dataset ?? "",
-  aboutURL: state.config?.links?.["about-dataset"],
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
   scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
 }))
 class LeftSideBar extends React.Component {
   render() {
-    const { datasetTitle, aboutURL } = this.props;
+    const { datasetTitle } = this.props;
 
     return (
-      <InfoDrawer title="Dataset Info" {...{ aboutURL, datasetTitle }}>
+      <InfoDrawer>
         <div
           style={{
             paddingLeft: 8,

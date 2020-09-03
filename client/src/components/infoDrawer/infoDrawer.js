@@ -1,11 +1,25 @@
 import React, { PureComponent } from "react";
-import { connect } from "react-redux";
-import { Drawer, H3, H1, UL } from "@blueprintjs/core";
+import { connect, shallowEqual } from "react-redux";
+import { Drawer, H3, H1, UL, Classes } from "@blueprintjs/core";
+import Async from "react-async";
+import {
+  selectableCategoryNames,
+  createCategorySummaryFromDfCol,
+} from "../../util/stateManager/controlsHelpers";
 
 @connect((state) => {
-  return { singleValueCategories: state.metadata.singleValueCategories };
+  return {
+    annoMatrix: state.annoMatrix,
+    schema: state.annoMatrix.schema,
+    datasetTitle: state.config?.displayNames?.dataset ?? "",
+    aboutURL: state.config?.links?.["about-dataset"],
+  };
 })
 class InfoDrawer extends PureComponent {
+  static watchAsync(props, prevProps) {
+    return !shallowEqual(props.watchProps, prevProps.watchProps);
+  }
+
   constructor(props) {
     super(props);
 
@@ -13,6 +27,41 @@ class InfoDrawer extends PureComponent {
       isOpen: false,
     };
   }
+
+  fetchAsyncProps = async (props) => {
+    const { schema } = props.watchProps;
+    const { annoMatrix } = this.props;
+
+    const allCategoryNames = selectableCategoryNames(schema).sort();
+
+    const nonUserAnnoCategories = [];
+
+    for (let i = 0; i < allCategoryNames.length; i += 1) {
+      const catName = allCategoryNames[i];
+      const isUserAnno = schema?.annotations?.obsByName[catName]?.writable;
+      if (!isUserAnno)
+        nonUserAnnoCategories.push(annoMatrix.fetch("obs", catName));
+      else nonUserAnnoCategories.push(null);
+    }
+    const singleValueCategories = (
+      await Promise.all(nonUserAnnoCategories)
+    ).reduce((acc, categoryData, i) => {
+      const catName = allCategoryNames[i];
+
+      const column = categoryData.icol(0);
+      const colSchema = schema.annotations.obsByName[catName];
+
+      const categorySummary = createCategorySummaryFromDfCol(column, colSchema);
+
+      const { numCategoryValues } = categorySummary;
+      if (numCategoryValues === 1) {
+        acc.set(catName, categorySummary.allCategoryValues[0]);
+      }
+      return acc;
+    }, new Map());
+
+    return { singleValueCategories };
+  };
 
   handleClick = () => {
     this.setState((state) => {
@@ -34,8 +83,9 @@ class InfoDrawer extends PureComponent {
       datasetTitle,
       title,
       children,
-      singleValueCategories,
+      schema,
     } = this.props;
+
     return (
       <div
         role="menuitem"
@@ -45,30 +95,86 @@ class InfoDrawer extends PureComponent {
       >
         {children}
         <Drawer {...{ isOpen, position, title }}>
-          <div style={{ margin: 24 }}>
-            <H1>{datasetTitle}</H1>
-            {singleValueCategories.size > 0 ? (
-              <>
-                <H3>Dataset Metadata</H3>
-                <UL>
-                  {Array.from(singleValueCategories).map((pair) => {
-                    return <li key={pair[0]}>{`${pair[0]}: ${pair[1]}`}</li>;
-                  })}
-                </UL>
-              </>
-            ) : null}
-            {aboutURL ? (
-              <>
-                <H3>More Info</H3>
-                <a href={aboutURL} target="_blank" rel="noopener noreferrer">
-                  {aboutURL}
-                </a>
-              </>
-            ) : null}
-          </div>
+          <Async
+            watchFn={InfoDrawer.watchAsync}
+            promiseFn={this.fetchAsyncProps}
+            watchProps={{ schema }}
+          >
+            <Async.Pending>
+              <InfoFormat skeleton {...{ datasetTitle, aboutURL }} />
+            </Async.Pending>
+            <Async.Rejected>
+              {(error) => {
+                console.error(error);
+                return <span>Failed to load info</span>;
+              }}
+            </Async.Rejected>
+            <Async.Fulfilled>
+              {(asyncProps) => {
+                const { singleValueCategories } = asyncProps;
+                return (
+                  <InfoFormat
+                    {...{ datasetTitle, aboutURL, singleValueCategories }}
+                  />
+                );
+              }}
+            </Async.Fulfilled>
+          </Async>
         </Drawer>
       </div>
     );
   }
 }
+
+const InfoFormat = ({
+  datasetTitle,
+  singleValueCategories = {
+    cellxgene: "cellxgene",
+    cellxgenecellxgene: "cellxgene cellxgene",
+    "cellxgene cellxgene": "cellxgene",
+    cell: "cellxgene cellxgene",
+    xgene: "cellxgene",
+    cellcellxgenecellxgene: "cellxgene cellxgene cell",
+    "cellxgene cellxgene cell": "cellxgene",
+    cellx: "cellxgene cellxgene",
+  },
+  aboutURL = "thisisabouthtelengthofaurl",
+  skeleton,
+}) => {
+  return (
+    <div style={{ margin: 24 }}>
+      <H1 className={skeleton ? Classes.SKELETON : null}>{datasetTitle}</H1>
+      {singleValueCategories.size > 0 ? (
+        <>
+          <H3 className={skeleton ? Classes.SKELETON : null}>
+            Dataset Metadata
+          </H3>
+          <UL className={skeleton ? Classes.SKELETON : null}>
+            {Array.from(singleValueCategories).map((pair) => {
+              return (
+                <li
+                  className={skeleton ? Classes.SKELETON : null}
+                  key={pair[0]}
+                >{`${pair[0]}: ${pair[1]}`}</li>
+              );
+            })}
+          </UL>
+        </>
+      ) : null}
+      {aboutURL ? (
+        <>
+          <H3 className={skeleton ? Classes.SKELETON : null}>More Info</H3>
+          <a
+            className={skeleton ? Classes.SKELETON : null}
+            href={aboutURL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {aboutURL}
+          </a>
+        </>
+      ) : null}
+    </div>
+  );
+};
 export default InfoDrawer;
