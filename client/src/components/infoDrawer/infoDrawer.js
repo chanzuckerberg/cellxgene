@@ -37,7 +37,7 @@ class InfoDrawer extends PureComponent {
     const nonUserAnnoCategories = allCategoryNames.map((catName) => {
       const isUserAnno = schema?.annotations?.obsByName[catName]?.writable;
       if (!isUserAnno) return annoMatrix.fetch("obs", catName);
-      return nonUserAnnoCategories.push(null);
+      return null;
     });
     const singleValueCategories = (
       await Promise.all(nonUserAnnoCategories)
@@ -66,32 +66,33 @@ class InfoDrawer extends PureComponent {
     });
   };
 
+  handleClose = () => {
+    this.handleClick();
+  };
+
   handleKeyPress = (e) => {
     if (e.key === "Enter") {
-      this.handleCategoryClick();
+      this.handleClick();
     }
   };
 
   render() {
     const { isOpen } = this.state;
-    const {
-      position,
-      aboutURL,
-      datasetTitle,
-      title,
-      children,
-      schema,
-    } = this.props;
+    const { position, aboutURL, datasetTitle, children, schema } = this.props;
 
     return (
       <div
         role="menuitem"
         tabIndex="0"
-        onKeyPress={this.handleKeyPress}
-        onClick={this.handleClick}
+        onKeyPress={isOpen ? null : this.handleKeyPress}
+        onClick={isOpen ? null : this.handleClick}
       >
         {children}
-        <Drawer {...{ isOpen, position, title }}>
+        <Drawer
+          title="Dataset Overview"
+          onClose={this.handleClose}
+          {...{ isOpen, position }}
+        >
           <Async
             watchFn={InfoDrawer.watchAsync}
             promiseFn={this.fetchAsyncProps}
