@@ -1,7 +1,7 @@
 from flask import session, request, redirect, current_app, after_this_request, has_request_context, g
 from server.auth.auth import AuthTypeClientBase, AuthTypeFactory
 from server.common.errors import AuthenticationError, ConfigurationError
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 import json
 import requests
 import base64
@@ -48,10 +48,14 @@ class AuthTypeOAuth(AuthTypeClientBase):
         self.api_base_url = server_config.authentication__params_oauth__api_base_url
         self.client_id = server_config.authentication__params_oauth__client_id
         self.client_secret = server_config.authentication__params_oauth__client_secret
-        self.callback_base_url = server_config.authentication__params_oauth__callback_base_url
         self.session_cookie = server_config.authentication__params_oauth__session_cookie
         self.cookie_params = server_config.authentication__params_oauth__cookie
         self._validate_cookie_params()
+
+        self.backend_base_url = server_config.get_backend_base_url()
+        self.frontend_base_url = server_config.get_frontend_base_url()
+        if self.backend_base_url is None:
+            raise ConfigurationError("oauth requires the app__backend_base_url to be set")
 
         # set the audience
         self.audience = self.client_id
@@ -88,18 +92,13 @@ class AuthTypeOAuth(AuthTypeClientBase):
         return True
 
     def add_url_rules(self, app):
-        app.add_url_rule("/login", "login", self.login, methods=["GET"])
-        app.add_url_rule("/logout", "logout", self.logout, methods=["GET"])
-        app.add_url_rule("/oauth2/callback", "callback", self.callback, methods=["GET"])
+        parse = urlparse(self.backend_base_url)
+        app.add_url_rule(f"{parse.path}/login", "login", self.login, methods=["GET"])
+        app.add_url_rule(f"{parse.path}/logout", "logout", self.logout, methods=["GET"])
+        app.add_url_rule(f"{parse.path}/oauth2/callback", "callback", self.callback, methods=["GET"])
 
     def complete_setup(self, flask_app):
         self.oauth = OAuth(flask_app)
-        if self.callback_base_url is None:
-            # In this case, assume the server is running on the same host as the client,
-            # and the oauth provider has been configured
-            # with a callback that understands a localhost callback (e.g. A http://localhost:5005).
-            server_config = flask_app.app_config.server_config
-            self.callback_base_url = f"http://{server_config.app__host}:{server_config.app__port}"
 
         self.client = self.oauth.register(
             "auth0",
@@ -138,9 +137,9 @@ class AuthTypeOAuth(AuthTypeClientBase):
         response.cache_control.update(dict(public=True, max_age=0, no_store=True, no_cache=True, must_revalidate=True))
 
     def login(self):
-        callbackurl = f"{self.callback_base_url}/oauth2/callback"
+        callbackurl = f"{self.backend_base_url}/oauth2/callback"
         return_path = request.args.get("dataset", "")
-        return_to = f"{self.callback_base_url}/{return_path}"
+        return_to = f"{self.frontend_base_url}/{return_path}/"
         # save the return path in the session cookie, accessed in the callback function
         session["oauth_callback_redirect"] = return_to
         response = self.client.authorize_redirect(redirect_uri=callbackurl)
@@ -149,7 +148,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
 
     def logout(self):
         self.remove_tokens()
-        params = {"returnTo": self.callback_base_url, "client_id": self.client_id}
+        params = {"returnTo": self.frontend_base_url, "client_id": self.client_id}
         response = redirect(self.client.api_base_url + "/v2/logout?" + urlencode(params))
         self.update_response(response)
         return response
@@ -228,14 +227,14 @@ class AuthTypeOAuth(AuthTypeClientBase):
 
     def get_login_url(self, data_adaptor):
         """Return the url for the login route"""
-        if current_app.app_config.is_multi_dataset():
-            return f"/login?dataset={data_adaptor.uri_path}/"
+        if data_adaptor and current_app.app_config.is_multi_dataset():
+            return f"{self.backend_base_url}/login?dataset={data_adaptor.uri_path}/"
         else:
-            return "/login"
+            return f"{self.backend_base_url}/login"
 
     def get_logout_url(self, data_adaptor):
         """Return the url for the logout route"""
-        return "/logout"
+        return f"{self.backend_base_url}/logout"
 
     def check_jwt_payload(self, id_token):
         try:
@@ -255,8 +254,8 @@ class AuthTypeOAuth(AuthTypeClientBase):
                 }
         if rsa_key:
             options = {}
-            if not rsa_key["n"] or not rsa_key["e"]:
-                # this is a mock auth server, do not validate
+            if self.client_id == "mock_client_id" and (not rsa_key["n"] or not rsa_key["e"]):
+                # this is a mock auth server used for unit testing, do not validate
                 options = {"verify_signature": False, "verify_iss": False}
             try:
                 payload = jwt.decode(

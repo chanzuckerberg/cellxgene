@@ -433,13 +433,13 @@ class ServerConfig(BaseConfig):
             self.app__generate_cache_control_headers = dc["app"]["generate_cache_control_headers"]
             self.app__server_timing_headers = dc["app"]["server_timing_headers"]
             self.app__csp_directives = dc["app"]["csp_directives"]
+            self.app__backend_base_url = dc["app"]["backend_base_url"]
+            self.app__frontend_base_url = dc["app"]["frontend_base_url"]
 
             self.authentication__type = dc["authentication"]["type"]
             self.authentication__params_oauth__api_base_url = dc["authentication"]["params_oauth"]["api_base_url"]
             self.authentication__params_oauth__client_id = dc["authentication"]["params_oauth"]["client_id"]
             self.authentication__params_oauth__client_secret = dc["authentication"]["params_oauth"]["client_secret"]
-            self.authentication__params_oauth__callback_base_url = \
-                dc["authentication"]["params_oauth"]["callback_base_url"]
             self.authentication__params_oauth__session_cookie = dc["authentication"]["params_oauth"]["session_cookie"]
             self.authentication__params_oauth__cookie = dc["authentication"]["params_oauth"]["cookie"]
 
@@ -500,6 +500,8 @@ class ServerConfig(BaseConfig):
         self.check_attr("app__generate_cache_control_headers", bool)
         self.check_attr("app__server_timing_headers", bool)
         self.check_attr("app__csp_directives", (type(None), dict))
+        self.check_attr("app__backend_base_url", (type(None), str))
+        self.check_attr("app__frontend_base_url", (type(None), str))
 
         if self.app__port:
             try:
@@ -548,6 +550,9 @@ class ServerConfig(BaseConfig):
                 elif not isinstance(v, str):
                     raise ConfigurationError("CSP directive value must be a string or list of strings.")
 
+        if self.app__frontend_base_url is None:
+            self.app__frontend_base_url = self.app__backend_base_url
+
     def handle_authentication(self, context):
         self.check_attr("authentication__type", (type(None), str))
 
@@ -556,7 +561,6 @@ class ServerConfig(BaseConfig):
         self.check_attr("authentication__params_oauth__api_base_url", ptypes)
         self.check_attr("authentication__params_oauth__client_id", ptypes)
         self.check_attr("authentication__params_oauth__client_secret", ptypes)
-        self.check_attr("authentication__params_oauth__callback_base_url", (type(None), str))
         self.check_attr("authentication__params_oauth__session_cookie", bool)
 
         if self.authentication__params_oauth__session_cookie:
@@ -741,6 +745,20 @@ class ServerConfig(BaseConfig):
         if limit_value is None:  # disabled
             return False
         return value > limit_value
+
+    def get_backend_base_url(self):
+        if self.app__backend_base_url == "local":
+            return f"http://{self.app__host}:{self.app__port}"
+        else:
+            return self.app__backend_base_url
+
+    def get_frontend_base_url(self):
+        if self.app__frontend_base_url == "local":
+            return f"http://{self.app__host}:{self.app__port}"
+        elif self.app__frontend_base_url is None:
+            return self.get_backend_url()
+        else:
+            return self.app__frontend_base_url
 
 
 class DatasetConfig(BaseConfig):

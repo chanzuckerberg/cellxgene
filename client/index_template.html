@@ -38,9 +38,11 @@
   <body>
     <script type="text/javascript">
       window.CELLXGENE = {};
+      backend_base_url = "{{BACKEND_BASE_URL}}";
+      prefix = backend_base_url ? backend_base_url : location.origin;
       window.CELLXGENE.API = {
-        prefix: `${location.origin}${location.pathname}api/`,
-        version: "v0.2/",
+          prefix: `${prefix}${location.pathname}api/`,
+          version: "v0.2/",
       };
     </script>
     <noscript

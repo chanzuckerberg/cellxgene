@@ -2,6 +2,7 @@ import datetime
 import logging
 from functools import wraps
 from http import HTTPStatus
+from urllib.parse import urlparse
 
 from flask import Flask, redirect, current_app, make_response, render_template, abort, Blueprint, request, \
     send_from_directory
@@ -79,6 +80,9 @@ def dataset_index(url_dataroot=None, dataset=None):
     dataset_config = app_config.get_dataset_config(url_dataroot)
     scripts = dataset_config.app__scripts
     inline_scripts = dataset_config.app__inline_scripts
+    backend_base_url = server_config.get_backend_base_url()
+    if backend_base_url and backend_base_url.endswith("/"):
+        backend_base_url = backend_base_url[:-1]
 
     try:
         cache_manager = current_app.matrix_data_cache_manager
@@ -86,7 +90,8 @@ def dataset_index(url_dataroot=None, dataset=None):
             data_adaptor.set_uri_path(f"{url_dataroot}/{dataset}")
             dataset_title = app_config.get_title(data_adaptor)
             return render_template(
-                "index.html", datasetTitle=dataset_title, SCRIPTS=scripts, INLINE_SCRIPTS=inline_scripts
+                "index.html", datasetTitle=dataset_title, SCRIPTS=scripts, INLINE_SCRIPTS=inline_scripts,
+                BACKEND_BASE_URL=backend_base_url
             )
     except DatasetAccessError as e:
         return common_rest.abort_and_log(
@@ -179,9 +184,9 @@ def dataroot_test_index():
             data += f"<p>Logged in as {auth.get_user_id()} / {auth.get_user_name()} / {auth.get_user_email()}</p>"
         if auth.requires_client_login():
             if server_config.auth.is_user_authenticated():
-                data += "<p><a href='/logout'>Logout</a></p>"
+                data += f"<p><a href='{auth.get_logout_url(None)}'>Logout</a></p>"
             else:
-                data += "<p><a href='/login'>Login</a></p>"
+                data += f"<p><a href='{auth.get_login_url(None)}'>Login</a></p>"
 
     datasets = []
     for dataroot_dict in server_config.multi_dataset__dataroot.values():
@@ -353,6 +358,12 @@ class Server:
         self.app.register_blueprint(webbp)
 
         api_version = "/api/v0.2"
+        backend_base_url = server_config.get_backend_base_url()
+        backend_path = "/"
+        if backend_base_url:
+            parse = urlparse(backend_base_url)
+            backend_path = parse.path
+
         if app_config.is_multi_dataset():
             # NOTE:  These routes only allow the dataset to be in the directory
             # of the dataroot, and not a subdirectory.  We may want to change
@@ -360,25 +371,27 @@ class Server:
             for dataroot_dict in server_config.multi_dataset__dataroot.values():
                 url_dataroot = dataroot_dict["base_url"]
                 bp_api = Blueprint(
-                    f"api_dataset_{url_dataroot}", __name__, url_prefix=f"/{url_dataroot}/<dataset>" + api_version
+                    f"api_dataset_{url_dataroot}", __name__,
+                    url_prefix=f"{backend_path}/{url_dataroot}/<dataset>" + api_version
                 )
                 resources = get_api_resources(bp_api, url_dataroot)
                 self.app.register_blueprint(resources.blueprint)
                 self.app.add_url_rule(
-                    f"/{url_dataroot}/<dataset>/",
+                    f"{backend_path}/{url_dataroot}/<dataset>/",
                     f"dataset_index_{url_dataroot}",
                     lambda dataset, url_dataroot=url_dataroot: dataset_index(url_dataroot, dataset),
                     methods=["GET"],
                 )
                 self.app.add_url_rule(
-                    f"/{url_dataroot}/<dataset>/static/<path:filename>",
+                    f"{backend_path}/{url_dataroot}/<dataset>/static/<path:filename>",
                     f"static_assets_{url_dataroot}",
                     view_func=lambda dataset, filename: send_from_directory("../common/web/static", filename),
                     methods=["GET"]
+
                 )
 
         else:
-            bp_api = Blueprint("api", __name__, url_prefix=api_version)
+            bp_api = Blueprint("api", __name__, url_prefix=f"{backend_path}api_version")
             resources = get_api_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)
             self.app.add_url_rule(
