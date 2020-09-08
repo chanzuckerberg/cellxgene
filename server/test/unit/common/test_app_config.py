@@ -7,6 +7,7 @@ import requests
 
 from server.common.app_config import AppConfig
 from server.common.errors import ConfigurationError
+from server.common.utils.utils import find_available_port
 from server.test import PROJECT_ROOT, test_server, FIXTURES_ROOT
 
 
@@ -133,3 +134,23 @@ class AppConfigTest(unittest.TestCase):
             self.assertEqual(config.server_config.app__flask_secret_key, "mock_flask_secret")
             self.assertEqual(config.server_config.authentication__params_oauth__client_secret, "mock_oauth_secret")
             self.assertEqual(config.default_dataset_config.user_annotations__hosted_tiledb_array__db_uri, "mock_db_uri")
+
+    def test_backend_base_url(self):
+
+        # test the backend_base_url feature, and that it can contain a path
+        c = AppConfig()
+        backend_port = find_available_port("localhost", 10000)
+        c.update_server_config(
+            app__backend_base_url=f"http://localhost:{backend_port}/additional/path/before/dataroot",
+            multi_dataset__dataroot=f"{PROJECT_ROOT}/example-dataset"
+        )
+
+        c.complete_config()
+
+        with test_server(["-p", str(backend_port)], app_config=c) as server:
+            session = requests.Session()
+            self.assertEqual(server, f"http://localhost:{backend_port}")
+            response = session.get(f"{server}/additional/path/before/dataroot/d/pbmc3k.h5ad/api/v0.2/config")
+            self.assertEqual(response.status_code, 200)
+            data_config = response.json()
+            self.assertEqual(data_config["config"]["displayNames"]["dataset"], "pbmc3k")
