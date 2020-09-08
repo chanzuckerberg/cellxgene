@@ -180,34 +180,35 @@ const InfoFormat = ({
       <H1 className={skeleton ? Classes.SKELETON : null}>
         {title ?? datasetTitle}
       </H1>
-      {contributors && (
-        <>
-          <H3 className={skeleton ? Classes.SKELETON : null}>Contributors</H3>
-          <p className={skeleton ? Classes.SKELETON : null}>
-            {contributors.map(renderContributors)}
-          </p>
-          {affiliations.length > 0 && (
-            <>
-              <H3 className={skeleton ? Classes.SKELETON : null}>
-                Affiliations
-              </H3>
-              <UL>
-                {affiliations.map((item, index) => (
-                  <div
-                    id={`#afil${index}`}
-                    key={item}
-                    className={skeleton ? Classes.SKELETON : null}
-                  >
-                    <sup>{index + 1}</sup>
-                    {"  "}
-                    {item}
-                  </div>
-                ))}
-              </UL>
-            </>
-          )}
-        </>
-      )}
+      {contributors &&
+      false /* Temp removed contributor section to avoid publishing PII */ && (
+          <>
+            <H3 className={skeleton ? Classes.SKELETON : null}>Contributors</H3>
+            <p className={skeleton ? Classes.SKELETON : null}>
+              {contributors.map(renderContributors)}
+            </p>
+            {affiliations.length > 0 && (
+              <>
+                <H3 className={skeleton ? Classes.SKELETON : null}>
+                  Affiliations
+                </H3>
+                <UL>
+                  {affiliations.map((item, index) => (
+                    <div
+                      id={`#afil${index}`}
+                      key={item}
+                      className={skeleton ? Classes.SKELETON : null}
+                    >
+                      <sup>{index + 1}</sup>
+                      {"  "}
+                      {item}
+                    </div>
+                  ))}
+                </UL>
+              </>
+            )}
+          </>
+        )}
       {renderDOILink("DOI", doi, skeleton)}
       {renderDOILink("Preprint DOI", preprintDOI, skeleton)}
       {organism && (
