@@ -14,6 +14,7 @@ import {
     datasetTitle: state.config?.displayNames?.dataset ?? "",
     aboutURL: state.config?.links?.["about-dataset"],
     isOpen: state.controls.datasetDrawer,
+    dataPortalProps: state.config?.["corpora_props"] ?? {},
   };
 })
 class InfoDrawer extends PureComponent {
@@ -59,8 +60,23 @@ class InfoDrawer extends PureComponent {
     dispatch({ type: "toggle dataset drawer" });
   };
 
+  handleClose = () => {
+    this.setState((state) => {
+      return { isOpen: !state.isOpen };
+    });
+  };
+
   render() {
-    const { position, aboutURL, datasetTitle, schema, isOpen } = this.props;
+    const { isOpen } = this.state;
+    const {
+      position,
+      aboutURL,
+      datasetTitle,
+      children,
+      schema,
+      isOpen,
+      dataPortalProps,
+    } = this.props;
 
     return (
       <Drawer
@@ -74,7 +90,7 @@ class InfoDrawer extends PureComponent {
           watchProps={{ schema }}
         >
           <Async.Pending>
-            <InfoFormat skeleton {...{ datasetTitle, aboutURL }} />
+            <InfoFormat skeleton {...{ datasetTitle, aboutURL, dataPortalProps }} />
           </Async.Pending>
           <Async.Rejected>
             {(error) => {
@@ -87,7 +103,7 @@ class InfoDrawer extends PureComponent {
               const { singleValueCategories } = asyncProps;
               return (
                 <InfoFormat
-                  {...{ datasetTitle, aboutURL, singleValueCategories }}
+                  {...{ datasetTitle, aboutURL, singleValueCategories, dataPortalProps }}
                 />
               );
             }}
@@ -106,15 +122,98 @@ const singleValueCategoriesPlaceholder = Array.from(Array(NUM_CATEGORIES)).map(
   }
 );
 
+const renderDOILink = (type, doi, skeleton) => {
+  const link = `https://doi.org/${doi}`;
+  return (
+    doi && (
+      <>
+        <H3 className={skeleton ? Classes.SKELETON : null}>{type}</H3>
+        <p className={skeleton ? Classes.SKELETON : null}>
+          <a href={link} target="_blank" rel="noopener noreferrer">
+            {link}
+          </a>
+        </p>
+      </>
+    )
+  );
+};
+
+const affiliations = [];
+const renderContributors = (contributor) => {
+  const { institution, email, name } = contributor;
+  let index;
+  if (institution) {
+    index = affiliations.indexOf(institution) + 1;
+    if (index === 0) {
+      index = affiliations.push(institution);
+    }
+  }
+  return (
+    <span key={name}>
+      {name}
+      {email && `(${email})`}
+      <sup>{index}</sup>
+    </span>
+  );
+};
+
 const InfoFormat = ({
   datasetTitle,
   singleValueCategories = new Map(singleValueCategoriesPlaceholder),
   aboutURL = "thisisabouthtelengthofaurl",
+  dataPortalProps = singleValueCategories,
   skeleton = false,
 }) => {
+  const {
+    title,
+    publication_doi: doi,
+    preprint_doi: preprintDOI,
+    organism,
+    contributors,
+    project_links: projectLinks,
+  } = dataPortalProps;
+
   return (
     <div style={{ margin: 24 }}>
-      <H1 className={skeleton ? Classes.SKELETON : null}>{datasetTitle}</H1>
+      <H1 className={skeleton ? Classes.SKELETON : null}>
+        {title ?? datasetTitle}
+      </H1>
+      {contributors && (
+        <>
+          <H3 className={skeleton ? Classes.SKELETON : null}>Contributors</H3>
+          <p className={skeleton ? Classes.SKELETON : null}>
+            {contributors.map(renderContributors)}
+          </p>
+          {affiliations.length > 0 && (
+            <>
+              <H3 className={skeleton ? Classes.SKELETON : null}>
+                Affiliations
+              </H3>
+              <UL>
+                {affiliations.map((item, index) => (
+                  <div
+                    id={`#afil${index}`}
+                    key={item}
+                    className={skeleton ? Classes.SKELETON : null}
+                  >
+                    <sup>{index + 1}</sup>
+                    {"  "}
+                    {item}
+                  </div>
+                ))}
+              </UL>
+            </>
+          )}
+        </>
+      )}
+      {renderDOILink("DOI", doi, skeleton)}
+      {renderDOILink("Preprint DOI", preprintDOI, skeleton)}
+      {organism && (
+        <>
+          <H3 className={skeleton ? Classes.SKELETON : null}>Organism</H3>
+          <p className={skeleton ? Classes.SKELETON : null}>{organism}</p>
+        </>
+      )}
       {singleValueCategories.size > 0 && (
         <>
           <H3 className={skeleton ? Classes.SKELETON : null}>
@@ -133,18 +232,45 @@ const InfoFormat = ({
           </UL>
         </>
       )}
-      {aboutURL && (
+      {projectLinks ? (
         <>
-          <H3 className={skeleton ? Classes.SKELETON : null}>More Info</H3>
-          <a
-            className={skeleton ? Classes.SKELETON : null}
-            href={aboutURL}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {aboutURL}
-          </a>
+          <H3 className={skeleton ? Classes.SKELETON : null}>Project Links</H3>
+          <UL>
+            {projectLinks.map((link) => {
+              if (link.link_type === "SUMMARY") return null;
+              return (
+                <li
+                  key={link.link_name}
+                  className={skeleton ? Classes.SKELETON : null}
+                >
+                  <a
+                    href={link.link_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {link.link_name}
+                  </a>
+                </li>
+              );
+            })}
+          </UL>
         </>
+      ) : (
+        aboutURL && (
+          <>
+            <H3 className={skeleton ? Classes.SKELETON : null}>More Info</H3>
+            <p>
+              <a
+                className={skeleton ? Classes.SKELETON : null}
+                href={aboutURL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {aboutURL}
+              </a>
+            </p>
+          </>
+        )
       )}
     </div>
   );
