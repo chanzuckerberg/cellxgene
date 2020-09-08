@@ -123,14 +123,13 @@ const singleValueCategoriesPlaceholder = Array.from(Array(NUM_CATEGORIES)).map(
 );
 
 const renderDOILink = (type, doi, skeleton) => {
-  const link = `https://doi.org/${doi}`;
   return (
     doi && (
       <>
         <H3 className={skeleton ? Classes.SKELETON : null}>{type}</H3>
         <p className={skeleton ? Classes.SKELETON : null}>
-          <a href={link} target="_blank" rel="noopener noreferrer">
-            {link}
+          <a href={doi} target="_blank" rel="noopener noreferrer">
+            {doi}
           </a>
         </p>
       </>
@@ -175,6 +174,7 @@ const InfoFormat = ({
     contributors,
     project_links: projectLinks,
   } = dataPortalProps;
+
   return (
     <div style={{ margin: 24, overflow: "auto" }}>
       <H1 className={skeleton ? Classes.SKELETON : null}>
