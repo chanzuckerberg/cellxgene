@@ -164,6 +164,9 @@ const InfoFormat = ({
   dataPortalProps = singleValueCategories,
   skeleton = false,
 }) => {
+  if (dataPortalProps.corpora_schema_version === "1.0.0") {
+    dataPortalProps = {};
+  }
   const {
     title,
     publication_doi: doi,
@@ -172,9 +175,8 @@ const InfoFormat = ({
     contributors,
     project_links: projectLinks,
   } = dataPortalProps;
-
   return (
-    <div style={{ margin: 24 }}>
+    <div style={{ margin: 24, overflow: "auto" }}>
       <H1 className={skeleton ? Classes.SKELETON : null}>
         {title ?? datasetTitle}
       </H1>
