@@ -20,14 +20,6 @@ class InfoDrawer extends PureComponent {
     return !shallowEqual(props.watchProps, prevProps.watchProps);
   }
 
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      isOpen: false,
-    };
-  }
-
   fetchAsyncProps = async (props) => {
     const { schema } = props.watchProps;
     const { annoMatrix } = this.props;
@@ -60,66 +52,48 @@ class InfoDrawer extends PureComponent {
     return { singleValueCategories };
   };
 
-  handleClick = () => {
-    this.setState((state) => {
-      return { isOpen: !state.isOpen };
-    });
-  };
-
-  handleClose = () => {
-    this.handleClick();
-  };
-
-  handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      this.handleClick();
-    }
-  };
-
   render() {
-    const { isOpen } = this.state;
-    const { position, aboutURL, datasetTitle, children, schema } = this.props;
+    const {
+      position,
+      aboutURL,
+      datasetTitle,
+      schema,
+      isOpen,
+      handleClick,
+    } = this.props;
 
     return (
-      <div
-        role="menuitem"
-        tabIndex="0"
-        onKeyPress={isOpen ? null : this.handleKeyPress}
-        onClick={isOpen ? null : this.handleClick}
+      <Drawer
+        title="Dataset Overview"
+        onClose={handleClick}
+        {...{ isOpen, position }}
       >
-        {children}
-        <Drawer
-          title="Dataset Overview"
-          onClose={this.handleClose}
-          {...{ isOpen, position }}
+        <Async
+          watchFn={InfoDrawer.watchAsync}
+          promiseFn={this.fetchAsyncProps}
+          watchProps={{ schema }}
         >
-          <Async
-            watchFn={InfoDrawer.watchAsync}
-            promiseFn={this.fetchAsyncProps}
-            watchProps={{ schema }}
-          >
-            <Async.Pending>
-              <InfoFormat skeleton {...{ datasetTitle, aboutURL }} />
-            </Async.Pending>
-            <Async.Rejected>
-              {(error) => {
-                console.error(error);
-                return <span>Failed to load info</span>;
-              }}
-            </Async.Rejected>
-            <Async.Fulfilled>
-              {(asyncProps) => {
-                const { singleValueCategories } = asyncProps;
-                return (
-                  <InfoFormat
-                    {...{ datasetTitle, aboutURL, singleValueCategories }}
-                  />
-                );
-              }}
-            </Async.Fulfilled>
-          </Async>
-        </Drawer>
-      </div>
+          <Async.Pending>
+            <InfoFormat skeleton {...{ datasetTitle, aboutURL }} />
+          </Async.Pending>
+          <Async.Rejected>
+            {(error) => {
+              console.error(error);
+              return <span>Failed to load info</span>;
+            }}
+          </Async.Rejected>
+          <Async.Fulfilled>
+            {(asyncProps) => {
+              const { singleValueCategories } = asyncProps;
+              return (
+                <InfoFormat
+                  {...{ datasetTitle, aboutURL, singleValueCategories }}
+                />
+              );
+            }}
+          </Async.Fulfilled>
+        </Async>
+      </Drawer>
     );
   }
 }
