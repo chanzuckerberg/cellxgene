@@ -60,13 +60,12 @@ class LeftSideBar extends React.Component {
           gene
         </span>
         <Button
-          outlined
+          minimal
           icon={IconNames.BOOK}
           style={{
             fontSize: DATASET_TITLE_FONT_SIZE,
-            marginLeft: "7px",
-            position: "relative",
-            top: -8,
+            position: "absolute",
+            right: 10,
           }}
           active={hoverState}
           onClick={this.handleClick}

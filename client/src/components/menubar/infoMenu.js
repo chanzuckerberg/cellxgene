@@ -35,7 +35,7 @@ const InformationMenu = React.memo((props) => {
               onFocus={() => handleMouseOver(dispatch)}
               onBlur={() => handleMouseOut(dispatch)}
               icon={IconNames.BOOK}
-              text="Open Dataset Overview"
+              text="Dataset Overview"
             />
 
             <MenuItem
