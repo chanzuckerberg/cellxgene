@@ -79,23 +79,7 @@ This project was started with the sole goal of empowering the scientific communi
 
 If you believe you have found a security issue, we would appreciate notification. Please send email to <security@chanzuckerberg.com>.
 
-# About
-
-### Core team
-
-The current core team:
-
-- Colin Megill, frontend & product design
-- Bruce Martin, software engineer
-- Sidney Bell, computational biologist
-- Lia Prins, designer
-- Severiano Badajoz, software engineer
-
-We would also like to gratefully acknowledge contributions from past core team members:
-
-- Charlotte Weaver, software engineer
-
-### Inspiration
+# Inspiration
 
 We've been heavily inspired by several other related single-cell visualization projects, including the [UCSC Cell Browswer](http://cells.ucsc.edu/), [Cytoscape](http://www.cytoscape.org/), [Xena](https://xena.ucsc.edu/), [ASAP](https://asap.epfl.ch/), [Gene Pattern](http://genepattern-notebook.org/), and many others. We hope to explore collaborations where useful as this community works together on improving interactive visualization for single-cell data.
 
