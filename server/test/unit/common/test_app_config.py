@@ -20,46 +20,46 @@ def mockenv(**envvars):
 
 class AppConfigTest(unittest.TestCase):
     def test_update(self):
-        c = AppConfig()
-        c.update_server_config(app__verbose=True, multi_dataset__dataroot="datadir")
-        v = c.server_config.changes_from_default()
+        config = AppConfig()
+        config.update_server_config(app__verbose=True, multi_dataset__dataroot="datadir")
+        v = config.server_config.changes_from_default()
         self.assertCountEqual(v, [("app__verbose", True, False), ("multi_dataset__dataroot", "datadir", None)])
 
-        c = AppConfig()
-        c.update_default_dataset_config(app__scripts=(), app__inline_scripts=())
-        v = c.server_config.changes_from_default()
+        config = AppConfig()
+        config.update_default_dataset_config(app__scripts=(), app__inline_scripts=())
+        v = config.server_config.changes_from_default()
         self.assertCountEqual(v, [])
 
-        c = AppConfig()
-        c.update_default_dataset_config(app__scripts=[], app__inline_scripts=[])
-        v = c.default_dataset_config.changes_from_default()
+        config = AppConfig()
+        config.update_default_dataset_config(app__scripts=[], app__inline_scripts=[])
+        v = config.default_dataset_config.changes_from_default()
         self.assertCountEqual(v, [])
 
-        c = AppConfig()
-        c.update_default_dataset_config(app__scripts=("a", "b"), app__inline_scripts=["c", "d"])
-        v = c.default_dataset_config.changes_from_default()
+        config = AppConfig()
+        config.update_default_dataset_config(app__scripts=("a", "b"), app__inline_scripts=["c", "d"])
+        v = config.default_dataset_config.changes_from_default()
         self.assertCountEqual(v, [("app__scripts", ["a", "b"], []), ("app__inline_scripts", ["c", "d"], [])])
 
     def test_multi_dataset(self):
 
-        c = AppConfig()
+        config = AppConfig()
         # test for illegal url_dataroots
         for illegal in ("../b", "!$*", "\\n", "", "(bad)"):
-            c.update_server_config(
+            config.update_server_config(
                 multi_dataset__dataroot={"tag": {"base_url": illegal, "dataroot": "{PROJECT_ROOT}/example-dataset"}}
             )
             with self.assertRaises(ConfigurationError):
-                c.complete_config()
+                config.complete_config()
 
         # test for legal url_dataroots
         for legal in ("d", "this.is-okay_", "a/b"):
-            c.update_server_config(
+            config.update_server_config(
                 multi_dataset__dataroot={"tag": {"base_url": legal, "dataroot": "{PROJECT_ROOT}/example-dataset"}}
             )
-            c.complete_config()
+            config.complete_config()
 
         # test that multi dataroots work end to end
-        c.update_server_config(
+        config.update_server_config(
             multi_dataset__dataroot=dict(
                 s1=dict(dataroot=f"{PROJECT_ROOT}/example-dataset", base_url="set1/1/2"),
                 s2=dict(dataroot=f"{FIXTURES_ROOT}", base_url="set2"),
@@ -68,46 +68,46 @@ class AppConfigTest(unittest.TestCase):
         )
 
         # Change this default to test if the dataroot overrides below work.
-        c.update_default_dataset_config(app__about_legal_tos="tos_default.html")
+        config.update_default_dataset_config(app__about_legal_tos="tos_default.html")
 
         # specialize the configs for set1
-        c.add_dataroot_config(
+        config.add_dataroot_config(
             "s1", user_annotations__enable=False, diffexp__enable=True, app__about_legal_tos="tos_set1.html"
         )
 
         # specialize the configs for set2
-        c.add_dataroot_config(
+        config.add_dataroot_config(
             "s2", user_annotations__enable=True, diffexp__enable=False, app__about_legal_tos="tos_set2.html"
         )
 
         # no specializations for set3 (they get the default dataset config)
-        c.complete_config()
+        config.complete_config()
 
-        with test_server(app_config=c) as server:
+        with test_server(app_config=config) as server:
             session = requests.Session()
 
-            r = session.get(f"{server}/set1/1/2/pbmc3k.h5ad/api/v0.2/config")
-            data_config = r.json()
+            response = session.get(f"{server}/set1/1/2/pbmc3k.h5ad/api/v0.2/config")
+            data_config = response.json()
             assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
             assert data_config["config"]["parameters"]["annotations"] is False
             assert data_config["config"]["parameters"]["disable-diffexp"] is False
             assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set1.html"
 
-            r = session.get(f"{server}/set2/pbmc3k.cxg/api/v0.2/config")
-            data_config = r.json()
+            response = session.get(f"{server}/set2/pbmc3k.cxg/api/v0.2/config")
+            data_config = response.json()
             assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
             assert data_config["config"]["parameters"]["annotations"] is True
             assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set2.html"
 
-            r = session.get(f"{server}/set3/pbmc3k.cxg/api/v0.2/config")
-            data_config = r.json()
+            response = session.get(f"{server}/set3/pbmc3k.cxg/api/v0.2/config")
+            data_config = response.json()
             assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
             assert data_config["config"]["parameters"]["annotations"] is True
             assert data_config["config"]["parameters"]["disable-diffexp"] is False
             assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_default.html"
 
-            r = session.get(f"{server}/health")
-            assert r.json()["status"] == "pass"
+            response = session.get(f"{server}/health")
+            assert response.json()["status"] == "pass"
 
     @mockenv(CXG_AWS_SECRET_NAME="TESTING", CXG_AWS_SECRET_REGION_NAME="TEST_REGION")
     @patch('server.common.aws_secret_utils.get_secret_key')
@@ -135,19 +135,19 @@ class AppConfigTest(unittest.TestCase):
             self.assertEqual(config.server_config.authentication__params_oauth__client_secret, "mock_oauth_secret")
             self.assertEqual(config.default_dataset_config.user_annotations__hosted_tiledb_array__db_uri, "mock_db_uri")
 
-    def test_backend_base_url(self):
+    def test_api_base_url(self):
 
-        # test the backend_base_url feature, and that it can contain a path
-        c = AppConfig()
+        # test the api_base_url feature, and that it can contain a path
+        config = AppConfig()
         backend_port = find_available_port("localhost", 10000)
-        c.update_server_config(
-            app__backend_base_url=f"http://localhost:{backend_port}/additional/path/before/dataroot",
+        config.update_server_config(
+            app__api_base_url=f"http://localhost:{backend_port}/additional/path/before/dataroot",
             multi_dataset__dataroot=f"{PROJECT_ROOT}/example-dataset"
         )
 
-        c.complete_config()
+        config.complete_config()
 
-        with test_server(["-p", str(backend_port)], app_config=c) as server:
+        with test_server(["-p", str(backend_port)], app_config=config) as server:
             session = requests.Session()
             self.assertEqual(server, f"http://localhost:{backend_port}")
             response = session.get(f"{server}/additional/path/before/dataroot/d/pbmc3k.h5ad/api/v0.2/config")

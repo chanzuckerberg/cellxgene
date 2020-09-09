@@ -434,11 +434,13 @@ class ServerConfig(BaseConfig):
             self.app__generate_cache_control_headers = dc["app"]["generate_cache_control_headers"]
             self.app__server_timing_headers = dc["app"]["server_timing_headers"]
             self.app__csp_directives = dc["app"]["csp_directives"]
-            self.app__backend_base_url = dc["app"]["backend_base_url"]
-            self.app__frontend_base_url = dc["app"]["frontend_base_url"]
+            self.app__api_base_url = dc["app"]["api_base_url"]
+            self.app__web_base_url = dc["app"]["web_base_url"]
 
             self.authentication__type = dc["authentication"]["type"]
-            self.authentication__params_oauth__api_base_url = dc["authentication"]["params_oauth"]["api_base_url"]
+            self.authentication__params_oauth__oauth_api_base_url = dc["authentication"]["params_oauth"][
+                "oauth_api_base_url"
+            ]
             self.authentication__params_oauth__client_id = dc["authentication"]["params_oauth"]["client_id"]
             self.authentication__params_oauth__client_secret = dc["authentication"]["params_oauth"]["client_secret"]
             self.authentication__params_oauth__session_cookie = dc["authentication"]["params_oauth"]["session_cookie"]
@@ -501,8 +503,8 @@ class ServerConfig(BaseConfig):
         self.check_attr("app__generate_cache_control_headers", bool)
         self.check_attr("app__server_timing_headers", bool)
         self.check_attr("app__csp_directives", (type(None), dict))
-        self.check_attr("app__backend_base_url", (type(None), str))
-        self.check_attr("app__frontend_base_url", (type(None), str))
+        self.check_attr("app__api_base_url", (type(None), str))
+        self.check_attr("app__web_base_url", (type(None), str))
 
         if self.app__port:
             try:
@@ -551,15 +553,15 @@ class ServerConfig(BaseConfig):
                 elif not isinstance(v, str):
                     raise ConfigurationError("CSP directive value must be a string or list of strings.")
 
-        if self.app__frontend_base_url is None:
-            self.app__frontend_base_url = self.app__backend_base_url
+        if self.app__web_base_url is None:
+            self.app__web_base_url = self.app__api_base_url
 
     def handle_authentication(self, context):
         self.check_attr("authentication__type", (type(None), str))
 
         # oauth
         ptypes = str if self.authentication__type == "oauth" else (type(None), str)
-        self.check_attr("authentication__params_oauth__api_base_url", ptypes)
+        self.check_attr("authentication__params_oauth__oauth_api_base_url", ptypes)
         self.check_attr("authentication__params_oauth__client_id", ptypes)
         self.check_attr("authentication__params_oauth__client_secret", ptypes)
         self.check_attr("authentication__params_oauth__session_cookie", bool)
@@ -747,19 +749,17 @@ class ServerConfig(BaseConfig):
             return False
         return value > limit_value
 
-    def get_backend_base_url(self):
-        if self.app__backend_base_url == "local":
+    def get_api_base_url(self):
+        if self.app__api_base_url == "local":
             return f"http://{self.app__host}:{self.app__port}"
-        else:
-            return self.app__backend_base_url
+        return self.app__api_base_url
 
-    def get_frontend_base_url(self):
-        if self.app__frontend_base_url == "local":
+    def get_web_base_url(self):
+        if self.app__web_base_url == "local":
             return f"http://{self.app__host}:{self.app__port}"
-        elif self.app__frontend_base_url is None:
-            return self.get_backend_url()
-        else:
-            return self.app__frontend_base_url
+        if self.app__web_base_url is None:
+            return self.get_api_base_url()
+        return self.app__web_base_url
 
 
 class DatasetConfig(BaseConfig):
@@ -787,7 +787,7 @@ class DatasetConfig(BaseConfig):
             self.user_annotations__ontology__obo_location = dc["user_annotations"]["ontology"]["obo_location"]
             self.user_annotations__hosted_tiledb_array__db_uri = dc["user_annotations"]["hosted_tiledb_array"]["db_uri"]
             self.user_annotations__hosted_tiledb_array__hosted_file_directory = \
-                dc["user_annotations"]["hosted_tiledb_array"]["hosted_file_directory"]  # noqa E501
+                dc["user_annotations"][ "hosted_tiledb_array" ][ "hosted_file_directory" ]  # noqa E501
 
             self.embeddings__names = dc["embeddings"]["names"]
             self.embeddings__enable_reembedding = dc["embeddings"]["enable_reembedding"]

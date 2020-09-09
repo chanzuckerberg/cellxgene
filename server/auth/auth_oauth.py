@@ -45,17 +45,17 @@ class AuthTypeOAuth(AuthTypeClientBase):
         if missingimport:
             raise ConfigurationError(f"oauth requires these modules: {', '.join(missingimport)}")
         self.algorithms = ["RS256"]
-        self.api_base_url = server_config.authentication__params_oauth__api_base_url
+        self.oauth_api_base_url = server_config.authentication__params_oauth__oauth_api_base_url
         self.client_id = server_config.authentication__params_oauth__client_id
         self.client_secret = server_config.authentication__params_oauth__client_secret
         self.session_cookie = server_config.authentication__params_oauth__session_cookie
         self.cookie_params = server_config.authentication__params_oauth__cookie
         self._validate_cookie_params()
 
-        self.backend_base_url = server_config.get_backend_base_url()
-        self.frontend_base_url = server_config.get_frontend_base_url()
-        if self.backend_base_url is None:
-            raise ConfigurationError("oauth requires the app__backend_base_url to be set")
+        self.api_base_url = server_config.get_api_base_url()
+        self.web_base_url = server_config.get_web_base_url()
+        if self.api_base_url is None:
+            raise ConfigurationError("oauth requires the app__api_base_url to be set")
 
         # set the audience
         self.audience = self.client_id
@@ -64,11 +64,13 @@ class AuthTypeOAuth(AuthTypeClientBase):
         # The JSON Web Key Set (JWKS) is a set of keys which contains the public keys used to verify
         # any JSON Web Token (JWT) issued by the authorization server and signed using the RS256
         try:
-            jwksloc = f"{self.api_base_url}/.well-known/jwks.json"
+            jwksloc = f"{self.oauth_api_base_url}/.well-known/jwks.json"
             jwksurl = requests.get(jwksloc)
             self.jwks = jwksurl.json()
         except Exception:
-            raise ConfigurationError(f"error in oauth, api_url_base: {self.api_base_url}, cannot access {jwksloc}")
+            raise ConfigurationError(
+                f"error in oauth, api_url_base: {self.oauth_api_base_url}, cannot access {jwksloc}"
+            )
 
     def _validate_cookie_params(self):
         """check the cookie_params, and raise a ConfigurationError if there is something wrong"""
@@ -92,7 +94,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
         return True
 
     def add_url_rules(self, app):
-        parse = urlparse(self.backend_base_url)
+        parse = urlparse(self.api_base_url)
         app.add_url_rule(f"{parse.path}/login", "login", self.login, methods=["GET"])
         app.add_url_rule(f"{parse.path}/logout", "logout", self.logout, methods=["GET"])
         app.add_url_rule(f"{parse.path}/oauth2/callback", "callback", self.callback, methods=["GET"])
@@ -104,10 +106,10 @@ class AuthTypeOAuth(AuthTypeClientBase):
             "auth0",
             client_id=self.client_id,
             client_secret=self.client_secret,
-            api_base_url=self.api_base_url,
-            refresh_token_url=f"{self.api_base_url}/oauth/token",
-            access_token_url=f"{self.api_base_url}/oauth/token",
-            authorize_url=f"{self.api_base_url}/authorize",
+            api_base_url=self.oauth_api_base_url,
+            refresh_token_url=f"{self.oauth_api_base_url}/oauth/token",
+            access_token_url=f"{self.oauth_api_base_url}/oauth/token",
+            authorize_url=f"{self.oauth_api_base_url}/authorize",
             client_kwargs={"scope": "openid profile email offline_access"},
         )
 
@@ -137,9 +139,9 @@ class AuthTypeOAuth(AuthTypeClientBase):
         response.cache_control.update(dict(public=True, max_age=0, no_store=True, no_cache=True, must_revalidate=True))
 
     def login(self):
-        callbackurl = f"{self.backend_base_url}/oauth2/callback"
+        callbackurl = f"{self.api_base_url}/oauth2/callback"
         return_path = request.args.get("dataset", "")
-        return_to = f"{self.frontend_base_url}/{return_path}/"
+        return_to = f"{self.web_base_url}/{return_path}/"
         # save the return path in the session cookie, accessed in the callback function
         session["oauth_callback_redirect"] = return_to
         response = self.client.authorize_redirect(redirect_uri=callbackurl)
@@ -148,7 +150,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
 
     def logout(self):
         self.remove_tokens()
-        params = {"returnTo": self.frontend_base_url, "client_id": self.client_id}
+        params = {"returnTo": self.web_base_url, "client_id": self.client_id}
         response = redirect(self.client.api_base_url + "/v2/logout?" + urlencode(params))
         self.update_response(response)
         return response
@@ -228,13 +230,13 @@ class AuthTypeOAuth(AuthTypeClientBase):
     def get_login_url(self, data_adaptor):
         """Return the url for the login route"""
         if data_adaptor and current_app.app_config.is_multi_dataset():
-            return f"{self.backend_base_url}/login?dataset={data_adaptor.uri_path}/"
+            return f"{self.api_base_url}/login?dataset={data_adaptor.uri_path}/"
         else:
-            return f"{self.backend_base_url}/login"
+            return f"{self.api_base_url}/login"
 
     def get_logout_url(self, data_adaptor):
         """Return the url for the logout route"""
-        return f"{self.backend_base_url}/logout"
+        return f"{self.api_base_url}/logout"
 
     def check_jwt_payload(self, id_token):
         try:
@@ -263,7 +265,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
                     rsa_key,
                     algorithms=self.algorithms,
                     audience=self.audience,
-                    issuer=self.api_base_url + "/",
+                    issuer=self.oauth_api_base_url + "/",
                     options=options,
                 )
                 return payload
@@ -320,7 +322,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
             "client_secret": self.client_secret,
         }
         headers = {"content-type": "application/x-www-form-urlencoded"}
-        request = requests.post(f"{self.api_base_url}/oauth/token", urlencode(params), headers=headers)
+        request = requests.post(f"{self.oauth_api_base_url}/oauth/token", urlencode(params), headers=headers)
         if request.status_code != 200:
             # unable to refresh the token, log the user out
             self.remove_tokens()

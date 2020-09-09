@@ -148,9 +148,9 @@ class AuthTest(unittest.TestCase):
         # test with session cookies
         app_config = AppConfig()
         app_config.update_server_config(
-            app__backend_base_url="local",
+            app__api_base_url="local",
             authentication__type="oauth",
-            authentication__params_oauth__api_base_url=f"http://localhost:{PORT}",
+            authentication__params_oauth__oauth_api_base_url=f"http://localhost:{PORT}",
             authentication__params_oauth__client_id="mock_client_id",
             authentication__params_oauth__client_secret="mock_client_secret",
             authentication__params_oauth__session_cookie=True,
@@ -165,9 +165,9 @@ class AuthTest(unittest.TestCase):
         # test with specified cookie
         app_config = AppConfig()
         app_config.update_server_config(
-            app__backend_base_url="local",
+            app__api_base_url="local",
             authentication__type="oauth",
-            authentication__params_oauth__api_base_url=f"http://localhost:{PORT}",
+            authentication__params_oauth__oauth_api_base_url=f"http://localhost:{PORT}",
             authentication__params_oauth__client_id="mock_client_id",
             authentication__params_oauth__client_secret="mock_client_secret",
             authentication__params_oauth__session_cookie=False,
