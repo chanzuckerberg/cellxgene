@@ -122,6 +122,7 @@ const InfoFormat = ({
           </H3>
           <UL>
             {Array.from(singleValueCategories).map((pair) => {
+              if (!pair[1] || pair[1] === "") return null;
               return (
                 <li
                   className={skeleton ? Classes.SKELETON : null}
