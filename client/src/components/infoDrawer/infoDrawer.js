@@ -67,12 +67,10 @@ class InfoDrawer extends PureComponent {
   };
 
   render() {
-    const { isOpen } = this.state;
     const {
       position,
       aboutURL,
       datasetTitle,
-      children,
       schema,
       isOpen,
       dataPortalProps,
@@ -90,7 +88,10 @@ class InfoDrawer extends PureComponent {
           watchProps={{ schema }}
         >
           <Async.Pending>
-            <InfoFormat skeleton {...{ datasetTitle, aboutURL, dataPortalProps }} />
+            <InfoFormat
+              skeleton
+              {...{ datasetTitle, aboutURL, dataPortalProps }}
+            />
           </Async.Pending>
           <Async.Rejected>
             {(error) => {
@@ -103,7 +104,12 @@ class InfoDrawer extends PureComponent {
               const { singleValueCategories } = asyncProps;
               return (
                 <InfoFormat
-                  {...{ datasetTitle, aboutURL, singleValueCategories, dataPortalProps }}
+                  {...{
+                    datasetTitle,
+                    aboutURL,
+                    singleValueCategories,
+                    dataPortalProps,
+                  }}
                 />
               );
             }}
