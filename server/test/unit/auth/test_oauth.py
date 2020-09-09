@@ -83,6 +83,19 @@ class AuthTest(unittest.TestCase):
 
     def auth_flow(self, app_config, cookie_key=None):
 
+        app_config.update_server_config(
+            app__api_base_url="local",
+            authentication__type="oauth",
+            authentication__params_oauth__oauth_api_base_url=f"http://localhost:{PORT}",
+            authentication__params_oauth__client_id="mock_client_id",
+            authentication__params_oauth__client_secret="mock_client_secret",
+            authentication__params_oauth__jwt_decode_options={
+                "verify_signature": False, "verify_iss": False
+            })
+
+        app_config.update_server_config(multi_dataset__dataroot=self.dataset_dataroot)
+        app_config.complete_config()
+
         with test_server(app_config=app_config) as server:
             session = requests.Session()
 
@@ -148,33 +161,16 @@ class AuthTest(unittest.TestCase):
         # test with session cookies
         app_config = AppConfig()
         app_config.update_server_config(
-            app__api_base_url="local",
-            authentication__type="oauth",
-            authentication__params_oauth__oauth_api_base_url=f"http://localhost:{PORT}",
-            authentication__params_oauth__client_id="mock_client_id",
-            authentication__params_oauth__client_secret="mock_client_secret",
             authentication__params_oauth__session_cookie=True,
         )
-
-        app_config.update_server_config(multi_dataset__dataroot=self.dataset_dataroot)
-        app_config.complete_config()
-
         self.auth_flow(app_config)
 
     def test_auth_oauth_cookie(self):
         # test with specified cookie
         app_config = AppConfig()
         app_config.update_server_config(
-            app__api_base_url="local",
-            authentication__type="oauth",
-            authentication__params_oauth__oauth_api_base_url=f"http://localhost:{PORT}",
-            authentication__params_oauth__client_id="mock_client_id",
-            authentication__params_oauth__client_secret="mock_client_secret",
             authentication__params_oauth__session_cookie=False,
             authentication__params_oauth__cookie=dict(key="test_cxguser", httponly=True, max_age=60),
         )
-
-        app_config.update_server_config(multi_dataset__dataroot=self.dataset_dataroot)
-        app_config.complete_config()
 
         self.auth_flow(app_config, "test_cxguser")

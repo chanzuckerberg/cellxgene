@@ -417,6 +417,7 @@ class ServerConfig(BaseConfig):
         dictval_cases = [
             ("app", "csp_directives"),
             ("authentication", "params_oauth", "cookie"),
+            ("authentication", "params_oauth", "jwt_decode_options"),
             ("adaptor", "cxg_adaptor", "tiledb_ctx"),
             ("multi_dataset", "dataroot"),
         ]
@@ -443,6 +444,8 @@ class ServerConfig(BaseConfig):
             ]
             self.authentication__params_oauth__client_id = dc["authentication"]["params_oauth"]["client_id"]
             self.authentication__params_oauth__client_secret = dc["authentication"]["params_oauth"]["client_secret"]
+            self.authentication__params_oauth__jwt_decode_options = dc["authentication"]["params_oauth"][
+                "jwt_decode_options"]
             self.authentication__params_oauth__session_cookie = dc["authentication"]["params_oauth"]["session_cookie"]
             self.authentication__params_oauth__cookie = dc["authentication"]["params_oauth"]["cookie"]
 
@@ -564,6 +567,7 @@ class ServerConfig(BaseConfig):
         self.check_attr("authentication__params_oauth__oauth_api_base_url", ptypes)
         self.check_attr("authentication__params_oauth__client_id", ptypes)
         self.check_attr("authentication__params_oauth__client_secret", ptypes)
+        self.check_attr("authentication__params_oauth__jwt_decode_options", (type(None), dict))
         self.check_attr("authentication__params_oauth__session_cookie", bool)
 
         if self.authentication__params_oauth__session_cookie:

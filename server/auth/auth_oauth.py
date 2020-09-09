@@ -50,7 +50,10 @@ class AuthTypeOAuth(AuthTypeClientBase):
         self.client_secret = server_config.authentication__params_oauth__client_secret
         self.session_cookie = server_config.authentication__params_oauth__session_cookie
         self.cookie_params = server_config.authentication__params_oauth__cookie
+        self.jwt_decode_options = server_config.authentication__params_oauth__jwt_decode_options
+
         self._validate_cookie_params()
+        self._validate_jwt_decode_options()
 
         self.api_base_url = server_config.get_api_base_url()
         self.web_base_url = server_config.get_web_base_url()
@@ -86,6 +89,20 @@ class AuthTypeOAuth(AuthTypeClientBase):
             raise ConfigurationError(f"unexpected key in cookie params: {', '.join(unknown)}")
         if "key" not in keys:
             raise ConfigurationError("must have a key (name) in the cookie params")
+
+    def _validate_jwt_decode_options(self):
+        """check the jwt_decode_options, and raise a ConfigurationError if there is something wrong"""
+        if self.jwt_decode_options is None:
+            self.jwt_decode_options = {}
+            return
+
+        valid_keys = {
+            "verify_signature", "verify_aud", "verify_iat", "verify_exp", "verify_nbf", "verify_iss",
+            "verify_sub", "verify_jti", "verify_at_hash", "leeway"}
+        keys = set(self.jwt_decode_options.keys())
+        unknown = keys - valid_keys
+        if unknown:
+            raise ConfigurationError(f"unexpected key in jwt_decode_options: {', '.join(unknown)}")
 
     def is_valid_authentication_type(self):
         return True
@@ -255,10 +272,6 @@ class AuthTypeOAuth(AuthTypeClientBase):
                     "e": key.get("e"),
                 }
         if rsa_key:
-            options = {}
-            if self.client_id == "mock_client_id" and (not rsa_key["n"] or not rsa_key["e"]):
-                # this is a mock auth server used for unit testing, do not validate
-                options = {"verify_signature": False, "verify_iss": False}
             try:
                 payload = jwt.decode(
                     id_token,
@@ -266,7 +279,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
                     algorithms=self.algorithms,
                     audience=self.audience,
                     issuer=self.oauth_api_base_url + "/",
-                    options=options,
+                    options=self.jwt_decode_options,
                 )
                 return payload
 

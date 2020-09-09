@@ -42,6 +42,11 @@ server:
        client_id: null
        # the client_secret known to the auth server and this app
        client_secret: null
+       # jwt_decode_options, to specify non default decode options define
+       # jwt_decode_options to be a dictionary with key/values described by
+       # the options parameter of the jose.jwt.decode function:
+       # (https://python-jose.readthedocs.io/en/latest/jwt/api.html)
+       jwt_decode_options: null
 
        # if true, the jwt containing the id_token is stored in a session cookie
        session_cookie:  true
