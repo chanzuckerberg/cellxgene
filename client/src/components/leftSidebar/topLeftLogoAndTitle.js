@@ -13,27 +13,16 @@ const DATASET_TITLE_FONT_SIZE = 14;
 
 @connect((state) => ({
   datasetTitle: state.config?.displayNames?.dataset ?? "",
-  scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
-  scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
+  hoverState: state.controls.singletonHover,
 }))
 class LeftSideBar extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      isOpen: false,
-    };
-  }
-
   handleClick = () => {
-    this.setState((state) => {
-      return { isOpen: !state.isOpen };
-    });
+    const { dispatch } = this.props;
+    dispatch({ type: "toggle dataset drawer" });
   };
 
   render() {
-    const { datasetTitle } = this.props;
-    const { isOpen } = this.state;
+    const { datasetTitle, hoverState } = this.props;
 
     return (
       <div
@@ -72,22 +61,23 @@ class LeftSideBar extends React.Component {
         </span>
         <Button
           outlined
-          rightIcon={IconNames.BOOK}
+          icon={IconNames.BOOK}
           style={{
             fontSize: DATASET_TITLE_FONT_SIZE,
             marginLeft: "7px",
             position: "relative",
             top: -8,
           }}
+          active={hoverState}
           onClick={this.handleClick}
         >
           <Truncate>
-            <span style={{ maxWidth: 185 }} data-testid="header">
+            <span style={{ maxWidth: 155 }} data-testid="header">
               {datasetTitle}
             </span>
           </Truncate>
         </Button>
-        <InfoDrawer {...{ isOpen, handleClick: this.handleClick }} />
+        <InfoDrawer />
       </div>
     );
   }

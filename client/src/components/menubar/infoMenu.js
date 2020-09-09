@@ -1,25 +1,42 @@
 // jshint esversion: 6
 import React from "react";
 import { Button, Popover, Menu, MenuItem, Position } from "@blueprintjs/core";
+import { IconNames } from "@blueprintjs/icons";
 import styles from "./menubar.css";
 
+const handleMouseOver = (dispatch) => {
+  dispatchSingletonHover("ON", dispatch);
+};
+
+const handleMouseOut = (dispatch) => {
+  dispatchSingletonHover("OFF", dispatch);
+};
+
+const dispatchSingletonHover = (state, dispatch) => {
+  if (state === "ON") dispatch({ type: "singleton hover on" });
+  if (state === "OFF") dispatch({ type: "singleton hover off" });
+};
+
+const handleClick = (dispatch) => {
+  dispatch({ type: "toggle dataset drawer" });
+};
+
 const InformationMenu = React.memo((props) => {
-  const { libraryVersions, aboutLink, tosURL, privacyURL } = props;
+  const { libraryVersions, tosURL, privacyURL, dispatch } = props;
   return (
     <div className={`bp3-button-group ${styles.menubarButton}`}>
       <Popover
         content={
           <Menu>
-            {aboutLink ? (
-              <MenuItem
-                href={aboutLink}
-                target="_blank"
-                icon="document-open"
-                text="About this dataset"
-              />
-            ) : (
-              ""
-            )}
+            <MenuItem
+              onClick={() => handleClick(dispatch)}
+              onMouseOver={() => handleMouseOver(dispatch)}
+              onMouseOut={() => handleMouseOut(dispatch)}
+              onFocus={() => handleMouseOver(dispatch)}
+              onBlur={() => handleMouseOut(dispatch)}
+              icon={IconNames.BOOK}
+              text="Open Dataset Overview"
+            />
 
             <MenuItem
               href="https://chanzuckerberg.github.io/cellxgene/"

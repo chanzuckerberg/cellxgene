@@ -13,6 +13,7 @@ import {
     schema: state.annoMatrix.schema,
     datasetTitle: state.config?.displayNames?.dataset ?? "",
     aboutURL: state.config?.links?.["about-dataset"],
+    isOpen: state.controls.datasetDrawer,
   };
 })
 class InfoDrawer extends PureComponent {
@@ -52,20 +53,19 @@ class InfoDrawer extends PureComponent {
     return { singleValueCategories };
   };
 
+  handleClose = () => {
+    const { dispatch } = this.props;
+
+    dispatch({ type: "toggle dataset drawer" });
+  };
+
   render() {
-    const {
-      position,
-      aboutURL,
-      datasetTitle,
-      schema,
-      isOpen,
-      handleClick,
-    } = this.props;
+    const { position, aboutURL, datasetTitle, schema, isOpen } = this.props;
 
     return (
       <Drawer
         title="Dataset Overview"
-        onClose={handleClick}
+        onClose={this.handleClose}
         {...{ isOpen, position }}
       >
         <Async

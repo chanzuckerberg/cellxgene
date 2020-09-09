@@ -121,6 +121,21 @@ class Categories extends React.Component {
     }
   };
 
+  handleMouseOver = () => {
+    this.dispatchSingletonHover("ON");
+  };
+
+  handleMouseOut = () => {
+    this.dispatchSingletonHover("OFF");
+  };
+
+  dispatchSingletonHover = (state) => {
+    const { dispatch } = this.props;
+
+    if (state === "ON") dispatch({ type: "singleton hover on" });
+    if (state === "OFF") dispatch({ type: "singleton hover off" });
+  };
+
   render() {
     const {
       createAnnoModeActive,
@@ -195,6 +210,14 @@ class Categories extends React.Component {
             />
           ) : null
         )}
+        <span
+          onMouseOver={this.handleMouseOver}
+          onMouseOut={this.handleMouseOut}
+          onFocus={this.handleMouseOver}
+          onBlur={this.handleMouseOut}
+        >
+          single value categories have moved to dataset overview
+        </span>
         {/* WRITEABLE FIELDS */}
         {allCategoryNames.map((catName) =>
           schema.annotations.obsByName[catName].writable ? (

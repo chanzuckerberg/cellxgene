@@ -20,6 +20,9 @@ const Controls = (
     scatterplotXXaccessor: null, // just easier to read
     scatterplotYYaccessor: null,
     graphRenderCounter: 0 /* integer as <Component key={graphRenderCounter} - a change in key forces a remount */,
+
+    singletonHover: false,
+    datasetDrawer: false,
   },
   action
 ) => {
@@ -161,6 +164,18 @@ const Controls = (
         scatterplotXXaccessor: null,
         scatterplotYYaccessor: null,
       };
+
+    /**************************
+          Dataset Drawer
+     **************************/
+    case "singleton hover on":
+      return { ...state, singletonHover: true };
+
+    case "singleton hover off":
+      return { ...state, singletonHover: false };
+
+    case "toggle dataset drawer":
+      return { ...state, datasetDrawer: !state.datasetDrawer };
 
     default:
       return state;
