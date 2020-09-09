@@ -382,17 +382,16 @@ class Server:
                 resources = get_api_resources(bp_api, url_dataroot)
                 self.app.register_blueprint(resources.blueprint)
                 self.app.add_url_rule(
-                    f"{backend_path}/{url_dataroot}/<dataset>/",
+                    f"/{url_dataroot}/<dataset>/",
                     f"dataset_index_{url_dataroot}",
                     lambda dataset, url_dataroot=url_dataroot: dataset_index(url_dataroot, dataset),
                     methods=["GET"],
                 )
                 self.app.add_url_rule(
-                    f"{backend_path}/{url_dataroot}/<dataset>/static/<path:filename>",
+                    f"/{url_dataroot}/<dataset>/static/<path:filename>",
                     f"static_assets_{url_dataroot}",
                     view_func=lambda dataset, filename: send_from_directory("../common/web/static", filename),
                     methods=["GET"]
-
                 )
 
         else:
