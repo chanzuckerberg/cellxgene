@@ -391,7 +391,7 @@ class Server:
                 )
 
         else:
-            bp_api = Blueprint("api", __name__, url_prefix=f"{backend_path}api_version")
+            bp_api = Blueprint("api", __name__, url_prefix=f"{backend_path}{api_version}")
             resources = get_api_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)
             self.app.add_url_rule(
