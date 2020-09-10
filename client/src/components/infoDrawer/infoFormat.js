@@ -3,27 +3,26 @@ import React from "react";
 
 const renderContributors = (contributors, affiliations, skeleton) => {
   // eslint-disable-next-line no-constant-condition --  Temp removed contributor section to avoid publishing PII
-  if (contributors?.length > 0 && false)
-    return (
-      <>
-        <H3 className={skeleton ? Classes.SKELETON : null}>Contributors</H3>
-        <p className={skeleton ? Classes.SKELETON : null}>
-          {contributors.map((contributor) => {
-            const { email, name, institution } = contributor;
+  if (contributors?.length === 0 && true) return null;
+  return (
+    <>
+      <H3 className={skeleton ? Classes.SKELETON : null}>Contributors</H3>
+      <p className={skeleton ? Classes.SKELETON : null}>
+        {contributors.map((contributor) => {
+          const { email, name, institution } = contributor;
 
-            return (
-              <span key={name}>
-                {name}
-                {email && `(${email})`}
-                <sup>{affiliations.indexOf(institution) + 1}</sup>
-              </span>
-            );
-          })}
-        </p>
-        {renderAffiliations(affiliations, skeleton)}
-      </>
-    );
-  return null;
+          return (
+            <span key={name}>
+              {name}
+              {email && `(${email})`}
+              <sup>{affiliations.indexOf(institution) + 1}</sup>
+            </span>
+          );
+        })}
+      </p>
+      {renderAffiliations(affiliations, skeleton)}
+    </>
+  );
 };
 
 const buildAffiliations = (contributors = []) => {
@@ -60,6 +59,7 @@ const renderAffiliations = (affiliations, skeleton) => {
 };
 
 const renderDOILink = (type, doi, skeleton) => {
+  if (!doi) return null;
   return (
     doi && (
       <>
@@ -75,46 +75,37 @@ const renderDOILink = (type, doi, skeleton) => {
 };
 
 const renderOrganism = (organism, skeleton) => {
-  if (organism)
-    return (
-      <>
-        <H3 className={skeleton ? Classes.SKELETON : null}>Organism</H3>
-        <p className={skeleton ? Classes.SKELETON : null}>{organism}</p>
-      </>
-    );
-  return null;
+  if (!organism) return null;
+  return (
+    <>
+      <H3 className={skeleton ? Classes.SKELETON : null}>Organism</H3>
+      <p className={skeleton ? Classes.SKELETON : null}>{organism}</p>
+    </>
+  );
 };
 
-const NUM_CATEGORIES = 8;
-
-const singleValueCategoriesPlaceholder = Array.from(Array(NUM_CATEGORIES)).map(
-  (_, index) => {
-    return [index, index];
-  }
-);
-
 const renderSingleValueCategories = (singleValueCategories, skeleton) => {
-  if (singleValueCategories.size > 0)
-    return (
-      <>
-        <H3 className={skeleton ? Classes.SKELETON : null}>Dataset Metadata</H3>
-        <UL>
-          {Array.from(singleValueCategories).map((pair) => {
-            if (!pair[1] || pair[1] === "") return null;
-            return (
-              <li
-                className={skeleton ? Classes.SKELETON : null}
-                key={pair[0]}
-              >{`${pair[0]}: ${pair[1]}`}</li>
-            );
-          })}
-        </UL>
-      </>
-    );
-  return null;
+  if (singleValueCategories.size === 0) return null;
+  return (
+    <>
+      <H3 className={skeleton ? Classes.SKELETON : null}>Dataset Metadata</H3>
+      <UL>
+        {Array.from(singleValueCategories).map((pair) => {
+          if (!pair[1] || pair[1] === "") return null;
+          return (
+            <li
+              className={skeleton ? Classes.SKELETON : null}
+              key={pair[0]}
+            >{`${pair[0]}: ${pair[1]}`}</li>
+          );
+        })}
+      </UL>
+    </>
+  );
 };
 
 const renderLinks = (projectLinks, aboutURL, skeleton) => {
+  if (!projectLinks && !aboutURL) return null;
   if (projectLinks)
     return (
       <>
@@ -136,59 +127,68 @@ const renderLinks = (projectLinks, aboutURL, skeleton) => {
         </UL>
       </>
     );
-  if (aboutURL)
-    return (
-      <>
-        <H3 className={skeleton ? Classes.SKELETON : null}>More Info</H3>
-        <p>
-          <a
-            className={skeleton ? Classes.SKELETON : null}
-            href={aboutURL}
-            target="_blank"
-            rel="noopener"
-          >
-            {aboutURL}
-          </a>
-        </p>
-      </>
-    );
-  return null;
-};
-
-const InfoFormat = ({
-  datasetTitle,
-  singleValueCategories = new Map(singleValueCategoriesPlaceholder),
-  aboutURL = "thisisabouthtelengthofaurl",
-  dataPortalProps = singleValueCategories,
-  skeleton = false,
-}) => {
-  if (dataPortalProps.corpora_schema_version === "1.0.0") {
-    dataPortalProps = {};
-  }
-  const {
-    title,
-    publication_doi: doi,
-    preprint_doi: preprintDOI,
-    organism,
-    contributors,
-    project_links: projectLinks,
-  } = dataPortalProps;
-
-  const affiliations = buildAffiliations(contributors);
 
   return (
-    <div style={{ margin: 24, overflow: "auto" }}>
-      <H1 className={skeleton ? Classes.SKELETON : null}>
-        {title ?? datasetTitle}
-      </H1>
-      {renderContributors(contributors, affiliations, skeleton)}
-      {renderDOILink("DOI", doi, skeleton)}
-      {renderDOILink("Preprint DOI", preprintDOI, skeleton)}
-      {renderOrganism(organism, skeleton)}
-      {renderSingleValueCategories(singleValueCategories, skeleton)}
-      {renderLinks(projectLinks, aboutURL, skeleton)}
-    </div>
+    <>
+      <H3 className={skeleton ? Classes.SKELETON : null}>More Info</H3>
+      <p>
+        <a
+          className={skeleton ? Classes.SKELETON : null}
+          href={aboutURL}
+          target="_blank"
+          rel="noopener"
+        >
+          {aboutURL}
+        </a>
+      </p>
+    </>
   );
 };
+
+const NUM_CATEGORIES = 8;
+
+const singleValueCategoriesPlaceholder = Array.from(Array(NUM_CATEGORIES)).map(
+  (_, index) => {
+    return [index, index];
+  }
+);
+
+const InfoFormat = React.memo(
+  ({
+    datasetTitle,
+    singleValueCategories = new Map(singleValueCategoriesPlaceholder),
+    aboutURL = "thisisabouthtelengthofaurl",
+    dataPortalProps = {},
+    skeleton = false,
+  }) => {
+    if (dataPortalProps.corpora_schema_version === "1.0.0") {
+      dataPortalProps = {};
+    }
+    const {
+      title,
+      publication_doi: doi,
+      preprint_doi: preprintDOI,
+      organism,
+      contributors,
+      project_links: projectLinks,
+    } = dataPortalProps;
+
+    const affiliations = buildAffiliations(contributors);
+
+    return (
+      <div style={{ margin: 24, overflow: "auto" }}>
+        <H1 className={skeleton ? Classes.SKELETON : null}>
+          {title ?? datasetTitle}
+        </H1>
+        {renderContributors(contributors, affiliations, skeleton)}
+        {renderDOILink("DOI", doi, skeleton)}
+        {renderDOILink("Preprint DOI", preprintDOI, skeleton)}
+        {renderOrganism(organism, skeleton)}
+        {renderSingleValueCategories(singleValueCategories, skeleton)}
+        {renderLinks(projectLinks, aboutURL, skeleton)}
+      </div>
+    );
+  }
+);
 
 export default InfoFormat;
