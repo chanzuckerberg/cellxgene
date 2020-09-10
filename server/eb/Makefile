@@ -34,7 +34,8 @@ build: clean
 	     cp customize/requirements.txt artifact.dir;  \
 	  fi ; \
 	  if [ -d customize/deploy ] ; then \
-		  cp -r customize/deploy artifact.dir/server/common/web/static;  \
+		 mkdir -p artifact.dir/server/common/web/static/cellxgene; \
+		 cp -r customize/deploy artifact.dir/server/common/web/static/cellxgene;  \
 	  fi; \
 	  if [ -d customize/inline_scripts ] ; then \
 	      cp -r customize/inline_scripts/* artifact.dir/server/common/web/templates;  \
