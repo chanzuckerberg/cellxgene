@@ -60,12 +60,6 @@ class InfoDrawer extends PureComponent {
     dispatch({ type: "toggle dataset drawer" });
   };
 
-  handleClose = () => {
-    this.setState((state) => {
-      return { isOpen: !state.isOpen };
-    });
-  };
-
   render() {
     const {
       position,
