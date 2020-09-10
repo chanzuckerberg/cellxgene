@@ -137,21 +137,25 @@ const renderDOILink = (type, doi, skeleton) => {
   );
 };
 
-const affiliations = [];
-const renderContributors = (contributor) => {
-  const { institution, email, name } = contributor;
-  let index;
-  if (institution) {
-    index = affiliations.indexOf(institution) + 1;
-    if (index === 0) {
-      index = affiliations.push(institution);
+const buildAffiliations = (contributors = []) => {
+  const affiliations = [];
+  contributors.forEach((contributor) => {
+    const { institution } = contributor;
+    if (affiliations.indexOf(institution) === -1) {
+      affiliations.push(institution);
     }
-  }
+  });
+  return affiliations;
+};
+
+const renderContributor = (contributor, affiliations) => {
+  const { email, name, institution } = contributor;
+
   return (
     <span key={name}>
       {name}
       {email && `(${email})`}
-      <sup>{index}</sup>
+      <sup>{affiliations.indexOf(institution) + 1}</sup>
     </span>
   );
 };
@@ -175,6 +179,8 @@ const InfoFormat = ({
     project_links: projectLinks,
   } = dataPortalProps;
 
+  const affiliations = buildAffiliations(contributors);
+
   return (
     <div style={{ margin: 24, overflow: "auto" }}>
       <H1 className={skeleton ? Classes.SKELETON : null}>
@@ -185,7 +191,9 @@ const InfoFormat = ({
           <>
             <H3 className={skeleton ? Classes.SKELETON : null}>Contributors</H3>
             <p className={skeleton ? Classes.SKELETON : null}>
-              {contributors.map(renderContributors)}
+              {contributors.map((contributor) =>
+                renderContributor(contributor, affiliations)
+              )}
             </p>
             {affiliations.length > 0 && (
               <>
