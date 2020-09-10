@@ -435,6 +435,7 @@ class ServerConfig(BaseConfig):
             self.app__generate_cache_control_headers = dc["app"]["generate_cache_control_headers"]
             self.app__server_timing_headers = dc["app"]["server_timing_headers"]
             self.app__csp_directives = dc["app"]["csp_directives"]
+            self.app__cors_supports_credentials = dc["app"]["cors_supports_credentials"]
             self.app__api_base_url = dc["app"]["api_base_url"]
             self.app__web_base_url = dc["app"]["web_base_url"]
 
@@ -505,6 +506,7 @@ class ServerConfig(BaseConfig):
         self.check_attr("app__flask_secret_key", (type(None), str))
         self.check_attr("app__generate_cache_control_headers", bool)
         self.check_attr("app__server_timing_headers", bool)
+        self.check_attr("app__cors_supports_credentials", bool)
         self.check_attr("app__csp_directives", (type(None), dict))
         self.check_attr("app__api_base_url", (type(None), str))
         self.check_attr("app__web_base_url", (type(None), str))

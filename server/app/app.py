@@ -3,6 +3,8 @@ import logging
 from functools import wraps
 from http import HTTPStatus
 from urllib.parse import urlparse
+import hashlib
+import os
 
 from flask import Flask, redirect, current_app, make_response, render_template, abort, Blueprint, request, \
     send_from_directory
@@ -80,22 +82,15 @@ def dataset_index(url_dataroot=None, dataset=None):
     dataset_config = app_config.get_dataset_config(url_dataroot)
     scripts = dataset_config.app__scripts
     inline_scripts = dataset_config.app__inline_scripts
-    api_base_url = server_config.get_api_base_url()
-    if api_base_url and api_base_url.endswith("/"):
-        api_base_url = api_base_url[:-1]
 
     try:
         cache_manager = current_app.matrix_data_cache_manager
         with cache_manager.data_adaptor(url_dataroot, location, app_config) as data_adaptor:
             data_adaptor.set_uri_path(f"{url_dataroot}/{dataset}")
-            dataset_title = app_config.get_title(data_adaptor)
             args = {
-                "datasetTitle" : dataset_title,
                 "SCRIPTS" : scripts,
                 "INLINE_SCRIPTS" : inline_scripts
             }
-            if api_base_url:
-                args["API_BASE_URL"] = api_base_url
             return render_template("index.html", **args)
 
     except DatasetAccessError as e:
@@ -339,6 +334,28 @@ def get_api_resources(bp_api, url_dataroot=None):
     return api
 
 
+def handle_api_base_url(app, app_config):
+    """If an api_base_url is provided, then an inline script is generated to
+    handle the new API prefix"""
+    api_base_url = app_config.server_config.get_api_base_url()
+    if not api_base_url:
+        return
+
+    if api_base_url.endswith("/"):
+        api_base_url = api_base_url[:-1]
+
+    sha256 = hashlib.sha256(api_base_url.encode()).hexdigest()
+    script_name = f"api_base_url-{sha256}.js"
+    script_path = os.path.join(app.root_path, "../common/web/templates", script_name)
+    with open(script_path, "w") as fout:
+        fout.write("window.CELLXGENE.API.prefix = `" + api_base_url + "${location.pathname}api/`;\n")
+
+    dataset_configs = [app_config.default_dataset_config] + list(app_config.dataroot_config.values())
+    for dataset_config in dataset_configs:
+        inline_scripts = dataset_config.app__inline_scripts
+        inline_scripts.append(script_name)
+
+
 class Server:
     @staticmethod
     def _before_adding_routes(app, app_config):
@@ -347,6 +364,7 @@ class Server:
 
     def __init__(self, app_config):
         self.app = Flask(__name__, static_folder=None)
+        handle_api_base_url(self.app, app_config)
         self._before_adding_routes(self.app, app_config)
         self.app.json_encoder = Float32JSONEncoder
         server_config = app_config.server_config
