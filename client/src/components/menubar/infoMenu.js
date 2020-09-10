@@ -4,19 +4,6 @@ import { Button, Popover, Menu, MenuItem, Position } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import styles from "./menubar.css";
 
-const handleMouseOver = (dispatch) => {
-  dispatchSingletonHover("ON", dispatch);
-};
-
-const handleMouseOut = (dispatch) => {
-  dispatchSingletonHover("OFF", dispatch);
-};
-
-const dispatchSingletonHover = (state, dispatch) => {
-  if (state === "ON") dispatch({ type: "singleton hover on" });
-  if (state === "OFF") dispatch({ type: "singleton hover off" });
-};
-
 const handleClick = (dispatch) => {
   dispatch({ type: "toggle dataset drawer" });
 };
@@ -30,10 +17,6 @@ const InformationMenu = React.memo((props) => {
           <Menu>
             <MenuItem
               onClick={() => handleClick(dispatch)}
-              onMouseOver={() => handleMouseOver(dispatch)}
-              onMouseOut={() => handleMouseOut(dispatch)}
-              onFocus={() => handleMouseOver(dispatch)}
-              onBlur={() => handleMouseOut(dispatch)}
               icon={IconNames.BOOK}
               text="Dataset Overview"
             />

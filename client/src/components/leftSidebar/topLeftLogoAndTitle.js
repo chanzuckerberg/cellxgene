@@ -13,7 +13,6 @@ const DATASET_TITLE_FONT_SIZE = 14;
 
 @connect((state) => ({
   datasetTitle: state.config?.displayNames?.dataset ?? "",
-  hoverState: state.controls.singletonHover,
 }))
 class LeftSideBar extends React.Component {
   handleClick = () => {
@@ -22,7 +21,7 @@ class LeftSideBar extends React.Component {
   };
 
   render() {
-    const { datasetTitle, hoverState } = this.props;
+    const { datasetTitle } = this.props;
 
     return (
       <div
@@ -67,7 +66,6 @@ class LeftSideBar extends React.Component {
             position: "absolute",
             right: 10,
           }}
-          active={hoverState}
           onClick={this.handleClick}
         >
           <Truncate>

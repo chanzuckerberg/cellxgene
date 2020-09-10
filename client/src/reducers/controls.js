@@ -168,12 +168,6 @@ const Controls = (
     /**************************
           Dataset Drawer
      **************************/
-    case "singleton hover on":
-      return { ...state, singletonHover: true };
-
-    case "singleton hover off":
-      return { ...state, singletonHover: false };
-
     case "toggle dataset drawer":
       return { ...state, datasetDrawer: !state.datasetDrawer };
 
