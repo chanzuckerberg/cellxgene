@@ -128,7 +128,7 @@ const renderDOILink = (type, doi, skeleton) => {
       <>
         <H3 className={skeleton ? Classes.SKELETON : null}>{type}</H3>
         <p className={skeleton ? Classes.SKELETON : null}>
-          <a href={doi} target="_blank" rel="noopener noreferrer">
+          <a href={doi} target="_blank" rel="noopener">
             {doi}
           </a>
         </p>
@@ -246,11 +246,7 @@ const InfoFormat = ({
                   key={link.link_name}
                   className={skeleton ? Classes.SKELETON : null}
                 >
-                  <a
-                    href={link.link_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <a href={link.link_url} target="_blank" rel="noopener">
                     {link.link_name}
                   </a>
                 </li>
@@ -267,7 +263,7 @@ const InfoFormat = ({
                 className={skeleton ? Classes.SKELETON : null}
                 href={aboutURL}
                 target="_blank"
-                rel="noopener noreferrer"
+                rel="noopener"
               >
                 {aboutURL}
               </a>
