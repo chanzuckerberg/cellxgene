@@ -491,19 +491,7 @@ const CategoryRender = React.memo(
       /*
       Entire category has a single value, special case.
       */
-      const theOneValue = categorySummary.categoryValues[0];
-      return (
-        <div style={{ marginBottom: 10, marginTop: 4 }}>
-          <Truncate>
-            <span style={{ maxWidth: 150, fontWeight: 700 }}>
-              {metadataField}
-            </span>
-          </Truncate>
-          <Truncate>
-            <span style={{ maxWidth: 150 }}>{`: ${theOneValue}`}</span>
-          </Truncate>
-        </div>
-      );
+      return null;
     }
 
     /*
