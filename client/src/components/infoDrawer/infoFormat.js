@@ -3,7 +3,7 @@ import React from "react";
 
 const renderContributors = (contributors, affiliations, skeleton) => {
   // eslint-disable-next-line no-constant-condition --  Temp removed contributor section to avoid publishing PII
-  if (contributors?.length === 0 && true) return null;
+  if (!contributors || (contributors.length === 0 && true)) return null;
   return (
     <>
       <H3 className={skeleton ? Classes.SKELETON : null}>Contributors</H3>
