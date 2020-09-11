@@ -50,8 +50,6 @@ class WSGIServer(Server):
             parse_api_base_url = urlparse(api_base_url)
             extra_connect_src = [f"{parse_api_base_url.scheme}://{parse_api_base_url.netloc}"]
 
-        print("EXTRA CONNECT SRC", extra_connect_src)
-
         # This hash should be in sync with the script within
         # `client/configuration/webpack/obsoleteHTMLTemplate.html`
 
