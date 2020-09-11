@@ -341,9 +341,6 @@ def handle_api_base_url(app, app_config):
     if not api_base_url:
         return
 
-    if api_base_url.endswith("/"):
-        api_base_url = api_base_url[:-1]
-
     sha256 = hashlib.sha256(api_base_url.encode()).hexdigest()
     script_name = f"api_base_url-{sha256}.js"
     script_path = os.path.join(app.root_path, "../common/web/templates", script_name)
