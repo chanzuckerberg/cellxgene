@@ -25,6 +25,7 @@ const renderContributors = (contributors, affiliations, skeleton) => {
   );
 };
 
+// generates a list of unique institutions by order of appearance in contributors
 const buildAffiliations = (contributors = []) => {
   const affiliations = [];
   contributors.forEach((contributor) => {
@@ -43,11 +44,7 @@ const renderAffiliations = (affiliations, skeleton) => {
       <H3 className={skeleton ? Classes.SKELETON : null}>Affiliations</H3>
       <UL>
         {affiliations.map((item, index) => (
-          <div
-            id={`#afil${index}`}
-            key={item}
-            className={skeleton ? Classes.SKELETON : null}
-          >
+          <div key={item} className={skeleton ? Classes.SKELETON : null}>
             <sup>{index + 1}</sup>
             {"  "}
             {item}
@@ -61,16 +58,14 @@ const renderAffiliations = (affiliations, skeleton) => {
 const renderDOILink = (type, doi, skeleton) => {
   if (!doi) return null;
   return (
-    doi && (
-      <>
-        <H3 className={skeleton ? Classes.SKELETON : null}>{type}</H3>
-        <p className={skeleton ? Classes.SKELETON : null}>
-          <a href={doi} target="_blank" rel="noopener">
-            {doi}
-          </a>
-        </p>
-      </>
-    )
+    <>
+      <H3 className={skeleton ? Classes.SKELETON : null}>{type}</H3>
+      <p className={skeleton ? Classes.SKELETON : null}>
+        <a href={doi} target="_blank" rel="noopener">
+          {doi}
+        </a>
+      </p>
+    </>
   );
 };
 
@@ -84,6 +79,8 @@ const renderOrganism = (organism, skeleton) => {
   );
 };
 
+// Render list of metadata attributes found in categorical field
+// Ignores categories with empty or null values
 const renderSingleValueCategories = (singleValueCategories, skeleton) => {
   if (singleValueCategories.size === 0) return null;
   return (
@@ -104,6 +101,8 @@ const renderSingleValueCategories = (singleValueCategories, skeleton) => {
   );
 };
 
+// Renders any links found in the config where link_type is not "SUMMARY"
+// If there are no links in the config, render the aboutURL
 const renderLinks = (projectLinks, aboutURL, skeleton) => {
   if (!projectLinks && !aboutURL) return null;
   if (projectLinks)
@@ -147,6 +146,7 @@ const renderLinks = (projectLinks, aboutURL, skeleton) => {
 
 const NUM_CATEGORIES = 8;
 
+// Generates arbitrary placeholder array for singleValueCategories skeleton shape
 const singleValueCategoriesPlaceholder = Array.from(Array(NUM_CATEGORIES)).map(
   (_, index) => {
     return [index, index];
