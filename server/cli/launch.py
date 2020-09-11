@@ -296,7 +296,7 @@ class CliLaunchServer(Server):
             "application/octet-stream",
         ]
         Compress(app)
-        if app_config.server_config.app__debug:
+        if app_config.server_config.app__cors_supports_credentials or app_config.server_config.app__debug:
             CORS(app, supports_credentials=True)
 
 

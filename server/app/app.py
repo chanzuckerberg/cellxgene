@@ -2,6 +2,9 @@ import datetime
 import logging
 from functools import wraps
 from http import HTTPStatus
+from urllib.parse import urlparse
+import hashlib
+import os
 
 from flask import Flask, redirect, current_app, make_response, render_template, abort, Blueprint, request, \
     send_from_directory
@@ -84,10 +87,12 @@ def dataset_index(url_dataroot=None, dataset=None):
         cache_manager = current_app.matrix_data_cache_manager
         with cache_manager.data_adaptor(url_dataroot, location, app_config) as data_adaptor:
             data_adaptor.set_uri_path(f"{url_dataroot}/{dataset}")
-            dataset_title = app_config.get_title(data_adaptor)
-            return render_template(
-                "index.html", datasetTitle=dataset_title, SCRIPTS=scripts, INLINE_SCRIPTS=inline_scripts
-            )
+            args = {
+                "SCRIPTS" : scripts,
+                "INLINE_SCRIPTS" : inline_scripts
+            }
+            return render_template("index.html", **args)
+
     except DatasetAccessError as e:
         return common_rest.abort_and_log(
             e.status_code, f"Invalid dataset {dataset}: {e.message}", loglevel=logging.INFO, include_exc_info=True
@@ -179,9 +184,9 @@ def dataroot_test_index():
             data += f"<p>Logged in as {auth.get_user_id()} / {auth.get_user_name()} / {auth.get_user_email()}</p>"
         if auth.requires_client_login():
             if server_config.auth.is_user_authenticated():
-                data += "<p><a href='/logout'>Logout</a></p>"
+                data += f"<p><a href='{auth.get_logout_url(None)}'>Logout</a></p>"
             else:
-                data += "<p><a href='/login'>Login</a></p>"
+                data += f"<p><a href='{auth.get_login_url(None)}'>Login</a></p>"
 
     datasets = []
     for dataroot_dict in server_config.multi_dataset__dataroot.values():
@@ -329,6 +334,28 @@ def get_api_resources(bp_api, url_dataroot=None):
     return api
 
 
+def handle_api_base_url(app, app_config):
+    """If an api_base_url is provided, then an inline script is generated to
+    handle the new API prefix"""
+    api_base_url = app_config.server_config.get_api_base_url()
+    if not api_base_url:
+        return
+
+    if api_base_url.endswith("/"):
+        api_base_url = api_base_url[:-1]
+
+    sha256 = hashlib.sha256(api_base_url.encode()).hexdigest()
+    script_name = f"api_base_url-{sha256}.js"
+    script_path = os.path.join(app.root_path, "../common/web/templates", script_name)
+    with open(script_path, "w") as fout:
+        fout.write("window.CELLXGENE.API.prefix = `" + api_base_url + "${location.pathname}api/`;\n")
+
+    dataset_configs = [app_config.default_dataset_config] + list(app_config.dataroot_config.values())
+    for dataset_config in dataset_configs:
+        inline_scripts = dataset_config.app__inline_scripts
+        inline_scripts.append(script_name)
+
+
 class Server:
     @staticmethod
     def _before_adding_routes(app, app_config):
@@ -337,6 +364,7 @@ class Server:
 
     def __init__(self, app_config):
         self.app = Flask(__name__, static_folder=None)
+        handle_api_base_url(self.app, app_config)
         self._before_adding_routes(self.app, app_config)
         self.app.json_encoder = Float32JSONEncoder
         server_config = app_config.server_config
@@ -353,6 +381,12 @@ class Server:
         self.app.register_blueprint(webbp)
 
         api_version = "/api/v0.2"
+        api_base_url = server_config.get_api_base_url()
+        api_path = "/"
+        if api_base_url:
+            parse = urlparse(api_base_url)
+            api_path = parse.path
+
         if app_config.is_multi_dataset():
             # NOTE:  These routes only allow the dataset to be in the directory
             # of the dataroot, and not a subdirectory.  We may want to change
@@ -360,7 +394,8 @@ class Server:
             for dataroot_dict in server_config.multi_dataset__dataroot.values():
                 url_dataroot = dataroot_dict["base_url"]
                 bp_api = Blueprint(
-                    f"api_dataset_{url_dataroot}", __name__, url_prefix=f"/{url_dataroot}/<dataset>" + api_version
+                    f"api_dataset_{url_dataroot}", __name__,
+                    url_prefix=f"{api_path}/{url_dataroot}/<dataset>" + api_version
                 )
                 resources = get_api_resources(bp_api, url_dataroot)
                 self.app.register_blueprint(resources.blueprint)
@@ -378,7 +413,7 @@ class Server:
                 )
 
         else:
-            bp_api = Blueprint("api", __name__, url_prefix=api_version)
+            bp_api = Blueprint("api", __name__, url_prefix=f"{api_path}{api_version}")
             resources = get_api_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)
             self.app.add_url_rule(
