@@ -22,8 +22,8 @@ def log_upgrade_check():
         release_tag_generator = (r["tag_name"] for r in _request_cellxgene_releases())
         latest_release = next(release_tag_generator, lambda tag_name: validate_version_str(tag_name))
         if version_gt(latest_release, __version__):
-            click.echo(f"There's a new version of cellxgene available ({latest_release})!")
-            click.echo("To upgrade, run the following: pip install --upgrade cellxgene\n")
+            click.echo(f"There's a new version of cellxgene available ({latest_release})!", err=True)
+            click.echo("To upgrade, run the following: pip install --upgrade cellxgene\n", err=True)
     except (ConnectionError, RateLimitException):
         click.echo("Upgrade check failed.\n")
 
