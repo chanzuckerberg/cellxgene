@@ -1,22 +1,27 @@
 // jshint esversion: 6
 import React from "react";
 import { connect } from "react-redux";
+import { Button } from "@blueprintjs/core";
+import { IconNames } from "@blueprintjs/icons";
+
 import * as globals from "../../globals";
 import Logo from "../framework/logo";
 import Truncate from "../util/truncate";
+import InfoDrawer from "../infoDrawer/infoDrawer";
 
-const DATASET_TITLE_WIDTH = 190;
 const DATASET_TITLE_FONT_SIZE = 14;
 
 @connect((state) => ({
   datasetTitle: state.config?.displayNames?.dataset ?? "",
-  aboutURL: state.config?.links?.["about-dataset"],
-  scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
-  scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
 }))
 class LeftSideBar extends React.Component {
+  handleClick = () => {
+    const { dispatch } = this.props;
+    dispatch({ type: "toggle dataset drawer" });
+  };
+
   render() {
-    const { datasetTitle, aboutURL } = this.props;
+    const { datasetTitle } = this.props;
 
     return (
       <div
@@ -53,39 +58,23 @@ class LeftSideBar extends React.Component {
           </span>
           gene
         </span>
-        <div
+        <Button
+          minimal
+          icon={IconNames.BOOK}
           style={{
             fontSize: DATASET_TITLE_FONT_SIZE,
-            position: "relative",
-            top: -6,
-            display: "inline-block",
-            width: DATASET_TITLE_WIDTH,
-            marginLeft: "7px",
-            height: "1.2em",
-            overflow: "hidden",
-            wordBreak: "break-all",
+            position: "absolute",
+            right: 10,
           }}
+          onClick={this.handleClick}
         >
-          {aboutURL ? (
-            <Truncate>
-              <a
-                style={{ width: 185 }}
-                href={aboutURL}
-                data-testid="header"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {datasetTitle}
-              </a>
-            </Truncate>
-          ) : (
-            <Truncate>
-              <span style={{ width: 185 }} data-testid="header">
-                {datasetTitle}
-              </span>
-            </Truncate>
-          )}
-        </div>
+          <Truncate>
+            <span style={{ maxWidth: 155 }} data-testid="header">
+              {datasetTitle}
+            </span>
+          </Truncate>
+        </Button>
+        <InfoDrawer />
       </div>
     );
   }
