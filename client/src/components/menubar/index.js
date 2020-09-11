@@ -250,10 +250,7 @@ class MenuBar extends React.PureComponent {
       >
         <AuthButtons auth={auth} userinfo={userinfo} />
         <InformationMenu
-          libraryVersions={libraryVersions}
-          aboutLink={aboutLink}
-          tosURL={tosURL}
-          privacyURL={privacyURL}
+          {...{ libraryVersions, aboutLink, tosURL, privacyURL, dispatch }}
         />
         <UndoRedoReset
           dispatch={dispatch}
