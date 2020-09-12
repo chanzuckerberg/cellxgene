@@ -4,10 +4,11 @@ import sys
 import os
 import hashlib
 import base64
+from urllib.parse import urlparse
 from flask import json
 import logging
 from flask_talisman import Talisman
-
+from flask_cors import CORS
 from server.common.aws_secret_utils import handle_config_from_secret
 from server.common.errors import SecretKeyRetrievalError
 
@@ -41,6 +42,14 @@ class WSGIServer(Server):
     def _before_adding_routes(app, app_config):
         script_hashes = WSGIServer.get_csp_hashes(app, app_config)
         server_config = app_config.server_config
+
+        # add the api_base_url to the connect_src csp header.
+        extra_connect_src = []
+        api_base_url = server_config.get_api_base_url()
+        if api_base_url:
+            parse_api_base_url = urlparse(api_base_url)
+            extra_connect_src = [f"{parse_api_base_url.scheme}://{parse_api_base_url.netloc}"]
+
         # This hash should be in sync with the script within
         # `client/configuration/webpack/obsoleteHTMLTemplate.html`
 
@@ -51,7 +60,7 @@ class WSGIServer(Server):
         obsolete_browser_script_hash = ["'sha256-/rmgOi/skq9MpiZxPv6lPb1PNSN+Uf4NaUHO/IjyfwM='"]
         csp = {
             "default-src": ["'self'"],
-            "connect-src": ["'self'"],
+            "connect-src": ["'self'"] + extra_connect_src,
             "script-src": ["'self'", "'unsafe-eval'"]
             + obsolete_browser_script_hash + script_hashes,
             "style-src": ["'self'", "'unsafe-inline'"],
@@ -69,6 +78,13 @@ class WSGIServer(Server):
                 if not isinstance(v, list):
                     v = [v]
                 csp[k] = csp.get(k, []) + v
+
+        # Add the web_base_url to the CORS header
+        web_base_url = server_config.get_web_base_url()
+        if web_base_url:
+            web_base_url_parse = urlparse(web_base_url)
+            allowed_origin = f"{web_base_url_parse.scheme}://{web_base_url_parse.netloc}"
+            CORS(app, supports_credentials=True, origins=allowed_origin)
 
         Talisman(
             app, force_https=server_config.app__force_https, frame_options="DENY", content_security_policy=csp,
