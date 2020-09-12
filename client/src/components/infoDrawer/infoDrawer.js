@@ -1,7 +1,9 @@
 import React, { PureComponent } from "react";
 import { connect, shallowEqual } from "react-redux";
-import { Drawer, H3, H1, UL, Classes } from "@blueprintjs/core";
+import { Drawer } from "@blueprintjs/core";
 import Async from "react-async";
+
+import InfoFormat from "./infoFormat";
 import {
   selectableCategoryNames,
   createCategorySummaryFromDfCol,
@@ -14,6 +16,7 @@ import {
     datasetTitle: state.config?.displayNames?.dataset ?? "",
     aboutURL: state.config?.links?.["about-dataset"],
     isOpen: state.controls.datasetDrawer,
+    dataPortalProps: state.config?.["corpora_props"] ?? {},
   };
 })
 class InfoDrawer extends PureComponent {
@@ -60,7 +63,14 @@ class InfoDrawer extends PureComponent {
   };
 
   render() {
-    const { position, aboutURL, datasetTitle, schema, isOpen } = this.props;
+    const {
+      position,
+      aboutURL,
+      datasetTitle,
+      schema,
+      isOpen,
+      dataPortalProps,
+    } = this.props;
 
     return (
       <Drawer
@@ -74,7 +84,10 @@ class InfoDrawer extends PureComponent {
           watchProps={{ schema }}
         >
           <Async.Pending>
-            <InfoFormat skeleton {...{ datasetTitle, aboutURL }} />
+            <InfoFormat
+              skeleton
+              {...{ datasetTitle, aboutURL, dataPortalProps }}
+            />
           </Async.Pending>
           <Async.Rejected>
             {(error) => {
@@ -87,7 +100,12 @@ class InfoDrawer extends PureComponent {
               const { singleValueCategories } = asyncProps;
               return (
                 <InfoFormat
-                  {...{ datasetTitle, aboutURL, singleValueCategories }}
+                  {...{
+                    datasetTitle,
+                    aboutURL,
+                    singleValueCategories,
+                    dataPortalProps,
+                  }}
                 />
               );
             }}
@@ -97,56 +115,4 @@ class InfoDrawer extends PureComponent {
     );
   }
 }
-
-const NUM_CATEGORIES = 8;
-
-const singleValueCategoriesPlaceholder = Array.from(Array(NUM_CATEGORIES)).map(
-  (_, index) => {
-    return [index, index];
-  }
-);
-
-const InfoFormat = ({
-  datasetTitle,
-  singleValueCategories = new Map(singleValueCategoriesPlaceholder),
-  aboutURL = "thisisabouthtelengthofaurl",
-  skeleton = false,
-}) => {
-  return (
-    <div style={{ margin: 24 }}>
-      <H1 className={skeleton ? Classes.SKELETON : null}>{datasetTitle}</H1>
-      {singleValueCategories.size > 0 && (
-        <>
-          <H3 className={skeleton ? Classes.SKELETON : null}>
-            Dataset Metadata
-          </H3>
-          <UL>
-            {Array.from(singleValueCategories).map((pair) => {
-              if (!pair[1] || pair[1] === "") return null;
-              return (
-                <li
-                  className={skeleton ? Classes.SKELETON : null}
-                  key={pair[0]}
-                >{`${pair[0]}: ${pair[1]}`}</li>
-              );
-            })}
-          </UL>
-        </>
-      )}
-      {aboutURL && (
-        <>
-          <H3 className={skeleton ? Classes.SKELETON : null}>More Info</H3>
-          <a
-            className={skeleton ? Classes.SKELETON : null}
-            href={aboutURL}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {aboutURL}
-          </a>
-        </>
-      )}
-    </div>
-  );
-};
 export default InfoDrawer;

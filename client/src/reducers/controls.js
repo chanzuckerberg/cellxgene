@@ -21,7 +21,6 @@ const Controls = (
     scatterplotYYaccessor: null,
     graphRenderCounter: 0 /* integer as <Component key={graphRenderCounter} - a change in key forces a remount */,
 
-    singletonHover: false,
     datasetDrawer: false,
   },
   action

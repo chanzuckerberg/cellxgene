@@ -39,6 +39,7 @@ module.exports = {
     },
   },
   rules: {
+    "react/jsx-no-target-blank": "off",
     "eslint-comments/require-description": ["error"],
     "no-magic-numbers": "off",
     "no-nested-ternary": "off",

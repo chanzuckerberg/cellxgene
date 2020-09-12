@@ -14,6 +14,25 @@ server:
     server_timing_headers: false
     csp_directives: null
 
+    # CORS: Cross Origin Resource Sharing.  If true, this allow users to make
+    # authenticated requests.  This allows cookies and credentials to be submitted
+    # across domains
+    cors_supports_credentials: false
+
+    # By default, cellxgene will serve api requests from the same base url as the webpage.
+    # In general api_base_url and web_base_url will not need to be set.
+    # There are two reasons to set these parameters:
+    #  1. Oauth authentication is used; the oauth server will redirect back to the api_base_url after login,
+    #     which then redirects back to the web_base_url.  If the web_base_url is not set, it will default to
+    #     the api_base_url.  If oauth authentication is used, the api_base_url must be set.
+    #     For a local test (where the server runs on "http://localhost:<port>"), then the api_base_url may be
+    #     set to the string "local".
+    #  2. The cellxgene deploymnent is in an environment where the webpage and api have
+    #     different base urls.  In this case both api_base_url and web_base_url must be set.
+    #     It is up to the server admin to ensure that the networking is setup correctly for this environment.
+    api_base_url: null
+    web_base_url: null
+
   authentication:
     # The authentication types may be "none", "session", "oauth"
     # none:  No authentication support, features like user_annotations must not be enabled.
@@ -22,16 +41,17 @@ server:
     type: session
 
     params_oauth:
-       # url to the auth server
-       api_base_url: null
+       # url to the oauth server
+       oauth_api_base_url: null
        # client_id of this app
        client_id: null
        # the client_secret known to the auth server and this app
        client_secret: null
-       # cellxgene server location;
-       # the browser will be redirected to locations relative to this location during login and logout.
-       # A value of None, indicates the client and server are on the localhost.  http://localhost:<port> will be used.
-       callback_base_url: null
+       # jwt_decode_options, to specify non default decode options define
+       # jwt_decode_options to be a dictionary with key/values described by
+       # the options parameter of the jose.jwt.decode function:
+       # (https://python-jose.readthedocs.io/en/latest/jwt/api.html)
+       jwt_decode_options: null
 
        # if true, the jwt containing the id_token is stored in a session cookie
        session_cookie:  true

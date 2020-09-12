@@ -131,16 +131,24 @@ def start_test_server(command_line_args=[], app_config=None):
 
     where the server can be accessed within the context, and is terminated when
     the context is exited.
-    The port is automatically set using find_available_port.
+    The port is automatically set using find_available_port, unless passed in as a command line arg.
     The verbose flag is automatically set to True.
     If an app_config is provided, then this function writes a temporary
     yaml config file, which this server will read and parse.
     """
 
-    start = random.randint(DEFAULT_SERVER_PORT, 2 ** 16 - 1)
-    port = int(os.environ.get("CXG_SERVER_PORT", start))
-    port = find_available_port("localhost", port)
-    command = ["cellxgene", "--no-upgrade-check", "launch", "--verbose", "--port=%d" % port] + command_line_args
+    command = ["cellxgene", "--no-upgrade-check", "launch", "--verbose"]
+    if "-p" in command_line_args:
+        port = int(command_line_args[command_line_args.index("-p") + 1])
+    elif "--port" in command_line_args:
+        port = int(command_line_args[command_line_args.index("--port") + 1])
+    else:
+        start = random.randint(DEFAULT_SERVER_PORT, 2 ** 16 - 1)
+        port = int(os.environ.get("CXG_SERVER_PORT", start))
+        port = find_available_port("localhost", port)
+        command += ["--port=%d" % port]
+
+    command += command_line_args
 
     tempdir = None
     if app_config:
