@@ -30,8 +30,7 @@ export const layoutChoiceAction = (newLayoutChoice) => async (
   On layout choice, make sure we have selected all on the previous layout, AND the new
   layout.
   */
-  const { annoMatrix: prevAnnoMatrix } = getState();
-  const { obsCrossfilter: prevCrossfilter } = getState();
+  const { annoMatrix: prevAnnoMatrix, obsCrossfilter: prevCrossfilter } = getState();
   const [annoMatrix, obsCrossfilter] = await _switchEmbedding(
     prevAnnoMatrix,
     prevCrossfilter,
