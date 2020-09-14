@@ -11,7 +11,7 @@ module is not installed/available
 def get_scanpy_module():
     try:
         import scanpy as sc
-        #sc = importlib.import_module("scanpy")
+        sc = importlib.import_module("scanpy")
         # Future: we could enforce versions here, eg, lookat sc.__version__
         #return sc
     except ModuleNotFoundError as e:
