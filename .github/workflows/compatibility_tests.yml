@@ -82,7 +82,7 @@ jobs:
           # 2. install cellxgene
           pip install --upgrade cellxgene
           # 3. install anndata
-          cd ../anndata && pip install -e .
+          cd ../anndata && pip install -e . --no-deps
       - name: Tests
         run: cd cellxgene && make unit-test ${{ matrix.test-suite }}
 
@@ -113,6 +113,6 @@ jobs:
           sed -i -E 's/^anndata[>=]=[0-9]+.[0-9]+.[0-9]+$/anndata/g' server/requirements.txt
           make pydist install-dist dev-env
           cd ../anndata
-          pip install -e .
+          pip install -e . --no-deps
       - name: Tests
         run: cd cellxgene && make unit-test ${{ matrix.test-suite }}
