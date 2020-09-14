@@ -1,5 +1,6 @@
 import importlib
 import numpy as np
+import pdb
 
 """
 Wrapper for various scanpy modules.  Will raise NotImplementedError if the scanpy
@@ -17,6 +18,7 @@ def get_scanpy_module():
     except Exception as e:
         # will capture other ImportError corner cases
         print(f"Caught import error lalalala {str(e)}")
+        pdb.post_mortem()
         raise NotImplementedError() from e
 
 
