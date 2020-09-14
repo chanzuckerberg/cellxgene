@@ -83,7 +83,7 @@ jobs:
           # 2. install cellxgene
           pip install --upgrade cellxgene
           # 3. install anndata
-          cd ../anndata && pip install -e .
+          pip install git+https://github.com/theislab/anndata
       - name: Tests
         run: cd cellxgene && make unit-test ${{ matrix.test-suite }}
 
