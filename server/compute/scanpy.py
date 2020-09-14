@@ -10,9 +10,10 @@ module is not installed/available
 
 def get_scanpy_module():
     try:
-        sc = importlib.import_module("scanpy")
+        import scanpy as sc
+        #sc = importlib.import_module("scanpy")
         # Future: we could enforce versions here, eg, lookat sc.__version__
-        return sc
+        #return sc
     except ModuleNotFoundError as e:
         raise NotImplementedError("Please install scanpy to enable UMAP re-embedding") from e
     except ImportError as e:
