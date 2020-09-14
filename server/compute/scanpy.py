@@ -13,11 +13,15 @@ def get_scanpy_module():
         sc = importlib.import_module("scanpy")
         # Future: we could enforce versions here, eg, lookat sc.__version__
         return sc
+    except ImportError:
+        print(f"Caught import error lalalala {str(e)}")
+        pdb.post_mortem()
+        return sc
     except ModuleNotFoundError as e:
         raise NotImplementedError("Please install scanpy to enable UMAP re-embedding") from e
     except Exception as e:
         # will capture other ImportError corner cases
-        print(f"Caught import error lalalala {str(e)}")
+        print(f"Caught exception error dododood {str(e)}")
         pdb.post_mortem()
         raise NotImplementedError() from e
 
