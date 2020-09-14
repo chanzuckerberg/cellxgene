@@ -100,7 +100,10 @@ class AppConfig(object):
 
         per_dataset_config = config.get("per_dataset_config", {})
         for key, dataroot_config in per_dataset_config.items():
-            self.add_dataroot_config(key, **dataroot_config)
+            # first create and initialize the dataroot with the default config
+            self.add_dataroot_config(key, **config["dataset"])
+            # then apply the per dataset configuration
+            self.dataroot_config[key].update_from_config(dataroot_config, f"per_dataset_config__{key}")
 
         self.is_complete = False
 
