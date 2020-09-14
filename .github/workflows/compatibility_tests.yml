@@ -3,10 +3,8 @@ name: Compatibility Tests
 on:
   schedule:
     - cron: '0 8 7 * 2'
-  push:
-    branches: "*"
-  pull_request:
-    branches: "*"
+  branches:
+    - main
 
 env:
   JEST_ENV: prod
