@@ -68,17 +68,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: cellxgene
-      - name: Checkout tools repo
-        uses: actions/checkout@v2
-        with:
-          repository: theislab/anndata
-          path: anndata
       - name: Install dependencies
         run: |
           cd cellxgene
           # 1. only install the dev requirements on top of what is in the cellxgene pip package
           make dev-env-client
-          sed -i 's/-r requirements-compat-testing.txt//' server/requirements-dev.txt
+          sed -i 's/-r requirements.txt//' server/requirements-dev.txt
           pip install -r server/requirements-dev.txt
           # 2. install cellxgene
           pip install --upgrade cellxgene
@@ -103,11 +98,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: cellxgene
-      - name: Checkout tools repo
-        uses: actions/checkout@v2
-        with:
-          repository: theislab/anndata
-          path: anndata
       - name: Install dependencies
         run: |
           cd cellxgene
