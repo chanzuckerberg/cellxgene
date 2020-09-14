@@ -6,6 +6,6 @@ parameterized>=0.7.0
 psycopg2==2.7.7
 pytest>=3.6.3
 python-jose>=3.2.0
-scanpy==1.5.0
+scanpy==1.4.4
 twine>=1.12.1
 -r requirements.txt
