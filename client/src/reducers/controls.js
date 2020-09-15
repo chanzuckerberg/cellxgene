@@ -20,6 +20,8 @@ const Controls = (
     scatterplotXXaccessor: null, // just easier to read
     scatterplotYYaccessor: null,
     graphRenderCounter: 0 /* integer as <Component key={graphRenderCounter} - a change in key forces a remount */,
+
+    datasetDrawer: false,
   },
   action
 ) => {
@@ -161,6 +163,12 @@ const Controls = (
         scatterplotXXaccessor: null,
         scatterplotYYaccessor: null,
       };
+
+    /**************************
+          Dataset Drawer
+     **************************/
+    case "toggle dataset drawer":
+      return { ...state, datasetDrawer: !state.datasetDrawer };
 
     default:
       return state;

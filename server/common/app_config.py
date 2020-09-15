@@ -9,6 +9,7 @@ import yaml
 from flatten_dict import flatten, unflatten
 
 import server.compute.diffexp_cxg as diffexp_tiledb
+import server.compute.scanpy
 from server import display_version as cellxgene_display_version
 from server.auth.auth import AuthTypeFactory
 from server.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
@@ -99,7 +100,10 @@ class AppConfig(object):
 
         per_dataset_config = config.get("per_dataset_config", {})
         for key, dataroot_config in per_dataset_config.items():
-            self.add_dataroot_config(key, **dataroot_config)
+            # first create and initialize the dataroot with the default config
+            self.add_dataroot_config(key, **config["dataset"])
+            # then apply the per dataset configuration
+            self.dataroot_config[key].update_from_config(dataroot_config, f"per_dataset_config__{key}")
 
         self.is_complete = False
 
@@ -416,6 +420,7 @@ class ServerConfig(BaseConfig):
         dictval_cases = [
             ("app", "csp_directives"),
             ("authentication", "params_oauth", "cookie"),
+            ("authentication", "params_oauth", "jwt_decode_options"),
             ("adaptor", "cxg_adaptor", "tiledb_ctx"),
             ("multi_dataset", "dataroot"),
         ]
@@ -433,13 +438,17 @@ class ServerConfig(BaseConfig):
             self.app__generate_cache_control_headers = dc["app"]["generate_cache_control_headers"]
             self.app__server_timing_headers = dc["app"]["server_timing_headers"]
             self.app__csp_directives = dc["app"]["csp_directives"]
+            self.app__api_base_url = dc["app"]["api_base_url"]
+            self.app__web_base_url = dc["app"]["web_base_url"]
 
             self.authentication__type = dc["authentication"]["type"]
-            self.authentication__params_oauth__api_base_url = dc["authentication"]["params_oauth"]["api_base_url"]
+            self.authentication__params_oauth__oauth_api_base_url = dc["authentication"]["params_oauth"][
+                "oauth_api_base_url"
+            ]
             self.authentication__params_oauth__client_id = dc["authentication"]["params_oauth"]["client_id"]
             self.authentication__params_oauth__client_secret = dc["authentication"]["params_oauth"]["client_secret"]
-            self.authentication__params_oauth__callback_base_url = \
-                dc["authentication"]["params_oauth"]["callback_base_url"]
+            self.authentication__params_oauth__jwt_decode_options = dc["authentication"]["params_oauth"][
+                "jwt_decode_options"]
             self.authentication__params_oauth__session_cookie = dc["authentication"]["params_oauth"]["session_cookie"]
             self.authentication__params_oauth__cookie = dc["authentication"]["params_oauth"]["cookie"]
 
@@ -500,6 +509,8 @@ class ServerConfig(BaseConfig):
         self.check_attr("app__generate_cache_control_headers", bool)
         self.check_attr("app__server_timing_headers", bool)
         self.check_attr("app__csp_directives", (type(None), dict))
+        self.check_attr("app__api_base_url", (type(None), str))
+        self.check_attr("app__web_base_url", (type(None), str))
 
         if self.app__port:
             try:
@@ -548,15 +559,18 @@ class ServerConfig(BaseConfig):
                 elif not isinstance(v, str):
                     raise ConfigurationError("CSP directive value must be a string or list of strings.")
 
+        if self.app__web_base_url is None:
+            self.app__web_base_url = self.app__api_base_url
+
     def handle_authentication(self, context):
         self.check_attr("authentication__type", (type(None), str))
 
         # oauth
         ptypes = str if self.authentication__type == "oauth" else (type(None), str)
-        self.check_attr("authentication__params_oauth__api_base_url", ptypes)
+        self.check_attr("authentication__params_oauth__oauth_api_base_url", ptypes)
         self.check_attr("authentication__params_oauth__client_id", ptypes)
         self.check_attr("authentication__params_oauth__client_secret", ptypes)
-        self.check_attr("authentication__params_oauth__callback_base_url", (type(None), str))
+        self.check_attr("authentication__params_oauth__jwt_decode_options", (type(None), dict))
         self.check_attr("authentication__params_oauth__session_cookie", bool)
 
         if self.authentication__params_oauth__session_cookie:
@@ -742,6 +756,22 @@ class ServerConfig(BaseConfig):
             return False
         return value > limit_value
 
+    def get_api_base_url(self):
+        if self.app__api_base_url == "local":
+            return f"http://{self.app__host}:{self.app__port}"
+        if self.app__api_base_url and self.app__api_base_url.endswith("/"):
+            return self.app__api_base_url[:-1]
+        return self.app__api_base_url
+
+    def get_web_base_url(self):
+        if self.app__web_base_url == "local":
+            return f"http://{self.app__host}:{self.app__port}"
+        if self.app__web_base_url is None:
+            return self.get_api_base_url()
+        if self.app__web_base_url.endswith("/"):
+            return self.app__web_base_url[:-1]
+        return self.api__web_base_url
+
 
 class DatasetConfig(BaseConfig):
     """Manages the config attribute associated with a dataset."""
@@ -768,7 +798,7 @@ class DatasetConfig(BaseConfig):
             self.user_annotations__ontology__obo_location = dc["user_annotations"]["ontology"]["obo_location"]
             self.user_annotations__hosted_tiledb_array__db_uri = dc["user_annotations"]["hosted_tiledb_array"]["db_uri"]
             self.user_annotations__hosted_tiledb_array__hosted_file_directory = \
-                dc["user_annotations"]["hosted_tiledb_array"]["hosted_file_directory"]  # noqa E501
+                dc["user_annotations"][ "hosted_tiledb_array" ][ "hosted_file_directory" ]  # noqa E501
 
             self.embeddings__names = dc["embeddings"]["names"]
             self.embeddings__enable_reembedding = dc["embeddings"]["enable_reembedding"]
@@ -898,15 +928,20 @@ class DatasetConfig(BaseConfig):
         self.check_attr("embeddings__enable_reembedding", bool)
 
         server_config = self.app_config.server_config
-        if server_config.single_dataset__datapath:
-            if self.embeddings__enable_reembedding:
+        if self.embeddings__enable_reembedding:
+            if server_config.single_dataset__datapath:
                 matrix_data_loader = MatrixDataLoader(
                     server_config.single_dataset__datapath, app_config=self.app_config
                 )
                 if matrix_data_loader.matrix_data_type != MatrixDataType.H5AD:
-                    raise ConfigurationError("'enable-reembedding is only supported with H5AD files.")
+                    raise ConfigurationError("enable-reembedding is only supported with H5AD files.")
                 if server_config.adaptor__anndata_adaptor__backed:
                     raise ConfigurationError("enable-reembedding is not supported when run in --backed mode.")
+
+            try:
+                server.compute.scanpy.get_scanpy_module()
+            except NotImplementedError:
+                raise ConfigurationError("Please install scanpy to enable UMAP re-embedding")
 
     def handle_diffexp(self, context):
         self.check_attr("diffexp__enable", bool)

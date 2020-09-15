@@ -1,17 +1,16 @@
-import click
 import re
-import requests
 
+import click
+import requests
 from requests.exceptions import ConnectionError
+
 from .. import __version__
 
 # Official SemVer regex: https://semver.org/
 SEMVER_FORMAT = re.compile(
-    r"^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)"
-    + r"(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)"
-    + r"(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?"
-    + r"(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$"
-)
+    r"^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*["
+    r"a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+("
+    r"?:\.[0-9a-zA-Z-]+)*))?$")
 
 
 def log_upgrade_check():
@@ -23,8 +22,8 @@ def log_upgrade_check():
         release_tag_generator = (r["tag_name"] for r in _request_cellxgene_releases())
         latest_release = next(release_tag_generator, lambda tag_name: validate_version_str(tag_name))
         if version_gt(latest_release, __version__):
-            click.echo(f"There's a new version of cellxgene available ({latest_release})!")
-            click.echo("To upgrade, run the following: pip install --upgrade cellxgene\n")
+            click.echo(f"There's a new version of cellxgene available ({latest_release})!", err=True)
+            click.echo("To upgrade, run the following: pip install --upgrade cellxgene\n", err=True)
     except (ConnectionError, RateLimitException):
         click.echo("Upgrade check failed.\n")
 

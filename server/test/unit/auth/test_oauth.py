@@ -19,7 +19,7 @@ from server.test import FIXTURES_ROOT, test_server
 # oauth server.
 
 # number of seconds that the oauth token is valid
-TOKEN_EXPIRES = 5
+TOKEN_EXPIRES = 2
 
 # Create a mocked out oauth token, which servers all the endpoints needed by the oauth type.
 mock_oauth_app = Flask("mock_oauth_app")
@@ -34,17 +34,19 @@ def authorize():
 
 @mock_oauth_app.route("/oauth/token", methods=["POST"])
 def token():
+    now = time.time()
+    expires_at = now + TOKEN_EXPIRES
     headers = dict(alg="RS256", kid="fake_kid")
-    payload = dict(name="fake_user", sub="fake_id", email="fake_user@email.com", email_verified=True)
+    payload = dict(name="fake_user", sub="fake_id", email="fake_user@email.com", email_verified=True, exp=expires_at)
     jwt = jose.jwt.encode(claims=payload, key="mysecret", algorithm="HS256", headers=headers)
     r = {
-        "access_token": f"access-{time.time()}",
+        "access_token": f"access-{now}",
         "id_token": jwt,
-        "refresh_token": f"random-{time.time()}",
+        "refresh_token": f"random-{now}",
         "scope": "openid profile email",
         "expires_in": TOKEN_EXPIRES,
         "token_type": "Bearer",
-        "expires_at": time.time() + TOKEN_EXPIRES,
+        "expires_at": expires_at
     }
     return make_response(jsonify(r))
 
@@ -81,6 +83,19 @@ class AuthTest(unittest.TestCase):
 
     def auth_flow(self, app_config, cookie_key=None):
 
+        app_config.update_server_config(
+            app__api_base_url="local",
+            authentication__type="oauth",
+            authentication__params_oauth__oauth_api_base_url=f"http://localhost:{PORT}",
+            authentication__params_oauth__client_id="mock_client_id",
+            authentication__params_oauth__client_secret="mock_client_secret",
+            authentication__params_oauth__jwt_decode_options={
+                "verify_signature": False, "verify_iss": False
+            })
+
+        app_config.update_server_config(multi_dataset__dataroot=self.dataset_dataroot)
+        app_config.complete_config()
+
         with test_server(app_config=app_config) as server:
             session = requests.Session()
 
@@ -96,10 +111,10 @@ class AuthTest(unittest.TestCase):
             login_uri = config["config"]["authentication"]["login"]
             logout_uri = config["config"]["authentication"]["logout"]
 
-            self.assertEqual(login_uri, "/login?dataset=d/pbmc3k.cxg/")
-            self.assertEqual(logout_uri, "/logout")
+            self.assertEqual(login_uri, f"{server}/login?dataset=d/pbmc3k.cxg/")
+            self.assertEqual(logout_uri, f"{server}/logout")
 
-            r = session.get(f"{server}/{login_uri}")
+            r = session.get(login_uri)
             # check that the login redirect worked
             self.assertEqual(r.history[0].status_code, 302)
             self.assertEqual(r.url, f"{server}/d/pbmc3k.cxg/")
@@ -113,13 +128,13 @@ class AuthTest(unittest.TestCase):
                 cookie = session.cookies.get(cookie_key)
                 token = json.loads(base64.b64decode(cookie))
                 access_token_before = token.get("access_token")
-                expires_at_before = token.get("expires_at")
+                id_token_before = token.get("id_token")
 
                 # let the token expire
                 time.sleep(TOKEN_EXPIRES + 1)
 
                 # check that refresh works
-                session.get(f"{server}/{login_uri}")
+                session.get(login_uri)
                 userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
                 self.assertTrue(userinfo["userinfo"]["is_authenticated"])
                 self.assertEqual(userinfo["userinfo"]["username"], "fake_user")
@@ -127,12 +142,12 @@ class AuthTest(unittest.TestCase):
                 cookie = session.cookies.get(cookie_key)
                 token = json.loads(base64.b64decode(cookie))
                 access_token_after = token.get("access_token")
-                expires_at_after = token.get("expires_at")
+                id_token_after = token.get("id_token")
 
                 self.assertNotEqual(access_token_before, access_token_after)
-                self.assertTrue(expires_at_after - expires_at_before > TOKEN_EXPIRES)
+                self.assertNotEqual(id_token_before, id_token_after)
 
-            r = session.get(f"{server}/{logout_uri}")
+            r = session.get(logout_uri)
             # check that the logout redirect worked
             self.assertEqual(r.history[0].status_code, 302)
             self.assertEqual(r.url, f"{server}")
@@ -146,31 +161,16 @@ class AuthTest(unittest.TestCase):
         # test with session cookies
         app_config = AppConfig()
         app_config.update_server_config(
-            authentication__type="oauth",
-            authentication__params_oauth__api_base_url=f"http://localhost:{PORT}",
-            authentication__params_oauth__client_id="mock_client_id",
-            authentication__params_oauth__client_secret="mock_client_secret",
             authentication__params_oauth__session_cookie=True,
         )
-
-        app_config.update_server_config(multi_dataset__dataroot=self.dataset_dataroot)
-        app_config.complete_config()
-
         self.auth_flow(app_config)
 
     def test_auth_oauth_cookie(self):
         # test with specified cookie
         app_config = AppConfig()
         app_config.update_server_config(
-            authentication__type="oauth",
-            authentication__params_oauth__api_base_url=f"http://localhost:{PORT}",
-            authentication__params_oauth__client_id="mock_client_id",
-            authentication__params_oauth__client_secret="mock_client_secret",
             authentication__params_oauth__session_cookie=False,
             authentication__params_oauth__cookie=dict(key="test_cxguser", httponly=True, max_age=60),
         )
-
-        app_config.update_server_config(multi_dataset__dataroot=self.dataset_dataroot)
-        app_config.complete_config()
 
         self.auth_flow(app_config, "test_cxguser")
