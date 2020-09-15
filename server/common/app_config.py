@@ -100,7 +100,10 @@ class AppConfig(object):
 
         per_dataset_config = config.get("per_dataset_config", {})
         for key, dataroot_config in per_dataset_config.items():
-            self.add_dataroot_config(key, **dataroot_config)
+            # first create and initialize the dataroot with the default config
+            self.add_dataroot_config(key, **config["dataset"])
+            # then apply the per dataset configuration
+            self.dataroot_config[key].update_from_config(dataroot_config, f"per_dataset_config__{key}")
 
         self.is_complete = False
 
@@ -435,7 +438,6 @@ class ServerConfig(BaseConfig):
             self.app__generate_cache_control_headers = dc["app"]["generate_cache_control_headers"]
             self.app__server_timing_headers = dc["app"]["server_timing_headers"]
             self.app__csp_directives = dc["app"]["csp_directives"]
-            self.app__cors_supports_credentials = dc["app"]["cors_supports_credentials"]
             self.app__api_base_url = dc["app"]["api_base_url"]
             self.app__web_base_url = dc["app"]["web_base_url"]
 
@@ -506,7 +508,6 @@ class ServerConfig(BaseConfig):
         self.check_attr("app__flask_secret_key", (type(None), str))
         self.check_attr("app__generate_cache_control_headers", bool)
         self.check_attr("app__server_timing_headers", bool)
-        self.check_attr("app__cors_supports_credentials", bool)
         self.check_attr("app__csp_directives", (type(None), dict))
         self.check_attr("app__api_base_url", (type(None), str))
         self.check_attr("app__web_base_url", (type(None), str))
@@ -758,6 +759,8 @@ class ServerConfig(BaseConfig):
     def get_api_base_url(self):
         if self.app__api_base_url == "local":
             return f"http://{self.app__host}:{self.app__port}"
+        if self.app__api_base_url and self.app__api_base_url.endswith("/"):
+            return self.app__api_base_url[:-1]
         return self.app__api_base_url
 
     def get_web_base_url(self):
@@ -765,7 +768,9 @@ class ServerConfig(BaseConfig):
             return f"http://{self.app__host}:{self.app__port}"
         if self.app__web_base_url is None:
             return self.get_api_base_url()
-        return self.app__web_base_url
+        if self.app__web_base_url.endswith("/"):
+            return self.app__web_base_url[:-1]
+        return self.api__web_base_url
 
 
 class DatasetConfig(BaseConfig):

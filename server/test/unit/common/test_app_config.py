@@ -2,6 +2,7 @@ import os
 import unittest
 from unittest import mock
 from unittest.mock import patch
+import tempfile
 
 import requests
 
@@ -154,3 +155,44 @@ class AppConfigTest(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             data_config = response.json()
             self.assertEqual(data_config["config"]["displayNames"]["dataset"], "pbmc3k")
+
+    def test_configfile_with_specialization(self):
+        # test that per_dataset_config config load the default config, then the specialized config
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            configfile = os.path.join(tempdir, "config.yaml")
+            with open(configfile, "w") as fconfig:
+                config = """
+                server:
+                    multi_dataset:
+                        dataroot:
+                            test:
+                                base_url: test
+                                dataroot: fake_dataroot
+
+                dataset:
+                    user_annotations:
+                        enable: false
+                        type: hosted_tiledb_array
+                        hosted_tiledb_array:
+                            db_uri: fake_db_uri
+                            hosted_file_directory: fake_dir
+
+                per_dataset_config:
+                    test:
+                        user_annotations:
+                            enable: true
+                """
+                fconfig.write(config)
+
+            app_config = AppConfig()
+            app_config.update_from_config_file(configfile)
+
+            test_config = app_config.dataroot_config["test"]
+
+            # test config from default
+            self.assertEqual(test_config.user_annotations__type, "hosted_tiledb_array")
+            self.assertEqual(test_config.user_annotations__hosted_tiledb_array__db_uri, "fake_db_uri")
+
+            # test config from specialization
+            self.assertTrue(test_config.user_annotations__enable)

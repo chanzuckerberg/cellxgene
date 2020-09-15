@@ -233,7 +233,8 @@ class DatasetResource(Resource):
 
 
 class SchemaAPI(DatasetResource):
-    @cache_control(public=True, max_age=ONE_WEEK)
+    # TODO @mdunitz separate dataset schema and user schema
+    @cache_control(no_store=True)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.schema_get(data_adaptor)
@@ -340,9 +341,6 @@ def handle_api_base_url(app, app_config):
     api_base_url = app_config.server_config.get_api_base_url()
     if not api_base_url:
         return
-
-    if api_base_url.endswith("/"):
-        api_base_url = api_base_url[:-1]
 
     sha256 = hashlib.sha256(api_base_url.encode()).hexdigest()
     script_name = f"api_base_url-{sha256}.js"

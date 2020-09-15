@@ -14,11 +14,6 @@ server:
     server_timing_headers: false
     csp_directives: null
 
-    # CORS: Cross Origin Resource Sharing.  If true, this allow users to make
-    # authenticated requests.  This allows cookies and credentials to be submitted
-    # across domains
-    cors_supports_credentials: false
-
     # By default, cellxgene will serve api requests from the same base url as the webpage.
     # In general api_base_url and web_base_url will not need to be set.
     # There are two reasons to set these parameters:
