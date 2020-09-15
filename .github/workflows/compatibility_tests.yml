@@ -67,11 +67,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: cellxgene
-      - name: Checkout tools repo
-        uses: actions/checkout@v2
-        with:
-          repository: theislab/anndata
-          path: anndata
       - name: Install dependencies
         run: |
           cd cellxgene
@@ -82,7 +77,7 @@ jobs:
           # 2. install cellxgene
           pip install --upgrade cellxgene
           # 3. install anndata
-          cd ../anndata && pip install -e .
+          pip install git+https://github.com/theislab/anndata
       - name: Tests
         run: cd cellxgene && make unit-test ${{ matrix.test-suite }}
 
@@ -102,17 +97,11 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: cellxgene
-      - name: Checkout tools repo
-        uses: actions/checkout@v2
-        with:
-          repository: theislab/anndata
-          path: anndata
       - name: Install dependencies
         run: |
           cd cellxgene
           sed -i -E 's/^anndata[>=]=[0-9]+.[0-9]+.[0-9]+$/anndata/g' server/requirements.txt
           make pydist install-dist dev-env
-          cd ../anndata
-          pip install -e .
+          pip install git+https://github.com/theislab/anndata
       - name: Tests
         run: cd cellxgene && make unit-test ${{ matrix.test-suite }}
