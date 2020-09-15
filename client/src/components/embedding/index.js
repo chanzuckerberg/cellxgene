@@ -55,14 +55,15 @@ class Embedding extends React.PureComponent {
               <Button
                 type="button"
                 data-testid="layout-choice"
-                icon="heat-grid"
+                icon="heatmap"
                 // minimal
                 id="embedding"
                 style={{
                   cursor: "pointer",
                 }}
               >
-                heatmap
+                {layoutChoice?.current}: {crossfilter.countSelected()} out of{" "}
+                {crossfilter.size()} cells
               </Button>
             </Tooltip>
           }
