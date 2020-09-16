@@ -160,6 +160,12 @@ class AppConfigTest(unittest.TestCase):
             response = session.get(f"{server}/additional/path/health")
             assert response.json()["status"] == "pass"
 
+            # also check that the old URL still works.
+            # NOTE:  this old URL location will soon be deprecated, and when that happens
+            # this check can be removed.
+            response = session.get(f"{server}/health")
+            assert response.json()["status"] == "pass"
+
     def test_configfile_with_specialization(self):
         # test that per_dataset_config config load the default config, then the specialized config
 
