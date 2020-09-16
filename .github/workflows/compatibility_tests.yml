@@ -26,11 +26,14 @@ jobs:
   cellxgene-main-with-python-and-anndata-versions:
     name: python versions x anndata versions
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.continue-on-error }}
     strategy:
       matrix:
         python-version: [3.6, 3.7, 3.8]
         anndata-version: [0.6.22.post1, 0.7.1]
         test-suite: [smoke-test, smoke-test-annotations]
+      include:
+        continue-on-error: true
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
