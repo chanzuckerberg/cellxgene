@@ -1,6 +1,8 @@
 import { H3, H1, UL, Classes } from "@blueprintjs/core";
 import React from "react";
 
+import Truncate from "../util/truncate";
+
 const renderContributors = (contributors, affiliations, skeleton) => {
   // eslint-disable-next-line no-constant-condition --  Temp removed contributor section to avoid publishing PII
   if (!contributors || contributors.length === 0 || true) return null;
@@ -80,20 +82,47 @@ const renderOrganism = (organism, skeleton) => {
 };
 
 // Render list of metadata attributes found in categorical field
-// Ignores categories with empty or null values
 const renderSingleValueCategories = (singleValueCategories, skeleton) => {
   if (singleValueCategories.size === 0) return null;
   return (
     <>
       <H3 className={skeleton ? Classes.SKELETON : null}>Dataset Metadata</H3>
       <UL>
-        {Array.from(singleValueCategories).map((pair) => {
-          if (!pair[1] || pair[1] === "") return null;
+        {Array.from(singleValueCategories).map((pair, index, array) => {
+          const [category, value] = pair;
+          let ontologyTermID = "";
+          // If the value is empty skip it
+          if (!value || value === "") return null;
+
+          // If the next category is a ontology term, let's save it's value to render now
+          if (array[index + 1]?.[0]?.toString().includes("ontology_term_id"))
+            // ontologyTermID = array[index + 1][1];
+            ontologyTermID = array[index + 1]?.[1];
+          // If this category is an ontology term skip it since we already used it
+          if (category.toString().includes("ontology_term_id")) {
+            return null;
+          }
+
+          const catWidth = "30%";
+          const valWidth = "35%";
+
+          // Create the list item, appending an ontology term if we found it
           return (
             <li
               className={skeleton ? Classes.SKELETON : null}
-              key={pair[0]}
-            >{`${pair[0]}: ${pair[1]}`}</li>
+              key={category}
+              style={{ width: "100%" }}
+            >
+              <Truncate>
+                <span style={{ width: catWidth }}>{`${category}:`}</span>
+              </Truncate>
+              <Truncate>
+                <span style={{ width: valWidth }}>{value}</span>
+              </Truncate>
+              <Truncate>
+                <span style={{ width: valWidth }}>{ontologyTermID}</span>
+              </Truncate>
+            </li>
           );
         })}
       </UL>
