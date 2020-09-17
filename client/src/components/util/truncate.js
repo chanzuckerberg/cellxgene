@@ -40,7 +40,7 @@ export default (props) => {
   ) {
     throw Error("Only pass a single child with text to Truncate");
   }
-  const originalString = children.props.children;
+  const originalString = children.props.children.toString();
 
   let firstString;
   let secondString;
@@ -58,9 +58,9 @@ export default (props) => {
     }
   }
 
-  const inheritedColor = children.props.style.color;
+  const inheritedColor = children.props.style?.color;
 
-  const splitStyle = { ...children.props.style, ...SPLIT_STYLE };
+  const splitStyle = { ...children.props.style, ...SPLIT_STYLE, width: "100%" };
   const secondHalfContentStyle = {
     ...SECOND_HALF_INNER_STYLE,
     color: inheritedColor || "inherit",
@@ -93,6 +93,7 @@ export default (props) => {
         preventOverflow: { enabled: false },
         hide: { enabled: false },
       }}
+      targetProps={{ style: { width: children.props.style.width } }}
     >
       {newChildren}
     </Tooltip>
