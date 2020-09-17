@@ -208,22 +208,22 @@ def fixup_gene_symbols(adata, fixup_config):
     return fixup_adata
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--source-h5ad", required=True)
-    parser.add_argument("--remix-config", required=True)
-    parser.add_argument("--output-filename", required=True)
-    args = parser.parse_args()
+def apply_schema(source_h5ad, remix_config, output_filename):
 
-    config = yaml.load(open(args.remix_config), Loader=yaml.FullLoader)
-    adata = sc.read_h5ad(args.source_h5ad)
+    config = yaml.load(open(remix_config), Loader=yaml.FullLoader)
+    adata = sc.read_h5ad(source_h5ad)
     remix_uns(adata, config["uns"])
     remix_obs(adata, config["obs"])
 
     if config.get("fixup_gene_symbols"):
         adata = fixup_gene_symbols(adata, config["fixup_gene_symbols"])
-    adata.write_h5ad(args.output_filename, compression="gzip")
+    adata.write_h5ad(output_filename, compression="gzip")
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--source-h5ad", required=True)
+    parser.add_argument("--remix-config", required=True)
+    parser.add_argument("--output-filename", required=True)
+    args = parser.parse_args()
+    apply_schema(args.source_h5ad, args.remix_config, args.output_filename)
