@@ -93,7 +93,7 @@ export default (props) => {
         preventOverflow: { enabled: false },
         hide: { enabled: false },
       }}
-      targetProps={{ style: { width: children.props.style.width } }}
+      targetProps={{ style: children.props.style }}
     >
       {newChildren}
     </Tooltip>
