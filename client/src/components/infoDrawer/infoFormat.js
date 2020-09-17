@@ -81,6 +81,9 @@ const renderOrganism = (organism, skeleton) => {
   );
 };
 
+const ONTOLOGY_TERM_ID = "ontology_term_id";
+const CAT_WIDTH = "30%";
+const VAL_WIDTH = "35%";
 // Render list of metadata attributes found in categorical field
 const renderSingleValueCategories = (singleValueCategories, skeleton) => {
   if (singleValueCategories.size === 0) return null;
@@ -95,16 +98,12 @@ const renderSingleValueCategories = (singleValueCategories, skeleton) => {
           if (!value || value === "") return null;
 
           // If the next category is a ontology term, let's save it's value to render now
-          if (array[index + 1]?.[0]?.toString().includes("ontology_term_id"))
-            // ontologyTermID = array[index + 1][1];
-            ontologyTermID = array[index + 1]?.[1];
+          if (array[index + 1]?.[0]?.toString().includes(ONTOLOGY_TERM_ID))
+            ontologyTermID = array[index + 1][1];
           // If this category is an ontology term skip it since we already used it
-          if (category.toString().includes("ontology_term_id")) {
+          if (category.toString().includes(ONTOLOGY_TERM_ID)) {
             return null;
           }
-
-          const catWidth = "30%";
-          const valWidth = "35%";
 
           // Create the list item, appending an ontology term if we found it
           return (
@@ -114,13 +113,13 @@ const renderSingleValueCategories = (singleValueCategories, skeleton) => {
               style={{ width: "100%" }}
             >
               <Truncate>
-                <span style={{ width: catWidth }}>{`${category}:`}</span>
+                <span style={{ width: CAT_WIDTH }}>{`${category}:`}</span>
               </Truncate>
               <Truncate>
-                <span style={{ width: valWidth }}>{value}</span>
+                <span style={{ width: VAL_WIDTH }}>{value}</span>
               </Truncate>
               <Truncate>
-                <span style={{ width: valWidth }}>{ontologyTermID}</span>
+                <span style={{ width: VAL_WIDTH }}>{ontologyTermID}</span>
               </Truncate>
             </li>
           );
