@@ -10,7 +10,13 @@ from server.converters.schema import remix
     context_settings=dict(max_content_width=85, help_option_names=["-h", "--help"]),
 )
 def schema_cli():
-    pass
+    try:
+        import scanpy
+    except ImportError:
+        raise click.ClickException(
+            "[cellxgene] cellxgene schema requires scanpy"
+        )
+    scanpy.__version__
 
 
 @click.command(

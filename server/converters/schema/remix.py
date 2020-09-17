@@ -6,7 +6,6 @@ import string
 import anndata
 import numpy as np
 import pandas as pd
-import scanpy as sc
 import yaml
 
 from . import gene_symbol
@@ -210,8 +209,12 @@ def fixup_gene_symbols(adata, fixup_config):
 
 def apply_schema(source_h5ad, remix_config, output_filename):
 
+    try:
+        import scanpy
+    except ImportError:
+        raise ImportError("scanpy must be installed for cellxgene schema")
+    adata = scanpy.read_h5ad(source_h5ad)
     config = yaml.load(open(remix_config), Loader=yaml.FullLoader)
-    adata = sc.read_h5ad(source_h5ad)
     remix_uns(adata, config["uns"])
     remix_obs(adata, config["obs"])
 
