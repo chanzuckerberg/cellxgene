@@ -25,6 +25,7 @@ jobs:
   cellxgene-main-with-python-and-anndata-versions:
     name: python versions x anndata versions
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       matrix:
         python-version: [3.6, 3.7, 3.8]
