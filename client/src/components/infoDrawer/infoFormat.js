@@ -81,7 +81,7 @@ const renderOrganism = (organism, skeleton) => {
   );
 };
 
-const ONTOLOGY_TERM_ID = "ontology_term_id";
+const ONTOLOGY_KEY = "ontology_term_id";
 const CAT_WIDTH = "30%";
 const VAL_WIDTH = "35%";
 // Render list of metadata attributes found in categorical field
@@ -91,39 +91,46 @@ const renderSingleValueCategories = (singleValueCategories, skeleton) => {
     <>
       <H3 className={skeleton ? Classes.SKELETON : null}>Dataset Metadata</H3>
       <UL>
-        {Array.from(singleValueCategories).map((pair, index, array) => {
+        {Array.from(singleValueCategories).reduce((elems, pair) => {
           const [category, value] = pair;
-          let ontologyTermID = "";
           // If the value is empty skip it
-          if (!value || value === "") return null;
+          if (!value || value === "") return elems;
 
-          // If the next category is a ontology term, let's save it's value to render now
-          if (array[index + 1]?.[0]?.toString().includes(ONTOLOGY_TERM_ID))
-            ontologyTermID = array[index + 1][1];
-          // If this category is an ontology term skip it since we already used it
-          if (category.toString().includes(ONTOLOGY_TERM_ID)) {
-            return null;
+          // If this category is a ontology term, let's add its value to the previous node
+          if (String(category).includes(ONTOLOGY_KEY)) {
+            const prevElem = elems.pop();
+            // Props aren't extensible so we must clone and alter the component to append the new child
+            elems.push(
+              React.cloneElement(
+                prevElem,
+                prevElem.props,
+                // Concat returns a new array
+                prevElem.props.children.concat([
+                  <Truncate key="ontology">
+                    <span style={{ width: VAL_WIDTH }}>{value}</span>
+                  </Truncate>,
+                ])
+              )
+            );
+          } else {
+            // Create the list item
+            elems.push(
+              <li
+                className={skeleton ? Classes.SKELETON : null}
+                key={category}
+                style={{ width: "100%" }}
+              >
+                <Truncate>
+                  <span style={{ width: CAT_WIDTH }}>{`${category}:`}</span>
+                </Truncate>
+                <Truncate>
+                  <span style={{ width: VAL_WIDTH }}>{value}</span>
+                </Truncate>
+              </li>
+            );
           }
-
-          // Create the list item, appending an ontology term if we found it
-          return (
-            <li
-              className={skeleton ? Classes.SKELETON : null}
-              key={category}
-              style={{ width: "100%" }}
-            >
-              <Truncate>
-                <span style={{ width: CAT_WIDTH }}>{`${category}:`}</span>
-              </Truncate>
-              <Truncate>
-                <span style={{ width: VAL_WIDTH }}>{value}</span>
-              </Truncate>
-              <Truncate>
-                <span style={{ width: VAL_WIDTH }}>{ontologyTermID}</span>
-              </Truncate>
-            </li>
-          );
-        })}
+          return elems;
+        }, [])}
       </UL>
     </>
   );
