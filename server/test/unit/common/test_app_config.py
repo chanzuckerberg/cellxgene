@@ -142,7 +142,7 @@ class AppConfigTest(unittest.TestCase):
         config = AppConfig()
         backend_port = find_available_port("localhost", 10000)
         config.update_server_config(
-            app__api_base_url=f"http://localhost:{backend_port}/additional/path/before/dataroot",
+            app__api_base_url=f"http://localhost:{backend_port}/additional/path",
             multi_dataset__dataroot=f"{PROJECT_ROOT}/example-dataset"
         )
 
@@ -151,10 +151,20 @@ class AppConfigTest(unittest.TestCase):
         with test_server(["-p", str(backend_port)], app_config=config) as server:
             session = requests.Session()
             self.assertEqual(server, f"http://localhost:{backend_port}")
-            response = session.get(f"{server}/additional/path/before/dataroot/d/pbmc3k.h5ad/api/v0.2/config")
+            response = session.get(f"{server}/additional/path/d/pbmc3k.h5ad/api/v0.2/config")
             self.assertEqual(response.status_code, 200)
             data_config = response.json()
             self.assertEqual(data_config["config"]["displayNames"]["dataset"], "pbmc3k")
+
+            # test the health check at the correct url
+            response = session.get(f"{server}/additional/path/health")
+            assert response.json()["status"] == "pass"
+
+            # also check that the old URL still works.
+            # NOTE:  this old URL location will soon be deprecated, and when that happens
+            # this check can be removed.
+            response = session.get(f"{server}/health")
+            assert response.json()["status"] == "pass"
 
     def test_configfile_with_specialization(self):
         # test that per_dataset_config config load the default config, then the specialized config
