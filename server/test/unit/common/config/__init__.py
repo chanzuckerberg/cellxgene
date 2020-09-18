@@ -20,26 +20,6 @@ def mockenv(**envvars):
 
 
 class AppConfigTest(unittest.TestCase):
-    def test_update(self):
-        config = AppConfig()
-        config.update_server_config(app__verbose=True, multi_dataset__dataroot="datadir")
-        vars = config.server_config.changes_from_default()
-        self.assertCountEqual(vars, [("app__verbose", True, False), ("multi_dataset__dataroot", "datadir", None)])
-
-        config = AppConfig()
-        config.update_default_dataset_config(app__scripts=(), app__inline_scripts=())
-        vars = config.server_config.changes_from_default()
-        self.assertCountEqual(vars, [])
-
-        config = AppConfig()
-        config.update_default_dataset_config(app__scripts=[], app__inline_scripts=[])
-        vars = config.default_dataset_config.changes_from_default()
-        self.assertCountEqual(vars, [])
-
-        config = AppConfig()
-        config.update_default_dataset_config(app__scripts=("a", "b"), app__inline_scripts=["c", "d"])
-        vars = config.default_dataset_config.changes_from_default()
-        self.assertCountEqual(vars, [("app__scripts", ["a", "b"], []), ("app__inline_scripts", ["c", "d"], [])])
 
     def test_multi_dataset(self):
 

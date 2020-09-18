@@ -5,7 +5,7 @@ import server.compute
 from server.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
 from server.common.annotations.local_file_csv import AnnotationsLocalFile
 from server.common.config.base_config import BaseConfig
-from server.common.errors import ConfigurationError
+from server.common.errors import ConfigurationError, OntologyLoadFailure
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
 from server.db.db_utils import DbUtils
 
@@ -17,33 +17,32 @@ class DatasetConfig(BaseConfig):
     def __init__(self, tag, app_config, default_config):
         super().__init__(app_config, default_config)
         self.tag = tag
-        dc = default_config
         try:
-            self.app__scripts = dc["app"]["scripts"]
-            self.app__inline_scripts = dc["app"]["inline_scripts"]
-            self.app__about_legal_tos = dc["app"]["about_legal_tos"]
-            self.app__about_legal_privacy = dc["app"]["about_legal_privacy"]
-            self.app__authentication_enable = dc["app"]["authentication_enable"]
+            self.app__scripts = default_config["app"]["scripts"]
+            self.app__inline_scripts = default_config["app"]["inline_scripts"]
+            self.app__about_legal_tos = default_config["app"]["about_legal_tos"]
+            self.app__about_legal_privacy = default_config["app"]["about_legal_privacy"]
+            self.app__authentication_enable = default_config["app"]["authentication_enable"]
 
-            self.presentation__max_categories = dc["presentation"]["max_categories"]
-            self.presentation__custom_colors = dc["presentation"]["custom_colors"]
+            self.presentation__max_categories = default_config["presentation"]["max_categories"]
+            self.presentation__custom_colors = default_config["presentation"]["custom_colors"]
 
-            self.user_annotations__enable = dc["user_annotations"]["enable"]
-            self.user_annotations__type = dc["user_annotations"]["type"]
-            self.user_annotations__local_file_csv__directory = dc["user_annotations"]["local_file_csv"]["directory"]
-            self.user_annotations__local_file_csv__file = dc["user_annotations"]["local_file_csv"]["file"]
-            self.user_annotations__ontology__enable = dc["user_annotations"]["ontology"]["enable"]
-            self.user_annotations__ontology__obo_location = dc["user_annotations"]["ontology"]["obo_location"]
-            self.user_annotations__hosted_tiledb_array__db_uri = dc["user_annotations"]["hosted_tiledb_array"]["db_uri"]
+            self.user_annotations__enable = default_config["user_annotations"]["enable"]
+            self.user_annotations__type = default_config["user_annotations"]["type"]
+            self.user_annotations__local_file_csv__directory = default_config["user_annotations"]["local_file_csv"]["directory"]
+            self.user_annotations__local_file_csv__file = default_config["user_annotations"]["local_file_csv"]["file"]
+            self.user_annotations__ontology__enable = default_config["user_annotations"]["ontology"]["enable"]
+            self.user_annotations__ontology__obo_location = default_config["user_annotations"]["ontology"]["obo_location"]
+            self.user_annotations__hosted_tiledb_array__db_uri = default_config["user_annotations"]["hosted_tiledb_array"]["db_uri"]
             self.user_annotations__hosted_tiledb_array__hosted_file_directory = \
-                dc["user_annotations"][ "hosted_tiledb_array" ][ "hosted_file_directory" ]  # noqa E501
+                default_config["user_annotations"][ "hosted_tiledb_array" ][ "hosted_file_directory" ]  # noqa E501
 
-            self.embeddings__names = dc["embeddings"]["names"]
-            self.embeddings__enable_reembedding = dc["embeddings"]["enable_reembedding"]
+            self.embeddings__names = default_config["embeddings"]["names"]
+            self.embeddings__enable_reembedding = default_config["embeddings"]["enable_reembedding"]
 
-            self.diffexp__enable = dc["diffexp"]["enable"]
-            self.diffexp__lfc_cutoff = dc["diffexp"]["lfc_cutoff"]
-            self.diffexp__top_n = dc["diffexp"]["top_n"]
+            self.diffexp__enable = default_config["diffexp"]["enable"]
+            self.diffexp__lfc_cutoff = default_config["diffexp"]["lfc_cutoff"]
+            self.diffexp__top_n = default_config["diffexp"]["top_n"]
 
         except KeyError as e:
             raise ConfigurationError(f"Unexpected config: {str(e)}")
@@ -55,7 +54,7 @@ class DatasetConfig(BaseConfig):
         self.handle_app(context)
         self.handle_presentation(context)
         self.handle_user_annotations(context)
-        self.handle_embeddings(context)
+        self.handle_embeddings()
         self.handle_diffexp(context)
 
     def handle_app(self, context):
@@ -67,13 +66,13 @@ class DatasetConfig(BaseConfig):
 
         # scripts can be string (filename) or dict (attributes).   Convert string to dict.
         scripts = []
-        for s in self.app__scripts:
-            if isinstance(s, str):
-                scripts.append({"src": s})
-            elif isinstance(s, dict) and isinstance(s["src"], str):
-                scripts.append(s)
+        for script in self.app__scripts:
+            if isinstance(script, str):
+                scripts.append({"src": script})
+            elif isinstance(script, dict) and isinstance(script["src"], str):
+                scripts.append(script)
             else:
-                raise ConfigurationError("Scripts must be string or dict")
+                raise ConfigurationError("Scripts must be string or a dict containing an src key")
         self.app__scripts = scripts
 
     def handle_presentation(self, context):
@@ -101,67 +100,84 @@ class DatasetConfig(BaseConfig):
             # TODO, replace this with a factory pattern once we have more than one way
             # to do annotations.  currently only local_file_csv
             if self.user_annotations__type == "local_file_csv":
-                dirname = self.user_annotations__local_file_csv__directory
-                filename = self.user_annotations__local_file_csv__file
-
-                if filename is not None and dirname is not None:
-                    raise ConfigurationError("'annotations-file' and 'annotations-dir' may not be used together.")
-
-                if filename is not None:
-                    lf_name, lf_ext = splitext(filename)
-                    if lf_ext and lf_ext != ".csv":
-                        raise ConfigurationError(f"annotation file type must be .csv: {filename}")
-
-                if dirname is not None and not isdir(dirname):
-                    try:
-                        os.mkdir(dirname)
-                    except OSError:
-                        raise ConfigurationError("Unable to create directory specified by --annotations-dir")
-
-                self.user_annotations = AnnotationsLocalFile(dirname, filename)
-
-                # if the user has specified a fixed label file, go ahead and validate it
-                # so that we can remove errors early in the process.
-                server_config = self.app_config.server_config
-                if server_config.single_dataset__datapath and self.user_annotations__local_file_csv__file:
-                    with server_config.matrix_data_cache_manager.data_adaptor(
-                            self.tag, server_config.single_dataset__datapath, self.app_config
-                    ) as data_adaptor:
-                        data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
-
-                if self.user_annotations__ontology__enable or self.user_annotations__ontology__obo_location:
-                    try:
-                        self.user_annotations.load_ontology(self.user_annotations__ontology__obo_location)
-                    except OntologyLoadFailure as e:
-                        raise ConfigurationError("Unable to load ontology terms\n" + str(e))
+                self.handle_local_file_csv_annotations()
             elif self.user_annotations__type == "hosted_tiledb_array":
-                self.check_attr("user_annotations__hosted_tiledb_array__db_uri", str)
-                self.check_attr("user_annotations__hosted_tiledb_array__hosted_file_directory", str)
-                self.user_annotations = AnnotationsHostedTileDB(
-                    directory_path=self.user_annotations__hosted_tiledb_array__hosted_file_directory,
-                    db=DbUtils(self.user_annotations__hosted_tiledb_array__db_uri),
-                )
+
             else:
                 raise ConfigurationError('The only annotation type support is "local_file_csv" or "hosted_tiledb_array')
         else:
-            if self.user_annotations__type == "local_file_csv":
-                dirname = self.user_annotations__local_file_csv__directory
-                filename = self.user_annotations__local_file_csv__file
-                if filename is not None:
-                    context["messsagefn"]("Warning: --annotations-file ignored as annotations are disabled.")
-                if dirname is not None:
-                    context["messagefn"]("Warning: --annotations-dir ignored as annotations are disabled.")
+            self.check_annotation_config_vars_not_set(context)
 
-            if self.user_annotations__ontology__enable:
-                context["messagefn"](
-                    "Warning: --experimental-annotations-ontology" " ignored as annotations are disabled."
-                )
-            if self.user_annotations__ontology__obo_location is not None:
-                context["messagefn"](
-                    "Warning: --experimental-annotations-ontology-obo" " ignored as annotations are disabled."
-                )
+    def handle_local_file_csv_annotations(self):
+        dirname = self.user_annotations__local_file_csv__directory
+        filename = self.user_annotations__local_file_csv__file
 
-    def handle_embeddings(self, context):
+        if filename is not None and dirname is not None:
+            raise ConfigurationError("'annotations-file' and 'annotations-dir' may not be used together.")
+
+        if filename is not None:
+            lf_name, lf_ext = splitext(filename)
+            if lf_ext and lf_ext != ".csv":
+                raise ConfigurationError(f"annotation file type must be .csv: {filename}")
+
+        if dirname is not None and not isdir(dirname):
+            try:
+                os.mkdir(dirname)
+            except OSError:
+                raise ConfigurationError("Unable to create directory specified by --annotations-dir")
+
+        self.user_annotations = AnnotationsLocalFile(dirname, filename)
+
+        # if the user has specified a fixed label file, go ahead and validate it
+        # so that we can remove errors early in the process.
+        server_config = self.app_config.server_config
+        if server_config.single_dataset__datapath and self.user_annotations__local_file_csv__file:
+
+            with server_config.matrix_data_cache_manager.data_adaptor(
+                    self.tag, server_config.single_dataset__datapath, self.app_config
+            ) as data_adaptor:
+                data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
+
+        if self.user_annotations__ontology__enable or self.user_annotations__ontology__obo_location:
+            try:
+                self.user_annotations.load_ontology(self.user_annotations__ontology__obo_location)
+            except OntologyLoadFailure as e:
+                raise ConfigurationError("Unable to load ontology terms\n" + str(e))
+
+    def handle_hosted_tiledb_annotations(self):
+        self.check_attr("user_annotations__hosted_tiledb_array__db_uri", str)
+        self.check_attr("user_annotations__hosted_tiledb_array__hosted_file_directory", str)
+        self.user_annotations = AnnotationsHostedTileDB(
+            directory_path=self.user_annotations__hosted_tiledb_array__hosted_file_directory,
+            db=DbUtils(self.user_annotations__hosted_tiledb_array__db_uri),
+        )
+
+    def check_annotation_config_vars_not_set(self, context):
+        if self.user_annotations__type is not None:
+            dirname = self.user_annotations__local_file_csv__directory
+            filename = self.user_annotations__local_file_csv__file
+            db_uri = self.user_annotations__hosted_tiledb_array__db_uri
+            hosted_file_dirname = self.user_annotations__hosted_tiledb_array__hosted_file_directory
+            if filename is not None:
+                context["messsagefn"]("Warning: --annotations-file ignored as annotations are disabled.")
+            if dirname is not None:
+                context["messagefn"]("Warning: --annotations-dir ignored as annotations are disabled.")
+            if db_uri is not None:
+                context["messsagefn"]("Warning: db_uri ignored as annotations are disabled.")
+            if hosted_file_dirname is not None:
+                context["messsagefn"](
+                    "Warning: hosted_file_directory for hosted_tiledb_array ignored as annotations are disabled.")
+
+        if self.user_annotations__ontology__enable:
+            context["messagefn"](
+                "Warning: --experimental-annotations-ontology ignored as annotations are disabled."
+            )
+        if self.user_annotations__ontology__obo_location is not None:
+            context["messagefn"](
+                "Warning: --experimental-annotations-ontology-obo ignored as annotations are disabled."
+            )
+
+    def handle_embeddings(self):
         self.check_attr("embeddings__names", list)
         self.check_attr("embeddings__enable_reembedding", bool)
 
@@ -179,6 +195,7 @@ class DatasetConfig(BaseConfig):
             try:
                 server.compute.scanpy.get_scanpy_module()
             except NotImplementedError:
+                # Todo why isnt this in the reqs file/why is this check necessary
                 raise ConfigurationError("Please install scanpy to enable UMAP re-embedding")
 
     def handle_diffexp(self, context):

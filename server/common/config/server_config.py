@@ -28,55 +28,54 @@ class ServerConfig(BaseConfig):
         ]
         super().__init__(app_config, default_config, dictval_cases)
 
-        dc = default_config
         try:
-            self.app__verbose = dc["app"]["verbose"]
-            self.app__debug = dc["app"]["debug"]
-            self.app__host = dc["app"]["host"]
-            self.app__port = dc["app"]["port"]
-            self.app__open_browser = dc["app"]["open_browser"]
-            self.app__force_https = dc["app"]["force_https"]
-            self.app__flask_secret_key = dc["app"]["flask_secret_key"]
-            self.app__generate_cache_control_headers = dc["app"]["generate_cache_control_headers"]
-            self.app__server_timing_headers = dc["app"]["server_timing_headers"]
-            self.app__csp_directives = dc["app"]["csp_directives"]
-            self.app__api_base_url = dc["app"]["api_base_url"]
-            self.app__web_base_url = dc["app"]["web_base_url"]
+            self.app__verbose = default_config["app"]["verbose"]
+            self.app__debug = default_config["app"]["debug"]
+            self.app__host = default_config["app"]["host"]
+            self.app__port = default_config["app"]["port"]
+            self.app__open_browser = default_config["app"]["open_browser"]
+            self.app__force_https = default_config["app"]["force_https"]
+            self.app__flask_secret_key = default_config["app"]["flask_secret_key"]
+            self.app__generate_cache_control_headers = default_config["app"]["generate_cache_control_headers"]
+            self.app__server_timing_headers = default_config["app"]["server_timing_headers"]
+            self.app__csp_directives = default_config["app"]["csp_directives"]
+            self.app__api_base_url = default_config["app"]["api_base_url"]
+            self.app__web_base_url = default_config["app"]["web_base_url"]
 
-            self.authentication__type = dc["authentication"]["type"]
-            self.authentication__params_oauth__oauth_api_base_url = dc["authentication"]["params_oauth"][
+            self.authentication__type = default_config["authentication"]["type"]
+            self.authentication__params_oauth__oauth_api_base_url = default_config["authentication"]["params_oauth"][
                 "oauth_api_base_url"
             ]
-            self.authentication__params_oauth__client_id = dc["authentication"]["params_oauth"]["client_id"]
-            self.authentication__params_oauth__client_secret = dc["authentication"]["params_oauth"]["client_secret"]
-            self.authentication__params_oauth__jwt_decode_options = dc["authentication"]["params_oauth"][
+            self.authentication__params_oauth__client_id = default_config["authentication"]["params_oauth"]["client_id"]
+            self.authentication__params_oauth__client_secret = default_config["authentication"]["params_oauth"]["client_secret"]
+            self.authentication__params_oauth__jwt_decode_options = default_config["authentication"]["params_oauth"][
                 "jwt_decode_options"]
-            self.authentication__params_oauth__session_cookie = dc["authentication"]["params_oauth"]["session_cookie"]
-            self.authentication__params_oauth__cookie = dc["authentication"]["params_oauth"]["cookie"]
+            self.authentication__params_oauth__session_cookie = default_config["authentication"]["params_oauth"]["session_cookie"]
+            self.authentication__params_oauth__cookie = default_config["authentication"]["params_oauth"]["cookie"]
 
-            self.multi_dataset__dataroot = dc["multi_dataset"]["dataroot"]
-            self.multi_dataset__index = dc["multi_dataset"]["index"]
-            self.multi_dataset__allowed_matrix_types = dc["multi_dataset"]["allowed_matrix_types"]
-            self.multi_dataset__matrix_cache__max_datasets = dc["multi_dataset"]["matrix_cache"]["max_datasets"]
-            self.multi_dataset__matrix_cache__timelimit_s = dc["multi_dataset"]["matrix_cache"]["timelimit_s"]
+            self.multi_dataset__dataroot = default_config["multi_dataset"]["dataroot"]
+            self.multi_dataset__index = default_config["multi_dataset"]["index"]
+            self.multi_dataset__allowed_matrix_types = default_config["multi_dataset"]["allowed_matrix_types"]
+            self.multi_dataset__matrix_cache__max_datasets = default_config["multi_dataset"]["matrix_cache"]["max_datasets"]
+            self.multi_dataset__matrix_cache__timelimit_s = default_config["multi_dataset"]["matrix_cache"]["timelimit_s"]
 
-            self.single_dataset__datapath = dc["single_dataset"]["datapath"]
-            self.single_dataset__obs_names = dc["single_dataset"]["obs_names"]
-            self.single_dataset__var_names = dc["single_dataset"]["var_names"]
-            self.single_dataset__about = dc["single_dataset"]["about"]
-            self.single_dataset__title = dc["single_dataset"]["title"]
+            self.single_dataset__datapath = default_config["single_dataset"]["datapath"]
+            self.single_dataset__obs_names = default_config["single_dataset"]["obs_names"]
+            self.single_dataset__var_names = default_config["single_dataset"]["var_names"]
+            self.single_dataset__about = default_config["single_dataset"]["about"]
+            self.single_dataset__title = default_config["single_dataset"]["title"]
 
-            self.diffexp__alg_cxg__max_workers = dc["diffexp"]["alg_cxg"]["max_workers"]
-            self.diffexp__alg_cxg__cpu_multiplier = dc["diffexp"]["alg_cxg"]["cpu_multiplier"]
-            self.diffexp__alg_cxg__target_workunit = dc["diffexp"]["alg_cxg"]["target_workunit"]
+            self.diffexp__alg_cxg__max_workers = default_config["diffexp"]["alg_cxg"]["max_workers"]
+            self.diffexp__alg_cxg__cpu_multiplier = default_config["diffexp"]["alg_cxg"]["cpu_multiplier"]
+            self.diffexp__alg_cxg__target_workunit = default_config["diffexp"]["alg_cxg"]["target_workunit"]
 
-            self.data_locator__s3__region_name = dc["data_locator"]["s3"]["region_name"]
+            self.data_locator__s3__region_name = default_config["data_locator"]["s3"]["region_name"]
 
-            self.adaptor__cxg_adaptor__tiledb_ctx = dc["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
-            self.adaptor__anndata_adaptor__backed = dc["adaptor"]["anndata_adaptor"]["backed"]
+            self.adaptor__cxg_adaptor__tiledb_ctx = default_config["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
+            self.adaptor__anndata_adaptor__backed = default_config["adaptor"]["anndata_adaptor"]["backed"]
 
-            self.limits__diffexp_cellcount_max = dc["limits"]["diffexp_cellcount_max"]
-            self.limits__column_request_max = dc["limits"]["column_request_max"]
+            self.limits__diffexp_cellcount_max = default_config["limits"]["diffexp_cellcount_max"]
+            self.limits__column_request_max = default_config["limits"]["column_request_max"]
 
         except KeyError as e:
             raise ConfigurationError(f"Unexpected config: {str(e)}")

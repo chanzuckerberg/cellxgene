@@ -1,8 +1,8 @@
 import copy
 
+import yaml
 from flatten_dict import flatten
 from server.common.errors import ConfigurationError
-
 
 
 class BaseConfig(object):
@@ -17,18 +17,18 @@ class BaseConfig(object):
         # attributes where the value may be a dict (and therefore are not flattened)
         self.dictval_cases = dictval_cases
         # used to make sure every attribute value is checked
-        self.attr_checked = {k: False for k in self.create_mapping(default_config).keys()}
+        self.attr_checked = {key_name: False for key_name in self.create_mapping(default_config).keys()}
 
     def create_mapping(self, config):
         """Create a mapping from attribute names to (location in the config tree, value)"""
-        dc = copy.deepcopy(config)
+        config_copy = copy.deepcopy(config)
         mapping = {}
 
         # special cases where the value could be a dict.
         # If its value is not None, the entry is added to the mapping, and not included
         # in the flattening below.
         for dictval_case in self.dictval_cases:
-            cur = dc
+            cur = config_copy
             for part in dictval_case[:-1]:
                 cur = cur.get(part, {})
             val = cur.get(dictval_case[-1])
@@ -37,7 +37,7 @@ class BaseConfig(object):
                 mapping[key] = (dictval_case, val)
                 del cur[dictval_case[-1]]
 
-        flat_config = flatten(dc)
+        flat_config = flatten(config_copy)
         for key, value in flat_config.items():
             # name of the attribute
             attr = "__".join(key)
@@ -89,10 +89,19 @@ class BaseConfig(object):
                 raise ConfigurationError(f"Unknown key from config file: {prefix}__{attr}")
             try:
                 setattr(self, attr, value)
-            except KeyError:
+            except KeyError:  # TODO ask brian when this would be raised (instead of being caught in attribute check above)
                 raise ConfigurationError(f"Unable to set config attribute: {prefix}__{attr}")
 
             self.attr_checked[attr] = False
+
+    @staticmethod
+    def get_default_config(self):
+        with open("default_config.yml", 'r') as stream:
+            try:
+                ## Todo Double check safeload (And SafeLoader work or revert)
+                return yaml.safe_load(stream)
+            except yaml.YAMLError as e:
+                raise ConfigurationError(f"Unable to import default configuration yaml: {e}")
 
     def changes_from_default(self):
         """Return all the attribute that are different from the default"""

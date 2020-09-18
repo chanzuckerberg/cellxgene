@@ -1,6 +1,3 @@
-import yaml
-
-default_config = """
 server:
   app:
     verbose: false
@@ -204,9 +201,3 @@ dataset:
     enable: true
     lfc_cutoff: 0.01
     top_n: 10
-
-"""
-
-
-def get_default_config():
-    return yaml.load(default_config, Loader=yaml.Loader)

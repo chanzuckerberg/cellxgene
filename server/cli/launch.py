@@ -11,7 +11,7 @@ from flask_cors import CORS
 
 from server.app.app import Server
 from server.common.config.app_config import AppConfig
-from server.common.default_config import default_config
+from server.common.config.default_config import default_config
 from server.common.errors import DatasetAccessError, ConfigurationError
 from server.common.utils.utils import sort_options
 
@@ -354,6 +354,7 @@ def launch(
     # > cellxgene launch --dataroot <url>
 
     if dump_default_config:
+        with open("default_config.yml","r" )
         print(default_config)
         sys.exit(0)
 
