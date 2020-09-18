@@ -158,7 +158,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
     def login(self):
         callbackurl = f"{self.api_base_url}/oauth2/callback"
         return_path = request.args.get("dataset", "")
-        return_to = f"{self.web_base_url}/{return_path}/"
+        return_to = f"{self.web_base_url}/{return_path}"
         # save the return path in the session cookie, accessed in the callback function
         session["oauth_callback_redirect"] = return_to
         response = self.client.authorize_redirect(redirect_uri=callbackurl)
