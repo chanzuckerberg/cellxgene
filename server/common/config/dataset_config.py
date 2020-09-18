@@ -102,7 +102,7 @@ class DatasetConfig(BaseConfig):
             if self.user_annotations__type == "local_file_csv":
                 self.handle_local_file_csv_annotations()
             elif self.user_annotations__type == "hosted_tiledb_array":
-
+                self.handle_hosted_tiledb_annotations()
             else:
                 raise ConfigurationError('The only annotation type support is "local_file_csv" or "hosted_tiledb_array')
         else:

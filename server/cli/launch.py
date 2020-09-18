@@ -3,15 +3,13 @@ import functools
 import logging
 import sys
 import webbrowser
-from os import devnull
-
+import os
 import click
 from flask_compress import Compress
 from flask_cors import CORS
 
 from server.app.app import Server
 from server.common.config.app_config import AppConfig
-from server.common.config.default_config import default_config
 from server.common.errors import DatasetAccessError, ConfigurationError
 from server.common.utils.utils import sort_options
 
@@ -354,8 +352,7 @@ def launch(
     # > cellxgene launch --dataroot <url>
 
     if dump_default_config:
-        with open("default_config.yml","r" )
-        print(default_config)
+        print(DEFAULT_CONFIG.default_config)
         sys.exit(0)
 
     # Startup message
@@ -444,7 +441,7 @@ def launch(
     click.echo("[cellxgene] Type CTRL-C at any time to exit.")
 
     if not server_config.app__verbose:
-        f = open(devnull, "w")
+        f = open(os.devnull, "w")
         sys.stdout = f
 
     try:

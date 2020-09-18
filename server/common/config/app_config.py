@@ -1,9 +1,8 @@
 import yaml
 from flatten_dict import unflatten
-
+import os
 from server.common.config.dataset_config import DatasetConfig
 from server.common.config.server_config import ServerConfig
-from server.common.config.default_config import get_default_config
 from server.common.errors import ConfigurationError
 
 
@@ -30,6 +29,15 @@ class AppConfig(object):
 
         # Set to true when config_completed is called
         self.is_completed = False
+
+    @staticmethod
+    def get_default_config():
+        try:
+            with open(f"{os.getenv('PROJECT_ROOT')}/default_config.yml", 'r') as default_config:
+                ## Todo Double check safeload (And SafeLoader work or revert)
+                return yaml.safe_load(default_config)
+        except yaml.YAMLError as e:
+            raise ConfigurationError(f"Unable to import default configuration yaml: {e}")
 
     def get_dataset_config(self, dataroot_key):
         if self.server_config.single_dataset__datapath:
@@ -58,8 +66,8 @@ class AppConfig(object):
         self.is_complete = False
 
     def update_from_config_file(self, config_file):
-        with open(config_file) as fyaml:
-            config = yaml.load(fyaml, Loader=yaml.FullLoader)
+        with open(config_file) as yml_file:
+            config = yaml.safe_load(yml_file)
 
         if config.get("server"):
             self.server_config.update_from_config(config["server"], "server")

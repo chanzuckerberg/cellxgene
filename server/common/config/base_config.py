@@ -1,6 +1,5 @@
 import copy
 
-import yaml
 from flatten_dict import flatten
 from server.common.errors import ConfigurationError
 
@@ -93,15 +92,6 @@ class BaseConfig(object):
                 raise ConfigurationError(f"Unable to set config attribute: {prefix}__{attr}")
 
             self.attr_checked[attr] = False
-
-    @staticmethod
-    def get_default_config(self):
-        with open("default_config.yml", 'r') as stream:
-            try:
-                ## Todo Double check safeload (And SafeLoader work or revert)
-                return yaml.safe_load(stream)
-            except yaml.YAMLError as e:
-                raise ConfigurationError(f"Unable to import default configuration yaml: {e}")
 
     def changes_from_default(self):
         """Return all the attribute that are different from the default"""

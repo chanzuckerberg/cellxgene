@@ -7,6 +7,12 @@ from server.common.config.app_config import AppConfig
 
 class AppConfigTest(unittest.TestCase):
 
+    def test_get_default_config_successfully_reads_yaml_file(self):
+        pass
+
+    def test_get_default_config_raises_an_error_for_invalid_config_files(self):
+        pass
+
     def test_init_app_config_pulls_in_default_server_and_dataset_configurations(self):
         pass
 

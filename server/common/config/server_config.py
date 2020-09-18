@@ -14,7 +14,6 @@ from server.compute import diffexp_cxg as diffexp_tiledb
 from server.data_common.matrix_loader import MatrixDataCacheManager, MatrixDataLoader, MatrixDataType
 
 
-
 class ServerConfig(BaseConfig):
     """Manages the config attribute associated with the server."""
 
@@ -211,14 +210,12 @@ class ServerConfig(BaseConfig):
         self.check_attr("single_dataset__datapath", (str, type(None)))
         self.check_attr("multi_dataset__dataroot", (type(None), dict, str))
 
-        if self.single_dataset__datapath is None:
-            if self.multi_dataset__dataroot is None:
-                # TODO:  change the error message once dataroot is fully supported
-                raise ConfigurationError("missing datapath")
-            return
-        else:
-            if self.multi_dataset__dataroot is not None:
-                raise ConfigurationError("must supply only one of datapath or dataroot")
+        if self.single_dataset__datapath and self.multi_dataset__dataroot:
+            raise ConfigurationError("must supply only one of datapath or dataroot")
+        if self.single_dataset__datapath is None and self.multi_dataset__dataroot is None:
+            # TODO:  change the error message once dataroot is fully supported
+            raise ConfigurationError("missing datapath")
+
 
     def handle_single_dataset(self, context):
         self.check_attr("single_dataset__datapath", (str, type(None)))
