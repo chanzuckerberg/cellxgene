@@ -94,7 +94,7 @@ const renderSingleValueCategories = (singleValueCategories, skeleton) => {
         {Array.from(singleValueCategories).reduce((elems, pair) => {
           const [category, value] = pair;
           // If the value is empty skip it
-          if (!value || value === "") return elems;
+          if (!value) return elems;
 
           // If this category is a ontology term, let's add its value to the previous node
           if (String(category).includes(ONTOLOGY_KEY)) {

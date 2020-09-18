@@ -42,7 +42,7 @@ export default (props) => {
   ) {
     throw Error("Only pass a single child with text to Truncate");
   }
-  const originalString = children.props.children.toString();
+  const originalString = String(children.props.children);
 
   let firstString;
   let secondString;
