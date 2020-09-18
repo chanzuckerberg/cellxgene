@@ -7,6 +7,8 @@ const SPLIT_STYLE = {
   display: "flex",
   overflow: "hidden",
   justifyContent: "flex-start",
+  width: "100%", // There are probably additional styles that we don't want to stack
+  padding: 0,
 };
 
 const FIRST_HALF_STYLE = {
@@ -60,7 +62,7 @@ export default (props) => {
 
   const inheritedColor = children.props.style?.color;
 
-  const splitStyle = { ...children.props.style, ...SPLIT_STYLE, width: "100%" };
+  const splitStyle = { ...children.props.style, ...SPLIT_STYLE };
   const secondHalfContentStyle = {
     ...SECOND_HALF_INNER_STYLE,
     color: inheritedColor || "inherit",
