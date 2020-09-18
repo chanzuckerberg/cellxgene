@@ -1,5 +1,10 @@
+import json
 import unittest
 import unittest.mock
+
+import anndata
+import numpy
+import pandas as pd
 
 from server.converters.schema import remix
 
@@ -44,4 +49,34 @@ class TestFieldParsing(unittest.TestCase):
         self.assertEqual(
             remix.get_curie_and_label("whatever"),
             ("", "whatever")
+        )
+
+
+class TestManipulateAnndata(unittest.TestCase):
+
+    def setUp(self):
+
+        self.cell_count = 20
+        self.gene_count = 200
+        X = numpy.random.randint(0, 1000, (self.cell_count, self.gene_count))
+        uns = {"organism": "monkey", "experiment": "monkey experiment"}
+        obs = pd.DataFrame(
+            index=[f"Cell{d}" for d in range(self.cell_count)],
+            columns=["tissue", "CellType"],
+            data=[["lung", "epithelial"]] * (self.cell_count // 2) + [["lung", "endothelial"]] * (self.cell_count // 2)
+        )
+        var = pd.DataFrame(index=[f"SEPT{d}" for d in range(self.gene_count)])
+
+        self.adata = anndata.AnnData(X=X, obs=obs, var=var, uns=uns)
+
+    def test_safe_add_field(self):
+
+        remix.safe_add_field(self.adata.obs, "tissue", ["monkey lung"] * self.cell_count)
+        self.assertEqual(self.adata.obs["tissue_original"].tolist(), ["lung"] * self.cell_count)
+        self.assertEqual(self.adata.obs["tissue"].tolist(), ["monkey lung"] * self.cell_count)
+
+        remix.safe_add_field(self.adata.uns, "contributors", [{"name": "contributor1"}, {"name": "contributor2"}])
+        self.assertEqual(
+            self.adata.uns["contributors"],
+            json.dumps([{"name": "contributor1"}, {"name": "contributor2"}])
         )
