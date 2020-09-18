@@ -26,7 +26,7 @@ SERVERDIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(SERVERDIR)
 
 try:
-    from server.common.app_config import AppConfig
+    from server.common.config.app_config import AppConfig
     from server.app.app import Server
     from server.common.data_locator import DataLocator, discover_s3_region_name
 except Exception:

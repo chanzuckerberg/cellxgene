@@ -4,7 +4,7 @@ import tempfile
 import time
 import unittest
 
-from server.common.app_config import AppConfig
+from server.common.config.app_config import AppConfig
 from server.common.errors import DatasetAccessError
 from server.data_common.matrix_loader import MatrixDataCacheManager
 from server.test import FIXTURES_ROOT

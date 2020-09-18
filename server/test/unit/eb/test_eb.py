@@ -3,7 +3,7 @@ import tempfile
 import requests
 import subprocess
 from server.test import PROJECT_ROOT, FIXTURES_ROOT
-from server.common.app_config import AppConfig
+from server.common.config.app_config import AppConfig
 from contextlib import contextmanager
 import time
 

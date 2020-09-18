@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from server_timing import Timing as ServerTiming
 
-from server.common.app_config import AppFeature, AppConfig
+from server.common.config.app_config import AppConfig
 from server.common.constants import Axis
 from server.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError
 from server.common.utils.utils import jsonify_numpy
@@ -388,3 +388,18 @@ class DataAdaptor(metaclass=ABCMeta):
         except RuntimeError:
             lastmod = None
         return lastmod
+
+
+class AppFeature(object):
+    def __init__(self, path, available=False, method="POST", extra={}):
+        self.path = path
+        self.available = available
+        self.method = method
+        self.extra = extra
+        for k, v in extra.items():
+            setattr(self, k, v)
+
+    def todict(self):
+        d = dict(available=self.available, method=self.method, path=self.path)
+        d.update(self.extra)
+        return d

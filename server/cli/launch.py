@@ -10,7 +10,7 @@ from flask_compress import Compress
 from flask_cors import CORS
 
 from server.app.app import Server
-from server.common.app_config import AppConfig
+from server.common.config.app_config import AppConfig
 from server.common.default_config import default_config
 from server.common.errors import DatasetAccessError, ConfigurationError
 from server.common.utils.utils import sort_options

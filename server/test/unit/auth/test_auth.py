@@ -2,7 +2,7 @@ import unittest
 
 import requests
 
-from server.common.app_config import AppConfig
+from server.common.config.app_config import AppConfig
 from server.test import FIXTURES_ROOT, test_server
 
 

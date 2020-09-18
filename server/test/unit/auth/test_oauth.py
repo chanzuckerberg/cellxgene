@@ -9,7 +9,7 @@ from flask import Flask, jsonify, make_response, request, redirect
 from multiprocessing import Process
 
 import jose
-from server.common.app_config import AppConfig
+from server.common.config.app_config import AppConfig
 from server.test import FIXTURES_ROOT, test_server
 
 # This tests the oauth authentication type.
