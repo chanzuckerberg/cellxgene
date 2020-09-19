@@ -7,6 +7,8 @@ const SPLIT_STYLE = {
   display: "flex",
   overflow: "hidden",
   justifyContent: "flex-start",
+  width: "100%", // There are probably additional styles that we don't want to stack
+  padding: 0,
 };
 
 const FIRST_HALF_STYLE = {
@@ -40,7 +42,7 @@ export default (props) => {
   ) {
     throw Error("Only pass a single child with text to Truncate");
   }
-  const originalString = children.props.children;
+  const originalString = String(children.props.children);
 
   let firstString;
   let secondString;
@@ -58,7 +60,7 @@ export default (props) => {
     }
   }
 
-  const inheritedColor = children.props.style.color;
+  const inheritedColor = children.props.style?.color;
 
   const splitStyle = { ...children.props.style, ...SPLIT_STYLE };
   const secondHalfContentStyle = {
@@ -93,6 +95,7 @@ export default (props) => {
         preventOverflow: { enabled: false },
         hide: { enabled: false },
       }}
+      targetProps={{ style: children.props.style }}
     >
       {newChildren}
     </Tooltip>

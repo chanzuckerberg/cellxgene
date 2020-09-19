@@ -2,7 +2,6 @@
 import React from "react";
 import { connect } from "react-redux";
 import { Button } from "@blueprintjs/core";
-import { IconNames } from "@blueprintjs/icons";
 
 import * as globals from "../../globals";
 import Logo from "../framework/logo";
@@ -60,7 +59,6 @@ class LeftSideBar extends React.Component {
         </span>
         <Button
           minimal
-          icon={IconNames.BOOK}
           style={{
             fontSize: DATASET_TITLE_FONT_SIZE,
             position: "absolute",

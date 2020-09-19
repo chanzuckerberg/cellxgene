@@ -17,7 +17,7 @@ const InformationMenu = React.memo((props) => {
           <Menu>
             <MenuItem
               onClick={() => handleClick(dispatch)}
-              icon={IconNames.BOOK}
+              icon={IconNames.INFO_SIGN}
               text="Dataset Overview"
             />
 
