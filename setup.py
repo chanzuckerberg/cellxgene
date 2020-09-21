@@ -11,7 +11,7 @@ with open("server/requirements-prepare.txt") as fh:
 
 setup(
     name="cellxgene",
-    version="0.16.4-rc.0",
+    version="0.16.5-rc.0",
     packages=find_packages(),
     url="https://github.com/chanzuckerberg/cellxgene",
     license="MIT",
