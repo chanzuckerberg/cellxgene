@@ -38,31 +38,38 @@ If you know of other solutions, drop us a note and we'll add to this list.
 
 # Deploying cellxgene with Heroku
 
-## Quickstart
+## Heroku Support
 
-Clicking on the following button will forward you to Heroku to begin the deployment process:
+The cellxgene team has decided to end our support for our experimental deploy to Heroku button as we move towards providing a supported method of hosted cellxgene.
 
-<a href="https://heroku.com/deploy?template=https://github.com/chanzuckerberg/cellxgene">
- <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
-</a>
+While we no longer directly support Heroku, it is still possible to create a Heroku app via [our provided Dockerfile here](https://github.com/chanzuckerberg/cellxgene/blob/main/Dockerfile) and [Heroku's documentation](https://devcenter.heroku.com/articles/build-docker-images-heroku-yml).
 
-If not already logged in to Heroku, there you will be prompted to log in or sign up for an account.
+You may have to tweak the `Dockerfile` like so:
 
-Once logged in you will be sent to the setup page. Here you can set some of the basic settings for the app:
+```Dockerfile
+FROM ubuntu:bionic
 
-### Default settings
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
 
-- `App name`: the unique name for your deployment
-- This will also serve as the default URL (e.g. https://cellxgene.herokapp.com/)
-- `App owner`: Who will own this app. Either you personally or an organization/team
-- `Region`: Location of the server where the app will be deployed (EU or US)
+RUN apt-get update && \
+    apt-get install -y build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests && \
+    pip3 install cellxgene
 
-### Configuration
+# ENTRYPOINT ["cellxgene"]  # Heroku doesn't work well with ENTRYPOINT
+```
 
-- `DATASET`: A _publicly_ accessible URL pointing to a .h5ad file to view
-- This defaults to pbm3k.h5ad
+and provide a `heroku.yml` file similar to this:
 
-After filling out the settings and pressing the `Deploy app` button Heroku will begin building your deployment. This process will take a few minutes, but once completed you will have a personal free hosted version of cellxgene!
+```yml
+build:
+  docker:
+    web: Dockerfile
+run:
+  web:
+    command:
+      - cellxgene launch --host 0.0.0.0 --port $PORT $DATASET # the DATATSET config var must be defined in your dashboard settings.
+```
 
 ## What is Heroku?
 

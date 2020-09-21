@@ -31,6 +31,8 @@ nav:
     url: posts/roadmap
   - title: Contributing (ideas or code)
     url: posts/contribute
+  - title: cellxgene Extensions
+    url: posts/extensions
   - title: Contact & finding help
     url: posts/contact
   - title: cellxgene.cziscience.com
