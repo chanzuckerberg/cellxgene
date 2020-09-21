@@ -7,8 +7,9 @@ import { connect } from "react-redux";
 
 import { AnchorButton, Icon } from "@blueprintjs/core";
 import Truncate from "../util/truncate";
+import HistogramBrush from "../brushableHistogram";
 
-import TestMiniHisto from "./test_miniHisto";
+// import TestMiniHisto from "./test_miniHisto";
 import * as globals from "../../globals";
 import GeneMenus from "./menus/geneMenus";
 
@@ -85,7 +86,7 @@ class Gene extends React.Component {
                 {gene}
               </span>
             </Truncate>
-            <TestMiniHisto />
+            {/* <TestMiniHisto /> */}
           </span>
         </div>
 
@@ -112,6 +113,7 @@ class Gene extends React.Component {
             icon={<Icon icon="maximize" iconSize={10} />}
           />
         </div>
+        <HistogramBrush field={gene} />
       </div>
     );
   }
