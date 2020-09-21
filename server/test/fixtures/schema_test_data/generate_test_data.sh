@@ -18,7 +18,7 @@ merged = df.sum(axis=1, level=0, skipna=False)
 
 os.makedirs("merged")
 merged.columns.to_frame().to_csv("merged/genes.tsv", index=False, header=False)
-mmwrite("merged/matrix.mtx", scipy.sparse.coo_matrix(merged).T, precision=1)
+mmwrite("merged/matrix.mtx", scipy.sparse.coo_matrix(merged).T)
 MERGE_GENES
 
 cp "filtered_gene_bc_matrices/hg19/barcodes.tsv" "merged/barcodes.tsv"
