@@ -1,12 +1,16 @@
 import json
+import os
 import unittest
 import unittest.mock
 
 import anndata
 import numpy
 import pandas as pd
+import scanpy as sc
 
 from server.converters.schema import remix
+
+PROJECT_ROOT = os.popen("git rev-parse --show-toplevel").read().strip()
 
 
 class TestFieldParsing(unittest.TestCase):
@@ -79,4 +83,112 @@ class TestManipulateAnndata(unittest.TestCase):
         self.assertEqual(
             self.adata.uns["contributors"],
             json.dumps([{"name": "contributor1"}, {"name": "contributor2"}])
+        )
+
+    @unittest.mock.patch("server.converters.schema.ontology.get_ontology_label")
+    def test_remix_uns(self, mock_get_ontology_label):
+        mock_get_ontology_label.return_value = "Pan troglodytes"
+        uns_config = {
+            "version": {
+                "corpora_schema_version": "1.0.0",
+                "corpora_encoding_version": "0.1.0"
+            },
+            "organism_ontology_term_id": "NCBITaxon:9598",
+            "contributors": [
+                {
+                    "name": "scientist",
+                    "email": "scientist@science.com"
+                }
+            ]
+        }
+
+        remix.remix_uns(self.adata, uns_config)
+
+        self.assertEqual(
+            sorted(self.adata.uns_keys()),
+            sorted(["organism_original", "organism", "organism_ontology_term_id",
+                    "contributors", "version", "experiment"])
+        )
+
+        self.assertEqual(self.adata.uns['organism'], "Pan troglodytes")
+        self.assertEqual(self.adata.uns['organism_original'], "monkey")
+        self.assertEqual(self.adata.uns['organism_ontology_term_id'], "NCBITaxon:9598")
+        self.assertEqual(self.adata.uns['contributors'],
+                         json.dumps([{"name": "scientist", "email": "scientist@science.com"}]))
+
+    @unittest.mock.patch("server.converters.schema.ontology.get_ontology_label")
+    def test_remix_obs(self, mock_get_ontology_label):
+        mock_get_ontology_label.return_value = "lung (in a monkey)"
+        obs_config = {
+            "tissue_ontology_term_id": {
+                "tissue": {
+                    "lung": "UBERON:00000"
+                }
+            },
+            "cell_color": {
+                "CellType": {
+                    "epithelial": "fuschia",
+                    "endothelial": "khaki"
+                }
+            },
+            "sex": "male"
+        }
+
+        remix.remix_obs(self.adata, obs_config)
+        self.assertEqual(
+            sorted(self.adata.obs_keys()),
+            sorted(["tissue", "tissue_ontology_term_id", "tissue_original", "CellType", "cell_color", "sex"])
+        )
+
+        self.assertTrue(all(v == "lung" for v in self.adata.obs.tissue_original))
+        self.assertTrue(all(v == "UBERON:00000" for v in self.adata.obs.tissue_ontology_term_id))
+        self.assertTrue(all(v == "lung (in a monkey)" for v in self.adata.obs.tissue))
+        self.assertTrue(all(v == "male" for v in self.adata.obs.sex))
+        self.assertTrue(all(v in (("epithelial", "fuschia"), ("endothelial", "khaki"))
+                            for v in zip(self.adata.obs.CellType, self.adata.obs.cell_color)))
+
+
+class TestFixupGeneSymbols(unittest.TestCase):
+
+    def setUp(self):
+        self.seurat_path = f"{PROJECT_ROOT}/server/test/fixtures/schema_test_data/seurat_tutorial.h5ad"
+        self.seurat_merged_path = f"{PROJECT_ROOT}/server/test/fixtures/schema_test_data/seurat_tutorial_merged.h5ad"
+        self.sctransform_path = f"{PROJECT_ROOT}/server/test/fixtures/schema_test_data/sctransform.h5ad"
+        self.sctransform_merged_path = f"{PROJECT_ROOT}/server/test/fixtures/schema_test_data/sctransform_merged.h5ad"
+
+        # There's lots of MALAT1, but it doesn't collide with any other names,
+        # so it shouldn't change during merging.
+        self.stable_gene = "MALAT1"
+
+    def test_fixup_gene_symbols(self):
+
+        if not os.path.isfile(self.seurat_path):
+            return unittest.skip(
+                "Skipping gene symbol conversion tests because test h5ads are not present. To create them, "
+                "run server/test/fixtures/schema_test_data/generate_test_data.sh"
+            )
+
+        self._compare_fixed_and_merged(self.seurat_path, self.seurat_merged_path)
+        self._compare_fixed_and_merged(self.sctransform_path, self.sctransform_merged_path)
+
+    def _compare_fixed_and_merged(self, orig_path, merged_path):
+
+        original_adata = sc.read_h5ad(orig_path)
+        merged_adata = sc.read_h5ad(merged_path)
+
+        fixup_config = {"X": "log1p", "scale.data": "log1p", "counts": "raw"}
+
+        fixed_adata = remix.fixup_gene_symbols(original_adata, fixup_config)
+
+        self.assertEqual(
+            merged_adata.layers["counts"][:, merged_adata.var.index == self.stable_gene].sum(),
+            fixed_adata.raw.X[:, fixed_adata.var.index == self.stable_gene].sum()
+        )
+        self.assertEqual(
+            merged_adata.X[:, merged_adata.var.index == self.stable_gene].sum(),
+            fixed_adata.X[:, fixed_adata.var.index == self.stable_gene].sum()
+        )
+        self.assertEqual(
+            merged_adata.layers["scale.data"][:, merged_adata.var.index == self.stable_gene].sum(),
+            fixed_adata.layers["scale.data"][:, fixed_adata.var.index == self.stable_gene].sum()
         )
