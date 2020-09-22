@@ -84,6 +84,19 @@ class HGNCSymbolChecker:
             return fixed_symbol
         elif fixed_symbol in self.symbol_map:
             return self.symbol_map[fixed_symbol]
+
+        # Seurat and scanpy append ".1" or "-1" to duplicated gene names, and
+        # these altered names persist throughout the life of the object. They
+        # won't match against the HGNC database and we want to merge them, so
+        # we need to strip off the suffix and try matching again.
+        stripped_symbol = re.sub(r"[\.\-]\d+$", "", fixed_symbol)
+        if stripped_symbol == fixed_symbol:
+            return symbol
+        elif stripped_symbol in self.approved_symbols:
+            return stripped_symbol
+        elif stripped_symbol in self.symbol_map:
+            return self.symbol_map[stripped_symbol]
+
         return symbol
 
     @classmethod
