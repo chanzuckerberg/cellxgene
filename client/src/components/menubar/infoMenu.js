@@ -1,7 +1,6 @@
 // jshint esversion: 6
 import React from "react";
 import { Button, Popover, Menu, MenuItem, Position } from "@blueprintjs/core";
-import { IconNames } from "@blueprintjs/icons";
 import styles from "./menubar.css";
 
 const handleClick = (dispatch) => {
@@ -9,7 +8,14 @@ const handleClick = (dispatch) => {
 };
 
 const InformationMenu = React.memo((props) => {
-  const { libraryVersions, tosURL, privacyURL, dispatch } = props;
+  const {
+    libraryVersions,
+    tosURL,
+    privacyURL,
+    auth,
+    userinfo,
+    dispatch,
+  } = props;
   return (
     <div className={`bp3-button-group ${styles.menubarButton}`}>
       <Popover
@@ -17,15 +23,15 @@ const InformationMenu = React.memo((props) => {
           <Menu>
             <MenuItem
               onClick={() => handleClick(dispatch)}
-              icon={IconNames.BOOK}
+              icon="info-sign"
               text="Dataset Overview"
             />
 
             <MenuItem
               href="https://chanzuckerberg.github.io/cellxgene/"
               target="_blank"
-              icon="help"
-              text="Help"
+              icon="book"
+              text="Documentation"
             />
             <MenuItem
               href="https://join-cellxgene-users.herokuapp.com/"
@@ -58,9 +64,16 @@ const InformationMenu = React.memo((props) => {
                 text="Privacy Policy"
               />
             ) : null}
+            {userinfo.is_authenticated ? (
+              <MenuItem text="Log Out" href={auth.logout} />
+            ) : null}
           </Menu>
         }
         position={Position.BOTTOM_RIGHT}
+        modifiers={{
+          preventOverflow: { enabled: false },
+          hide: { enabled: false },
+        }}
       >
         <Button
           type="button"
