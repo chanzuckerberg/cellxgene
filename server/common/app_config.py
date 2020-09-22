@@ -308,7 +308,8 @@ class AppConfig(object):
             userinfo["userinfo"] = {
                 "is_authenticated": auth.is_user_authenticated(),
                 "username": auth.get_user_name(),
-                "user_id": auth.get_user_id()
+                "user_id": auth.get_user_id(),
+                "email": auth.get_user_email()
             }
             return userinfo
         else:

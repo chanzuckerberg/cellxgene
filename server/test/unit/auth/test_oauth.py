@@ -122,6 +122,7 @@ class AuthTest(unittest.TestCase):
             userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
             self.assertTrue(userinfo["userinfo"]["is_authenticated"])
             self.assertEqual(userinfo["userinfo"]["username"], "fake_user")
+            self.assertEqual(userinfo["userinfo"]["email"], "fake_user@email.com")
             self.assertTrue(config["config"]["parameters"]["annotations"])
 
             if cookie_key:
