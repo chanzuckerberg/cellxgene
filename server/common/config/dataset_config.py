@@ -1,14 +1,13 @@
 import os
 from os.path import splitext, isdir
 
-import server.compute
 from server.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
 from server.common.annotations.local_file_csv import AnnotationsLocalFile
 from server.common.config.base_config import BaseConfig
 from server.common.errors import ConfigurationError, OntologyLoadFailure
+from server.compute.scanpy import get_scanpy_module
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
 from server.db.db_utils import DbUtils
-
 
 
 class DatasetConfig(BaseConfig):
@@ -29,13 +28,12 @@ class DatasetConfig(BaseConfig):
 
             self.user_annotations__enable = default_config["user_annotations"]["enable"]
             self.user_annotations__type = default_config["user_annotations"]["type"]
-            self.user_annotations__local_file_csv__directory = default_config["user_annotations"]["local_file_csv"]["directory"]
+            self.user_annotations__local_file_csv__directory = default_config["user_annotations"]["local_file_csv"]["directory"]  # noqa E501
             self.user_annotations__local_file_csv__file = default_config["user_annotations"]["local_file_csv"]["file"]
             self.user_annotations__ontology__enable = default_config["user_annotations"]["ontology"]["enable"]
-            self.user_annotations__ontology__obo_location = default_config["user_annotations"]["ontology"]["obo_location"]
-            self.user_annotations__hosted_tiledb_array__db_uri = default_config["user_annotations"]["hosted_tiledb_array"]["db_uri"]
-            self.user_annotations__hosted_tiledb_array__hosted_file_directory = \
-                default_config["user_annotations"][ "hosted_tiledb_array" ][ "hosted_file_directory" ]  # noqa E501
+            self.user_annotations__ontology__obo_location = default_config["user_annotations"]["ontology"]["obo_location"]  # noqa E501
+            self.user_annotations__hosted_tiledb_array__db_uri = default_config["user_annotations"]["hosted_tiledb_array"]["db_uri"]  # noqa E501
+            self.user_annotations__hosted_tiledb_array__hosted_file_directory = default_config["user_annotations"]["hosted_tiledb_array"]["hosted_file_directory"]  # noqa E501
 
             self.embeddings__names = default_config["embeddings"]["names"]
             self.embeddings__enable_reembedding = default_config["embeddings"]["enable_reembedding"]
@@ -51,13 +49,13 @@ class DatasetConfig(BaseConfig):
         self.user_annotations = None
 
     def complete_config(self, context):
-        self.handle_app(context)
-        self.handle_presentation(context)
+        self.handle_app()
+        self.handle_presentation()
         self.handle_user_annotations(context)
         self.handle_embeddings()
         self.handle_diffexp(context)
 
-    def handle_app(self, context):
+    def handle_app(self):
         self.check_attr("app__scripts", list)
         self.check_attr("app__inline_scripts", list)
         self.check_attr("app__about_legal_tos", (type(None), str))
@@ -67,15 +65,18 @@ class DatasetConfig(BaseConfig):
         # scripts can be string (filename) or dict (attributes).   Convert string to dict.
         scripts = []
         for script in self.app__scripts:
-            if isinstance(script, str):
-                scripts.append({"src": script})
-            elif isinstance(script, dict) and isinstance(script["src"], str):
-                scripts.append(script)
-            else:
-                raise ConfigurationError("Scripts must be string or a dict containing an src key")
+            try:
+                if isinstance(script, str):
+                    scripts.append({"src": script})
+                elif isinstance(script, dict) and isinstance(script["src"], str):
+                    scripts.append(script)
+                else:
+                    raise Exception
+            except Exception as e:
+                raise ConfigurationError(f"Scripts must be string or a dict containing an src key: {e}")
         self.app__scripts = scripts
 
-    def handle_presentation(self, context):
+    def handle_presentation(self):
         self.check_attr("presentation__max_categories", int)
         self.check_attr("presentation__custom_colors", bool)
 
@@ -88,17 +89,17 @@ class DatasetConfig(BaseConfig):
         self.check_attr("user_annotations__ontology__obo_location", (type(None), str))
         self.check_attr("user_annotations__hosted_tiledb_array__db_uri", (type(None), str))
         self.check_attr("user_annotations__hosted_tiledb_array__hosted_file_directory", (type(None), str))
-
         if self.user_annotations__enable:
             server_config = self.app_config.server_config
             if not self.app__authentication_enable:
                 raise ConfigurationError("user annotations requires authentication to be enabled")
-            if not server_config.auth.is_valid_authentication_type():
+            try:
+                server_config.auth.is_valid_authentication_type()
+            except Exception as e:
                 auth_type = server_config.authentication__type
-                raise ConfigurationError(f"authentication method {auth_type} is not compatible with user annotations")
+                raise ConfigurationError(
+                    f"authentication method {auth_type} is not compatible with user annotations: {e}")
 
-            # TODO, replace this with a factory pattern once we have more than one way
-            # to do annotations.  currently only local_file_csv
             if self.user_annotations__type == "local_file_csv":
                 self.handle_local_file_csv_annotations()
             elif self.user_annotations__type == "hosted_tiledb_array":
@@ -111,7 +112,6 @@ class DatasetConfig(BaseConfig):
     def handle_local_file_csv_annotations(self):
         dirname = self.user_annotations__local_file_csv__directory
         filename = self.user_annotations__local_file_csv__file
-
         if filename is not None and dirname is not None:
             raise ConfigurationError("'annotations-file' and 'annotations-dir' may not be used together.")
 
@@ -132,7 +132,6 @@ class DatasetConfig(BaseConfig):
         # so that we can remove errors early in the process.
         server_config = self.app_config.server_config
         if server_config.single_dataset__datapath and self.user_annotations__local_file_csv__file:
-
             with server_config.matrix_data_cache_manager.data_adaptor(
                     self.tag, server_config.single_dataset__datapath, self.app_config
             ) as data_adaptor:
@@ -159,13 +158,13 @@ class DatasetConfig(BaseConfig):
             db_uri = self.user_annotations__hosted_tiledb_array__db_uri
             hosted_file_dirname = self.user_annotations__hosted_tiledb_array__hosted_file_directory
             if filename is not None:
-                context["messsagefn"]("Warning: --annotations-file ignored as annotations are disabled.")
+                context["messagefn"]("Warning: --annotations-file ignored as annotations are disabled.")
             if dirname is not None:
                 context["messagefn"]("Warning: --annotations-dir ignored as annotations are disabled.")
             if db_uri is not None:
-                context["messsagefn"]("Warning: db_uri ignored as annotations are disabled.")
+                context["messagefn"]("Warning: db_uri ignored as annotations are disabled.")
             if hosted_file_dirname is not None:
-                context["messsagefn"](
+                context["messagefn"](
                     "Warning: hosted_file_directory for hosted_tiledb_array ignored as annotations are disabled.")
 
         if self.user_annotations__ontology__enable:
@@ -193,7 +192,7 @@ class DatasetConfig(BaseConfig):
                     raise ConfigurationError("enable-reembedding is not supported when run in --backed mode.")
 
             try:
-                server.compute.scanpy.get_scanpy_module()
+                get_scanpy_module()
             except NotImplementedError:
                 # Todo why isnt this in the reqs file/why is this check necessary
                 raise ConfigurationError("Please install scanpy to enable UMAP re-embedding")

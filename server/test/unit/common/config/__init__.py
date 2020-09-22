@@ -1,159 +1,218 @@
 import os
+import shutil
 import unittest
+import random
 from unittest import mock
-from unittest.mock import patch
-import tempfile
 
-import requests
+from server.test import FIXTURES_ROOT
 
-from server.common.config.app_config import AppConfig
-from server.common.errors import ConfigurationError
-from server.common.utils.utils import find_available_port
-from server.test import PROJECT_ROOT, test_server, FIXTURES_ROOT
-
-
-# NOTE, there are more tests that should be written for AppConfig.
-# this is just a start.
 
 def mockenv(**envvars):
     return mock.patch.dict(os.environ, envvars)
 
 
-class AppConfigTest(unittest.TestCase):
+class ConfigTests(unittest.TestCase):
+    tmp_fixtures_directory = os.path.join(FIXTURES_ROOT, "tmp_dir")
 
-    def test_multi_dataset(self):
+    @classmethod
+    def tearDownClass(cls) -> None:
+        shutil.rmtree(cls.tmp_fixtures_directory)
 
-        config = AppConfig()
-        # test for illegal url_dataroots
-        for illegal in ("../b", "!$*", "\\n", "", "(bad)"):
-            config.update_server_config(
-                multi_dataset__dataroot={"tag": {"base_url": illegal, "dataroot": "{PROJECT_ROOT}/example-dataset"}}
-            )
-            with self.assertRaises(ConfigurationError):
-                config.complete_config()
+    @classmethod
+    def setUpClass(cls) -> None:
+        os.makedirs(cls.tmp_fixtures_directory)
 
-        # test for legal url_dataroots
-        for legal in ("d", "this.is-okay_", "a/b"):
-            config.update_server_config(
-                multi_dataset__dataroot={"tag": {"base_url": legal, "dataroot": "{PROJECT_ROOT}/example-dataset"}}
-            )
-            config.complete_config()
+    def custom_server_config(self, verbose="false", debug="false", host="localhost", port="null", open_browser="false",
+                             force_https="false", flask_secret_key="null", generate_cache_control_headers="false",
+                             server_timing_headers="false", csp_directives="null", api_base_url="null",
+                             web_base_url="null", auth_type="session", oauth_api_base_url="null", client_id="null",
+                             client_secret="null", jwt_decode_options="null", session_cookie="true", cookie="null",
+                             dataroot="null", index="false", allowed_matrix_types=[], max_cached_datasets=5,
+                             timelimit_s=5, dataset_datapath="null", obs_names="null", var_names="null", about="null",
+                             title="null", diffexp_max_workers=64, cpu_multiplier=4, target_workunit="16_000_000",
+                             data_locater_region_name="us-east-1", cxg_tile_cache_size=8589934592,
+                             cxg_num_reader_threads=32, anndata_backed="false", column_request_max=32,
+                             diffexp_cellcount_max="null", config_file_name="server_config.yaml"):
+        configfile = os.path.join(self.tmp_fixtures_directory, config_file_name)
+        with open(configfile, "w") as server_config:
+            config = f"""server:
+  app:
+    verbose: {verbose}
+    debug: {debug}
+    host: {host}
+    port: {port}
+    open_browser: {open_browser}
+    force_https: {force_https}
+    flask_secret_key: {flask_secret_key}
+    generate_cache_control_headers: {generate_cache_control_headers}
+    server_timing_headers: {server_timing_headers}
+    csp_directives: {csp_directives}
+    api_base_url: {api_base_url}
+    web_base_url: {web_base_url}
+  authentication:
+    type: {auth_type}
+    params_oauth:
+      oauth_api_base_url: {oauth_api_base_url}
+      client_id: {client_id}
+      client_secret: {client_secret}
+      jwt_decode_options: {jwt_decode_options}
+      session_cookie:  {session_cookie}
+      cookie:  {cookie}
 
-        # test that multi dataroots work end to end
-        config.update_server_config(
-            multi_dataset__dataroot=dict(
-                s1=dict(dataroot=f"{PROJECT_ROOT}/example-dataset", base_url="set1/1/2"),
-                s2=dict(dataroot=f"{FIXTURES_ROOT}", base_url="set2"),
-                s3=dict(dataroot=f"{FIXTURES_ROOT}", base_url="set3"),
-            )
-        )
+  multi_dataset:
+    dataroot: {dataroot}
+    index: {index}
+    allowed_matrix_types: {allowed_matrix_types}
+    matrix_cache:
+      max_datasets: {max_cached_datasets}
+      timelimit_s: {timelimit_s}
 
-        # Change this default to test if the dataroot overrides below work.
-        config.update_default_dataset_config(app__about_legal_tos="tos_default.html")
+  single_dataset:
+    datapath: {dataset_datapath}
+    obs_names: {obs_names}
+    var_names: {var_names}
+    about: {about}
+    title: {title}
 
-        # specialize the configs for set1
-        config.add_dataroot_config(
-            "s1", user_annotations__enable=False, diffexp__enable=True, app__about_legal_tos="tos_set1.html"
-        )
+  diffexp:
+    alg_cxg: # number of threads to use is computed from: min(max_workers, cpu_multipler * cpu_count)
+      max_workers: {diffexp_max_workers}
+      cpu_multiplier: {cpu_multiplier}
+      target_workunit: {target_workunit}  # The target number of matrix elements that are evaluated in one thread.
 
-        # specialize the configs for set2
-        config.add_dataroot_config(
-            "s2", user_annotations__enable=True, diffexp__enable=False, app__about_legal_tos="tos_set2.html"
-        )
+  data_locator:
+    s3:
+      region_name: {data_locater_region_name}
 
-        # no specializations for set3 (they get the default dataset config)
-        config.complete_config()
+  adaptor:
+    cxg_adaptor:
+      tiledb_ctx:
+        sm.tile_cache_size:  {cxg_tile_cache_size}
+        sm.num_reader_threads:  {cxg_num_reader_threads}
 
-        with test_server(app_config=config) as server:
-            session = requests.Session()
+    anndata_adaptor:
+      backed: {anndata_backed}
 
-            response = session.get(f"{server}/set1/1/2/pbmc3k.h5ad/api/v0.2/config")
-            data_config = response.json()
-            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
-            assert data_config["config"]["parameters"]["annotations"] is False
-            assert data_config["config"]["parameters"]["disable-diffexp"] is False
-            assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set1.html"
+  limits:
+    column_request_max: {column_request_max}
+    diffexp_cellcount_max: {diffexp_cellcount_max}
+"""
+            server_config.write(config)
+        return configfile
 
-            response = session.get(f"{server}/set2/pbmc3k.cxg/api/v0.2/config")
-            data_config = response.json()
-            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
-            assert data_config["config"]["parameters"]["annotations"] is True
-            assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set2.html"
+    def custom_app_config(self, verbose="false", debug="false", host="localhost", port="null", open_browser="false",
+                          force_https="false", flask_secret_key="null", generate_cache_control_headers="false",
+                          server_timing_headers="false", csp_directives="null", api_base_url="null",
+                          web_base_url="null", auth_type="session", oauth_api_base_url="null", client_id="null",
+                          client_secret="null", jwt_decode_options="null", session_cookie="true", cookie="null",
+                          dataroot="null", index="false", allowed_matrix_types=[], max_cached_datasets=5,
+                          timelimit_s=5, dataset_datapath="null", obs_names="null", var_names="null", about="null",
+                          title="null", diffexp_max_workers=64, cpu_multiplier=4, target_workunit="16_000_000",
+                          data_locater_region_name="us-east-1", cxg_tile_cache_size=8589934592,
+                          cxg_num_reader_threads=32, anndata_backed="false", column_request_max=32,
+                          diffexp_cellcount_max="null", scripts=[], inline_scripts=[], about_legal_tos="null",
+                          about_legal_privacy="null", authentication_enable="true", max_categories=1000,
+                          custom_colors="true", enable_users_annotations="true", annotation_type="local_file_csv",
+                          db_uri="null", hosted_file_directory="null", local_file_csv_directory="null",
+                          local_file_csv_file="null", ontology_enabled="false", obo_location="null", embedding_names=[],
+                          enable_reembedding="false", enable_difexp="true", lfc_cutoff=0.01, top_n=10,
+                          config_file_name="app_config.yml"):
+        random_num = random.randrange(999999)
+        configfile = os.path.join(self.tmp_fixtures_directory, config_file_name)
+        server_config = self.custom_server_config(verbose=verbose, debug=debug, host=host, port=port,
+                                                  open_browser=open_browser,
+                                                  force_https=force_https, flask_secret_key=flask_secret_key,
+                                                  generate_cache_control_headers=generate_cache_control_headers,
+                                                  server_timing_headers=server_timing_headers,
+                                                  csp_directives=csp_directives, api_base_url=api_base_url,
+                                                  web_base_url=web_base_url, auth_type=auth_type,
+                                                  oauth_api_base_url=oauth_api_base_url, client_id=client_id,
+                                                  client_secret=client_secret, jwt_decode_options=jwt_decode_options,
+                                                  session_cookie=session_cookie, cookie=cookie,
+                                                  dataroot=dataroot, index=index,
+                                                  allowed_matrix_types=allowed_matrix_types,
+                                                  max_cached_datasets=max_cached_datasets,
+                                                  timelimit_s=timelimit_s, dataset_datapath=dataset_datapath,
+                                                  obs_names=obs_names, var_names=var_names, about=about,
+                                                  title=title, diffexp_max_workers=diffexp_max_workers,
+                                                  cpu_multiplier=cpu_multiplier, target_workunit=target_workunit,
+                                                  data_locater_region_name=data_locater_region_name,
+                                                  cxg_tile_cache_size=cxg_tile_cache_size,
+                                                  cxg_num_reader_threads=cxg_num_reader_threads,
+                                                  anndata_backed=anndata_backed, column_request_max=column_request_max,
+                                                  diffexp_cellcount_max=diffexp_cellcount_max,
+                                                  config_file_name=f"temp_server_config_{random_num}.yml")
+        dataset_config = self.custom_dataset_config(scripts=scripts, inline_scripts=inline_scripts,
+                                                    about_legal_tos=about_legal_tos,
+                                                    about_legal_privacy=about_legal_privacy,
+                                                    authentication_enable=authentication_enable,
+                                                    max_categories=max_categories, custom_colors=custom_colors,
+                                                    enable_users_annotations=enable_users_annotations,
+                                                    annotation_type=annotation_type, db_uri=db_uri,
+                                                    hosted_file_directory=hosted_file_directory,
+                                                    local_file_csv_directory=local_file_csv_directory,
+                                                    local_file_csv_file=local_file_csv_file,
+                                                    ontology_enabled=ontology_enabled, obo_location=obo_location,
+                                                    embedding_names=embedding_names,
+                                                    enable_reembedding=enable_reembedding, enable_difexp=enable_difexp,
+                                                    lfc_cutoff=lfc_cutoff, top_n=top_n,
+                                                    config_file_name=f"temp_dataset_config_{random_num}.yml")
+        with open(server_config) as server_config:
+            with open(dataset_config) as dataset_config:
+                with open(configfile, "w") as app_config_file:
+                    for line in server_config:
+                        app_config_file.write(line)
+                    for line in dataset_config:
+                        app_config_file.write(line)
 
-            response = session.get(f"{server}/set3/pbmc3k.cxg/api/v0.2/config")
-            data_config = response.json()
-            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
-            assert data_config["config"]["parameters"]["annotations"] is True
-            assert data_config["config"]["parameters"]["disable-diffexp"] is False
-            assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_default.html"
+        return configfile
 
-            response = session.get(f"{server}/health")
-            assert response.json()["status"] == "pass"
+    def custom_dataset_config(self, scripts=[], inline_scripts=[], about_legal_tos="null", about_legal_privacy="null",
+                              authentication_enable="true", max_categories=1000, custom_colors="true",
+                              enable_users_annotations="true", annotation_type="local_file_csv", db_uri="null",
+                              hosted_file_directory="null", local_file_csv_directory="null", local_file_csv_file="null",
+                              ontology_enabled="false", obo_location="null", embedding_names=[],
+                              enable_reembedding="false", enable_difexp="true", lfc_cutoff=0.01, top_n=10,
+                              config_file_name="dataset_config.yml"):
+        configfile = os.path.join(self.tmp_fixtures_directory, config_file_name)
+        with open(configfile, "w") as dataset_config:
+            config = f"""
+dataset:
+  app:
+    scripts: {scripts} #list of strs (filenames) or dicts containing keys
+    inline_scripts: {inline_scripts} #list of strs (filenames)
 
-    @mockenv(CXG_AWS_SECRET_NAME="TESTING", CXG_AWS_SECRET_REGION_NAME="TEST_REGION")
-    @patch('server.common.aws_secret_utils.get_secret_key')
-    def test_get_config_vars_from_aws_secrets(self, mock_get_secret_key):
-        mock_get_secret_key.return_value = {
-            "flask_secret_key": "mock_flask_secret",
-            "oauth_client_secret": "mock_oauth_secret",
-            "db_uri": "mock_db_uri"
-        }
+    about_legal_tos: {about_legal_tos}
+    about_legal_privacy: {about_legal_privacy}
 
-        config = AppConfig()
+    authentication_enable: {authentication_enable}
 
-        with self.assertLogs(level="INFO") as logger:
-            from server.common.aws_secret_utils import handle_config_from_secret
-            # should not throw error
-            # "AttributeError: 'XConfig' object has no attribute 'x'"
-            handle_config_from_secret(config)
+  presentation:
+    max_categories: {max_categories}
+    custom_colors: {custom_colors}
 
-            # should log 3 lines (one for each var set from a secret)
-            self.assertEqual(len(logger.output), 3)
-            self.assertIn('INFO:root:set app__flask_secret_key from secret', logger.output[0])
-            self.assertIn('INFO:root:set authentication__params_oauth__client_secret from secret', logger.output[1])
-            self.assertIn('INFO:root:set user_annotations__hosted_tiledb_array__db_uri from secret', logger.output[2])
-            self.assertEqual(config.server_config.app__flask_secret_key, "mock_flask_secret")
-            self.assertEqual(config.server_config.authentication__params_oauth__client_secret, "mock_oauth_secret")
-            self.assertEqual(config.default_dataset_config.user_annotations__hosted_tiledb_array__db_uri, "mock_db_uri")
+  user_annotations:
+    enable: {enable_users_annotations}
+    type: {annotation_type}
+    hosted_tiledb_array:
+      db_uri: {db_uri}
+      hosted_file_directory: {hosted_file_directory}
+    local_file_csv:
+      directory: {local_file_csv_directory}
+      file: {local_file_csv_file}
+    ontology:
+      enable: {ontology_enabled}
+      obo_location: {obo_location}
 
+  embeddings:
+    names: {embedding_names}
+    enable_reembedding: {enable_reembedding}
 
-    def test_configfile_with_specialization(self):
-        # test that per_dataset_config config load the default config, then the specialized config
+  diffexp:
+    enable: {enable_difexp}
+    lfc_cutoff: {lfc_cutoff}
+    top_n: {top_n}
+                        """
+            dataset_config.write(config)
 
-        with tempfile.TemporaryDirectory() as tempdir:
-            configfile = os.path.join(tempdir, "config.yaml")
-            with open(configfile, "w") as fconfig:
-                config = """
-                server:
-                    multi_dataset:
-                        dataroot:
-                            test:
-                                base_url: test
-                                dataroot: fake_dataroot
-
-                dataset:
-                    user_annotations:
-                        enable: false
-                        type: hosted_tiledb_array
-                        hosted_tiledb_array:
-                            db_uri: fake_db_uri
-                            hosted_file_directory: fake_dir
-
-                per_dataset_config:
-                    test:
-                        user_annotations:
-                            enable: true
-                """
-                fconfig.write(config)
-
-            app_config = AppConfig()
-            app_config.update_from_config_file(configfile)
-
-            test_config = app_config.dataroot_config["test"]
-
-            # test config from default
-            self.assertEqual(test_config.user_annotations__type, "hosted_tiledb_array")
-            self.assertEqual(test_config.user_annotations__hosted_tiledb_array__db_uri, "fake_db_uri")
-
-            # test config from specialization
-            self.assertTrue(test_config.user_annotations__enable)
+        return configfile

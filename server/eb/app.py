@@ -9,7 +9,7 @@ from flask import json
 import logging
 from flask_talisman import Talisman
 from flask_cors import CORS
-from server.common.aws_secret_utils import handle_config_from_secret
+from server.common.config import handle_config_from_secret
 from server.common.errors import SecretKeyRetrievalError
 
 

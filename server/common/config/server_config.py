@@ -7,7 +7,7 @@ from urllib.parse import urlparse, quote_plus
 from server.auth.auth import AuthTypeFactory
 from server.common.config.base_config import BaseConfig
 from server.common.config import DEFAULT_SERVER_PORT, BIG_FILE_SIZE_THRESHOLD
-from server.common.errors import ConfigurationError
+from server.common.errors import ConfigurationError, DatasetAccessError
 from server.common.data_locator import discover_s3_region_name
 from server.common.utils.utils import is_port_available, find_available_port, custom_format_warning
 from server.compute import diffexp_cxg as diffexp_tiledb
@@ -42,21 +42,18 @@ class ServerConfig(BaseConfig):
             self.app__web_base_url = default_config["app"]["web_base_url"]
 
             self.authentication__type = default_config["authentication"]["type"]
-            self.authentication__params_oauth__oauth_api_base_url = default_config["authentication"]["params_oauth"][
-                "oauth_api_base_url"
-            ]
+            self.authentication__params_oauth__oauth_api_base_url = default_config["authentication"]["params_oauth"]["oauth_api_base_url"]  # noqa E501
             self.authentication__params_oauth__client_id = default_config["authentication"]["params_oauth"]["client_id"]
-            self.authentication__params_oauth__client_secret = default_config["authentication"]["params_oauth"]["client_secret"]
-            self.authentication__params_oauth__jwt_decode_options = default_config["authentication"]["params_oauth"][
-                "jwt_decode_options"]
-            self.authentication__params_oauth__session_cookie = default_config["authentication"]["params_oauth"]["session_cookie"]
+            self.authentication__params_oauth__client_secret = default_config["authentication"]["params_oauth"]["client_secret"]  # noqa E501
+            self.authentication__params_oauth__jwt_decode_options = default_config["authentication"]["params_oauth"]["jwt_decode_options"]  # noqa E501
+            self.authentication__params_oauth__session_cookie = default_config["authentication"]["params_oauth"]["session_cookie"]  # noqa E501
             self.authentication__params_oauth__cookie = default_config["authentication"]["params_oauth"]["cookie"]
 
             self.multi_dataset__dataroot = default_config["multi_dataset"]["dataroot"]
             self.multi_dataset__index = default_config["multi_dataset"]["index"]
             self.multi_dataset__allowed_matrix_types = default_config["multi_dataset"]["allowed_matrix_types"]
-            self.multi_dataset__matrix_cache__max_datasets = default_config["multi_dataset"]["matrix_cache"]["max_datasets"]
-            self.multi_dataset__matrix_cache__timelimit_s = default_config["multi_dataset"]["matrix_cache"]["timelimit_s"]
+            self.multi_dataset__matrix_cache__max_datasets = default_config["multi_dataset"]["matrix_cache"]["max_datasets"]  # noqa E501
+            self.multi_dataset__matrix_cache__timelimit_s = default_config["multi_dataset"]["matrix_cache"]["timelimit_s"]  # noqa E501
 
             self.single_dataset__datapath = default_config["single_dataset"]["datapath"]
             self.single_dataset__obs_names = default_config["single_dataset"]["obs_names"]
@@ -87,14 +84,14 @@ class ServerConfig(BaseConfig):
 
     def complete_config(self, context):
         self.handle_app(context)
-        self.handle_data_source(context)
-        self.handle_authentication(context)
-        self.handle_data_locator(context)
-        self.handle_adaptor(context)  # may depend on data_locator
+        self.handle_data_source()
+        self.handle_authentication()
+        self.handle_data_locator()
+        self.handle_adaptor()  # may depend on data_locator
         self.handle_single_dataset(context)  # may depend on adaptor
-        self.handle_multi_dataset(context)  # may depend on adaptor
-        self.handle_diffexp(context)
-        self.handle_limits(context)
+        self.handle_multi_dataset()  # may depend on adaptor
+        self.handle_diffexp()
+        self.handle_limits()
 
         self.check_config()
 
@@ -162,7 +159,7 @@ class ServerConfig(BaseConfig):
         if self.app__web_base_url is None:
             self.app__web_base_url = self.app__api_base_url
 
-    def handle_authentication(self, context):
+    def handle_authentication(self):
         self.check_attr("authentication__type", (type(None), str))
 
         # oauth
@@ -179,17 +176,18 @@ class ServerConfig(BaseConfig):
             self.check_attr("authentication__params_oauth__cookie", dict)
         #   secret key: first, from CXG_OAUTH_CLIENT_SECRET environment variable
         #   second, from config file
-        self.authentication__params__oauth__client_secret = os.environ.get(
+        self.authentication__params_oauth__client_secret = os.environ.get(
             "CXG_OAUTH_CLIENT_SECRET", self.authentication__params_oauth__client_secret)
 
         self.auth = AuthTypeFactory.create(self.authentication__type, self)
         if self.auth is None:
             raise ConfigurationError(f"Unknown authentication type: {self.authentication__type}")
 
-    def handle_data_locator(self, context):
+    def handle_data_locator(self):
         self.check_attr("data_locator__s3__region_name", (type(None), bool, str))
         if self.data_locator__s3__region_name is True:
             path = self.single_dataset__datapath or self.multi_dataset__dataroot
+
             if type(path) == dict:
                 # if multi_dataset__dataroot is a dict, then use the first key
                 # that is in s3.   NOTE:  it is not supported to have dataroots
@@ -206,16 +204,15 @@ class ServerConfig(BaseConfig):
                 region_name = None
             self.data_locator__s3__region_name = region_name
 
-    def handle_data_source(self, context):
+    def handle_data_source(self):
         self.check_attr("single_dataset__datapath", (str, type(None)))
         self.check_attr("multi_dataset__dataroot", (type(None), dict, str))
 
         if self.single_dataset__datapath and self.multi_dataset__dataroot:
             raise ConfigurationError("must supply only one of datapath or dataroot")
         if self.single_dataset__datapath is None and self.multi_dataset__dataroot is None:
-            # TODO:  change the error message once dataroot is fully supported
-            raise ConfigurationError("missing datapath")
-
+            raise ConfigurationError(
+                "You must specify a datapath for a single dataset and a dataroot for multidatasets")
 
     def handle_single_dataset(self, context):
         self.check_attr("single_dataset__datapath", (str, type(None)))
@@ -262,7 +259,7 @@ class ServerConfig(BaseConfig):
                     "Must provide an absolute URL for --about. (Example format: http://example.com)"
                 )
 
-    def handle_multi_dataset(self, context):
+    def handle_multi_dataset(self):
         self.check_attr("multi_dataset__dataroot", (type(None), dict, str))
         self.check_attr("multi_dataset__index", (type(None), bool, str))
         self.check_attr("multi_dataset__allowed_matrix_types", list)
@@ -318,7 +315,7 @@ class ServerConfig(BaseConfig):
                 timelimit_s=self.multi_dataset__matrix_cache__timelimit_s,
             )
 
-    def handle_diffexp(self, context):
+    def handle_diffexp(self):
         self.check_attr("diffexp__alg_cxg__max_workers", (str, int))
         self.check_attr("diffexp__alg_cxg__cpu_multiplier", int)
         self.check_attr("diffexp__alg_cxg__target_workunit", int)
@@ -329,7 +326,7 @@ class ServerConfig(BaseConfig):
         max_workers = min(max_workers, cpu_multiplier * cpu_count)
         diffexp_tiledb.set_config(max_workers, self.diffexp__alg_cxg__target_workunit)
 
-    def handle_adaptor(self, context):
+    def handle_adaptor(self):
         # cxg
         self.check_attr("adaptor__cxg_adaptor__tiledb_ctx", dict)
         regionkey = "vfs.s3.region"
@@ -344,7 +341,7 @@ class ServerConfig(BaseConfig):
         # anndata
         self.check_attr("adaptor__anndata_adaptor__backed", bool)
 
-    def handle_limits(self, context):
+    def handle_limits(self):
         self.check_attr("limits__diffexp_cellcount_max", (type(None), int))
         self.check_attr("limits__column_request_max", (type(None), int))
 
@@ -368,4 +365,4 @@ class ServerConfig(BaseConfig):
             return self.get_api_base_url()
         if self.app__web_base_url.endswith("/"):
             return self.app__web_base_url[:-1]
-        return self.api__web_base_url
+        return self.app__web_base_url

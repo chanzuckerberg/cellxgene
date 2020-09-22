@@ -88,7 +88,7 @@ class BaseConfig(object):
                 raise ConfigurationError(f"Unknown key from config file: {prefix}__{attr}")
             try:
                 setattr(self, attr, value)
-            except KeyError:  # TODO ask brian when this would be raised (instead of being caught in attribute check above)
+            except KeyError:  # TODO when would this would be raised (instead of being caught in attribute check above)
                 raise ConfigurationError(f"Unable to set config attribute: {prefix}__{attr}")
 
             self.attr_checked[attr] = False

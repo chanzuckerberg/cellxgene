@@ -8,9 +8,11 @@ from server.common.errors import ConfigurationError
 
 class AppConfig(object):
     """AppConfig stores all the configuration for cellxgene.  The configuration is divided into two main parts:
-    server attributes, and dataset attributes. The server_config contains attributes that refer to the server process
-    as a whole.   The default_dataset_config referes to attributes that are associated with the features and
-    presentations of a dataset.  The dataset config attributes can be overridden depending on the url by which the
+    server attributes, and dataset attributes.
+    The server_config contains attributes that refer to the server process as a whole.
+    The default_dataset_config refers to attributes that are associated with the features and
+    presentations of a dataset.
+    The dataset config attributes can be overridden depending on the url by which the
     dataset was accessed.  These are stored in dataroot_config.
     AppConfig has methods to initialize, modify, and access the configuration.
     """
@@ -18,6 +20,8 @@ class AppConfig(object):
     def __init__(self):
 
         # the default configuration (see default_config.py)
+        # TODO @madison -- if we always read from the default config (hard coded path) can we set those values as
+        #  defaults within the config class?
         self.default_config = self.get_default_config()
         # the server configuration
         self.server_config = ServerConfig(self, self.default_config["server"])
@@ -34,7 +38,6 @@ class AppConfig(object):
     def get_default_config():
         try:
             with open(f"{os.getenv('PROJECT_ROOT')}/default_config.yml", 'r') as default_config:
-                ## Todo Double check safeload (And SafeLoader work or revert)
                 return yaml.safe_load(default_config)
         except yaml.YAMLError as e:
             raise ConfigurationError(f"Unable to import default configuration yaml: {e}")

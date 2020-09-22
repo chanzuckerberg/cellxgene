@@ -2,55 +2,84 @@ import os
 import tempfile
 import unittest
 
+import yaml
+
 from server.common.config.app_config import AppConfig
+from server.test.unit.common.config import ConfigTests
+from server.common.errors import ConfigurationError
+from server.test import FIXTURES_ROOT
 
 
-class AppConfigTest(unittest.TestCase):
+class AppConfigTest(ConfigTests):
+    def setUp(self):
+        self.config_file_name = f"{unittest.TestCase.id(self).split('.')[-1]}.yml"
+        self.config = AppConfig()
+        self.config.update_server_config(multi_dataset__dataroot=FIXTURES_ROOT)
+        self.server_config = self.config.server_config
+        self.config.complete_config()
+
+        message_list = []
+
+        def noop(message):
+            message_list.append(message)
+
+        messagefn = noop
+        self.context = dict(messagefn=messagefn, messages=message_list)
+
+    def get_config(self, **kwargs):
+        file_name = self.custom_app_config(
+            dataroot=f"{FIXTURES_ROOT}", config_file_name=self.config_file_name, **kwargs)
+        config = AppConfig()
+        config.update_from_config_file(file_name)
+        return config
 
     def test_get_default_config_successfully_reads_yaml_file(self):
-        pass
+        app_default_config = AppConfig().get_default_config()
 
-    def test_get_default_config_raises_an_error_for_invalid_config_files(self):
-        pass
+        with open(f"{os.getenv('PROJECT_ROOT')}/default_config.yml", 'r') as default_config:
+            yaml_config = yaml.safe_load(default_config)
+
+        self.assertEqual(yaml_config['server']['app']['verbose'], app_default_config['server']['app']['verbose'])
+        self.assertEqual(yaml_config['server']['authentication']['type'],
+                         app_default_config['server']['authentication']['type'])
 
     def test_init_app_config_pulls_in_default_server_and_dataset_configurations(self):
-        pass
+        config = AppConfig()
+
+        with open(f"{os.getenv('PROJECT_ROOT')}/default_config.yml", 'r') as default_config:
+            yaml_config = yaml.safe_load(default_config)
+
+        self.assertEqual(yaml_config['server']['app']['verbose'], config.server_config.app__verbose)
+        self.assertEqual(yaml_config['server']['authentication']['type'], config.server_config.authentication__type)
+        self.assertEqual(yaml_config['dataset']['diffexp']['lfc_cutoff'],
+                         config.default_dataset_config.diffexp__lfc_cutoff)
 
     def test_get_dataset_config_handles_single_datasets(self):
-        pass
-
-    def test_get_dataset_config__returns_default_if_not_set(self):
-        pass
-
-    def test_get_dataset_config__returns_passed_in_dataset_config(self):
-        pass
-
-    def test_check_config_verifies_attributes_in_all_configs_are_checked(self):
-        pass
+        datapath = f"{FIXTURES_ROOT}/1e4dfec4-c0b2-46ad-a04e-ff3ffb3c0a8f.h5ad"
+        file_name = self.custom_app_config(
+            dataset_datapath=datapath, config_file_name=self.config_file_name)
+        config = AppConfig()
+        config.update_from_config_file(file_name)
+        self.assertEqual(config.server_config.single_dataset__datapath, datapath)
 
     def test_update_server_config_updates_server_config_and_config_status(self):
-        pass
-
-    # Todo -- is this the desired/expected functionality?
-    def test_update_default_datasets_updates_for_all_dataroots(self):
-        pass
-
-    def test_update_from_config_file_correctly_updates_server_and_datasets_configs(self):
-        pass
+        config = self.get_config()
+        config.complete_config()
+        config.check_config()
+        config.update_server_config(multi_dataset__dataroot=FIXTURES_ROOT)
+        with self.assertRaises(ConfigurationError):
+            config.server_config.check_config()
 
     def test_write_config_outputs_yaml_with_all_config_vars(self):
-        pass
+        config = self.get_config()
+        config.write_config(f"{FIXTURES_ROOT}/tmp_dir/write_config.yml")
+        with open(f"{FIXTURES_ROOT}/tmp_dir/{self.config_file_name}", 'r') as default_config:
+            default_config_yml = yaml.safe_load(default_config)
 
-    # Todo -- should this return non default dataset configurations for additional dataroots?
-    def test_changes_from_default_returns_attributes_from_server_and_dataset_that_are_non_default(self):
-        # Note this wont check additional datasets bc there are no default values for those
-        pass
-
-    def test_add_dataroot_config_creates_config_based_on_dataset_default_and_passed_in_params(self):
-        pass
-
-    def test_complete_config_checks_server_dataset_and_all_dataroot_configs(self):
-        pass
+        with open(f"{FIXTURES_ROOT}/tmp_dir/write_config.yml", 'r') as output_config:
+            output_config_yml = yaml.safe_load(output_config)
+        self.maxDiff = None
+        self.assertEqual(default_config_yml, output_config_yml)
 
     def test_update_app_config(self):
         config = AppConfig()
@@ -113,4 +142,3 @@ class AppConfigTest(unittest.TestCase):
             dataset_changes = app_config.default_dataset_config.changes_from_default()
             self.assertEqual(server_changes, [])
             self.assertEqual(dataset_changes, [("user_annotations__enable", False, True)])
-
