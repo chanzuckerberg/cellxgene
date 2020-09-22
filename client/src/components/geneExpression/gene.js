@@ -113,7 +113,7 @@ class Gene extends React.Component {
             icon={<Icon icon="maximize" iconSize={10} />}
           />
         </div>
-        <HistogramBrush field={gene} />
+        <HistogramBrush isUserDefined field={gene} />
       </div>
     );
   }
