@@ -6,6 +6,7 @@ import { connect } from "react-redux";
 import { Button } from "@blueprintjs/core";
 import HistogramBrush from "../brushableHistogram";
 import GeneSet from "./geneSet";
+import AddGenes from "./menus/addGenes";
 
 import testGeneSets from "./test_data";
 import CreateGenesetDialogue from "./menus/createGenesetDialogue";
@@ -53,7 +54,7 @@ class GeneExpression extends React.Component {
             </div>
           ) : null}
           <CreateGenesetDialogue />
-          {/* <AddGenes /> */}
+          <AddGenes />
           {userDefinedGenes.length > 0
             ? _.map(userDefinedGenes, (geneName, index) => {
                 return (
