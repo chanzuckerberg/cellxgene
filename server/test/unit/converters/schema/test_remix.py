@@ -160,7 +160,7 @@ class TestFixupGeneSymbols(unittest.TestCase):
         # so it shouldn't change during merging.
         self.stable_gene = "MALAT1"
 
-    def test_fixup_gene_symbols(self):
+    def test_fixup_gene_symbols_seurat(self):
 
         if not os.path.isfile(self.seurat_path):
             return unittest.skip(
@@ -168,15 +168,10 @@ class TestFixupGeneSymbols(unittest.TestCase):
                 "run server/test/fixtures/schema_test_data/generate_test_data.sh"
             )
 
-        self._compare_fixed_and_merged(self.seurat_path, self.seurat_merged_path)
-        self._compare_fixed_and_merged(self.sctransform_path, self.sctransform_merged_path)
+        original_adata = sc.read_h5ad(self.seurat_path)
+        merged_adata = sc.read_h5ad(self.seurat_merged_path)
 
-    def _compare_fixed_and_merged(self, orig_path, merged_path):
-
-        original_adata = sc.read_h5ad(orig_path)
-        merged_adata = sc.read_h5ad(merged_path)
-
-        fixup_config = {"X": "log1p", "scale.data": "log1p", "counts": "raw"}
+        fixup_config = {"X": "log1p", "counts": "raw", "scale.data": "log1p"}
 
         fixed_adata = remix.fixup_gene_symbols(original_adata, fixup_config)
 
@@ -184,11 +179,35 @@ class TestFixupGeneSymbols(unittest.TestCase):
             merged_adata.layers["counts"][:, merged_adata.var.index == self.stable_gene].sum(),
             fixed_adata.raw.X[:, fixed_adata.var.index == self.stable_gene].sum()
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             merged_adata.X[:, merged_adata.var.index == self.stable_gene].sum(),
             fixed_adata.X[:, fixed_adata.var.index == self.stable_gene].sum()
         )
-        self.assertEqual(
+
+        self.assertAlmostEqual(
             merged_adata.layers["scale.data"][:, merged_adata.var.index == self.stable_gene].sum(),
             fixed_adata.layers["scale.data"][:, fixed_adata.var.index == self.stable_gene].sum()
+        )
+
+    def test_fixup_gene_symbols_sctransform(self):
+
+        original_adata = sc.read_h5ad(self.sctransform_path)
+        merged_adata = sc.read_h5ad(self.sctransform_merged_path)
+
+        fixup_config = {"X": "log1p", "counts": "raw"}
+
+        fixed_adata = remix.fixup_gene_symbols(original_adata, fixup_config)
+
+        # sctransform does a bunch of stuff, including slightly modifying the
+        # raw counts. So we can't assert for exact equality the way we do with
+        # the vanilla seurat tutorial. But, the results should still be very
+        # close.
+        merged_raw_stable = merged_adata.layers["counts"][:, merged_adata.var.index == self.stable_gene].sum()
+        fixed_raw_stable = fixed_adata.raw.X[:, fixed_adata.var.index == self.stable_gene].sum()
+        self.assertLess(abs(merged_raw_stable - fixed_raw_stable), .001 * merged_raw_stable)
+
+        self.assertAlmostEqual(
+            merged_adata.X[:, merged_adata.var.index == self.stable_gene].sum(),
+            fixed_adata.X[:, fixed_adata.var.index == self.stable_gene].sum(),
+            0
         )
