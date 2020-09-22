@@ -191,6 +191,12 @@ class TestFixupGeneSymbols(unittest.TestCase):
 
     def test_fixup_gene_symbols_sctransform(self):
 
+        if not os.path.isfile(self.sctransform_path):
+            return unittest.skip(
+                "Skipping gene symbol conversion tests because test h5ads are not present. To create them, "
+                "run server/test/fixtures/schema_test_data/generate_test_data.sh"
+            )
+
         original_adata = sc.read_h5ad(self.sctransform_path)
         merged_adata = sc.read_h5ad(self.sctransform_merged_path)
 
