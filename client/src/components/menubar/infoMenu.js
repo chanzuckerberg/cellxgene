@@ -64,7 +64,7 @@ const InformationMenu = React.memo((props) => {
                 text="Privacy Policy"
               />
             ) : null}
-            {userinfo.is_authenticated ? (
+            {auth.requires_client_login && userinfo.is_authenticated ? (
               <MenuItem text="Log Out" href={auth.logout} />
             ) : null}
           </Menu>
