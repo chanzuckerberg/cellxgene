@@ -29,6 +29,10 @@ class TestHGNCSymbolChecker(unittest.TestCase):
         self.assertEqual(self.hgnc_checker.upgrade_symbol("ARG1"), "ARG1")
         self.assertEqual(self.hgnc_checker.upgrade_symbol("arg1"), "ARG1")
 
+        # HAP1 is both approved and withdrawn
+        self.assertEqual(self.hgnc_checker.upgrade_symbol("HAP1"), "HAP1")
+        self.assertEqual(self.hgnc_checker.upgrade_symbol("hap1"), "HAP1")
+
         # Leave unknown symbols alone
         self.assertEqual(self.hgnc_checker.upgrade_symbol("NOTASYMBOL"), "NOTASYMBOL")
         self.assertEqual(self.hgnc_checker.upgrade_symbol("notasymbol"), "notasymbol")
@@ -37,6 +41,9 @@ class TestHGNCSymbolChecker(unittest.TestCase):
         self.assertEqual(self.hgnc_checker.check_symbol("SEPT1"), gene_symbol.SymbolStatus.UPGRADABLE)
         self.assertEqual(self.hgnc_checker.check_symbol("DIFF6"), gene_symbol.SymbolStatus.AMBIGUOUS)
         self.assertEqual(self.hgnc_checker.check_symbol("NOTASYMBOL"), gene_symbol.SymbolStatus.UNKNOWN)
+
+        # HAP1 is one of the approved and withdrawn symbols
+        self.assertEqual(self.hgnc_checker.check_symbol("HAP1"), gene_symbol.SymbolStatus.APPROVED)
 
     def test_upgrade_index(self):
         index = pd.Index(["SEPT1", "DIFF6", "NOTASYMBOL", "bar", "SEPTIN1"])
