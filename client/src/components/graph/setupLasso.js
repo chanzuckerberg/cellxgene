@@ -10,7 +10,7 @@ const Lasso = () => {
     let lassoPolygon;
     let lassoPath;
     let closePath;
-    let lassoCompleted;
+    let lassoInProgress;
 
     const polygonToPath = (polygon) =>
       `M${polygon.map((d) => d.join(",")).join("L")}`;
@@ -26,8 +26,8 @@ const Lasso = () => {
       lassoPolygon = [d3.mouse(svg.node())]; // current x y of mouse within element
 
       if (lassoPath) {
-        // If the existing path wasn't completed
-        if (!lassoCompleted) {
+        // If the existing path is in progress
+        if (lassoInProgress) {
           // cancel the existing lasso
           handleCancel();
           // Don't continue with current drag start
@@ -37,7 +37,7 @@ const Lasso = () => {
         lassoPath.remove();
       }
       // We're starting a new drag
-      lassoCompleted = false;
+      lassoInProgress = true;
 
       lassoPath = g
         .append("path")
@@ -97,7 +97,7 @@ const Lasso = () => {
         distance(lassoPolygon[0], lassoPolygon[lassoPolygon.length - 1]) <
         closeDistance
       ) {
-        lassoCompleted = true;
+        lassoInProgress = false;
 
         lassoPath.attr("d", `${polygonToPath(lassoPolygon)}Z`);
         dispatch.call("end", lasso, lassoPolygon);
