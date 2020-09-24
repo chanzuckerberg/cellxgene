@@ -1,5 +1,6 @@
 import argparse
 import json
+import logging
 import math
 import string
 
@@ -97,23 +98,20 @@ def remix_obs(adata, obs_config):
 
             for key in column_map:
                 if key not in adata.obs[source_column].unique():
-                    print(f'WARNING: key {key} not in adata.obs["{source_column}"]')
+                    logging.warning(f'Key {key} not in adata.obs["{source_column}"]')
 
             for value in adata.obs[source_column].unique():
                 if value not in column_map:
-                    print(
-                        f'WARNING: Value {value} in adata.obs["{source_column}"] '
-                        f"not in translation dict"
-                    )
-                    print(type(value))
+                    logging.warning(f'Value {value} in adata.obs["{source_column}"] not in translation dict')
+
             if is_ontology_field(field_name):
                 ontology_term_map, ontology_label_map = {}, {}
-                print("\n", field_name, "\n")
+                logging.info(f"Looking up labels for {field_name}")
                 for original_value, maybe_curie in column_map.items():
                     curie, label = get_curie_and_label(maybe_curie)
                     ontology_term_map[original_value] = curie
                     ontology_label_map[original_value] = label
-                    print(";".join([str(v) for v in (original_value, curie, label)]))
+                    logging.info(f"Mapping {original_value} -> {curie} -> {label}")
 
                 ontology_column = adata.obs[source_column].replace(
                     ontology_term_map, inplace=False
@@ -144,6 +142,16 @@ def remix_obs(adata, obs_config):
 
 
 def merge_df(df, domain, index, columns):
+    """
+    Given a dataframe with duplicate column labels, merge and return a dataframe where
+    the duplicates have been merged together, resulting in a dataframe with unique column
+    labels.
+
+    "merge" depends on the value of domain. If the domain is "raw", then duplicate columns
+    can just be summed. If it's "log1p" or "sqrt", it needs to be exp1m'd or squared, then
+    summed, and then logged or sqrt'd again.
+    """
+
     if not isinstance(df, np.ndarray):
         to_merge = df.toarray()
     else:
