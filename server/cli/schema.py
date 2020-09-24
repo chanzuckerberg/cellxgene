@@ -40,7 +40,7 @@ def schema_cli():
     type=click.Path(exists=True, dir_okay=False),
 )
 @click.option(
-    "--output_filename",
+    "--output-filename",
     help="Filename for the new, schema-conforming h5ad file.",
     required=True,
     nargs=1
