@@ -79,19 +79,12 @@ class HGNCSymbolChecker:
         If the symbol cannot be upgraded, just return the original symbol.
         """
 
-        fixed_symbol = fix_symbol_case(symbol)
+        fixed_symbol, stripped_symbol = format_symbol(symbol)
+
         if fixed_symbol in self.approved_symbols:
             return fixed_symbol
         elif fixed_symbol in self.symbol_map:
             return self.symbol_map[fixed_symbol]
-
-        # Seurat and scanpy append ".1" or "-1" to duplicated gene names, and
-        # these altered names persist throughout the life of the object. They
-        # won't match against the HGNC database and we want to merge them, so
-        # we need to strip off the suffix and try matching again.
-        stripped_symbol = re.sub(r"[\.\-]\d+$", "", fixed_symbol)
-        if stripped_symbol == fixed_symbol:
-            return symbol
         elif stripped_symbol in self.approved_symbols:
             return stripped_symbol
         elif stripped_symbol in self.symbol_map:
@@ -106,7 +99,7 @@ class HGNCSymbolChecker:
         def all_symbols(record):
             """Get all the symbols associated with an HGNC record including previous, alias,
             and approved."""
-            yield fix_symbol_case(record["symbol"])
+            yield format_symbol(record["symbol"])[0]
             for symbol in alias_and_previous_symbols(record):
                 yield symbol
 
@@ -115,7 +108,7 @@ class HGNCSymbolChecker:
             for field in ("alias_symbol", "prev_symbol"):
                 if record[field] is not np.nan:
                     for symbol in record[field].split("|"):
-                        yield fix_symbol_case(symbol)
+                        yield format_symbol(symbol)[0]
 
         hgnc_records = pd.read_csv(hgnc_dataset_path, sep="\t", header=0, low_memory=False).to_dict("records")
 
@@ -123,7 +116,7 @@ class HGNCSymbolChecker:
         approved_symbols = set()
         for record in hgnc_records:
             if record["status"] == "Approved":
-                approved_symbols.add(fix_symbol_case(record["symbol"]))
+                approved_symbols.add(format_symbol(record["symbol"])[0])
 
         # Get all symbols that have been withdrawn
         withdrawn_symbols = set()
@@ -148,7 +141,7 @@ class HGNCSymbolChecker:
             if record["status"] == "Approved":
 
                 # The approved symbol is what we'll map to
-                approved_symbol = fix_symbol_case(record["symbol"])
+                approved_symbol = format_symbol(record["symbol"])[0]
 
                 for symbol in alias_and_previous_symbols(record):
 
@@ -170,18 +163,30 @@ class HGNCSymbolChecker:
         return HGNCSymbolChecker(approved_symbols, withdrawn_symbols, ambiguous_symbols, alias_previous_to_approved)
 
 
-def fix_symbol_case(symbol):
+def format_symbol(symbol):
     """HGNC rules say symbols should all be upper case except for C#orf#. However, case is
     variable in both alias and previous symbols as well as in the symbols we get in
     submissions. So, upper case everything except for the one situation where mixed-case
     is allowed, which are the genes like C2orf157.
+
+    Also, seurat and scanpy append ".1" or "-1" to duplicated gene names, and these altered
+    names persist throughout the life of the object. They won't match against the HGNC database
+    and we want to merge them, so we need to strip off the suffix and try matching again.
+
+    This function takes a symbol and returns the symbol with the fixed case and also with the
+    seurat/scanpy suffix stripped off.
     """
 
     match = re.match(r"^(C)(\d+)(orf)(\d+)$", symbol, re.IGNORECASE)
 
     if match:
-        return f"C{match.group(2)}orf{match.group(4)}"
-    return symbol.upper()
+        fixed_case = f"C{match.group(2)}orf{match.group(4)}"
+    else:
+        fixed_case = symbol.upper()
+
+    suffix_stripped = re.sub(r"[\.\-]\d+$", "", fixed_case)
+
+    return fixed_case, suffix_stripped
 
 
 def main():
