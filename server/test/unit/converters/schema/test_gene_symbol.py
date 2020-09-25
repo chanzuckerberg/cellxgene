@@ -21,6 +21,10 @@ class TestHGNCSymbolChecker(unittest.TestCase):
         self.assertEqual(self.hgnc_checker.upgrade_symbol("AdRb2R"), "ADRB2")
         self.assertEqual(self.hgnc_checker.upgrade_symbol("bar"), "ADRB2")
 
+        # Strip off seurat endings when appropriate
+        self.assertEqual(self.hgnc_checker.upgrade_symbol("SEPT1.1"), "SEPTIN1")
+        self.assertEqual(self.hgnc_checker.upgrade_symbol("ADRB2-1"), "ADRB2")
+
         # DIFF6 is ambiguous so don't upgrade it
         self.assertEqual(self.hgnc_checker.upgrade_symbol("DIFF6"), "DIFF6")
         self.assertEqual(self.hgnc_checker.upgrade_symbol("diff6"), "diff6")
