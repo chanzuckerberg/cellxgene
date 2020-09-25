@@ -13,6 +13,35 @@ from server.converters.schema import remix
 PROJECT_ROOT = os.popen("git rev-parse --show-toplevel").read().strip()
 
 
+class TestApplySchema(unittest.TestCase):
+
+    def setUp(self):
+        self.source_h5ad_path = f"{PROJECT_ROOT}/server/test/fixtures/pbmc3k-CSC-gz.h5ad"
+        self.output_h5ad_path = f"{PROJECT_ROOT}/server/test/fixtures/test_remix.h5ad"
+        self.config_path = f"{PROJECT_ROOT}/server/test/fixtures/test_config.yaml"
+
+    def tearDown(self):
+        try:
+            os.remove(self.output_h5ad_path)
+        except OSError:
+            pass
+
+    @unittest.mock.patch("server.converters.schema.ontology.get_ontology_label")
+    def test_apply_schema(self, mock_get_ontology_label):
+        mock_get_ontology_label.return_value = "test label"
+        remix.apply_schema(self.source_h5ad_path, self.config_path, self.output_h5ad_path)
+        new_adata = sc.read_h5ad(self.output_h5ad_path)
+
+        self.assertIn("cell_type", new_adata.obs.columns)
+        self.assertListEqual(["test label"], new_adata.obs["cell_type"].unique().tolist())
+        self.assertListEqual(
+            ["CL:00001", "CL:00002", "CL:00003", "CL:00004", "CL:00005", "CL:00006", "CL:00007", "CL:00008"],
+            sorted(new_adata.obs["cell_type_ontology_term_id"].unique().tolist())
+        )
+
+        self.assertIn("version", new_adata.uns)
+
+
 class TestFieldParsing(unittest.TestCase):
 
     def test_is_curie(self):

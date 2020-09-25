@@ -1,0 +1,23 @@
+fixup_gene_symbols:
+    X: log1p
+obs:
+    cell_type_ontology_term_id:
+        louvain:
+            CD4 T cells: CL:00001
+            B cells: CL:00002
+            CD14+ Monocytes: CL:00003
+            NK cells: CL:00004
+            CD8 T cells: CL:00005
+            FCGR3A+ Monocytes: CL:00006
+            Dendritic cells: CL:00007
+            Megakaryocytes: CL:00008
+uns:
+    version:
+        corpora_schema_version: 1.0.0
+        corpora_encoding_version: 0.1.0
+    organism_ontology_term_id: NCBITaxon:9606
+    title: Test dataset
+    project_links:
+        - link_url: https://chanzuckerberg.com/
+          link_name: CZI
+          link_type: SUMMARY
