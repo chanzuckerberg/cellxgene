@@ -33,15 +33,13 @@ class Gene extends React.Component {
   };
 
   handleGeneExpandClick = () => {
-    const { geneIsExpanded, haveFetched } = this.state;
+    const { geneIsExpanded } = this.state;
     this.setState({ geneIsExpanded: !geneIsExpanded });
-    if (!haveFetched) {
-      // this.fetchGene(); TODO
-    }
   };
 
   render() {
     const { gene } = this.props;
+    const { geneIsExpanded } = this.state;
     return (
       <div
         style={{
@@ -85,7 +83,7 @@ class Gene extends React.Component {
                 {gene}
               </span>
             </Truncate>
-            <HistogramBrush isUserDefined field={gene} />
+            <HistogramBrush isUserDefined field={gene} mini={!geneIsExpanded} />
 
             {/* <TestMiniHisto /> */}
           </span>
