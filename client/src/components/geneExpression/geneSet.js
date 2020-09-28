@@ -12,7 +12,7 @@ import { memoize } from "../../util/dataframe/util";
 import Truncate from "../util/truncate";
 // import TestMiniHisto from "./test_miniHisto";
 import * as globals from "../../globals";
-// import GenesetMenus from "./menus/genesetMenus";
+import GenesetMenus from "./menus/genesetMenus";
 
 @connect((state, ownProps) => {
   return {
@@ -150,7 +150,7 @@ class GeneSet extends React.Component {
           </span>
           <div>
             {/* <TestMiniHisto /> */}
-            {/* <GenesetMenus genesetsEditable geneset={setName} /> */}
+            <GenesetMenus genesetsEditable geneset={setName} />
             <Tooltip
               content="Color by geneset"
               position={Position.LEFT}

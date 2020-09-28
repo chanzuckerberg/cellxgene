@@ -86,6 +86,8 @@ class Gene extends React.Component {
                 {gene}
               </span>
             </Truncate>
+            <HistogramBrush isUserDefined field={gene} />
+
             {/* <TestMiniHisto /> */}
           </span>
         </div>
@@ -113,7 +115,6 @@ class Gene extends React.Component {
             icon={<Icon icon="maximize" iconSize={10} />}
           />
         </div>
-        <HistogramBrush isUserDefined field={gene} />
       </div>
     );
   }
