@@ -29,7 +29,6 @@ class GeneSet extends React.Component {
     super(props);
     this.state = {
       isOpen: false,
-      haveFetched: false,
     };
   }
 
@@ -81,16 +80,12 @@ class GeneSet extends React.Component {
       () => dispatch({ type: "bulk user defined gene error" })
     );
 
-    this.setState({ haveFetched: true });
     return undefined;
   };
 
   onGenesetMenuClick = () => {
-    const { isOpen, haveFetched } = this.state;
+    const { isOpen } = this.state;
     this.setState({ isOpen: !isOpen });
-    if (!haveFetched) {
-      // this.fetchGenes(); TODO
-    }
   };
 
   onColorChangeClick = () => {

@@ -21,7 +21,6 @@ class Gene extends React.Component {
     super(props);
     this.state = {
       geneIsExpanded: false,
-      haveFetched: false,
     };
   }
 
