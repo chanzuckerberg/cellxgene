@@ -38,6 +38,8 @@ class InfoDrawer extends PureComponent {
     const singleValueCategories = (
       await Promise.all(nonUserAnnoCategories)
     ).reduce((acc, categoryData, i) => {
+      // Actually check to see if it is null(user anno)
+      if (!categoryData) return acc;
       const catName = allCategoryNames[i];
 
       const column = categoryData.icol(0);
