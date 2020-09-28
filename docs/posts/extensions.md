@@ -18,10 +18,10 @@ Please note that cellxgene does not have public APIs. Our development may break 
 displays an index of available h5ad (anndata) files. When a user clicks on a file name, it launches a Cellxgene Server 
 instance that loads that particular data file and once it is available proxies requests to that server.
 
-#### cellxgene-VIP
+#### cellxgene-VIP (Visualization in Plugin)
 
-[cellxgene-VIP](https://github.com/interactivereport/cellxgene_VIP) allows execution of scanpy or R plotting functions 
-via the "visualization in plugin" system to generate figures for publications. 
+[cellxgene-VIP](https://github.com/interactivereport/cellxgene_VIP) enables cellxgene to generate violin, stacked violin, stacked bar, heatmap, volcano, embedding, dot, track, density, 2D density, sankey and dual-gene plot in high-resolution SVG/PNG format. It also performs differential gene expression analysis and provides a Command Line Interface (CLI) for advanced users to perform analysis using python and R.
+![cellxgene_VIP](https://interactivereport.github.io/cellxgene_VIP/cellxgene_VIP.png?raw=true "cellxgene_VIP")
 
 #### Galaxy
 
