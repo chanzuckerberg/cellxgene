@@ -87,24 +87,17 @@ class CorporaRESTAPITest(unittest.TestCase):
     def setCorporaFields(cls, path):
         adata = anndata.read_h5ad(path)
         corpora_props = {
-            "version": {
-                "corpora_schema_version": "1.0.0",
-                "corpora_encoding_version": "0.1.0"
-            },
+            "version": {"corpora_schema_version": "1.0.0", "corpora_encoding_version": "0.1.0"},
             "title": "PBMC3K",
-            "contributors": json.dumps([
-                {"name": "name"}
-            ]),
-            "layer_descriptions": {
-                "X": "raw counts"
-            },
+            "contributors": json.dumps([{"name": "name"}]),
+            "layer_descriptions": {"X": "raw counts"},
             "organism": "human",
             "organism_ontology_term_id": "unknown",
             "project_name": "test project",
             "project_description": "test description",
-            "project_links": json.dumps([
-                {"link_name": "test link", "link_type": "SUMMARY", "link_url": "https://a.u.r.l/"}
-            ]),
+            "project_links": json.dumps(
+                [{"link_name": "test link", "link_type": "SUMMARY", "link_url": "https://a.u.r.l/"}]
+            ),
             "default_embedding": "X_tsne",
         }
         adata.uns.update(corpora_props)
