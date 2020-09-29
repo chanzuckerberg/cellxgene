@@ -44,9 +44,9 @@ class TestDatasetConfig(ConfigTests):
         self.assertEqual(config.default_dataset_config.diffexp__lfc_cutoff, 0.01)
         self.assertIsNone(config.default_dataset_config.user_annotations__ontology__obo_location)
 
-    @patch('server.common.config.dataset_config.BaseConfig.check_attr')
+    @patch('server.common.config.dataset_config.BaseConfig.validate_correct_type_of_configuration_attribute')
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
-        mock_check_attrs.side_effect = BaseConfig.check_attr()
+        mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.dataset_config.complete_config(self.context)
         self.assertEqual(mock_check_attrs.call_count, 21)
 
@@ -73,12 +73,13 @@ class TestDatasetConfig(ConfigTests):
 
     def test_handle_user_annotations_ensures_auth_is_enabled_with_valid_auth_type(self):
         config = self.get_config(enable_users_annotations="true", authentication_enable="false")
+        config.server_config.complete_config(self.context)
         with self.assertRaises(ConfigurationError):
             config.default_dataset_config.handle_user_annotations(self.context)
 
         config = self.get_config(enable_users_annotations="true", authentication_enable="true", auth_type="pretend")
         with self.assertRaises(ConfigurationError):
-            config.default_dataset_config.handle_user_annotations(self.context)
+            config.server_config.complete_config(self.context)
 
     def test_handle_user_annotations__adds_warning_message_if_annotation_vars_set_when_annotations_disabled(self):
         config = self.get_config(enable_users_annotations="false", authentication_enable="false",

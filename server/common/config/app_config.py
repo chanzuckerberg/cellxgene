@@ -1,14 +1,15 @@
 import yaml
 from flatten_dict import unflatten
-import os
 from server.common.config.dataset_config import DatasetConfig
 from server.common.config.server_config import ServerConfig
 from server.common.errors import ConfigurationError
+import os
 
 
 class AppConfig(object):
-    """AppConfig stores all the configuration for cellxgene.  The configuration is divided into two main parts:
-    server attributes, and dataset attributes.
+    """
+    AppConfig stores all the configuration for cellxgene.
+    AppConfig contains one or more DatasetConfig(s) and one ServerConfig.
     The server_config contains attributes that refer to the server process as a whole.
     The default_dataset_config refers to attributes that are associated with the features and
     presentations of a dataset.
@@ -19,7 +20,7 @@ class AppConfig(object):
 
     def __init__(self):
 
-        # the default configuration (see default_config.py)
+        # the default configuration (see default_config.yml)
         # TODO @madison -- if we always read from the default config (hard coded path) can we set those values as
         #  defaults within the config class?
         self.default_config = self.get_default_config()
@@ -28,7 +29,18 @@ class AppConfig(object):
         # the dataset config, unless overridden by an entry in dataroot_config
         self.default_dataset_config = DatasetConfig(None, self, self.default_config["dataset"])
         # a dictionary of keys to DatasetConfig objects.  Each key must exist in the multi_dataset__dataroot
-        # attribute of the server_config.
+        # attribute of the server_config. The default dataset config will apply to all datasets unless a different set
+        # of config vars was passed for a specific dataset under the multidataset config. For example:
+        """
+        per_dataset_config:
+            d1:
+               user_annotations:
+                   enable:  false
+            d2:
+               user_annotations:
+                   enable:  true
+         """
+        #   dataroot config
         self.dataroot_config = {}
 
         # Set to true when config_completed is called
@@ -41,6 +53,8 @@ class AppConfig(object):
                 return yaml.safe_load(default_config)
         except yaml.YAMLError as e:
             raise ConfigurationError(f"Unable to import default configuration yaml: {e}")
+        except OSError as e:
+            raise ConfigurationError(f"Unable to import file: {e}")
 
     def get_dataset_config(self, dataroot_key):
         if self.server_config.single_dataset__datapath:
@@ -49,7 +63,7 @@ class AppConfig(object):
             return self.dataroot_config.get(dataroot_key, self.default_dataset_config)
 
     def check_config(self):
-        """Verify all the attributes have been checked"""
+        """Verify all the attributes in the config have been type checked"""
         if not self.is_completed:
             raise ConfigurationError("The configuration has not been completed")
         self.server_config.check_config()

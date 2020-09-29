@@ -121,5 +121,3 @@ def get_client_userinfo(app_config, data_adaptor):
             "email": auth.get_user_email()
         }
         return userinfo
-    else:
-        return None

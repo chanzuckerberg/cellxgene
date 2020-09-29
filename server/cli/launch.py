@@ -5,6 +5,7 @@ import sys
 import webbrowser
 import os
 import click
+import yaml
 from flask_compress import Compress
 from flask_cors import CORS
 
@@ -352,7 +353,7 @@ def launch(
     # > cellxgene launch --dataroot <url>
 
     if dump_default_config:
-        print(DEFAULT_CONFIG.default_config)
+        print(yaml.dump(DEFAULT_CONFIG.default_config))
         sys.exit(0)
 
     # Startup message

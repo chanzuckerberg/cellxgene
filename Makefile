@@ -83,7 +83,8 @@ lint: lint-server lint-client
 
 .PHONY: lint-server
 lint-server:
-	flake8 server
+	flake8 server --per-file-ignores='server/test/fixtures/dataset_config_outline.py:F821 server/test/fixtures/server_config_outline.py:F821'
+
 
 .PHONY: lint-client
 lint-client:

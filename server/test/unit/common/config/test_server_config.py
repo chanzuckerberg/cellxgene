@@ -43,13 +43,13 @@ class TestServerConfig(ConfigTests):
         return config
 
     def test_init_raises_error_if_default_config_is_invalid(self):
-        invalid_config = f"{FIXTURES_ROOT}/invalid_config.yml"
+        invalid_config = self.get_config(port="not_valid")
         with self.assertRaises(ConfigurationError):
-            self.config.update_from_config_file(invalid_config)
+            invalid_config.complete_config()
 
-    @patch('server.common.config.server_config.BaseConfig.check_attr')
+    @patch('server.common.config.server_config.BaseConfig.validate_correct_type_of_configuration_attribute')
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
-        mock_check_attrs.side_effect = BaseConfig.check_attr()
+        mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.server_config.complete_config(self.context)
         self.assertEqual(mock_check_attrs.call_count, 40)
 

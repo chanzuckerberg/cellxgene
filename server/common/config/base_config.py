@@ -5,13 +5,16 @@ from server.common.errors import ConfigurationError
 
 
 class BaseConfig(object):
-    """This class handles the mechanics of updating and checking attributes.
-    Derived classes are expected to store the actual attributes"""
+    """
+    This class handles the mechanics of updating and checking attributes.
+    Derived classes are expected to store the actual attributes
+    Currently DatasetConfig and ServerConfig both inherit from BaseConfig.
+    """
 
     def __init__(self, app_config, default_config, dictval_cases={}):
         # reference back to the app_config
         self.app_config = app_config
-        # the complete set of attribute and their default values (unflattened)
+        # the complete set of attributes and their default values (unflattened)
         self.default_config = default_config
         # attributes where the value may be a dict (and therefore are not flattened)
         self.dictval_cases = dictval_cases
@@ -19,7 +22,16 @@ class BaseConfig(object):
         self.attr_checked = {key_name: False for key_name in self.create_mapping(default_config).keys()}
 
     def create_mapping(self, config):
-        """Create a mapping from attribute names to (location in the config tree, value)"""
+        """
+        Create a dictionary where the keys are the name of attributes (using double underscore convention)
+        For example: authentication__type
+
+        The values are a tuple,
+        - the first item of the tuple is a tuple of path elements (location in config 'tree')
+        - the second item is the value of the config parameter
+
+        For example: (('authentication', 'type'), 'session'))
+        """
         config_copy = copy.deepcopy(config)
         mapping = {}
 
@@ -44,7 +56,7 @@ class BaseConfig(object):
 
         return mapping
 
-    def check_attr(self, attrname, vtype):
+    def validate_correct_type_of_configuration_attribute(self, attrname, vtype):
         val = getattr(self, attrname)
         if type(vtype) in (list, tuple):
             if type(val) not in vtype:
@@ -86,10 +98,7 @@ class BaseConfig(object):
         for attr, (key, value) in mapping.items():
             if not hasattr(self, attr):
                 raise ConfigurationError(f"Unknown key from config file: {prefix}__{attr}")
-            try:
-                setattr(self, attr, value)
-            except KeyError:  # TODO when would this would be raised (instead of being caught in attribute check above)
-                raise ConfigurationError(f"Unable to set config attribute: {prefix}__{attr}")
+            setattr(self, attr, value)
 
             self.attr_checked[attr] = False
 

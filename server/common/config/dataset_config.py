@@ -56,13 +56,13 @@ class DatasetConfig(BaseConfig):
         self.handle_diffexp(context)
 
     def handle_app(self):
-        self.check_attr("app__scripts", list)
-        self.check_attr("app__inline_scripts", list)
-        self.check_attr("app__about_legal_tos", (type(None), str))
-        self.check_attr("app__about_legal_privacy", (type(None), str))
-        self.check_attr("app__authentication_enable", bool)
+        self.validate_correct_type_of_configuration_attribute("app__scripts", list)
+        self.validate_correct_type_of_configuration_attribute("app__inline_scripts", list)
+        self.validate_correct_type_of_configuration_attribute("app__about_legal_tos", (type(None), str))
+        self.validate_correct_type_of_configuration_attribute("app__about_legal_privacy", (type(None), str))
+        self.validate_correct_type_of_configuration_attribute("app__authentication_enable", bool)
 
-        # scripts can be string (filename) or dict (attributes).   Convert string to dict.
+        # scripts can be string (filename) or dict (attributes). Convert string to dict.
         scripts = []
         for script in self.app__scripts:
             try:
@@ -74,31 +74,30 @@ class DatasetConfig(BaseConfig):
                     raise Exception
             except Exception as e:
                 raise ConfigurationError(f"Scripts must be string or a dict containing an src key: {e}")
+
         self.app__scripts = scripts
 
     def handle_presentation(self):
-        self.check_attr("presentation__max_categories", int)
-        self.check_attr("presentation__custom_colors", bool)
+        self.validate_correct_type_of_configuration_attribute("presentation__max_categories", int)
+        self.validate_correct_type_of_configuration_attribute("presentation__custom_colors", bool)
 
     def handle_user_annotations(self, context):
-        self.check_attr("user_annotations__enable", bool)
-        self.check_attr("user_annotations__type", str)
-        self.check_attr("user_annotations__local_file_csv__directory", (type(None), str))
-        self.check_attr("user_annotations__local_file_csv__file", (type(None), str))
-        self.check_attr("user_annotations__ontology__enable", bool)
-        self.check_attr("user_annotations__ontology__obo_location", (type(None), str))
-        self.check_attr("user_annotations__hosted_tiledb_array__db_uri", (type(None), str))
-        self.check_attr("user_annotations__hosted_tiledb_array__hosted_file_directory", (type(None), str))
+        self.validate_correct_type_of_configuration_attribute("user_annotations__enable", bool)
+        self.validate_correct_type_of_configuration_attribute("user_annotations__type", str)
+        self.validate_correct_type_of_configuration_attribute("user_annotations__local_file_csv__directory", (type(None), str))  # noqa E501
+        self.validate_correct_type_of_configuration_attribute("user_annotations__local_file_csv__file", (type(None), str))  # noqa E501
+        self.validate_correct_type_of_configuration_attribute("user_annotations__ontology__enable", bool)
+        self.validate_correct_type_of_configuration_attribute("user_annotations__ontology__obo_location", (type(None), str))  # noqa E501
+        self.validate_correct_type_of_configuration_attribute("user_annotations__hosted_tiledb_array__db_uri", (type(None), str))  # noqa E501
+        self.validate_correct_type_of_configuration_attribute("user_annotations__hosted_tiledb_array__hosted_file_directory", (type(None), str))  # noqa E501
         if self.user_annotations__enable:
             server_config = self.app_config.server_config
             if not self.app__authentication_enable:
                 raise ConfigurationError("user annotations requires authentication to be enabled")
-            try:
-                server_config.auth.is_valid_authentication_type()
-            except Exception as e:
+            if not server_config.auth.is_valid_authentication_type():
                 auth_type = server_config.authentication__type
                 raise ConfigurationError(
-                    f"authentication method {auth_type} is not compatible with user annotations: {e}")
+                    f"authentication method {auth_type} is not compatible with user annotations")
 
             if self.user_annotations__type == "local_file_csv":
                 self.handle_local_file_csv_annotations()
@@ -106,6 +105,11 @@ class DatasetConfig(BaseConfig):
                 self.handle_hosted_tiledb_annotations()
             else:
                 raise ConfigurationError('The only annotation type support is "local_file_csv" or "hosted_tiledb_array')
+            if self.user_annotations__ontology__enable or self.user_annotations__ontology__obo_location:
+                try:
+                    self.user_annotations.load_ontology(self.user_annotations__ontology__obo_location)
+                except OntologyLoadFailure as e:
+                    raise ConfigurationError("Unable to load ontology terms\n" + str(e))
         else:
             self.check_annotation_config_vars_not_set(context)
 
@@ -137,15 +141,9 @@ class DatasetConfig(BaseConfig):
             ) as data_adaptor:
                 data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
 
-        if self.user_annotations__ontology__enable or self.user_annotations__ontology__obo_location:
-            try:
-                self.user_annotations.load_ontology(self.user_annotations__ontology__obo_location)
-            except OntologyLoadFailure as e:
-                raise ConfigurationError("Unable to load ontology terms\n" + str(e))
-
     def handle_hosted_tiledb_annotations(self):
-        self.check_attr("user_annotations__hosted_tiledb_array__db_uri", str)
-        self.check_attr("user_annotations__hosted_tiledb_array__hosted_file_directory", str)
+        self.validate_correct_type_of_configuration_attribute("user_annotations__hosted_tiledb_array__db_uri", str)
+        self.validate_correct_type_of_configuration_attribute("user_annotations__hosted_tiledb_array__hosted_file_directory", str)  # noqa E501
         self.user_annotations = AnnotationsHostedTileDB(
             directory_path=self.user_annotations__hosted_tiledb_array__hosted_file_directory,
             db=DbUtils(self.user_annotations__hosted_tiledb_array__db_uri),
@@ -177,8 +175,8 @@ class DatasetConfig(BaseConfig):
             )
 
     def handle_embeddings(self):
-        self.check_attr("embeddings__names", list)
-        self.check_attr("embeddings__enable_reembedding", bool)
+        self.validate_correct_type_of_configuration_attribute("embeddings__names", list)
+        self.validate_correct_type_of_configuration_attribute("embeddings__enable_reembedding", bool)
 
         server_config = self.app_config.server_config
         if self.embeddings__enable_reembedding:
@@ -194,13 +192,13 @@ class DatasetConfig(BaseConfig):
             try:
                 get_scanpy_module()
             except NotImplementedError:
-                # Todo why isnt this in the reqs file/why is this check necessary
+                # Todo add scanpy to requirements.txt and remove this check once re-embeddings is fully supported
                 raise ConfigurationError("Please install scanpy to enable UMAP re-embedding")
 
     def handle_diffexp(self, context):
-        self.check_attr("diffexp__enable", bool)
-        self.check_attr("diffexp__lfc_cutoff", float)
-        self.check_attr("diffexp__top_n", int)
+        self.validate_correct_type_of_configuration_attribute("diffexp__enable", bool)
+        self.validate_correct_type_of_configuration_attribute("diffexp__lfc_cutoff", float)
+        self.validate_correct_type_of_configuration_attribute("diffexp__top_n", int)
 
         server_config = self.app_config.server_config
         if server_config.single_dataset__datapath:

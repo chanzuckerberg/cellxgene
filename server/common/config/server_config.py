@@ -96,18 +96,18 @@ class ServerConfig(BaseConfig):
         self.check_config()
 
     def handle_app(self, context):
-        self.check_attr("app__verbose", bool)
-        self.check_attr("app__debug", bool)
-        self.check_attr("app__host", str)
-        self.check_attr("app__port", (type(None), int))
-        self.check_attr("app__open_browser", bool)
-        self.check_attr("app__force_https", bool)
-        self.check_attr("app__flask_secret_key", (type(None), str))
-        self.check_attr("app__generate_cache_control_headers", bool)
-        self.check_attr("app__server_timing_headers", bool)
-        self.check_attr("app__csp_directives", (type(None), dict))
-        self.check_attr("app__api_base_url", (type(None), str))
-        self.check_attr("app__web_base_url", (type(None), str))
+        self.validate_correct_type_of_configuration_attribute("app__verbose", bool)
+        self.validate_correct_type_of_configuration_attribute("app__debug", bool)
+        self.validate_correct_type_of_configuration_attribute("app__host", str)
+        self.validate_correct_type_of_configuration_attribute("app__port", (type(None), int))
+        self.validate_correct_type_of_configuration_attribute("app__open_browser", bool)
+        self.validate_correct_type_of_configuration_attribute("app__force_https", bool)
+        self.validate_correct_type_of_configuration_attribute("app__flask_secret_key", (type(None), str))
+        self.validate_correct_type_of_configuration_attribute("app__generate_cache_control_headers", bool)
+        self.validate_correct_type_of_configuration_attribute("app__server_timing_headers", bool)
+        self.validate_correct_type_of_configuration_attribute("app__csp_directives", (type(None), dict))
+        self.validate_correct_type_of_configuration_attribute("app__api_base_url", (type(None), str))
+        self.validate_correct_type_of_configuration_attribute("app__web_base_url", (type(None), str))
 
         if self.app__port:
             try:
@@ -160,20 +160,20 @@ class ServerConfig(BaseConfig):
             self.app__web_base_url = self.app__api_base_url
 
     def handle_authentication(self):
-        self.check_attr("authentication__type", (type(None), str))
+        self.validate_correct_type_of_configuration_attribute("authentication__type", (type(None), str))
 
         # oauth
         ptypes = str if self.authentication__type == "oauth" else (type(None), str)
-        self.check_attr("authentication__params_oauth__oauth_api_base_url", ptypes)
-        self.check_attr("authentication__params_oauth__client_id", ptypes)
-        self.check_attr("authentication__params_oauth__client_secret", ptypes)
-        self.check_attr("authentication__params_oauth__jwt_decode_options", (type(None), dict))
-        self.check_attr("authentication__params_oauth__session_cookie", bool)
+        self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__oauth_api_base_url", ptypes)  # noqa E501
+        self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__client_id", ptypes)
+        self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__client_secret", ptypes)
+        self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__jwt_decode_options", (type(None), dict))  # noqa E501
+        self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__session_cookie", bool)
 
         if self.authentication__params_oauth__session_cookie:
-            self.check_attr("authentication__params_oauth__cookie", (type(None), dict))
+            self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__cookie", (type(None), dict))  # noqa E501
         else:
-            self.check_attr("authentication__params_oauth__cookie", dict)
+            self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__cookie", dict)
         #   secret key: first, from CXG_OAUTH_CLIENT_SECRET environment variable
         #   second, from config file
         self.authentication__params_oauth__client_secret = os.environ.get(
@@ -184,7 +184,7 @@ class ServerConfig(BaseConfig):
             raise ConfigurationError(f"Unknown authentication type: {self.authentication__type}")
 
     def handle_data_locator(self):
-        self.check_attr("data_locator__s3__region_name", (type(None), bool, str))
+        self.validate_correct_type_of_configuration_attribute("data_locator__s3__region_name", (type(None), bool, str))
         if self.data_locator__s3__region_name is True:
             path = self.single_dataset__datapath or self.multi_dataset__dataroot
 
@@ -205,21 +205,22 @@ class ServerConfig(BaseConfig):
             self.data_locator__s3__region_name = region_name
 
     def handle_data_source(self):
-        self.check_attr("single_dataset__datapath", (str, type(None)))
-        self.check_attr("multi_dataset__dataroot", (type(None), dict, str))
+        self.validate_correct_type_of_configuration_attribute("single_dataset__datapath", (str, type(None)))
+        self.validate_correct_type_of_configuration_attribute("multi_dataset__dataroot", (type(None), dict, str))
 
         if self.single_dataset__datapath and self.multi_dataset__dataroot:
-            raise ConfigurationError("must supply only one of datapath or dataroot")
+            raise ConfigurationError(
+                "You must supply either a datapath (for single datasets) or a dataroot (for multidatasets). Not both")
         if self.single_dataset__datapath is None and self.multi_dataset__dataroot is None:
             raise ConfigurationError(
-                "You must specify a datapath for a single dataset and a dataroot for multidatasets")
+                "You must specify a datapath for a single dataset or a dataroot for multidatasets")
 
     def handle_single_dataset(self, context):
-        self.check_attr("single_dataset__datapath", (str, type(None)))
-        self.check_attr("single_dataset__title", (str, type(None)))
-        self.check_attr("single_dataset__about", (str, type(None)))
-        self.check_attr("single_dataset__obs_names", (str, type(None)))
-        self.check_attr("single_dataset__var_names", (str, type(None)))
+        self.validate_correct_type_of_configuration_attribute("single_dataset__datapath", (str, type(None)))
+        self.validate_correct_type_of_configuration_attribute("single_dataset__title", (str, type(None)))
+        self.validate_correct_type_of_configuration_attribute("single_dataset__about", (str, type(None)))
+        self.validate_correct_type_of_configuration_attribute("single_dataset__obs_names", (str, type(None)))
+        self.validate_correct_type_of_configuration_attribute("single_dataset__var_names", (str, type(None)))
 
         if self.single_dataset__datapath is None:
             return
@@ -260,11 +261,11 @@ class ServerConfig(BaseConfig):
                 )
 
     def handle_multi_dataset(self):
-        self.check_attr("multi_dataset__dataroot", (type(None), dict, str))
-        self.check_attr("multi_dataset__index", (type(None), bool, str))
-        self.check_attr("multi_dataset__allowed_matrix_types", list)
-        self.check_attr("multi_dataset__matrix_cache__max_datasets", int)
-        self.check_attr("multi_dataset__matrix_cache__timelimit_s", (type(None), int, float))
+        self.validate_correct_type_of_configuration_attribute("multi_dataset__dataroot", (type(None), dict, str))
+        self.validate_correct_type_of_configuration_attribute("multi_dataset__index", (type(None), bool, str))
+        self.validate_correct_type_of_configuration_attribute("multi_dataset__allowed_matrix_types", list)
+        self.validate_correct_type_of_configuration_attribute("multi_dataset__matrix_cache__max_datasets", int)
+        self.validate_correct_type_of_configuration_attribute("multi_dataset__matrix_cache__timelimit_s", (type(None), int, float))  # noqa E501
 
         if self.multi_dataset__dataroot is None:
             return
@@ -316,9 +317,9 @@ class ServerConfig(BaseConfig):
             )
 
     def handle_diffexp(self):
-        self.check_attr("diffexp__alg_cxg__max_workers", (str, int))
-        self.check_attr("diffexp__alg_cxg__cpu_multiplier", int)
-        self.check_attr("diffexp__alg_cxg__target_workunit", int)
+        self.validate_correct_type_of_configuration_attribute("diffexp__alg_cxg__max_workers", (str, int))
+        self.validate_correct_type_of_configuration_attribute("diffexp__alg_cxg__cpu_multiplier", int)
+        self.validate_correct_type_of_configuration_attribute("diffexp__alg_cxg__target_workunit", int)
 
         max_workers = self.diffexp__alg_cxg__max_workers
         cpu_multiplier = self.diffexp__alg_cxg__cpu_multiplier
@@ -328,7 +329,7 @@ class ServerConfig(BaseConfig):
 
     def handle_adaptor(self):
         # cxg
-        self.check_attr("adaptor__cxg_adaptor__tiledb_ctx", dict)
+        self.validate_correct_type_of_configuration_attribute("adaptor__cxg_adaptor__tiledb_ctx", dict)
         regionkey = "vfs.s3.region"
         if regionkey not in self.adaptor__cxg_adaptor__tiledb_ctx:
             if type(self.data_locator__s3__region_name) == str:
@@ -339,11 +340,11 @@ class ServerConfig(BaseConfig):
         CxgAdaptor.set_tiledb_context(self.adaptor__cxg_adaptor__tiledb_ctx)
 
         # anndata
-        self.check_attr("adaptor__anndata_adaptor__backed", bool)
+        self.validate_correct_type_of_configuration_attribute("adaptor__anndata_adaptor__backed", bool)
 
     def handle_limits(self):
-        self.check_attr("limits__diffexp_cellcount_max", (type(None), int))
-        self.check_attr("limits__column_request_max", (type(None), int))
+        self.validate_correct_type_of_configuration_attribute("limits__diffexp_cellcount_max", (type(None), int))
+        self.validate_correct_type_of_configuration_attribute("limits__column_request_max", (type(None), int))
 
     def exceeds_limit(self, limit_name, value):
         limit_value = getattr(self, "limits__" + limit_name, None)

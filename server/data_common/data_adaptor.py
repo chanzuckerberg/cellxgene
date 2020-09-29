@@ -396,8 +396,7 @@ class AppFeature(object):
         self.available = available
         self.method = method
         self.extra = extra
-        for k, v in extra.items():
-            setattr(self, k, v)
+        [setattr(self, key, value) for key, value in extra.items()]
 
     def todict(self):
         d = dict(available=self.available, method=self.method, path=self.path)
