@@ -35,7 +35,7 @@ const Clip = React.memo((props) => {
   const intent =
     clipPercentileMin > 0 || clipPercentileMax < 100
       ? Intent.INTENT_WARNING
-      : "";
+      : Intent.NONE;
 
   return (
     <ButtonGroup className={`${styles.menubarButton}`}>
