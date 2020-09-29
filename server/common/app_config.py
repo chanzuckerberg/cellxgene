@@ -95,8 +95,10 @@ class AppConfig(object):
         with open(config_file) as fyaml:
             config = yaml.load(fyaml, Loader=yaml.FullLoader)
 
-        self.server_config.update_from_config(config["server"], "server")
-        self.default_dataset_config.update_from_config(config["dataset"], "dataset")
+        if config.get("server"):
+            self.server_config.update_from_config(config["server"], "server")
+        if config.get("dataset"):
+            self.default_dataset_config.update_from_config(config["dataset"], "dataset")
 
         per_dataset_config = config.get("per_dataset_config", {})
         for key, dataroot_config in per_dataset_config.items():
@@ -306,7 +308,8 @@ class AppConfig(object):
             userinfo["userinfo"] = {
                 "is_authenticated": auth.is_user_authenticated(),
                 "username": auth.get_user_name(),
-                "user_id": auth.get_user_id()
+                "user_id": auth.get_user_id(),
+                "email": auth.get_user_email()
             }
             return userinfo
         else:
