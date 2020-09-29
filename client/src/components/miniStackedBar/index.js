@@ -1,4 +1,3 @@
-// jshint esversion: 6
 import React from "react";
 
 export default class MiniStackedBar extends React.PureComponent {
@@ -59,7 +58,6 @@ export default class MiniStackedBar extends React.PureComponent {
 
     return (
       <canvas
-        className="bp3-popover-targer"
         style={{
           marginRight: 5,
           width,

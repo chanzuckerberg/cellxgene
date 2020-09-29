@@ -1,7 +1,13 @@
 import React, { useRef, useEffect } from "react";
 import { connect, shallowEqual } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
-import { AnchorButton, Button, Tooltip, Position } from "@blueprintjs/core";
+import {
+  AnchorButton,
+  Button,
+  Classes,
+  Position,
+  Tooltip,
+} from "@blueprintjs/core";
 import { Flipper, Flipped } from "react-flip-toolkit";
 import Async from "react-async";
 import memoize from "memoize-one";
@@ -301,9 +307,12 @@ const StillLoading = ({ metadataField, checkboxID }) => {
             alignItems: "flex-start",
           }}
         >
-          <label htmlFor={checkboxID} className="bp3-control bp3-checkbox">
+          <label
+            htmlFor={checkboxID}
+            className={`${Classes.CONTROL} ${Classes.CHECKBOX}`}
+          >
             <input disabled id={checkboxID} checked type="checkbox" />
-            <span className="bp3-control-indicator" />
+            <span className={Classes.CONTROL_INDICATOR} />
           </label>
           <Truncate>
             <span
@@ -375,7 +384,10 @@ const CategoryHeader = React.memo(
             alignItems: "flex-start",
           }}
         >
-          <label className="bp3-control bp3-checkbox" htmlFor={checkboxID}>
+          <label
+            className={`${Classes.CONTROL} ${Classes.CHECKBOX}`}
+            htmlFor={checkboxID}
+          >
             <input
               id={checkboxID}
               data-testclass="category-select"
@@ -385,7 +397,7 @@ const CategoryHeader = React.memo(
               checked={selectionState === "all"}
               type="checkbox"
             />
-            <span className="bp3-control-indicator" />
+            <span className={Classes.CONTROL_INDICATOR} />
           </label>
           <span
             role="menuitem"
