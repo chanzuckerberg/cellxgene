@@ -5,7 +5,7 @@ import unittest
 
 import yaml
 
-from default_config import default_config
+from server.default_config import default_config
 from server.test import FIXTURES_ROOT
 
 

@@ -1,7 +1,7 @@
 import yaml
 from flatten_dict import unflatten
 
-from default_config import get_default_config
+from server.default_config import get_default_config
 from server.common.config.dataset_config import DatasetConfig
 from server.common.config.server_config import ServerConfig
 from server.common.errors import ConfigurationError

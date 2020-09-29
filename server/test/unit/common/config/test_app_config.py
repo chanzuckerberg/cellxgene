@@ -4,7 +4,7 @@ import unittest
 
 import yaml
 
-from default_config import default_config
+from server.default_config import default_config
 from server.common.config.app_config import AppConfig
 from server.test.unit.common.config import ConfigTests
 from server.common.errors import ConfigurationError

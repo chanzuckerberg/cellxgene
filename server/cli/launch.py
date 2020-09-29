@@ -8,7 +8,7 @@ import click
 from flask_compress import Compress
 from flask_cors import CORS
 
-from default_config import default_config
+from server.default_config import default_config
 from server.app.app import Server
 from server.common.config.app_config import AppConfig
 from server.common.errors import DatasetAccessError, ConfigurationError
