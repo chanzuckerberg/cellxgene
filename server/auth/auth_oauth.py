@@ -114,6 +114,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
         parse = urlparse(self.api_base_url)
         app.add_url_rule(f"{parse.path}/login", "login", self.login, methods=["GET"])
         app.add_url_rule(f"{parse.path}/logout", "logout", self.logout, methods=["GET"])
+        app.add_url_rule(f"{parse.path}/logout_redirect", "logout_redirect", self.logout_redirect, methods=["GET"])
         app.add_url_rule(f"{parse.path}/oauth2/callback", "callback", self.callback, methods=["GET"])
 
     def complete_setup(self, flask_app):
@@ -166,9 +167,26 @@ class AuthTypeOAuth(AuthTypeClientBase):
         return response
 
     def logout(self):
+        """
+        We would like for the user to remain on the same dataset after logout.  oauth requires that
+        the redirect `returnTo` path be whitelisted by the oauth server, therefore a level of
+        indirection is used.  We first redirect to a single path "logout_redirect", and logout_redirect
+        will redirect the user's browser back to the current page.
+        """
         self.remove_tokens()
-        params = {"returnTo": self.web_base_url, "client_id": self.client_id}
+        redirect_path = request.args.get("dataset", "")
+        redirect_to = f"{self.web_base_url}/{redirect_path}"
+        session["oauth_logout_redirect"] = redirect_to
+
+        return_to = f"{self.api_base_url}/logout_redirect"
+        params = {"returnTo": return_to, "client_id": self.client_id}
         response = redirect(self.client.api_base_url + "/v2/logout?" + urlencode(params))
+        self.update_response(response)
+        return response
+
+    def logout_redirect(self):
+        oauth_logout_redirect = session.pop("oauth_logout_redirect", "/")
+        response = redirect(oauth_logout_redirect)
         self.update_response(response)
         return response
 
@@ -253,7 +271,10 @@ class AuthTypeOAuth(AuthTypeClientBase):
 
     def get_logout_url(self, data_adaptor):
         """Return the url for the logout route"""
-        return f"{self.api_base_url}/logout"
+        if data_adaptor and current_app.app_config.is_multi_dataset():
+            return f"{self.api_base_url}/logout?dataset={data_adaptor.uri_path}/"
+        else:
+            return f"{self.api_base_url}/logout"
 
     def check_jwt_payload(self, id_token):
         try:
