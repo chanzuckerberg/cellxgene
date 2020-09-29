@@ -72,7 +72,6 @@ export default class MiniHistogram extends React.PureComponent {
         popoverClassName={Classes.POPOVER_CONTENT_SIZING}
       >
         <canvas
-          className="bp3-popover-targer"
           style={{
             marginRight: 5,
             width,

@@ -1,12 +1,16 @@
 import React from "react";
 import {
-  Position,
   Button,
-  Popover,
-  NumericInput,
+  ButtonGroup,
   Icon,
+  Intent,
+  NumericInput,
+  Popover,
+  Position,
   Tooltip,
 } from "@blueprintjs/core";
+import { IconNames } from "@blueprintjs/icons";
+
 import { tooltipHoverOpenDelay } from "../../globals";
 import styles from "./menubar.css";
 
@@ -28,13 +32,13 @@ const Clip = React.memo((props) => {
     pendingClipPercentiles?.clipPercentileMin ?? clipPercentileMin;
   const clipMax =
     pendingClipPercentiles?.clipPercentileMax ?? clipPercentileMax;
-  const activeClipClass =
+  const intent =
     clipPercentileMin > 0 || clipPercentileMax < 100
-      ? " bp3-intent-warning"
+      ? Intent.INTENT_WARNING
       : "";
 
   return (
-    <div className={`bp3-button-group ${styles.menubarButton}`}>
+    <ButtonGroup className={`${styles.menubarButton}`}>
       <Popover
         target={
           <Tooltip
@@ -45,7 +49,8 @@ const Clip = React.memo((props) => {
             <Button
               type="button"
               data-testid="visualization-settings"
-              className={`bp3-button bp3-icon-timeline-bar-chart ${activeClipClass}`}
+              intent={intent}
+              icon={IconNames.TIMELINE_BAR_CHART}
               style={{
                 cursor: "pointer",
               }}
@@ -126,7 +131,7 @@ const Clip = React.memo((props) => {
           </div>
         }
       />
-    </div>
+    </ButtonGroup>
   );
 });
 
