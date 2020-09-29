@@ -4,7 +4,7 @@ import { useAsync } from "react-async";
 import {
   Button,
   ButtonGroup,
-  H1,
+  H4,
   Popover,
   Position,
   Radio,
@@ -81,7 +81,7 @@ class Embedding extends React.PureComponent {
                 width: 400,
               }}
             >
-              <H1>Embedding Choice</H1>
+              <H4>Embedding Choice</H4>
               <p style={{ fontStyle: "italic" }}>
                 There are {schema?.dataframe?.nObs} cells in the entire dataset.
               </p>
