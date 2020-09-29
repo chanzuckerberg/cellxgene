@@ -65,10 +65,12 @@ const InformationMenu = React.memo((props) => {
               />
             ) : null}
 
-            {auth.requires_client_login && userinfo.is_authenticated ? (
+            {auth?.["requires_client_login"] &&
+            userinfo?.["is_authenticated"] ? (
               <MenuItem text={`Logged in as: ${userinfo.email}`} />
             ) : null}
-            {auth.requires_client_login && userinfo.is_authenticated ? (
+            {auth?.["requires_client_login"] &&
+            userinfo?.["is_authenticated"] ? (
               <MenuItem text="Log Out" href={auth.logout} />
             ) : null}
           </Menu>
