@@ -42,14 +42,14 @@ define_request_exception(
 define_request_exception("ExceedsLimitError", "Raised when an HTTP request exceeds a limit/quota")
 define_request_exception("ColorFormatException", "Raised when color helper functions encounter an unknown color format")
 define_request_exception(
-    "AuthenticationError",
-    "Raised when there is an authentication error",
-    default_status_code=HTTPStatus.UNAUTHORIZED)
+    "AuthenticationError", "Raised when there is an authentication error", default_status_code=HTTPStatus.UNAUTHORIZED
+)
 
 define_request_exception(
     "AnnotationCategoryNameError",
     "Raised when an annotation category name cant be saved",
-    default_status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
+    default_status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+)
 
 define_exception("OntologyLoadFailure", "Raised when reading the ontology file fails")
 define_exception("ConfigurationError", "Raised when checking configuration errors")

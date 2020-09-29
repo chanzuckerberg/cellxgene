@@ -9,7 +9,7 @@ from flask import json
 import logging
 from flask_talisman import Talisman
 from flask_cors import CORS
-from server.common.aws_secret_utils import handle_config_from_secret
+from server.common.config import handle_config_from_secret
 from server.common.errors import SecretKeyRetrievalError
 
 
@@ -26,7 +26,7 @@ SERVERDIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(SERVERDIR)
 
 try:
-    from server.common.app_config import AppConfig
+    from server.common.config.app_config import AppConfig
     from server.app.app import Server
     from server.common.data_locator import DataLocator, discover_s3_region_name
 except Exception:
@@ -61,8 +61,7 @@ class WSGIServer(Server):
         csp = {
             "default-src": ["'self'"],
             "connect-src": ["'self'"] + extra_connect_src,
-            "script-src": ["'self'", "'unsafe-eval'"]
-            + obsolete_browser_script_hash + script_hashes,
+            "script-src": ["'self'", "'unsafe-eval'"] + obsolete_browser_script_hash + script_hashes,
             "style-src": ["'self'", "'unsafe-inline'"],
             "img-src": ["'self'", "https://cellxgene.cziscience.com", "data:"],
             "object-src": ["'none'"],
@@ -104,7 +103,7 @@ class WSGIServer(Server):
         if len(script_hashes) == 0:
             logging.error("Content security policy hashes are missing, falling back to unsafe-inline policy")
 
-        return (script_hashes)
+        return script_hashes
 
     @staticmethod
     def compute_inline_csp_hashes(app, app_config):
@@ -173,9 +172,7 @@ try:
         sys.exit(1)
 
     # features are unsupported in the current hosted server
-    app_config.update_default_dataset_config(
-        embeddings__enable_reembedding=False,
-    )
+    app_config.update_default_dataset_config(embeddings__enable_reembedding=False,)
     app_config.update_server_config(multi_dataset__allowed_matrix_types=["cxg"],)
     app_config.complete_config(logging.info)
 
