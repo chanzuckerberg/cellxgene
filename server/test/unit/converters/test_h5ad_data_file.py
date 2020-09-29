@@ -16,7 +16,6 @@ PROJECT_ROOT = popen("git rev-parse --show-toplevel").read().strip()
 
 
 class TestH5ADDataFile(unittest.TestCase):
-
     def setUp(self):
         self.sample_anndata = self._create_sample_anndata_dataset()
         self.sample_h5ad_filename = self._write_anndata_to_file(self.sample_anndata)
@@ -40,8 +39,12 @@ class TestH5ADDataFile(unittest.TestCase):
 
     def test__create_h5ad_data_file__assert_warning_outputted_if_dataset_title_or_about_given(self):
         with self.assertLogs(level="WARN") as logger:
-            H5ADDataFile(self.sample_h5ad_filename, dataset_title="My Awesome Dataset",
-                         dataset_about="http://www.awesomedataset.com", use_corpora_schema=False)
+            H5ADDataFile(
+                self.sample_h5ad_filename,
+                dataset_title="My Awesome Dataset",
+                dataset_about="http://www.awesomedataset.com",
+                use_corpora_schema=False,
+            )
 
         self.assertIn("will override any metadata that is extracted", logger.output[0])
 
@@ -49,10 +52,12 @@ class TestH5ADDataFile(unittest.TestCase):
         h5ad_file = H5ADDataFile(self.sample_h5ad_filename, use_corpora_schema=False)
 
         self.assertTrue((h5ad_file.anndata.X == self.sample_anndata.X).all())
-        self.assertEqual(h5ad_file.anndata.obs.sort_index(inplace=True),
-                         self.sample_anndata.obs.sort_index(inplace=True))
-        self.assertEqual(h5ad_file.anndata.var.sort_index(inplace=True),
-                         self.sample_anndata.var.sort_index(inplace=True))
+        self.assertEqual(
+            h5ad_file.anndata.obs.sort_index(inplace=True), self.sample_anndata.obs.sort_index(inplace=True)
+        )
+        self.assertEqual(
+            h5ad_file.anndata.var.sort_index(inplace=True), self.sample_anndata.var.sort_index(inplace=True)
+        )
 
         for key in h5ad_file.anndata.obsm.keys():
             self.assertIn(key, self.sample_anndata.obsm.keys())
@@ -73,8 +78,12 @@ class TestH5ADDataFile(unittest.TestCase):
         self.assertIn("name_0", h5ad_file.var.columns)
 
     def test__create_h5ad_data_file__no_copy_if_obs_and_var_index_names_specified(self):
-        h5ad_file = H5ADDataFile(self.sample_h5ad_filename, use_corpora_schema=False,
-                                 obs_index_column_name="float_category", vars_index_column_name="int_category")
+        h5ad_file = H5ADDataFile(
+            self.sample_h5ad_filename,
+            use_corpora_schema=False,
+            obs_index_column_name="float_category",
+            vars_index_column_name="int_category",
+        )
 
         self.assertNotIn("name_0", h5ad_file.obs.columns)
         self.assertNotIn("name_0", h5ad_file.var.columns)
@@ -82,15 +91,23 @@ class TestH5ADDataFile(unittest.TestCase):
     def test__create_h5ad_data_file__obs_and_var_index_names_specified_not_unique_raises_exception(self):
 
         with self.assertRaises(Exception) as exception_context:
-            H5ADDataFile(self.sample_h5ad_filename, use_corpora_schema=False,
-                         obs_index_column_name="float_category", vars_index_column_name="bool_category")
+            H5ADDataFile(
+                self.sample_h5ad_filename,
+                use_corpora_schema=False,
+                obs_index_column_name="float_category",
+                vars_index_column_name="bool_category",
+            )
 
         self.assertIn("Please prepare data to contain unique values", str(exception_context.exception))
 
     def test__create_h5ad_data_file__obs_and_var_index_names_specified_doesnt_exist_raises_exception(self):
         with self.assertRaises(Exception) as exception_context:
-            H5ADDataFile(self.sample_h5ad_filename, use_corpora_schema=False,
-                         obs_index_column_name="unknown_category", vars_index_column_name="i_dont_exist")
+            H5ADDataFile(
+                self.sample_h5ad_filename,
+                use_corpora_schema=False,
+                obs_index_column_name="unknown_category",
+                vars_index_column_name="i_dont_exist",
+            )
 
         self.assertIn("does not exist", str(exception_context.exception))
 
@@ -101,8 +118,9 @@ class TestH5ADDataFile(unittest.TestCase):
         self.assertEqual(h5ad_file.dataset_about, "www.link.com")
 
     def test__create_h5ad_data_file__inputted_dataset_title_and_about_overrides_extracted(self):
-        h5ad_file = H5ADDataFile(self.sample_h5ad_filename, dataset_about="override_about",
-                                 dataset_title="override_title")
+        h5ad_file = H5ADDataFile(
+            self.sample_h5ad_filename, dataset_about="override_about", dataset_title="override_title"
+        )
 
         self.assertEqual(h5ad_file.dataset_title, "override_title")
         self.assertEqual(h5ad_file.dataset_about, "override_about")
@@ -145,8 +163,11 @@ class TestH5ADDataFile(unittest.TestCase):
         remove(sparse_with_column_shift_filename)
 
     def _validate_expected_generated_list_of_tiledb_files(self, has_column_encoding=False):
-        expected_directories, expected_obs_files, expected_var_files = \
-            self._get_expected_generated_list_of_tiledb_files()
+        (
+            expected_directories,
+            expected_obs_files,
+            expected_var_files,
+        ) = self._get_expected_generated_list_of_tiledb_files()
 
         for directory in expected_directories:
             self.assertTrue(path.isdir(directory))
@@ -187,8 +208,18 @@ class TestH5ADDataFile(unittest.TestCase):
         var_files.append("bool_category.tdb")
         var_files.append("int_category.tdb")
 
-        return [metadata_directory, main_x_directory, overall_embedding_directory, specific_embedding_directory,
-                obs_directory, var_directory], obs_files, var_files
+        return (
+            [
+                metadata_directory,
+                main_x_directory,
+                overall_embedding_directory,
+                specific_embedding_directory,
+                obs_directory,
+                var_directory,
+            ],
+            obs_files,
+            var_files,
+        )
 
     def _write_anndata_to_file(self, anndata):
         temporary_filename = f"{PROJECT_ROOT}/server/test/fixtures/{uuid4()}.h5ad"
@@ -204,7 +235,8 @@ class TestH5ADDataFile(unittest.TestCase):
         random_string_category = Series(data=["a", "b", "b"], dtype="category")
         random_float_category = Series(data=[3.2, 1.1, 2.2], dtype=np.float32)
         obs_dataframe = DataFrame(
-            data={"string_category": random_string_category, "float_category": random_float_category})
+            data={"string_category": random_string_category, "float_category": random_float_category}
+        )
         obs = obs_dataframe
 
         # Create vars
@@ -230,6 +262,7 @@ class TestH5ADDataFile(unittest.TestCase):
 
         # Set project links to be a dictionary
         uns["project_links"] = json.dumps(
-            [{"link_name": "random_link_name", "link_url": "www.link.com", "link_type": "SUMMARY"}])
+            [{"link_name": "random_link_name", "link_url": "www.link.com", "link_type": "SUMMARY"}]
+        )
 
         return anndata.AnnData(X=X, obs=obs, var=var, obsm=obsm, uns=uns)

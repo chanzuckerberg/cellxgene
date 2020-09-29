@@ -6,8 +6,17 @@ from urllib.parse import urlparse
 import hashlib
 import os
 
-from flask import Flask, redirect, current_app, make_response, render_template, abort, Blueprint, request, \
-    send_from_directory
+from flask import (
+    Flask,
+    redirect,
+    current_app,
+    make_response,
+    render_template,
+    abort,
+    Blueprint,
+    request,
+    send_from_directory,
+)
 from flask_restful import Api, Resource
 from server_timing import Timing as ServerTiming
 
@@ -87,10 +96,7 @@ def dataset_index(url_dataroot=None, dataset=None):
         cache_manager = current_app.matrix_data_cache_manager
         with cache_manager.data_adaptor(url_dataroot, location, app_config) as data_adaptor:
             data_adaptor.set_uri_path(f"{url_dataroot}/{dataset}")
-            args = {
-                "SCRIPTS" : scripts,
-                "INLINE_SCRIPTS" : inline_scripts
-            }
+            args = {"SCRIPTS": scripts, "INLINE_SCRIPTS": inline_scripts}
             return render_template("index.html", **args)
 
     except DatasetAccessError as e:
@@ -417,8 +423,9 @@ class Server:
             for dataroot_dict in server_config.multi_dataset__dataroot.values():
                 url_dataroot = dataroot_dict["base_url"]
                 bp_dataroot = Blueprint(
-                    f"api_dataset_{url_dataroot}", __name__,
-                    url_prefix=f"{api_path}/{url_dataroot}/<dataset>" + api_version
+                    f"api_dataset_{url_dataroot}",
+                    __name__,
+                    url_prefix=f"{api_path}/{url_dataroot}/<dataset>" + api_version,
                 )
                 dataroot_resources = get_api_dataroot_resources(bp_dataroot, url_dataroot)
                 self.app.register_blueprint(dataroot_resources.blueprint)
@@ -433,7 +440,7 @@ class Server:
                     f"/{url_dataroot}/<dataset>/static/<path:filename>",
                     f"static_assets_{url_dataroot}",
                     view_func=lambda dataset, filename: send_from_directory("../common/web/static", filename),
-                    methods=["GET"]
+                    methods=["GET"],
                 )
 
         else:
@@ -444,7 +451,7 @@ class Server:
                 "/static/<path:filename>",
                 "static_assets",
                 view_func=lambda filename: send_from_directory("../common/web/static", filename),
-                methods=["GET"]
+                methods=["GET"],
             )
 
         self.app.matrix_data_cache_manager = server_config.matrix_data_cache_manager

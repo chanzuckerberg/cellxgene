@@ -5,12 +5,17 @@ from unittest.mock import patch
 import numpy as np
 from pandas import Series, DataFrame
 
-from server.common.utils.type_conversion_utils import can_cast_to_float32, can_cast_to_int32, get_dtype_of_array, \
-    get_schema_type_hint_of_array, get_dtypes_and_schemas_of_dataframe, convert_pandas_series_to_numpy
+from server.common.utils.type_conversion_utils import (
+    can_cast_to_float32,
+    can_cast_to_int32,
+    get_dtype_of_array,
+    get_schema_type_hint_of_array,
+    get_dtypes_and_schemas_of_dataframe,
+    convert_pandas_series_to_numpy,
+)
 
 
 class TestTypeConversionUtils(unittest.TestCase):
-
     def test__can_cast_to_float32__string_is_false(self):
         array_to_convert = Series(data=["1", "2", "3"], dtype=str)
 
@@ -97,8 +102,9 @@ class TestTypeConversionUtils(unittest.TestCase):
         expected_dtypes = [np.float32, np.int32, np.uint8, np.unicode]
 
         for test_type_index in range(len(types)):
-            with self.subTest(f"Testing get_dtype_of_array with type {types[test_type_index].__name__}",
-                              i=test_type_index):
+            with self.subTest(
+                f"Testing get_dtype_of_array with type {types[test_type_index].__name__}", i=test_type_index
+            ):
                 array = Series(data=[], dtype=types[test_type_index])
                 self.assertEqual(get_dtype_of_array(array), expected_dtypes[test_type_index])
 
@@ -123,8 +129,9 @@ class TestTypeConversionUtils(unittest.TestCase):
         expected_dtypes = [np.float32, np.int32]
 
         for test_type_index in range(len(types)):
-            with self.subTest(f"Testing get_dtype_of_array with castable type {types[test_type_index].__name__}",
-                              i=test_type_index):
+            with self.subTest(
+                f"Testing get_dtype_of_array with castable type {types[test_type_index].__name__}", i=test_type_index
+            ):
                 array = Series(data=[], dtype=types[test_type_index])
                 self.assertEqual(get_dtype_of_array(array), expected_dtypes[test_type_index])
 
@@ -141,8 +148,9 @@ class TestTypeConversionUtils(unittest.TestCase):
         expected_schema_hints = [{"type": "float32"}, {"type": "int32"}, {"type": "boolean"}, {"type": "string"}]
 
         for test_type_index in range(len(types)):
-            with self.subTest(f"Testing get_schema_type_hint_of_array with type {types[test_type_index].__name__}",
-                              i=test_type_index):
+            with self.subTest(
+                f"Testing get_schema_type_hint_of_array with type {types[test_type_index].__name__}", i=test_type_index
+            ):
                 array = Series(data=[], dtype=types[test_type_index])
                 self.assertEqual(get_schema_type_hint_of_array(array), expected_schema_hints[test_type_index])
 
@@ -160,8 +168,9 @@ class TestTypeConversionUtils(unittest.TestCase):
 
         for test_type_index in range(len(types)):
             with self.subTest(
-                    f"Testing get_schema_type_hint_of_array with castable type {types[test_type_index].__name__}",
-                    i=test_type_index):
+                f"Testing get_schema_type_hint_of_array with castable type {types[test_type_index].__name__}",
+                i=test_type_index,
+            ):
                 array = Series(data=[], dtype=types[test_type_index])
                 self.assertEqual(get_schema_type_hint_of_array(array), expected_schema_hints[test_type_index])
 
@@ -171,8 +180,10 @@ class TestTypeConversionUtils(unittest.TestCase):
         dataframe = DataFrame({"float_array": float_array, "category_array": category_array})
 
         expected_data_types_dict = {"float_array": np.float32, "category_array": np.unicode}
-        expected_schema_type_hints_dict = {"float_array": {"type": "float32"},
-                                           "category_array": {"type": "categorical", "categories": ["a", "b"]}}
+        expected_schema_type_hints_dict = {
+            "float_array": {"type": "float32"},
+            "category_array": {"type": "categorical", "categories": ["a", "b"]},
+        }
 
         actual_dataframe_data_types, actual_dataframe_schema_type_hints = get_dtypes_and_schemas_of_dataframe(dataframe)
 
@@ -201,5 +212,6 @@ class TestTypeConversionUtils(unittest.TestCase):
         with self.assertLogs(level="ERROR") as logger:
             convert_pandas_series_to_numpy(int_series, np.int32)
 
-            self.assertIn("Cannot convert a pandas Series object to an integer dtype if it contains NaNs",
-                          logger.output[0])
+            self.assertIn(
+                "Cannot convert a pandas Series object to an integer dtype if it contains NaNs", logger.output[0]
+            )

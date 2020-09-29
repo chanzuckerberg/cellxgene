@@ -97,8 +97,17 @@ class AuthTypeOAuth(AuthTypeClientBase):
             return
 
         valid_keys = {
-            "verify_signature", "verify_aud", "verify_iat", "verify_exp", "verify_nbf", "verify_iss",
-            "verify_sub", "verify_jti", "verify_at_hash", "leeway"}
+            "verify_signature",
+            "verify_aud",
+            "verify_iat",
+            "verify_exp",
+            "verify_nbf",
+            "verify_iss",
+            "verify_sub",
+            "verify_jti",
+            "verify_at_hash",
+            "leeway",
+        }
         keys = set(self.jwt_decode_options.keys())
         unknown = keys - valid_keys
         if unknown:

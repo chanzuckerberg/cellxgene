@@ -9,7 +9,7 @@ from flask import Flask, jsonify, make_response, request, redirect
 from multiprocessing import Process
 
 import jose
-from server.common.app_config import AppConfig
+from server.common.config.app_config import AppConfig
 from server.test import FIXTURES_ROOT, test_server
 
 # This tests the oauth authentication type.
@@ -46,7 +46,7 @@ def token():
         "scope": "openid profile email",
         "expires_in": TOKEN_EXPIRES,
         "token_type": "Bearer",
-        "expires_at": expires_at
+        "expires_at": expires_at,
     }
     return make_response(jsonify(r))
 
@@ -89,9 +89,8 @@ class AuthTest(unittest.TestCase):
             authentication__params_oauth__oauth_api_base_url=f"http://localhost:{PORT}",
             authentication__params_oauth__client_id="mock_client_id",
             authentication__params_oauth__client_secret="mock_client_secret",
-            authentication__params_oauth__jwt_decode_options={
-                "verify_signature": False, "verify_iss": False
-            })
+            authentication__params_oauth__jwt_decode_options={"verify_signature": False, "verify_iss": False},
+        )
 
         app_config.update_server_config(multi_dataset__dataroot=self.dataset_dataroot)
         app_config.complete_config()
@@ -161,9 +160,7 @@ class AuthTest(unittest.TestCase):
     def test_auth_oauth_session(self):
         # test with session cookies
         app_config = AppConfig()
-        app_config.update_server_config(
-            authentication__params_oauth__session_cookie=True,
-        )
+        app_config.update_server_config(authentication__params_oauth__session_cookie=True,)
         self.auth_flow(app_config)
 
     def test_auth_oauth_cookie(self):

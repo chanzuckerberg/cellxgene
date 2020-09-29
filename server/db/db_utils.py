@@ -42,9 +42,9 @@ class DbUtils:
 
     def get_or_create_dataset(self, dataset_name):
         try:
-            dataset_id = self.query(
-                table_args=[CellxGeneDataset], filter_args=[CellxGeneDataset.name == dataset_name]
-            )[0].id
+            dataset_id = self.query(table_args=[CellxGeneDataset], filter_args=[CellxGeneDataset.name == dataset_name])[
+                0
+            ].id
         except IndexError:
             dataset_id = uuid.uuid4()
             dataset = CellxGeneDataset(id=dataset_id, name=dataset_name)
@@ -54,9 +54,7 @@ class DbUtils:
 
     def get_or_create_user(self, user_id):
         try:
-            user_id = self.query(
-                table_args=[CellxGeneUser], filter_args=[CellxGeneUser.id == user_id]
-            )[0].id
+            user_id = self.query(table_args=[CellxGeneUser], filter_args=[CellxGeneUser.id == user_id])[0].id
         except IndexError:
             user = CellxGeneUser(id=user_id)
             self.session.add(user)
