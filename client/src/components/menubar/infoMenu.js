@@ -1,6 +1,13 @@
 // jshint esversion: 6
 import React from "react";
-import { Button, Popover, Menu, MenuItem, Position } from "@blueprintjs/core";
+import {
+  Button,
+  ButtonGroup,
+  Menu,
+  MenuItem,
+  Popover,
+  Position,
+} from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import styles from "./menubar.css";
 
@@ -11,7 +18,7 @@ const handleClick = (dispatch) => {
 const InformationMenu = React.memo((props) => {
   const { libraryVersions, tosURL, privacyURL, dispatch } = props;
   return (
-    <div className={`bp3-button-group ${styles.menubarButton}`}>
+    <ButtonGroup className={`${styles.menubarButton}`}>
       <Popover
         content={
           <Menu>
@@ -64,13 +71,13 @@ const InformationMenu = React.memo((props) => {
       >
         <Button
           type="button"
-          className="bp3-button bp3-icon-info-sign"
+          icon={IconNames.INFO_SIGN}
           style={{
             cursor: "pointer",
           }}
         />
       </Popover>
-    </div>
+    </ButtonGroup>
   );
 });
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { AnchorButton, Tooltip } from "@blueprintjs/core";
+import { AnchorButton, ButtonGroup, Tooltip } from "@blueprintjs/core";
 import * as globals from "../../globals";
 import styles from "./menubar.css";
 
@@ -9,7 +9,7 @@ const Auth = React.memo((props) => {
   if (!auth || (auth && !auth.requires_client_login)) return null;
 
   return (
-    <div className={`bp3-button-group ${styles.menubarButton}`}>
+    <ButtonGroup className={styles.menubarButton}>
       <Tooltip
         content="Log in or log out of cellxgene"
         position="bottom"
@@ -25,7 +25,7 @@ const Auth = React.memo((props) => {
           {!userinfo.is_authenticated ? "Log In" : "Log Out"}
         </AnchorButton>
       </Tooltip>
-    </div>
+    </ButtonGroup>
   );
 });
 

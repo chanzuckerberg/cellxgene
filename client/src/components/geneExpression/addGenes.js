@@ -6,11 +6,12 @@ import fuzzysort from "fuzzysort";
 import { connect } from "react-redux";
 import { Suggest } from "@blueprintjs/select";
 import {
-  MenuItem,
   Button,
+  ControlGroup,
   FormGroup,
   InputGroup,
-  ControlGroup,
+  Intent,
+  MenuItem,
 } from "@blueprintjs/core";
 import * as globals from "../../globals";
 import actions from "../../actions";
@@ -278,7 +279,7 @@ class AddGenes extends React.Component {
               popoverProps={{ minimal: true }}
             />
             <Button
-              className="bp3-button bp3-intent-primary"
+              intent={Intent.PRIMARY}
               data-testid="add-gene"
               loading={userDefinedGenesLoading}
               onClick={() => this.handleClick(activeItem)}
