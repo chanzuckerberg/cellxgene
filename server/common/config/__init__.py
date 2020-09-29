@@ -24,6 +24,7 @@ def handle_config_from_secret(app_config):
         secret_region_name = discover_s3_region_name(app_config.multi_dataset__dataroot)
         if not secret_region_name:
             from server.eb.app import config_file
+
             secret_region_name = discover_s3_region_name(config_file)
     if not secret_region_name:
         logging.error("Could not determine the AWS Secret Manager region")
@@ -38,9 +39,7 @@ def handle_config_from_secret(app_config):
         ("flask_secret_key", "app__flask_secret_key"),
         ("oauth_client_secret", "authentication__params_oauth__client_secret"),
     )
-    default_dataset_attrs = (
-        ("db_uri", "user_annotations__hosted_tiledb_array__db_uri"),
-    )
+    default_dataset_attrs = (("db_uri", "user_annotations__hosted_tiledb_array__db_uri"),)
 
     # update server configuration attributes
     for key, attr in server_attrs:

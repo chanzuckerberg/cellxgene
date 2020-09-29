@@ -34,8 +34,7 @@ def data_with_tmp_tiledb_annotations(ext: MatrixDataType):
     data_locator = DataLocator(fname)
     config = AppConfig()
     config.update_server_config(
-        multi_dataset__dataroot=data_locator.path,
-        authentication__type="test",
+        multi_dataset__dataroot=data_locator.path, authentication__type="test",
     )
     config.update_default_dataset_config(
         embeddings__names=["umap"],
@@ -43,16 +42,13 @@ def data_with_tmp_tiledb_annotations(ext: MatrixDataType):
         diffexp__lfc_cutoff=0.01,
         user_annotations__type="hosted_tiledb_array",
         user_annotations__hosted_tiledb_array__db_uri="postgresql://postgres:test_pw@localhost:5432",
-        user_annotations__hosted_tiledb_array__hosted_file_directory=tmp_dir
+        user_annotations__hosted_tiledb_array__hosted_file_directory=tmp_dir,
     )
 
     config.complete_config()
 
     data = MatrixDataLoader(data_locator.abspath()).open(config)
-    annotations = AnnotationsHostedTileDB(
-        tmp_dir,
-        DbUtils("postgresql://postgres:test_pw@localhost:5432"),
-    )
+    annotations = AnnotationsHostedTileDB(tmp_dir, DbUtils("postgresql://postgres:test_pw@localhost:5432"),)
     return data, tmp_dir, annotations
 
 

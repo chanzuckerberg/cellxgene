@@ -38,7 +38,7 @@ class MatrixCacheTest(unittest.TestCase):
         result = {}
         for k, v in datasets.items():
             # filter out the dirname and the .cxg from the name
-            newk = int(k[1][len(dirname) + 1: -4])
+            newk = int(k[1][len(dirname) + 1 : -4])
             result[newk] = v
 
         return result

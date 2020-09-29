@@ -5,7 +5,7 @@ import unittest
 
 import yaml
 
-from server.common.config.app_config import AppConfig
+from default_config import default_config
 from server.test import FIXTURES_ROOT
 
 
@@ -23,7 +23,6 @@ class CLIPLaunchTests(unittest.TestCase):
 
 def test_dump_default_config(self):
     os.system(f"cellxgene launch --dump-default-config > {self.tmp_dir}/test_config_dump.txt")
-    config = AppConfig().default_config
     with open(f"{self.tmp_dir}/expected_config_dump.txt", "w") as expected_config:
-        expected_config.write(yaml.dump(config))
+        expected_config.write(yaml.dump(default_config))
     filecmp.cmp(f"{self.tmp_dir}/expected_config_dump.txt", f"{self.tmp_dir}/test_config_dump.txt")

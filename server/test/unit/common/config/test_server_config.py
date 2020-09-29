@@ -37,7 +37,8 @@ class TestServerConfig(ConfigTests):
 
     def get_config(self, **kwargs):
         file_name = self.custom_app_config(
-            dataroot=f"{FIXTURES_ROOT}", config_file_name=self.config_file_name, **kwargs)
+            dataroot=f"{FIXTURES_ROOT}", config_file_name=self.config_file_name, **kwargs
+        )
         config = AppConfig()
         config.update_from_config_file(file_name)
         return config
@@ -47,7 +48,7 @@ class TestServerConfig(ConfigTests):
         with self.assertRaises(ConfigurationError):
             invalid_config.complete_config()
 
-    @patch('server.common.config.server_config.BaseConfig.validate_correct_type_of_configuration_attribute')
+    @patch("server.common.config.server_config.BaseConfig.validate_correct_type_of_configuration_attribute")
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
         mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.server_config.complete_config(self.context)
@@ -58,7 +59,7 @@ class TestServerConfig(ConfigTests):
         with self.assertRaises(ConfigurationError):
             config.server_config.handle_app(self.context)
 
-    @patch('server.common.config.server_config.discover_s3_region_name')
+    @patch("server.common.config.server_config.discover_s3_region_name")
     def test_handle_data_locator_works_for_default_types(self, mock_discover_region_name):
         mock_discover_region_name.return_value = None
         # Default config
@@ -69,24 +70,26 @@ class TestServerConfig(ConfigTests):
         # incorrectly formatted
         dataroot = {
             "d1": {"base_url": "set1", "dataroot": "/path/to/set1_datasets/"},
-            "d2": {"base_url": "set2/subdir", "dataroot": "s3://shouldnt/work"}
+            "d2": {"base_url": "set2/subdir", "dataroot": "s3://shouldnt/work"},
         }
         file_name = self.custom_app_config(
-            dataroot=dataroot, config_file_name=self.config_file_name, data_locater_region_name="true")
+            dataroot=dataroot, config_file_name=self.config_file_name, data_locater_region_name="true"
+        )
         config = AppConfig()
         config.update_from_config_file(file_name)
         with self.assertRaises(ConfigurationError):
             config.server_config.handle_data_locator()
 
-    @patch('server.common.config.server_config.discover_s3_region_name')
+    @patch("server.common.config.server_config.discover_s3_region_name")
     def test_handle_data_locator_can_read_from_dataroot(self, mock_discover_region_name):
         mock_discover_region_name.return_value = "us-west-2"
         dataroot = {
             "d1": {"base_url": "set1", "dataroot": "/path/to/set1_datasets/"},
-            "d2": {"base_url": "set2/subdir", "dataroot": "s3://hosted-cellxgene-dev"}
+            "d2": {"base_url": "set2/subdir", "dataroot": "s3://hosted-cellxgene-dev"},
         }
         file_name = self.custom_app_config(
-            dataroot=dataroot, config_file_name=self.config_file_name, data_locater_region_name="true")
+            dataroot=dataroot, config_file_name=self.config_file_name, data_locater_region_name="true"
+        )
         config = AppConfig()
         config.update_from_config_file(file_name)
         config.server_config.handle_data_locator()
@@ -112,7 +115,7 @@ class TestServerConfig(ConfigTests):
         self.assertEqual(config.server_config.app__flask_secret_key, "KEY_FROM_ENV")
 
     def test_handle_app__sets_web_base_url(self):
-        config = self.get_config(web_base_url='anything.com')
+        config = self.get_config(web_base_url="anything.com")
         self.assertEqual(config.server_config.app__web_base_url, "anything.com")
 
     def test_handle_auth__gets_client_secret_from_envvars_or_config_with_envvars_given_preference(self):
@@ -127,8 +130,10 @@ class TestServerConfig(ConfigTests):
 
     def test_handle_data_source__errors_when_passed_zero_or_two_dataroots(self):
         file_name = self.custom_app_config(
-            dataroot=f"{FIXTURES_ROOT}", config_file_name="two_data_roots.yml",
-            dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad")
+            dataroot=f"{FIXTURES_ROOT}",
+            config_file_name="two_data_roots.yml",
+            dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad",
+        )
         config = AppConfig()
         config.update_from_config_file(file_name)
         with self.assertRaises(ConfigurationError):
@@ -147,7 +152,7 @@ class TestServerConfig(ConfigTests):
         backend_port = find_available_port("localhost", 10000)
         config.update_server_config(
             app__api_base_url=f"http://localhost:{backend_port}/additional/path",
-            multi_dataset__dataroot=f"{PROJECT_ROOT}/example-dataset"
+            multi_dataset__dataroot=f"{PROJECT_ROOT}/example-dataset",
         )
 
         config.complete_config()
@@ -188,15 +193,19 @@ class TestServerConfig(ConfigTests):
         self.assertEqual(web_base_url, "www.api_base.com")
 
     def test_config_for_single_dataset(self):
-        file_name = self.custom_app_config(config_file_name="single_dataset.yml",
-                                           dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k.cxg")
+        file_name = self.custom_app_config(
+            config_file_name="single_dataset.yml", dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k.cxg"
+        )
         config = AppConfig()
         config.update_from_config_file(file_name)
         config.server_config.handle_single_dataset(self.context)
         self.assertIsNotNone(config.server_config.matrix_data_cache_manager)
 
-        file_name = self.custom_app_config(config_file_name="single_dataset_with_about.yml", about="www.cziscience.com",
-                                           dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k.cxg")
+        file_name = self.custom_app_config(
+            config_file_name="single_dataset_with_about.yml",
+            about="www.cziscience.com",
+            dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k.cxg",
+        )
         config = AppConfig()
         config.update_from_config_file(file_name)
         with self.assertRaises(ConfigurationError):
@@ -271,49 +280,56 @@ class TestServerConfig(ConfigTests):
             response = session.get(f"{server}/health")
             assert response.json()["status"] == "pass"
 
-    @patch('server.common.config.server_config.diffexp_tiledb.set_config')
+    @patch("server.common.config.server_config.diffexp_tiledb.set_config")
     def test_handle_diffexp(self, mock_tiledb_config):
         custom_config_file = self.custom_app_config(
-            dataroot=f"{FIXTURES_ROOT}", cpu_multiplier=3, diffexp_max_workers=1, target_workunit=4,
-            config_file_name=self.config_file_name)
+            dataroot=f"{FIXTURES_ROOT}",
+            cpu_multiplier=3,
+            diffexp_max_workers=1,
+            target_workunit=4,
+            config_file_name=self.config_file_name,
+        )
         config = AppConfig()
         config.update_from_config_file(custom_config_file)
         config.server_config.handle_diffexp()
         # called with the min of diffexp_max_workers and cpus*cpu_multiplier
         mock_tiledb_config.assert_called_once_with(1, 4)
 
-    @patch('server.data_cxg.cxg_adaptor.CxgAdaptor.set_tiledb_context')
+    @patch("server.data_cxg.cxg_adaptor.CxgAdaptor.set_tiledb_context")
     def test_handle_adaptor(self, mock_tiledb_context):
-        custom_config = self.custom_app_config(dataroot=f"{FIXTURES_ROOT}", cxg_tile_cache_size=10,
-                                               cxg_num_reader_threads=2)
+        custom_config = self.custom_app_config(
+            dataroot=f"{FIXTURES_ROOT}", cxg_tile_cache_size=10, cxg_num_reader_threads=2
+        )
         config = AppConfig()
         config.update_from_config_file(custom_config)
         config.server_config.handle_adaptor()
         mock_tiledb_context.assert_called_once_with(
-            {'sm.tile_cache_size': 10, 'sm.num_reader_threads': 2, 'vfs.s3.region': 'us-east-1'})
+            {"sm.tile_cache_size": 10, "sm.num_reader_threads": 2, "vfs.s3.region": "us-east-1"}
+        )
 
     @mockenv(CXG_AWS_SECRET_NAME="TESTING", CXG_AWS_SECRET_REGION_NAME="TEST_REGION")
-    @patch('server.common.config.get_secret_key')
+    @patch("server.common.config.get_secret_key")
     def test_get_config_vars_from_aws_secrets(self, mock_get_secret_key):
         mock_get_secret_key.return_value = {
             "flask_secret_key": "mock_flask_secret",
             "oauth_client_secret": "mock_oauth_secret",
-            "db_uri": "mock_db_uri"
+            "db_uri": "mock_db_uri",
         }
 
         config = AppConfig()
 
         with self.assertLogs(level="INFO") as logger:
             from server.common.config import handle_config_from_secret
+
             # should not throw error
             # "AttributeError: 'XConfig' object has no attribute 'x'"
             handle_config_from_secret(config)
 
             # should log 3 lines (one for each var set from a secret)
             self.assertEqual(len(logger.output), 3)
-            self.assertIn('INFO:root:set app__flask_secret_key from secret', logger.output[0])
-            self.assertIn('INFO:root:set authentication__params_oauth__client_secret from secret', logger.output[1])
-            self.assertIn('INFO:root:set user_annotations__hosted_tiledb_array__db_uri from secret', logger.output[2])
+            self.assertIn("INFO:root:set app__flask_secret_key from secret", logger.output[0])
+            self.assertIn("INFO:root:set authentication__params_oauth__client_secret from secret", logger.output[1])
+            self.assertIn("INFO:root:set user_annotations__hosted_tiledb_array__db_uri from secret", logger.output[2])
             self.assertEqual(config.server_config.app__flask_secret_key, "mock_flask_secret")
             self.assertEqual(config.server_config.authentication__params_oauth__client_secret, "mock_oauth_secret")
             self.assertEqual(config.default_dataset_config.user_annotations__hosted_tiledb_array__db_uri, "mock_db_uri")

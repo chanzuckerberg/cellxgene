@@ -1,3 +1,6 @@
+import yaml
+
+default_config = """
 server:
   app:
     verbose: false
@@ -143,7 +146,7 @@ server:
       #   if true, then the s3 location is automatically determined from the datapath or dataroot.
       #   if false/null, then do not set.
       #   if a string, then use that value (e.g. us-east-1).
-      region_name: us-east-1
+      region_name: true
 
   adaptor:
     cxg_adaptor:
@@ -201,3 +204,8 @@ dataset:
     enable: true
     lfc_cutoff: 0.01
     top_n: 10
+"""
+
+
+def get_default_config():
+    return yaml.load(default_config, Loader=yaml.Loader)

@@ -42,18 +42,30 @@ class ServerConfig(BaseConfig):
             self.app__web_base_url = default_config["app"]["web_base_url"]
 
             self.authentication__type = default_config["authentication"]["type"]
-            self.authentication__params_oauth__oauth_api_base_url = default_config["authentication"]["params_oauth"]["oauth_api_base_url"]  # noqa E501
+            self.authentication__params_oauth__oauth_api_base_url = default_config["authentication"]["params_oauth"][
+                "oauth_api_base_url"
+            ]  # noqa E501
             self.authentication__params_oauth__client_id = default_config["authentication"]["params_oauth"]["client_id"]
-            self.authentication__params_oauth__client_secret = default_config["authentication"]["params_oauth"]["client_secret"]  # noqa E501
-            self.authentication__params_oauth__jwt_decode_options = default_config["authentication"]["params_oauth"]["jwt_decode_options"]  # noqa E501
-            self.authentication__params_oauth__session_cookie = default_config["authentication"]["params_oauth"]["session_cookie"]  # noqa E501
+            self.authentication__params_oauth__client_secret = default_config["authentication"]["params_oauth"][
+                "client_secret"
+            ]  # noqa E501
+            self.authentication__params_oauth__jwt_decode_options = default_config["authentication"]["params_oauth"][
+                "jwt_decode_options"
+            ]  # noqa E501
+            self.authentication__params_oauth__session_cookie = default_config["authentication"]["params_oauth"][
+                "session_cookie"
+            ]  # noqa E501
             self.authentication__params_oauth__cookie = default_config["authentication"]["params_oauth"]["cookie"]
 
             self.multi_dataset__dataroot = default_config["multi_dataset"]["dataroot"]
             self.multi_dataset__index = default_config["multi_dataset"]["index"]
             self.multi_dataset__allowed_matrix_types = default_config["multi_dataset"]["allowed_matrix_types"]
-            self.multi_dataset__matrix_cache__max_datasets = default_config["multi_dataset"]["matrix_cache"]["max_datasets"]  # noqa E501
-            self.multi_dataset__matrix_cache__timelimit_s = default_config["multi_dataset"]["matrix_cache"]["timelimit_s"]  # noqa E501
+            self.multi_dataset__matrix_cache__max_datasets = default_config["multi_dataset"]["matrix_cache"][
+                "max_datasets"
+            ]  # noqa E501
+            self.multi_dataset__matrix_cache__timelimit_s = default_config["multi_dataset"]["matrix_cache"][
+                "timelimit_s"
+            ]  # noqa E501
 
             self.single_dataset__datapath = default_config["single_dataset"]["datapath"]
             self.single_dataset__obs_names = default_config["single_dataset"]["obs_names"]
@@ -164,20 +176,27 @@ class ServerConfig(BaseConfig):
 
         # oauth
         ptypes = str if self.authentication__type == "oauth" else (type(None), str)
-        self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__oauth_api_base_url", ptypes)  # noqa E501
+        self.validate_correct_type_of_configuration_attribute(
+            "authentication__params_oauth__oauth_api_base_url", ptypes
+        )  # noqa E501
         self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__client_id", ptypes)
         self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__client_secret", ptypes)
-        self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__jwt_decode_options", (type(None), dict))  # noqa E501
+        self.validate_correct_type_of_configuration_attribute(
+            "authentication__params_oauth__jwt_decode_options", (type(None), dict)
+        )  # noqa E501
         self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__session_cookie", bool)
 
         if self.authentication__params_oauth__session_cookie:
-            self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__cookie", (type(None), dict))  # noqa E501
+            self.validate_correct_type_of_configuration_attribute(
+                "authentication__params_oauth__cookie", (type(None), dict)
+            )  # noqa E501
         else:
             self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__cookie", dict)
         #   secret key: first, from CXG_OAUTH_CLIENT_SECRET environment variable
         #   second, from config file
         self.authentication__params_oauth__client_secret = os.environ.get(
-            "CXG_OAUTH_CLIENT_SECRET", self.authentication__params_oauth__client_secret)
+            "CXG_OAUTH_CLIENT_SECRET", self.authentication__params_oauth__client_secret
+        )
 
         self.auth = AuthTypeFactory.create(self.authentication__type, self)
         if self.auth is None:
@@ -210,10 +229,10 @@ class ServerConfig(BaseConfig):
 
         if self.single_dataset__datapath and self.multi_dataset__dataroot:
             raise ConfigurationError(
-                "You must supply either a datapath (for single datasets) or a dataroot (for multidatasets). Not both")
+                "You must supply either a datapath (for single datasets) or a dataroot (for multidatasets). Not both"
+            )
         if self.single_dataset__datapath is None and self.multi_dataset__dataroot is None:
-            raise ConfigurationError(
-                "You must specify a datapath for a single dataset or a dataroot for multidatasets")
+            raise ConfigurationError("You must specify a datapath for a single dataset or a dataroot for multidatasets")
 
     def handle_single_dataset(self, context):
         self.validate_correct_type_of_configuration_attribute("single_dataset__datapath", (str, type(None)))
@@ -265,7 +284,9 @@ class ServerConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute("multi_dataset__index", (type(None), bool, str))
         self.validate_correct_type_of_configuration_attribute("multi_dataset__allowed_matrix_types", list)
         self.validate_correct_type_of_configuration_attribute("multi_dataset__matrix_cache__max_datasets", int)
-        self.validate_correct_type_of_configuration_attribute("multi_dataset__matrix_cache__timelimit_s", (type(None), int, float))  # noqa E501
+        self.validate_correct_type_of_configuration_attribute(
+            "multi_dataset__matrix_cache__timelimit_s", (type(None), int, float)
+        )  # noqa E501
 
         if self.multi_dataset__dataroot is None:
             return

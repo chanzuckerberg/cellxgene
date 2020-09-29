@@ -12,9 +12,7 @@ class AuthTest(unittest.TestCase):
 
     def test_auth_none(self):
         c = AppConfig()
-        c.update_server_config(
-            authentication__type=None, multi_dataset__dataroot=self.dataset_dataroot
-        )
+        c.update_server_config(authentication__type=None, multi_dataset__dataroot=self.dataset_dataroot)
         c.update_default_dataset_config(user_annotations__enable=False)
 
         c.complete_config()
@@ -28,9 +26,7 @@ class AuthTest(unittest.TestCase):
 
     def test_auth_session(self):
         c = AppConfig()
-        c.update_server_config(
-            authentication__type="session", multi_dataset__dataroot=self.dataset_dataroot
-        )
+        c.update_server_config(authentication__type="session", multi_dataset__dataroot=self.dataset_dataroot)
         c.update_default_dataset_config(user_annotations__enable=True)
         c.complete_config()
 
@@ -107,8 +103,8 @@ class AuthTest(unittest.TestCase):
     def test_auth_test_single(self):
         c = AppConfig()
         c.update_server_config(
-            authentication__type="test",
-            single_dataset__datapath=f"{self.dataset_dataroot}/pbmc3k.cxg")
+            authentication__type="test", single_dataset__datapath=f"{self.dataset_dataroot}/pbmc3k.cxg"
+        )
 
         c.complete_config()
 

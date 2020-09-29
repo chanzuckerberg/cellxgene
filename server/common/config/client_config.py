@@ -91,11 +91,13 @@ def get_client_config(app_config, data_adaptor):
             "requires_client_login": auth.requires_client_login(),
         }
         if auth.requires_client_login():
-            config["authentication"].update({
-                # Todo why are these stored on the data_adaptor?
-                "login": auth.get_login_url(data_adaptor),
-                "logout": auth.get_logout_url(data_adaptor),
-            })
+            config["authentication"].update(
+                {
+                    # Todo why are these stored on the data_adaptor?
+                    "login": auth.get_login_url(data_adaptor),
+                    "logout": auth.get_logout_url(data_adaptor),
+                }
+            )
 
     return client_config
 
@@ -118,6 +120,6 @@ def get_client_userinfo(app_config, data_adaptor):
             "is_authenticated": auth.is_user_authenticated(),
             "username": auth.get_user_name(),
             "user_id": auth.get_user_id(),
-            "email": auth.get_user_email()
+            "email": auth.get_user_email(),
         }
         return userinfo

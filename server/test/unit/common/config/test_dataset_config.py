@@ -32,7 +32,8 @@ class TestDatasetConfig(ConfigTests):
 
     def get_config(self, **kwargs):
         file_name = self.custom_app_config(
-            dataroot=f"{FIXTURES_ROOT}", config_file_name=self.config_file_name, **kwargs)
+            dataroot=f"{FIXTURES_ROOT}", config_file_name=self.config_file_name, **kwargs
+        )
         config = AppConfig()
         config.update_from_config_file(file_name)
         return config
@@ -44,7 +45,7 @@ class TestDatasetConfig(ConfigTests):
         self.assertEqual(config.default_dataset_config.diffexp__lfc_cutoff, 0.01)
         self.assertIsNone(config.default_dataset_config.user_annotations__ontology__obo_location)
 
-    @patch('server.common.config.dataset_config.BaseConfig.validate_correct_type_of_configuration_attribute')
+    @patch("server.common.config.dataset_config.BaseConfig.validate_correct_type_of_configuration_attribute")
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
         mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.dataset_config.complete_config(self.context)
@@ -54,18 +55,20 @@ class TestDatasetConfig(ConfigTests):
         config = self.get_config(scripts=["path/to/script"])
         config.default_dataset_config.handle_app()
 
-        self.assertEqual(config.default_dataset_config.app__scripts, [{'src': 'path/to/script'}])
+        self.assertEqual(config.default_dataset_config.app__scripts, [{"src": "path/to/script"}])
 
         config = self.get_config(scripts=[{"src": "path/to/script", "more": "different/script/path"}])
         config.default_dataset_config.handle_app()
-        self.assertEqual(config.default_dataset_config.app__scripts,
-                         [{"src": "path/to/script", "more": "different/script/path"}])
+        self.assertEqual(
+            config.default_dataset_config.app__scripts, [{"src": "path/to/script", "more": "different/script/path"}]
+        )
 
         config = self.get_config(scripts=["path/to/script", "different/script/path"])
         config.default_dataset_config.handle_app()
         # TODO @madison -- is this the desired functionality?
-        self.assertEqual(config.default_dataset_config.app__scripts,
-                         [{"src": "path/to/script"}, {"src": "different/script/path"}])
+        self.assertEqual(
+            config.default_dataset_config.app__scripts, [{"src": "path/to/script"}, {"src": "different/script/path"}]
+        )
 
         config = self.get_config(scripts=[{"more": "different/script/path"}])
         with self.assertRaises(ConfigurationError):
@@ -82,37 +85,45 @@ class TestDatasetConfig(ConfigTests):
             config.server_config.complete_config(self.context)
 
     def test_handle_user_annotations__adds_warning_message_if_annotation_vars_set_when_annotations_disabled(self):
-        config = self.get_config(enable_users_annotations="false", authentication_enable="false",
-                                 db_uri="shouldnt/be/set")
+        config = self.get_config(
+            enable_users_annotations="false", authentication_enable="false", db_uri="shouldnt/be/set"
+        )
         config.default_dataset_config.handle_user_annotations(self.context)
 
-        self.assertEqual(self.context["messages"], ['Warning: db_uri ignored as annotations are disabled.'])
+        self.assertEqual(self.context["messages"], ["Warning: db_uri ignored as annotations are disabled."])
 
-    @patch('server.common.config.dataset_config.DbUtils')
+    @patch("server.common.config.dataset_config.DbUtils")
     def test_handle_user_annotations__instantiates_user_annotations_class_correctly(self, mock_db_utils):
-        mock_db_utils.return_value = '123'
-        config = self.get_config(enable_users_annotations="true", authentication_enable="true",
-                                 annotation_type="local_file_csv")
+        mock_db_utils.return_value = "123"
+        config = self.get_config(
+            enable_users_annotations="true", authentication_enable="true", annotation_type="local_file_csv"
+        )
         config.server_config.complete_config(self.context)
         config.default_dataset_config.handle_user_annotations(self.context)
         self.assertIsInstance(config.default_dataset_config.user_annotations, AnnotationsLocalFile)
 
-        config = self.get_config(enable_users_annotations="true", authentication_enable="true",
-                                 annotation_type="hosted_tiledb_array", db_uri="gotta/set/this",
-                                 hosted_file_directory="and/this")
+        config = self.get_config(
+            enable_users_annotations="true",
+            authentication_enable="true",
+            annotation_type="hosted_tiledb_array",
+            db_uri="gotta/set/this",
+            hosted_file_directory="and/this",
+        )
         config.server_config.complete_config(self.context)
         config.default_dataset_config.handle_user_annotations(self.context)
         self.assertIsInstance(config.default_dataset_config.user_annotations, AnnotationsHostedTileDB)
 
-        config = self.get_config(enable_users_annotations="true", authentication_enable="true",
-                                 annotation_type="NOT_REAL")
+        config = self.get_config(
+            enable_users_annotations="true", authentication_enable="true", annotation_type="NOT_REAL"
+        )
         config.server_config.complete_config(self.context)
         with self.assertRaises(ConfigurationError):
             config.default_dataset_config.handle_user_annotations(self.context)
 
     def test_handle_local_file_csv_annotations__sets_dir_if_not_passed_in(self):
-        config = self.get_config(enable_users_annotations="true", authentication_enable="true",
-                                 annotation_type="local_file_csv")
+        config = self.get_config(
+            enable_users_annotations="true", authentication_enable="true", annotation_type="local_file_csv"
+        )
         config.server_config.complete_config(self.context)
         config.default_dataset_config.handle_local_file_csv_annotations()
         self.assertIsInstance(config.default_dataset_config.user_annotations, AnnotationsLocalFile)
@@ -120,10 +131,13 @@ class TestDatasetConfig(ConfigTests):
         self.assertEqual(config.default_dataset_config.user_annotations._get_output_dir(), cwd)
 
     def test_handle_embeddings__checks_data_file_types(self):
-        file_name = self.custom_app_config(embedding_names=["name1", "name2"], enable_reembedding="true",
-                                           dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad",
-                                           anndata_backed="true",
-                                           config_file_name=self.config_file_name)
+        file_name = self.custom_app_config(
+            embedding_names=["name1", "name2"],
+            enable_reembedding="true",
+            dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad",
+            anndata_backed="true",
+            config_file_name=self.config_file_name,
+        )
         config = AppConfig()
         config.update_from_config_file(file_name)
         config.server_config.complete_config(self.context)
@@ -134,7 +148,7 @@ class TestDatasetConfig(ConfigTests):
         config = self.get_config(lfc_cutoff=0.02, enable_difexp="true", top_n=15)
         config.server_config.complete_config(self.context)
         config.default_dataset_config.handle_diffexp(self.context)
-        self.assertEqual(len(self.context['messages']), 0)
+        self.assertEqual(len(self.context["messages"]), 0)
 
     def test_multi_dataset(self):
         config = AppConfig()

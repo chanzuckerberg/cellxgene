@@ -1,9 +1,10 @@
 import yaml
 from flatten_dict import unflatten
+
+from default_config import get_default_config
 from server.common.config.dataset_config import DatasetConfig
 from server.common.config.server_config import ServerConfig
 from server.common.errors import ConfigurationError
-import os
 
 
 class AppConfig(object):
@@ -20,10 +21,10 @@ class AppConfig(object):
 
     def __init__(self):
 
-        # the default configuration (see default_config.yml)
+        # the default configuration (see default_config.py)
         # TODO @madison -- if we always read from the default config (hard coded path) can we set those values as
         #  defaults within the config class?
-        self.default_config = self.get_default_config()
+        self.default_config = get_default_config()
         # the server configuration
         self.server_config = ServerConfig(self, self.default_config["server"])
         # the dataset config, unless overridden by an entry in dataroot_config
@@ -45,16 +46,6 @@ class AppConfig(object):
 
         # Set to true when config_completed is called
         self.is_completed = False
-
-    @staticmethod
-    def get_default_config():
-        try:
-            with open(f"{os.getenv('PROJECT_ROOT')}/default_config.yml", 'r') as default_config:
-                return yaml.safe_load(default_config)
-        except yaml.YAMLError as e:
-            raise ConfigurationError(f"Unable to import default configuration yaml: {e}")
-        except OSError as e:
-            raise ConfigurationError(f"Unable to import file: {e}")
 
     def get_dataset_config(self, dataroot_key):
         if self.server_config.single_dataset__datapath:
@@ -83,8 +74,13 @@ class AppConfig(object):
         self.is_complete = False
 
     def update_from_config_file(self, config_file):
-        with open(config_file) as yml_file:
-            config = yaml.safe_load(yml_file)
+        try:
+            with open(config_file) as yml_file:
+                config = yaml.safe_load(yml_file)
+        except yaml.YAMLError as e:
+            raise ConfigurationError(f"The specified config file contained an error: {e}")
+        except OSError as e:
+            raise ConfigurationError(f"Issue retrieving the specified config file: {e}")
 
         if config.get("server"):
             self.server_config.update_from_config(config["server"], "server")
@@ -147,6 +143,7 @@ class AppConfig(object):
         parameters is done"""
 
         if messagefn is None:
+
             def noop(message):
                 pass
 

@@ -37,7 +37,7 @@ from server.common.utils.utils import sort_options
     default=False,
     is_flag=True,
     help="Do not run quality control metrics. By default cellxgene runs them "
-         "(saved to adata.obs and adata.var; see scanpy.pp.calculate_qc_metrics for details).",
+    "(saved to adata.obs and adata.var; see scanpy.pp.calculate_qc_metrics for details).",
 )
 @click.option(
     "--make-obs-names-unique/--no-make-obs-names-unique",
@@ -53,18 +53,18 @@ from server.common.utils.utils import sort_options
 )
 @click.help_option("--help", "-h", help="Show this message and exit.")
 def prepare(
-        data,
-        embedding,
-        recipe,
-        output,
-        plotting,
-        sparse,
-        overwrite,
-        set_obs_names,
-        set_var_names,
-        skip_qc,
-        make_obs_names_unique,
-        make_var_names_unique,
+    data,
+    embedding,
+    recipe,
+    output,
+    plotting,
+    sparse,
+    overwrite,
+    set_obs_names,
+    set_var_names,
+    skip_qc,
+    make_obs_names_unique,
+    make_var_names_unique,
 ):
     """
     Preprocess data for use with cellxgene.

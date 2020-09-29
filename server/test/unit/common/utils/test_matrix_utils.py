@@ -6,7 +6,6 @@ from server.common.utils.matrix_utils import is_matrix_sparse, get_column_shift_
 
 
 class TestMatrixUtils(unittest.TestCase):
-
     def test__is_matrix_sparse__zero_and_one_hundred_percent_threshold(self):
         matrix = np.array([1, 2, 3])
 

@@ -173,7 +173,7 @@ class DataAdaptor(metaclass=ABCMeta):
         mask = np.zeros((count,), dtype=np.bool)
         for i in filter:
             if type(i) == list:
-                mask[i[0]: i[1]] = True
+                mask[i[0] : i[1]] = True
             else:
                 mask[i] = True
         return mask
@@ -314,7 +314,7 @@ class DataAdaptor(metaclass=ABCMeta):
             top_n = self.dataset_config.diffexp__top_n
 
         if self.server_config.exceeds_limit(
-                "diffexp_cellcount_max", np.count_nonzero(obs_mask_A) + np.count_nonzero(obs_mask_B)
+            "diffexp_cellcount_max", np.count_nonzero(obs_mask_A) + np.count_nonzero(obs_mask_B)
         ):
             raise ExceedsLimitError("Diffexp request exceeds max cell count limit")
 

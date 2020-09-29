@@ -8,8 +8,14 @@ import requests
 
 import server.test.unit.decode_fbs as decode_fbs
 from server.data_common.matrix_loader import MatrixDataType
-from server.test import (data_with_tmp_annotations, make_fbs, PROJECT_ROOT, FIXTURES_ROOT, start_test_server,
-                         stop_test_server)
+from server.test import (
+    data_with_tmp_annotations,
+    make_fbs,
+    PROJECT_ROOT,
+    FIXTURES_ROOT,
+    start_test_server,
+    stop_test_server,
+)
 from server.test.fixtures.fixtures import pbmc3k_colors
 
 BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
@@ -381,11 +387,14 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
 
     @classmethod
     def setUpClass(cls):
-        cls._setupClass(cls, [
-            f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
-            "--disable-annotations",
-            "--experimental-enable-reembedding",
-        ])
+        cls._setupClass(
+            cls,
+            [
+                f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
+                "--disable-annotations",
+                "--experimental-enable-reembedding",
+            ],
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -403,10 +412,7 @@ class EndPointsCxg(unittest.TestCase, EndPoints):
 
     @classmethod
     def setUpClass(cls):
-        cls._setupClass(cls, [
-            f"{FIXTURES_ROOT}/pbmc3k.cxg",
-            "--disable-annotations",
-        ])
+        cls._setupClass(cls, [f"{FIXTURES_ROOT}/pbmc3k.cxg", "--disable-annotations"])
 
     @classmethod
     def tearDownClass(cls):
@@ -423,7 +429,7 @@ class EndPointsAnndataAnnotations(unittest.TestCase, EndPointsAnnotations):
         cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_annotations(
             MatrixDataType.H5AD, annotations_fixture=True
         )
-        cls._setupClass(cls, ["--annotations-file", cls.annotations.output_file, cls.data.get_location(), ])
+        cls._setupClass(cls, ["--annotations-file", cls.annotations.output_file, cls.data.get_location()])
 
     @classmethod
     def tearDownClass(cls):
@@ -439,11 +445,7 @@ class EndPointsCxgAnnotations(unittest.TestCase, EndPointsAnnotations):
     @classmethod
     def setUpClass(cls):
         cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_annotations(MatrixDataType.CXG, annotations_fixture=True)
-        cls._setupClass(cls, [
-            "--annotations-file",
-            cls.annotations.output_file,
-            cls.data.get_location(),
-        ])
+        cls._setupClass(cls, ["--annotations-file", cls.annotations.output_file, cls.data.get_location()])
 
     @classmethod
     def tearDownClass(cls):

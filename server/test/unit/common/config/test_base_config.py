@@ -24,7 +24,8 @@ class BaseConfigTest(ConfigTests):
 
     def get_config(self, **kwargs):
         file_name = self.custom_app_config(
-            dataroot=f"{FIXTURES_ROOT}", config_file_name=self.config_file_name, **kwargs)
+            dataroot=f"{FIXTURES_ROOT}", config_file_name=self.config_file_name, **kwargs
+        )
         config = AppConfig()
         config.update_from_config_file(file_name)
         return config
@@ -32,21 +33,26 @@ class BaseConfigTest(ConfigTests):
     def test_mapping_creation_returns_map_of_server_and_dataset_config(self):
         config = AppConfig()
         mapping = config.default_dataset_config.create_mapping(config.default_config)
-        self.assertIsNotNone(mapping['server__app__verbose'])
-        self.assertIsNotNone(mapping['dataset__presentation__max_categories'])
-        self.assertIsNotNone(mapping['dataset__user_annotations__ontology__obo_location'])
-        self.assertIsNotNone(mapping['server__multi_dataset__allowed_matrix_types'])
+        self.assertIsNotNone(mapping["server__app__verbose"])
+        self.assertIsNotNone(mapping["dataset__presentation__max_categories"])
+        self.assertIsNotNone(mapping["dataset__user_annotations__ontology__obo_location"])
+        self.assertIsNotNone(mapping["server__multi_dataset__allowed_matrix_types"])
 
     def test_changes_from_default_returns_list_of_nondefault_config_values(self):
         config = self.get_config(verbose="true", lfc_cutoff=0.05)
         server_changes = config.server_config.changes_from_default()
         dataset_changes = config.default_dataset_config.changes_from_default()
 
-        self.assertEqual(server_changes,
-                         [('app__verbose', True, False), ('multi_dataset__dataroot', FIXTURES_ROOT, None),
-                          ('multi_dataset__matrix_cache__timelimit_s', 5, 30),
-                          ('data_locator__s3__region_name', 'us-east-1', True)])
-        self.assertEqual(dataset_changes, [('diffexp__lfc_cutoff', 0.05, 0.01)])
+        self.assertEqual(
+            server_changes,
+            [
+                ("app__verbose", True, False),
+                ("multi_dataset__dataroot", FIXTURES_ROOT, None),
+                ("multi_dataset__matrix_cache__timelimit_s", 5, 30),
+                ("data_locator__s3__region_name", "us-east-1", True),
+            ],
+        )
+        self.assertEqual(dataset_changes, [("diffexp__lfc_cutoff", 0.05, 0.01)])
 
     def test_check_config_throws_error_if_attr_has_not_been_checked(self):
         config = self.get_config(verbose="true")

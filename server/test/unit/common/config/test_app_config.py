@@ -4,6 +4,7 @@ import unittest
 
 import yaml
 
+from default_config import default_config
 from server.common.config.app_config import AppConfig
 from server.test.unit.common.config import ConfigTests
 from server.common.errors import ConfigurationError
@@ -28,39 +29,34 @@ class AppConfigTest(ConfigTests):
 
     def get_config(self, **kwargs):
         file_name = self.custom_app_config(
-            dataroot=f"{FIXTURES_ROOT}", config_file_name=self.config_file_name, **kwargs)
+            dataroot=f"{FIXTURES_ROOT}", config_file_name=self.config_file_name, **kwargs
+        )
         config = AppConfig()
         config.update_from_config_file(file_name)
         return config
 
-    def test_get_default_config_successfully_reads_yaml_file(self):
-        app_default_config = AppConfig().get_default_config()
+    def test_get_default_config_correctly_reads_default_config_file(self):
+        app_default_config = AppConfig().default_config
 
-        with open(f"{os.getenv('PROJECT_ROOT')}/default_config.yml", 'r') as default_config:
-            yaml_config = yaml.safe_load(default_config)
+        expected_config = yaml.load(default_config, Loader=yaml.Loader)
 
-        self.assertEqual(yaml_config['server']['app']['verbose'], app_default_config['server']['app']['verbose'])
-        self.assertEqual(yaml_config['server']['authentication']['type'],
-                         app_default_config['server']['authentication']['type'])
+        server_config = app_default_config['server']
+        dataset_config = app_default_config['dataset']
 
-    def test_init_app_config_pulls_in_default_server_and_dataset_configurations(self):
-        config = AppConfig()
+        expected_server_config = expected_config['server']
+        expected_dataset_config = expected_config['dataset']
 
-        with open(f"{os.getenv('PROJECT_ROOT')}/default_config.yml", 'r') as default_config:
-            yaml_config = yaml.safe_load(default_config)
+        self.assertDictEqual(app_default_config, expected_config)
+        self.assertDictEqual(server_config, expected_server_config)
+        self.assertDictEqual(dataset_config, expected_dataset_config)
 
-        self.assertEqual(yaml_config['server']['app']['verbose'], config.server_config.app__verbose)
-        self.assertEqual(yaml_config['server']['authentication']['type'], config.server_config.authentication__type)
-        self.assertEqual(yaml_config['dataset']['diffexp']['lfc_cutoff'],
-                         config.default_dataset_config.diffexp__lfc_cutoff)
-
-    def test_get_dataset_config_handles_single_datasets(self):
+    def test_get_dataset_config_returns_default_dataset_config_for_single_datasets(self):
         datapath = f"{FIXTURES_ROOT}/1e4dfec4-c0b2-46ad-a04e-ff3ffb3c0a8f.h5ad"
-        file_name = self.custom_app_config(
-            dataset_datapath=datapath, config_file_name=self.config_file_name)
+        file_name = self.custom_app_config(dataset_datapath=datapath, config_file_name=self.config_file_name)
         config = AppConfig()
         config.update_from_config_file(file_name)
-        self.assertEqual(config.server_config.single_dataset__datapath, datapath)
+
+        self.assertEqual(config.get_dataset_config(""), config.default_dataset_config)
 
     def test_update_server_config_updates_server_config_and_config_status(self):
         config = self.get_config()
@@ -73,10 +69,10 @@ class AppConfigTest(ConfigTests):
     def test_write_config_outputs_yaml_with_all_config_vars(self):
         config = self.get_config()
         config.write_config(f"{FIXTURES_ROOT}/tmp_dir/write_config.yml")
-        with open(f"{FIXTURES_ROOT}/tmp_dir/{self.config_file_name}", 'r') as default_config:
+        with open(f"{FIXTURES_ROOT}/tmp_dir/{self.config_file_name}", "r") as default_config:
             default_config_yml = yaml.safe_load(default_config)
 
-        with open(f"{FIXTURES_ROOT}/tmp_dir/write_config.yml", 'r') as output_config:
+        with open(f"{FIXTURES_ROOT}/tmp_dir/write_config.yml", "r") as output_config:
             output_config_yml = yaml.safe_load(output_config)
         self.maxDiff = None
         self.assertEqual(default_config_yml, output_config_yml)
