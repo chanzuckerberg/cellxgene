@@ -40,11 +40,11 @@ class AppConfigTest(ConfigTests):
 
         expected_config = yaml.load(default_config, Loader=yaml.Loader)
 
-        server_config = app_default_config['server']
-        dataset_config = app_default_config['dataset']
+        server_config = app_default_config["server"]
+        dataset_config = app_default_config["dataset"]
 
-        expected_server_config = expected_config['server']
-        expected_dataset_config = expected_config['dataset']
+        expected_server_config = expected_config["server"]
+        expected_dataset_config = expected_config["dataset"]
 
         self.assertDictEqual(app_default_config, expected_config)
         self.assertDictEqual(server_config, expected_server_config)

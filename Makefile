@@ -82,7 +82,7 @@ fmt-py:
 lint: lint-server lint-client
 
 .PHONY: lint-server
-lint-server:
+lint-server: fmt-py
 	flake8 server --per-file-ignores='server/test/fixtures/dataset_config_outline.py:F821 server/test/fixtures/server_config_outline.py:F821'
 
 
