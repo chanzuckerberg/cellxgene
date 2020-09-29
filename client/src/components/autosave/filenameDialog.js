@@ -3,11 +3,12 @@ import { connect } from "react-redux";
 
 import {
   Button,
-  Tooltip,
-  InputGroup,
-  Dialog,
   Classes,
+  Code,
   Colors,
+  Dialog,
+  InputGroup,
+  Tooltip,
 } from "@blueprintjs/core";
 
 @connect((state) => ({
@@ -145,9 +146,9 @@ class FilenameDialog extends React.Component {
             <div>
               <p>
                 Your annotations are stored in this file:
-                <code className="bp3-code">
+                <Code>
                   {filenameText}-{idhash}.csv
-                </code>
+                </Code>
               </p>
               <p style={{ fontStyle: "italic" }}>
                 (We added a unique ID to your filename)
