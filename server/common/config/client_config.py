@@ -17,9 +17,6 @@ def get_client_config(app_config, data_adaptor):
     # make sure the configuration has been checked.
     app_config.check_config()
 
-    # features
-    features = [f.todict() for f in data_adaptor.get_features(annotation)]
-
     # display_names
     title = app_config.get_title(data_adaptor)
     about = app_config.get_about(data_adaptor)
@@ -75,7 +72,6 @@ def get_client_config(app_config, data_adaptor):
     # gather it all together
     client_config = {}
     config = client_config["config"] = {}
-    config["features"] = features
     config["displayNames"] = display_names
     config["library_versions"] = library_versions
     config["links"] = links

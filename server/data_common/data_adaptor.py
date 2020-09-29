@@ -155,17 +155,6 @@ class DataAdaptor(metaclass=ABCMeta):
         """
         pass
 
-    def get_features(self, annotations=None):
-        """Return list of features, to return as part of the config route"""
-        features = [
-            AppFeature("/cluster/", method="POST", available=False),
-            AppFeature("/layout/obs", method="GET", available=self.get_embedding_names() is not None),
-            AppFeature("/layout/obs", method="PUT", available=self.dataset_config.embeddings__enable_reembedding),
-            AppFeature("/diffexp/", method="POST", available=self.dataset_config.diffexp__enable),
-            AppFeature("/annotations/obs", method="PUT", available=annotations is not None),
-        ]
-        return features
-
     def update_parameters(self, parameters):
         parameters.update(self.parameters)
 
@@ -388,17 +377,3 @@ class DataAdaptor(metaclass=ABCMeta):
         except RuntimeError:
             lastmod = None
         return lastmod
-
-
-class AppFeature(object):
-    def __init__(self, path, available=False, method="POST", extra={}):
-        self.path = path
-        self.available = available
-        self.method = method
-        self.extra = extra
-        [setattr(self, key, value) for key, value in extra.items()]
-
-    def todict(self):
-        d = dict(available=self.available, method=self.method, path=self.path)
-        d.update(self.extra)
-        return d
