@@ -199,7 +199,7 @@ class Categories extends React.Component {
         )}
         {/* WRITEABLE FIELDS */}
         {allCategoryNames.map((catName) =>
-           schema.annotations.obsByName[catName].writable ? (
+          schema.annotations.obsByName[catName].writable ? (
             <Category
               key={catName}
               metadataField={catName}
@@ -209,6 +209,7 @@ class Categories extends React.Component {
             />
           ) : null
         )}
+
         {writableCategoriesEnabled ? (
           <Tooltip
             content={
