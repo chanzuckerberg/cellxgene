@@ -69,7 +69,6 @@ class Gene extends React.Component {
             style={{
               cursor: "pointer",
             }}
-            onClick={this.handleGeneExpandClick}
           >
             <Truncate>
               <span
@@ -106,7 +105,7 @@ class Gene extends React.Component {
             small
             data-testclass="maximize"
             data-testid={`maximize-${gene}`}
-            onClick={/* todo gene sets */ () => {}}
+            onClick={this.handleGeneExpandClick}
             active={false /* todo gene sets */}
             intent="none"
             icon={<Icon icon="maximize" iconSize={10} />}
