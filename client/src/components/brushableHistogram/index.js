@@ -53,14 +53,30 @@ class HistogramBrush extends React.PureComponent {
     const marginRight = 54; // space for Y axis & labels
     const marginBottom = 25; // space for X axis & labels
     const marginTop = 3;
-    this.margin = {
-      marginLeft,
-      marginRight,
-      marginBottom,
-      marginTop,
+
+    const marginLeftMini = 10; // Space for 0 tick label on X axis
+    const marginRightMini = 54; // space for Y axis & labels
+    const marginBottomMini = 25; // space for X axis & labels
+    const marginTopMini = 3;
+
+    this.state = {
+      margin: {
+        marginLeft,
+        marginRight,
+        marginBottom,
+        marginTop,
+      },
+      width: 340 - marginLeft - marginRight,
+      height: 135 - marginTop - marginBottom,
+      marginMini: {
+        marginLeftMini,
+        marginRightMini,
+        marginBottomMini,
+        marginTopMini,
+      },
+      widthMini: 340 - marginLeft - marginRight,
+      heightMini: 135 - marginTop - marginBottom,
     };
-    this.width = 340 - marginLeft - marginRight;
-    this.height = 135 - marginTop - marginBottom;
   }
 
   onBrush = (selection, x, eventType) => {
@@ -190,6 +206,14 @@ class HistogramBrush extends React.PureComponent {
 
   fetchAsyncProps = async () => {
     const { annoMatrix } = this.props;
+    const {
+      margin,
+      width,
+      height,
+      marginMini,
+      widthMini,
+      heightMini,
+    } = this.state;
     const { isClipped } = annoMatrix;
 
     const query = this.createQuery();
@@ -217,11 +241,12 @@ class HistogramBrush extends React.PureComponent {
         : globals.blue,
     ];
 
-    const histogram = this.calcHistogramCache(
+    const histogram = this.calcHistogramCache(column, margin, width, height);
+    const miniHistogram = this.calcHistogramCache(
       column,
-      this.margin,
-      this.width,
-      this.height
+      marginMini,
+      widthMini,
+      heightMini
     );
 
     const isSingleValue = summary.min === summary.max;
@@ -235,6 +260,7 @@ class HistogramBrush extends React.PureComponent {
 
     return {
       histogram,
+      miniHistogram,
       range,
       unclippedRange,
       unclippedRangeColor,
@@ -314,7 +340,16 @@ class HistogramBrush extends React.PureComponent {
       zebra,
       continuousSelectionRange,
       isObs,
+      mini,
     } = this.props;
+    const {
+      margin,
+      width,
+      height,
+      marginMini,
+      widthMini,
+      heightMini,
+    } = this.state;
     const fieldForId = field.replace(/\s/g, "_");
     const showScatterPlot = isDiffExp || isUserDefined;
 
@@ -346,44 +381,51 @@ class HistogramBrush extends React.PureComponent {
                   backgroundColor: zebra ? globals.lightestGrey : "white",
                 }}
               >
-                <HistogramHeader
-                  fieldId={field}
-                  isColorBy={isColorAccessor}
-                  isObs={isObs}
-                  onColorByClick={this.handleColorAction(dispatch)}
-                  onRemoveClick={isUserDefined ? this.removeHistogram : null}
-                  isScatterPlotX={isScatterplotXXaccessor}
-                  isScatterPlotY={isScatterplotYYaccessor}
-                  onScatterPlotXClick={
-                    showScatterPlot ? this.handleSetGeneAsScatterplotX : null
-                  }
-                  onScatterPlotYClick={
-                    showScatterPlot ? this.handleSetGeneAsScatterplotY : null
-                  }
-                />
+                {!mini ? (
+                  <HistogramHeader
+                    fieldId={field}
+                    isColorBy={isColorAccessor}
+                    isObs={isObs}
+                    onColorByClick={this.handleColorAction(dispatch)}
+                    onRemoveClick={isUserDefined ? this.removeHistogram : null}
+                    isScatterPlotX={isScatterplotXXaccessor}
+                    isScatterPlotY={isScatterplotYYaccessor}
+                    onScatterPlotXClick={
+                      showScatterPlot ? this.handleSetGeneAsScatterplotX : null
+                    }
+                    onScatterPlotYClick={
+                      showScatterPlot ? this.handleSetGeneAsScatterplotY : null
+                    }
+                  />
+                ) : null}
                 <Histogram
                   field={field}
                   fieldForId={fieldForId}
                   display={asyncProps.isSingleValue ? "none" : "block"}
-                  histogram={asyncProps.histogram}
-                  width={this.width}
-                  height={this.height}
+                  histogram={
+                    mini ? asyncProps.miniHistogram : asyncProps.histogram
+                  }
+                  width={mini ? widthMini : width}
+                  height={mini ? heightMini : height}
                   onBrush={this.onBrush}
                   onBrushEnd={this.onBrushEnd}
-                  margin={this.margin}
+                  margin={mini ? marginMini : margin}
                   isColorBy={isColorAccessor}
                   selectionRange={continuousSelectionRange}
+                  mini={mini}
                 />
-                <HistogramFooter
-                  displayName={field}
-                  hideRanges={asyncProps.isSingleValue}
-                  rangeMin={asyncProps.unclippedRange[0]}
-                  rangeMax={asyncProps.unclippedRange[1]}
-                  rangeColorMin={asyncProps.unclippedRangeColor[0]}
-                  rangeColorMax={asyncProps.unclippedRangeColor[1]}
-                  logFoldChange={logFoldChange}
-                  pvalAdj={pvalAdj}
-                />
+                {!mini ? (
+                  <HistogramFooter
+                    displayName={field}
+                    hideRanges={asyncProps.isSingleValue}
+                    rangeMin={asyncProps.unclippedRange[0]}
+                    rangeMax={asyncProps.unclippedRange[1]}
+                    rangeColorMin={asyncProps.unclippedRangeColor[0]}
+                    rangeColorMax={asyncProps.unclippedRangeColor[1]}
+                    logFoldChange={logFoldChange}
+                    pvalAdj={pvalAdj}
+                  />
+                ) : null}
               </div>
             ) : null
           }

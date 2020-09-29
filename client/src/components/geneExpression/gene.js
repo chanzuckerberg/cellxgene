@@ -11,7 +11,7 @@ import HistogramBrush from "../brushableHistogram";
 
 // import TestMiniHisto from "./test_miniHisto";
 import * as globals from "../../globals";
-import GeneMenus from "./menus/geneMenus";
+// import GeneMenus from "./menus/geneMenus";
 
 @connect(() => {
   return {};
@@ -41,15 +41,12 @@ class Gene extends React.Component {
     const { gene } = this.props;
     const { geneIsExpanded } = this.state;
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "baseline",
-          marginLeft: 15,
-        }}
-      >
-        <div>
+      <div>
+        <div
+          style={{
+            marginLeft: 15,
+          }}
+        >
           <Icon
             icon="drag-handle-horizontal"
             iconSize={12}
@@ -82,41 +79,40 @@ class Gene extends React.Component {
                 {gene}
               </span>
             </Truncate>
-            <HistogramBrush isUserDefined field={gene} mini={!geneIsExpanded} />
-
+            <AnchorButton
+              minimal
+              small
+              data-testclass="maximize"
+              data-testid={`maximize-${gene}`}
+              onClick={this.handleGeneExpandClick}
+              active={false /* todo gene sets */}
+              intent="none"
+              icon={<Icon icon="maximize" iconSize={10} />}
+            />
             {/* <TestMiniHisto /> */}
           </span>
         </div>
 
-        <div>
-          <GeneMenus genesetsEditable gene={gene} />
-          <AnchorButton
-            minimal
-            small
-            data-testclass="colorby"
-            data-testid={`colorby-${gene}`}
-            onClick={/* todo gene sets */ () => {}}
-            active={false /* todo gene sets */}
-            intent="none"
-            icon={<Icon icon="tint" iconSize={12} />}
-          />
-          <AnchorButton
-            minimal
-            small
-            data-testclass="maximize"
-            data-testid={`maximize-${gene}`}
-            onClick={this.handleGeneExpandClick}
-            active={false /* todo gene sets */}
-            intent="none"
-            icon={<Icon icon="maximize" iconSize={10} />}
-          />
-        </div>
+        <HistogramBrush isUserDefined field={gene} mini={!geneIsExpanded} />
+
+        {/* <GeneMenus genesetsEditable gene={gene} /> */}
       </div>
     );
   }
 }
 
 export default Gene;
+
+// <AnchorButton
+//   minimal
+//   small
+//   data-testclass="colorby"
+//   data-testid={`colorby-${gene}`}
+//   onClick={/* todo gene sets */ () => {}}
+//   active={false /* todo gene sets */}
+//   intent="none"
+//   icon={<Icon icon="tint" iconSize={12} />}
+// />
 
 // {geneIsExpanded ? (
 //   <FaChevronDown

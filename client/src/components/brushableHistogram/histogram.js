@@ -17,6 +17,7 @@ const Histogram = ({
   margin,
   isColorBy,
   selectionRange,
+  mini,
 }) => {
   const svgRef = useRef(null);
   const [brush, setBrush] = useState(null);
@@ -28,6 +29,8 @@ const Histogram = ({
     const { marginLeft, marginRight, marginBottom, marginTop } = margin;
     const { x, y, bins, binStart, binEnd, binWidth } = histogram;
     const svg = d3.select(svgRef.current);
+    const binPadding = mini ? 0 : -1;
+    const defaultBarColor = mini ? "black" : "#bbb";
 
     /* Remove everything */
     svg.selectAll("*").remove();
@@ -62,11 +65,13 @@ const Histogram = ({
         .append("rect")
         .attr("x", (d, i) => x(binStart(i)) + 1)
         .attr("y", (d) => y(d))
-        .attr("width", (d, i) => x(binEnd(i)) - x(binStart(i)) - 1)
+        .attr("width", (d, i) => x(binEnd(i)) - x(binStart(i)) - binPadding)
         .attr("height", (d) => y(0) - y(d))
         .style(
           "fill",
-          isColorBy ? (d, i) => colorScale(histogramScale(binStart(i))) : "#bbb"
+          isColorBy
+            ? (d, i) => colorScale(histogramScale(binStart(i)))
+            : defaultBarColor
         );
     }
 
