@@ -39,6 +39,6 @@ Check out the cool data that our users are using cellxgene to explore!
 
 ### [Melanoma](https://melanoma.cellgeni.sanger.ac.uk/)
 
-### [CZI's own cellxgene site](cellxgene_cziscience_com)
+### [CZI's own cellxgene site](https://cellxgene.cziscience.com/)
 
 _Want us to link to your dataset here? [Just send us a note!](contact)_
