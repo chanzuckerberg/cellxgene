@@ -11,7 +11,7 @@ const Auth = React.memo((props) => {
   return (
     <ButtonGroup className={styles.menubarButton}>
       <Tooltip
-        content="Log in or log out of cellxgene"
+        content="Log in to cellxgene"
         position="bottom"
         hoverOpenDelay={globals.tooltipHoverOpenDelay}
       >
@@ -19,7 +19,6 @@ const Auth = React.memo((props) => {
           type="button"
           data-testid="auth-button"
           disabled={false}
-          icon={!userinfo.is_authenticated ? "log-in" : "log-out"}
           href={!userinfo.is_authenticated ? auth.login : auth.logout}
         >
           {!userinfo.is_authenticated ? "Log In" : "Log Out"}
