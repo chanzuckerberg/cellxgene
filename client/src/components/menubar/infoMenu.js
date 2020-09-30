@@ -1,6 +1,14 @@
 // jshint esversion: 6
 import React from "react";
-import { Button, Popover, Menu, MenuItem, Position } from "@blueprintjs/core";
+import {
+  Button,
+  ButtonGroup,
+  Classes,
+  Menu,
+  MenuItem,
+  Popover,
+  Position,
+} from "@blueprintjs/core";
 import styles from "./menubar.css";
 
 const handleClick = (dispatch) => {
@@ -17,7 +25,7 @@ const InformationMenu = React.memo((props) => {
     dispatch,
   } = props;
   return (
-    <div className={`bp3-button-group ${styles.menubarButton}`}>
+    <ButtonGroup className={`${styles.menubarButton}`}>
       <Popover
         content={
           <Menu>
@@ -32,18 +40,21 @@ const InformationMenu = React.memo((props) => {
               target="_blank"
               icon="book"
               text="Documentation"
+              rel="noopener"
             />
             <MenuItem
               href="https://join-cellxgene-users.herokuapp.com/"
               target="_blank"
               icon="chat"
               text="Chat"
+              rel="noopener"
             />
             <MenuItem
               href="https://github.com/chanzuckerberg/cellxgene"
               target="_blank"
               icon="git-branch"
               text="Github"
+              rel="noopener"
             />
             <MenuItem
               target="_blank"
@@ -62,6 +73,7 @@ const InformationMenu = React.memo((props) => {
                 href={privacyURL}
                 target="_blank"
                 text="Privacy Policy"
+                rel="noopener"
               />
             ) : null}
 
@@ -82,13 +94,13 @@ const InformationMenu = React.memo((props) => {
       >
         <Button
           type="button"
-          className="bp3-button bp3-icon-info-sign"
+          className={`${Classes.BUTTON} bp3-icon-info-sign`}
           style={{
             cursor: "pointer",
           }}
         />
       </Popover>
-    </div>
+    </ButtonGroup>
   );
 });
 

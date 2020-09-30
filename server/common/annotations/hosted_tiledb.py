@@ -31,7 +31,8 @@ class AnnotationsHostedTileDB(Annotations):
         unsanitary_original_category_names = set(original_category_names).difference(sanitized_category_names)
         if unsanitary_original_category_names:
             raise AnnotationCategoryNameError(
-                f"{unsanitary_original_category_names} are not valid category names, please resubmit")
+                f"{unsanitary_original_category_names} are not valid category names, please resubmit"
+            )
 
     def is_safe_collection_name(self, name):
         """
@@ -68,11 +69,11 @@ class AnnotationsHostedTileDB(Annotations):
         index_dims = None
         schema_hints = json.loads(schema_hints)
 
-        if '__pandas_attribute_repr' in tileDBArray.meta:
+        if "__pandas_attribute_repr" in tileDBArray.meta:
             # backwards compatibility... unsure if necessary at this point
-            repr_meta = json.loads(tileDBArray.meta['__pandas_attribute_repr'])
-        if '__pandas_index_dims' in tileDBArray.meta:
-            index_dims = json.loads(tileDBArray.meta['__pandas_index_dims'])
+            repr_meta = json.loads(tileDBArray.meta["__pandas_attribute_repr"])
+        if "__pandas_index_dims" in tileDBArray.meta:
+            index_dims = json.loads(tileDBArray.meta["__pandas_index_dims"])
 
         data = tileDBArray[:]
         indexes = list()
@@ -80,12 +81,12 @@ class AnnotationsHostedTileDB(Annotations):
         for col_name, col_val in data.items():
             # If the column values are byte literals, decode them
             if isinstance(col_val[0], bytes):
-                col_val = [value.decode('utf-8') for value in col_val]
+                col_val = [value.decode("utf-8") for value in col_val]
 
             if schema_hints and col_name in schema_hints:
                 type = schema_hints.get(col_name).get("type")
                 if type and type == "categorical":
-                    new_col = pd.Series(col_val, dtype='category')
+                    new_col = pd.Series(col_val, dtype="category")
                     data[col_name] = new_col
             elif repr_meta and col_name in repr_meta:
                 new_col = pd.Series(col_val, dtype=repr_meta[col_name])
@@ -127,7 +128,7 @@ class AnnotationsHostedTileDB(Annotations):
             tiledb_uri=uri,
             user_id=user_id,
             dataset_id=str(dataset_id),
-            schema_hints=json.dumps(dataframe_schema_type_hints)
+            schema_hints=json.dumps(dataframe_schema_type_hints),
         )
         if not df.empty:
             self.check_category_names(df)

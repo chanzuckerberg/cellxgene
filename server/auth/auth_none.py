@@ -2,7 +2,6 @@ from server.auth.auth import AuthTypeBase, AuthTypeFactory
 
 
 class AuthTypeNone(AuthTypeBase):
-
     def __init__(self, app_config):
         super().__init__()
 

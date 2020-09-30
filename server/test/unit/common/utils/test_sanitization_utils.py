@@ -4,7 +4,6 @@ from server.common.utils.sanitization_utils import sanitize_values_in_list, sani
 
 
 class TestSanitizationUtils(unittest.TestCase):
-
     def test__sanitize_values_in_list__not_strings_raises_exception(self):
         keys_to_sanitize = [1, 2, 3]
 

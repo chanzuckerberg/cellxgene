@@ -7,7 +7,7 @@ import numpy as np
 import server.compute.diffexp_cxg as diffexp_cxg
 import server.compute.diffexp_generic as diffexp_generic
 
-from server.common.app_config import AppConfig
+from server.common.config.app_config import AppConfig
 from server.data_common.matrix_loader import MatrixDataLoader
 from server.data_cxg.cxg_adaptor import CxgAdaptor
 
