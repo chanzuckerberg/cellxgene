@@ -47,6 +47,7 @@ class AuthTypeTest(AuthTypeClientBase):
         return_to = args.get("dataset", "/")
         session[self.CXGUID] = args.get("userid", self.user_id)
         session[self.CXGUNAME] = args.get("username", self.user_name)
+        session[self.CXGUEMAIL] = args.get("email", self.user_email)
         return redirect(return_to)
 
     def logout(self):
