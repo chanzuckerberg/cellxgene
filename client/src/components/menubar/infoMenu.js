@@ -93,6 +93,7 @@ const InformationMenu = React.memo((props) => {
         }}
       >
         <Button
+          data-testid="menu"
           type="button"
           className={`${Classes.BUTTON} bp3-icon-info-sign`}
           style={{
