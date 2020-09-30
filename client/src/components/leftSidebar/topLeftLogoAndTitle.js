@@ -7,11 +7,19 @@ import * as globals from "../../globals";
 import Logo from "../framework/logo";
 import Truncate from "../util/truncate";
 import InfoDrawer from "../infoDrawer/infoDrawer";
+import AuthButtons from "../menubar/authButtons";
+import InformationMenu from "../menubar/infoMenu";
 
 const DATASET_TITLE_FONT_SIZE = 14;
 
 @connect((state) => ({
   datasetTitle: state.config?.displayNames?.dataset ?? "",
+  auth: state.config?.authentication,
+  userinfo: state.userinfo,
+  libraryVersions: state.config?.["library_versions"],
+  aboutLink: state.config?.links?.["about-dataset"],
+  tosURL: state.config?.parameters?.["about_legal_tos"],
+  privacyURL: state.config?.parameters?.["about_legal_privacy"],
 }))
 class LeftSideBar extends React.Component {
   handleClick = () => {
@@ -20,7 +28,16 @@ class LeftSideBar extends React.Component {
   };
 
   render() {
-    const { datasetTitle } = this.props;
+    const {
+      datasetTitle,
+      auth,
+      userinfo,
+      libraryVersions,
+      aboutLink,
+      privacyURL,
+      tosURL,
+      dispatch,
+    } = this.props;
 
     return (
       <div
@@ -30,49 +47,70 @@ class LeftSideBar extends React.Component {
           width: globals.leftSidebarWidth,
           zIndex: 1,
           borderBottom: `1px solid ${globals.lighterGrey}`,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        <Logo size={30} />
-        <span
-          style={{
-            fontSize: 28,
-            position: "relative",
-            top: -6,
-            fontWeight: "bold",
-            marginLeft: 5,
-            color: globals.logoColor,
-            userSelect: "none",
-          }}
-        >
-          cell
+        <div>
+          <Logo size={28} />
           <span
             style={{
-              position: "relative",
-              top: 1,
-              fontWeight: 300,
               fontSize: 24,
+              position: "relative",
+              top: -6,
+              fontWeight: "bold",
+              marginLeft: 5,
+              color: globals.logoColor,
+              userSelect: "none",
             }}
           >
-            ×
-          </span>
-          gene
-        </span>
-        <Button
-          minimal
-          style={{
-            fontSize: DATASET_TITLE_FONT_SIZE,
-            position: "absolute",
-            right: 10,
-          }}
-          onClick={this.handleClick}
-        >
-          <Truncate>
-            <span style={{ maxWidth: 155 }} data-testid="header">
-              {datasetTitle}
+            cell
+            <span
+              style={{
+                position: "relative",
+                top: 1,
+                fontWeight: 300,
+                fontSize: 24,
+              }}
+            >
+              ×
             </span>
-          </Truncate>
-        </Button>
-        <InfoDrawer />
+            gene
+          </span>
+        </div>
+        <div style={{ marginRight: 5, position: "relative", top: -7 }}>
+          <Button
+            minimal
+            style={{
+              fontSize: DATASET_TITLE_FONT_SIZE,
+              position: "relative",
+              top: -1,
+            }}
+            onClick={this.handleClick}
+          >
+            <Truncate>
+              <span style={{ maxWidth: 155 }} data-testid="header">
+                {datasetTitle}
+              </span>
+            </Truncate>
+          </Button>
+          <InfoDrawer />
+          <InformationMenu
+            {...{
+              libraryVersions,
+              aboutLink,
+              tosURL,
+              privacyURL,
+              auth,
+              dispatch,
+              userinfo,
+            }}
+          />
+          {!userinfo.is_authenticated ? (
+            <AuthButtons auth={auth} userinfo={userinfo} />
+          ) : null}
+        </div>
       </div>
     );
   }

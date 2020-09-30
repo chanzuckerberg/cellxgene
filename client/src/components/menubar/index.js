@@ -6,8 +6,7 @@ import * as globals from "../../globals";
 import styles from "./menubar.css";
 import actions from "../../actions";
 import Clip from "./clip";
-import AuthButtons from "./authButtons";
-import InformationMenu from "./infoMenu";
+
 import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
 import DiffexpButtons from "./diffexpButtons";
@@ -204,7 +203,6 @@ class MenuBar extends React.PureComponent {
   render() {
     const {
       dispatch,
-      libraryVersions,
       disableDiffexp,
       undoDisabled,
       redoDisabled,
@@ -212,17 +210,12 @@ class MenuBar extends React.PureComponent {
       clipPercentileMin,
       clipPercentileMax,
       graphInteractionMode,
-      aboutLink,
       showCentroidLabels,
-      privacyURL,
-      tosURL,
       categoricalSelection,
       colorAccessor,
       subsetPossible,
       subsetResetPossible,
       enableReembedding,
-      auth,
-      userinfo,
     } = this.props;
     const { pendingClipPercentiles } = this.state;
 
@@ -248,10 +241,6 @@ class MenuBar extends React.PureComponent {
           zIndex: 3,
         }}
       >
-        <AuthButtons auth={auth} userinfo={userinfo} />
-        <InformationMenu
-          {...{ libraryVersions, aboutLink, tosURL, privacyURL, dispatch }}
-        />
         <UndoRedoReset
           dispatch={dispatch}
           undoDisabled={undoDisabled}
