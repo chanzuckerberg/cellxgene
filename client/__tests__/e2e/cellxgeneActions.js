@@ -13,7 +13,10 @@ import {
   getTestClass,
   getTestId,
   isElementPresent,
+  goToPage,
 } from "./puppeteerUtils";
+
+import { appUrlBase } from "./config";
 
 export async function drag(testId, start, end, lasso = false) {
   const layout = await waitByID(testId);
@@ -311,5 +314,76 @@ export async function assertCategoryDoesNotExist(categoryName) {
   );
 
   await expect(result).toBe(false);
+}
+
+export async function login() {
+  const email = `cellxgene-smoke-test+${process.env.DEPLOYMENT_STAGE}@chanzuckerberg.com`;
+  const password = "Test1111";
+
+  await goToPage(appUrlBase);
+
+  await clickOn("auth-button");
+
+  // (thuang): Auth0 form is unstable and unsafe for input until verified
+  await waitUntilFormFieldStable('[name="email"]');
+
+  await expect(page).toFillForm("form", {
+    email,
+    password,
+  });
+
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: "networkidle0" }),
+    expect(page).toClick('[name="submit"]'),
+  ]);
+
+  expect(page.url()).toContain(appUrlBase);
+}
+
+export async function logout() {
+  await clickOnUntil("menu", async () => {
+    await expect(page).toMatch("Log Out");
+
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: "networkidle0" }),
+      expect(page).toClick("a", { text: "Log Out" }),
+    ]);
+  });
+
+  await expect(page).toMatch("Log In");
+}
+
+async function waitUntilFormFieldStable(selector) {
+  const MAX_RETRY = 10;
+  const WAIT_FOR_MS = 200;
+
+  const EXPECTED_VALUE = "aaa";
+
+  let retry = 0;
+
+  while (retry < MAX_RETRY) {
+    try {
+      await expect(page).toFill(selector, EXPECTED_VALUE);
+
+      const fieldHandle = await expect(page).toMatchElement(selector);
+
+      const fieldValue = await page.evaluate(
+        (input) => input.value,
+        fieldHandle
+      );
+
+      expect(fieldValue).toBe(EXPECTED_VALUE);
+
+      break;
+    } catch (error) {
+      retry += 1;
+
+      await page.waitFor(WAIT_FOR_MS);
+    }
+  }
+
+  if (retry === MAX_RETRY) {
+    throw Error("clickOnUntil() assertion failed!");
+  }
 }
 /* eslint-enable no-await-in-loop -- await in loop is needed to emulate sequential user actions */
