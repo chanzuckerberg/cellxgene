@@ -31,6 +31,8 @@ import {
   runDiffExp,
   selectCategory,
   subset,
+  login,
+  logout,
 } from "./cellxgeneActions";
 
 const data = datasets[DATASET];
@@ -517,5 +519,19 @@ test("lasso moves after pan", async () => {
   const panCount = await getCellSetCount(2);
 
   expect(panCount).toBe(initialCount);
+});
+
+const conditionalDescribe =
+  process.env.TEST_AUTH_INTEGRATION === "true" ? describe : describe.skip;
+
+conditionalDescribe("AuthN Integration", () => {
+  it("logs in", async () => {
+    await login();
+  });
+
+  it("logs out", async () => {
+    await login();
+    await logout();
+  });
 });
 /* eslint-enable no-await-in-loop -- await in loop is needed to emulate sequential user actions */
