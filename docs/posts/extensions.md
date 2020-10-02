@@ -21,7 +21,6 @@ instance that loads that particular data file and once it is available proxies r
 #### cellxgene-VIP (Visualization in Plugin)
 
 [cellxgene-VIP](https://github.com/interactivereport/cellxgene_VIP) enables cellxgene to generate violin, stacked violin, stacked bar, heatmap, volcano, embedding, dot, track, density, 2D density, sankey and dual-gene plot in high-resolution SVG/PNG format. It also performs differential gene expression analysis and provides a Command Line Interface (CLI) for advanced users to perform analysis using python and R.
-![cellxgene_VIP](https://interactivereport.github.io/cellxgene_VIP/cellxgene_VIP.png?raw=true "cellxgene_VIP")
 
 #### Galaxy
 
