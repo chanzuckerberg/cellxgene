@@ -80,8 +80,27 @@ class BaseConfig(object):
                 raise ConfigurationError(f"The attr '{key}' has not been checked")
 
     def update(self, **kw):
+        """Update the attributes defined in kw with their new values."""
         for key, value in kw.items():
             if not hasattr(self, key):
+
+                # check if the key is setting into a dictval entry.
+                found_dictval = False
+                for dictval in self.dictval_cases:
+                    dictvalname = "__".join(dictval)
+                    if dictvalname + "__" in key:
+                        dictkey = key[len(dictvalname) + 2 :]
+                        curdictval = getattr(self, dictvalname)
+                        if curdictval is None:
+                            setattr(self, dictvalname, dict(dictkey=value))
+                        else:
+                            curdictval[dictkey] = value
+
+                        found_dictval = True
+                        break
+
+                if found_dictval:
+                    continue
                 raise ConfigurationError(f"unknown config parameter {key}.")
             try:
                 if type(value) == tuple:

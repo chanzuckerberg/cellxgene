@@ -30,22 +30,18 @@ class DatasetConfig(BaseConfig):
             self.user_annotations__type = default_config["user_annotations"]["type"]
             self.user_annotations__local_file_csv__directory = default_config["user_annotations"]["local_file_csv"][
                 "directory"
-            ]  # noqa E501
+            ]
             self.user_annotations__local_file_csv__file = default_config["user_annotations"]["local_file_csv"]["file"]
             self.user_annotations__ontology__enable = default_config["user_annotations"]["ontology"]["enable"]
             self.user_annotations__ontology__obo_location = default_config["user_annotations"]["ontology"][
                 "obo_location"
-            ]  # noqa E501
+            ]
             self.user_annotations__hosted_tiledb_array__db_uri = default_config["user_annotations"][
                 "hosted_tiledb_array"
-            ][
-                "db_uri"
-            ]  # noqa E501
+            ]["db_uri"]
             self.user_annotations__hosted_tiledb_array__hosted_file_directory = default_config["user_annotations"][
                 "hosted_tiledb_array"
-            ][
-                "hosted_file_directory"
-            ]  # noqa E501
+            ]["hosted_file_directory"]
 
             self.embeddings__names = default_config["embeddings"]["names"]
             self.embeddings__enable_reembedding = default_config["embeddings"]["enable_reembedding"]
@@ -98,20 +94,20 @@ class DatasetConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute("user_annotations__type", str)
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__local_file_csv__directory", (type(None), str)
-        )  # noqa E501
+        )
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__local_file_csv__file", (type(None), str)
-        )  # noqa E501
+        )
         self.validate_correct_type_of_configuration_attribute("user_annotations__ontology__enable", bool)
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__ontology__obo_location", (type(None), str)
-        )  # noqa E501
+        )
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__hosted_tiledb_array__db_uri", (type(None), str)
-        )  # noqa E501
+        )
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__hosted_tiledb_array__hosted_file_directory", (type(None), str)
-        )  # noqa E501
+        )
         if self.user_annotations__enable:
             server_config = self.app_config.server_config
             if not self.app__authentication_enable:
@@ -166,7 +162,7 @@ class DatasetConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute("user_annotations__hosted_tiledb_array__db_uri", str)
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__hosted_tiledb_array__hosted_file_directory", str
-        )  # noqa E501
+        )
         self.user_annotations = AnnotationsHostedTileDB(
             directory_path=self.user_annotations__hosted_tiledb_array__hosted_file_directory,
             db=DbUtils(self.user_annotations__hosted_tiledb_array__db_uri),

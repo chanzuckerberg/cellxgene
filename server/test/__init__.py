@@ -117,7 +117,7 @@ def random_string(n):
     return "".join(random.choice(string.ascii_letters) for _ in range(n))
 
 
-def start_test_server(command_line_args=[], app_config=None):
+def start_test_server(command_line_args=[], app_config=None, env=None):
     """
     Command line arguments can be passed in, as well as an app_config.
     This function is meant to be used like this, for example:
@@ -155,7 +155,7 @@ def start_test_server(command_line_args=[], app_config=None):
         command.extend(["-c", config_file])
 
     server = f"http://localhost:{port}"
-    ps = Popen(command)
+    ps = Popen(command, env=env)
 
     for _ in range(10):
         try:
@@ -178,10 +178,10 @@ def stop_test_server(ps):
 
 
 @contextmanager
-def test_server(command_line_args=[], app_config=None):
+def test_server(command_line_args=[], app_config=None, env=None):
     """A context to run the cellxgene server."""
 
-    ps, server = start_test_server(command_line_args, app_config)
+    ps, server = start_test_server(command_line_args, app_config, env)
     try:
         yield server
     finally:

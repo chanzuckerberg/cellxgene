@@ -3,8 +3,10 @@ import shutil
 import unittest
 import random
 from unittest import mock
+import yaml
 
 from server.test import FIXTURES_ROOT
+from server.default_config import get_default_config
 
 
 def mockenv(**envvars):
@@ -201,6 +203,9 @@ class ConfigTests(unittest.TestCase):
             top_n=top_n,
             config_file_name=f"temp_dataset_config_{random_num}.yml",
         )
+
+        default_config = get_default_config()
+        external_config = {"external": default_config["external"]}
         with open(server_config) as server_config:
             with open(dataset_config) as dataset_config:
                 with open(configfile, "w") as app_config_file:
@@ -208,6 +213,7 @@ class ConfigTests(unittest.TestCase):
                         app_config_file.write(line)
                     for line in dataset_config:
                         app_config_file.write(line)
+                    yaml.dump(external_config, app_config_file)
 
         return configfile
 

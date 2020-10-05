@@ -111,7 +111,7 @@ class TestServerConfig(ConfigTests):
         self.assertEqual(config.server_config.app__flask_secret_key, "KEY_FROM_FILE")
 
         os.environ["CXG_SECRET_KEY"] = "KEY_FROM_ENV"
-        config.server_config.handle_app(self.context)
+        config.external_config.handle_environment(self.context)
         self.assertEqual(config.server_config.app__flask_secret_key, "KEY_FROM_ENV")
 
     def test_handle_app__sets_web_base_url(self):
@@ -124,7 +124,7 @@ class TestServerConfig(ConfigTests):
         self.assertEqual(config.server_config.authentication__params_oauth__client_secret, "KEY_FROM_FILE")
 
         os.environ["CXG_OAUTH_CLIENT_SECRET"] = "KEY_FROM_ENV"
-        config.server_config.handle_authentication()
+        config.external_config.handle_environment(self.context)
 
         self.assertEqual(config.server_config.authentication__params_oauth__client_secret, "KEY_FROM_ENV")
 
@@ -215,7 +215,7 @@ class TestServerConfig(ConfigTests):
         # test for illegal url_dataroots
         for illegal in ("../b", "!$*", "\\n", "", "(bad)"):
             self.config.update_server_config(
-                multi_dataset__dataroot={"tag": {"base_url": illegal, "dataroot": "{PROJECT_ROOT}/example-dataset"}}
+                multi_dataset__dataroot={"tag": {"base_url": illegal, "dataroot": f"{PROJECT_ROOT}/example-dataset"}}
             )
             with self.assertRaises(ConfigurationError):
                 self.config.complete_config()
@@ -224,7 +224,7 @@ class TestServerConfig(ConfigTests):
         # test for legal url_dataroots
         for legal in ("d", "this.is-okay_", "a/b"):
             self.config.update_server_config(
-                multi_dataset__dataroot={"tag": {"base_url": legal, "dataroot": "{PROJECT_ROOT}/example-dataset"}}
+                multi_dataset__dataroot={"tag": {"base_url": legal, "dataroot": f"{PROJECT_ROOT}/example-dataset"}}
             )
             self.config.complete_config()
 

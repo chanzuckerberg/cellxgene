@@ -4,6 +4,7 @@ from flatten_dict import unflatten
 from server.default_config import get_default_config
 from server.common.config.dataset_config import DatasetConfig
 from server.common.config.server_config import ServerConfig
+from server.common.config.external_config import ExternalConfig
 from server.common.errors import ConfigurationError
 
 
@@ -44,6 +45,9 @@ class AppConfig(object):
         #   dataroot config
         self.dataroot_config = {}
 
+        #  external config
+        self.external_config = ExternalConfig(self, self.default_config["external"])
+
         # Set to true when config_completed is called
         self.is_completed = False
 
@@ -61,6 +65,7 @@ class AppConfig(object):
         self.default_dataset_config.check_config()
         for dataset_config in self.dataroot_config.values():
             dataset_config.check_config()
+        self.external_config.check_config()
 
     def update_server_config(self, **kw):
         self.server_config.update(**kw)
@@ -72,6 +77,47 @@ class AppConfig(object):
         for value in self.dataroot_config.values():
             value.update(**kw)
         self.is_complete = False
+
+    def update_single_config_from_path_and_value(self, path, value):
+        """Update a single config parameter with the value.
+        path is a list of string, that gives a path to the config parameter to be udpated.
+        For example, path may be ["server","app","port"].
+        """
+        self.is_complete = False
+        if type(path) != list:
+            raise ConfigurationError(f"path must be a list of strings, got '{str(path)}'")
+        for part in path:
+            if type(part) != str:
+                raise ConfigurationError(f"path must be a list of strings, got '{str(path)}'")
+
+        if len(path) < 1 or path[0] not in ("server", "dataset", "per_dataset_config"):
+            raise ConfigurationError("path must start with 'server', 'dataset', or 'per_dataset_config'")
+
+        if path[0] == "server":
+            attr = "__".join(path[1:])
+            try:
+                self.update_server_config(**{attr: value})
+            except ConfigurationError:
+                raise ConfigurationError(f"unknown config parameter at path: '{str(path)}'")
+        elif path[0] == "dataset":
+            attr = "__".join(path[1:])
+            try:
+                self.update_default_dataset_config(**{attr: value})
+            except ConfigurationError:
+                raise ConfigurationError(f"unknown config parameter at path: '{str(path)}'")
+
+        elif path[0] == "per_dataset_config":
+            if len(path) < 2:
+                raise ConfigurationError(f"path is invalid: got '{path}'")
+            dataroot = path[1]
+            if dataroot not in self.dataroot_config:
+                raise ConfigurationError(f"unknown dataroot in path: got '{path}'")
+
+            attr = "__".join(path[2:])
+            try:
+                self.dataroot_config[dataroot].update(**{attr: value})
+            except ConfigurationError:
+                raise ConfigurationError(f"unknown config parameter at path: '{str(path)}'")
 
     def update_from_config_file(self, config_file):
         try:
@@ -94,12 +140,16 @@ class AppConfig(object):
             # then apply the per dataset configuration
             self.dataroot_config[key].update_from_config(dataroot_config, f"per_dataset_config__{key}")
 
+        if config.get("external"):
+            self.external_config.update_from_config(config["external"], "external")
+
         self.is_complete = False
 
     def write_config(self, config_file):
         """output the config to a yaml file"""
         server = self.server_config.create_mapping(self.server_config.default_config)
         dataset = self.default_dataset_config.create_mapping(self.default_dataset_config.default_config)
+        external = self.external_config.create_mapping(self.external_config.default_config)
         config = dict(server={}, dataset={})
         for attrname in server.keys():
             config["server__" + attrname] = getattr(self.server_config, attrname)
@@ -111,6 +161,8 @@ class AppConfig(object):
             dataset = dataroot_config.create_mapping(dataroot_config.default_config)
             for attrname in dataset.keys():
                 config[f"per_dataset_config__{dataroot_tag}__" + attrname] = getattr(dataroot_config, attrname)
+        for attrname in external.keys():
+            config["external__" + attrname] = getattr(self.external_config, attrname)
 
         config = unflatten(config, splitter=lambda key: key.split("__"))
         yaml.dump(config, open(config_file, "w"))
@@ -119,7 +171,8 @@ class AppConfig(object):
         """Return all the attribute that are different from the default"""
         diff_server = self.server_config.changes_from_default()
         diff_dataset = self.default_dataset_config.changes_from_default()
-        diff = dict(server=diff_server, dataset=diff_dataset)
+        diff_external = self.external.changes_from_default()
+        diff = dict(server=diff_server, dataset=diff_dataset, external=diff_external)
         return diff
 
     def add_dataroot_config(self, dataroot_tag, **kw):
@@ -154,6 +207,8 @@ class AppConfig(object):
         # messages we can give correct context for attributes with bad value.
         context = dict(messagefn=messagefn)
 
+        # complete config for external_config first, since this may update values in the other sections
+        self.external_config.complete_config(context)
         self.server_config.complete_config(context)
         self.default_dataset_config.complete_config(context)
         for dataroot_config in self.dataroot_config.values():
