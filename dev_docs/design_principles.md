@@ -1,4 +1,4 @@
-# Design Principles
+# Design Principles (HCI)
 
 cellxgene is a tool for scientists investigating single cell rna seq datasets. The design of cellxgene proceeds from a small number of core principles:
 
