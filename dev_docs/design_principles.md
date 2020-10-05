@@ -2,6 +2,7 @@
 
 cellxgene is a tool for scientists investigating single cell rna seq datasets. The design of cellxgene proceeds from a small number of core principles:
 
+0. the tool, first and foremost, must produce views that are scientifically valid at all times
 1. the tool should be highly **scaleable** and handle *exploration* of millions of cells in the browser at interactive speeds 
 2. the tool should be **data dense** and give scientists powerful views into data
 3. the tool should be powerfully expressive and **optimized for the `nth` day of use** rather than the first day, in the spirit of enterprise tools, even if that requires training or onboarding 
@@ -15,3 +16,4 @@ cellxgene is a tool for scientists investigating single cell rna seq datasets. T
     - interactive differential expression
     - interactive reprojection of umap
 6. the tool should enable a productive workflow between those who are computational and those who are not
+7. the tool should **minimize extraneous use of color**, leaving color to primary workflow actions like `compute differential expression` or `create new categorical metadata` or `create new geneset`. This leaves the color space to `colorby` actions, such as `colorby geneset` and `colorby categorical field`
