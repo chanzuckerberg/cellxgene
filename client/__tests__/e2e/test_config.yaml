@@ -1,0 +1,47 @@
+server:
+  app:
+    force_https: true
+
+    # By default, cellxgene will serve api requests from the same base url as the webpage.
+    # In general api_base_url and web_base_url will not need to be set.
+    # There are two reasons to set these parameters:
+    #  1. Oauth authentication is used; the oauth server will redirect back to the api_base_url after login,
+    #     which then redirects back to the web_base_url.  If the web_base_url is not set, it will default to
+    #     the api_base_url.  If oauth authentication is used, the api_base_url must be set.
+    #     For a local test (where the server runs on "http://localhost:<port>"), then the api_base_url may be
+    #     set to the string "local".
+    #  2. The cellxgene deploymnent is in an environment where the webpage and api have
+    #     different base urls.  In this case both api_base_url and web_base_url must be set.
+    #     It is up to the server admin to ensure that the networking is setup correctly for this environment.
+    api_base_url: http://localhost:5005
+    web_base_url: http://localhost:3000
+
+  authentication:
+    # The authentication types may be "none", "session", "oauth"
+    # none:  No authentication support, features like user_annotations must not be enabled.
+    # session:  A session based userid is automatically generated. (no params needed)
+    # oauth: oauth2 is used for authentication;  parameters are defined in params_oauth.
+    type: test
+
+dataset:
+  app:
+    about_legal_tos: null
+    about_legal_privacy: null
+
+  presentation:
+    max_categories: 1000
+    custom_colors: true
+
+  user_annotations:
+    enable: false
+    type: local_file_csv
+    local_file_csv:
+      directory: null
+      file: null
+    ontology:
+      enable: false
+      obo_location: null
+
+  embeddings:
+    names: []
+    enable_reembedding: false
