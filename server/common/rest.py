@@ -6,6 +6,7 @@ from http import HTTPStatus
 from flask import make_response, jsonify, current_app, abort
 from werkzeug.urls import url_unquote
 
+from server.common.config.client_config import get_client_config, get_client_userinfo
 from server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
 from server.common.errors import (
     FilterError,
@@ -117,12 +118,12 @@ def schema_get(data_adaptor):
 
 
 def config_get(app_config, data_adaptor):
-    config = app_config.get_client_config(data_adaptor)
+    config = get_client_config(app_config, data_adaptor)
     return make_response(jsonify(config), HTTPStatus.OK)
 
 
 def userinfo_get(app_config, data_adaptor):
-    config = app_config.get_client_userinfo(data_adaptor)
+    config = get_client_userinfo(app_config, data_adaptor)
     return make_response(jsonify(config), HTTPStatus.OK)
 
 

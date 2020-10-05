@@ -3,10 +3,10 @@ import React from "react";
 import { connect } from "react-redux";
 import * as d3 from "d3";
 import {
+  Classes,
   Popover,
   PopoverInteractionKind,
   Position,
-  Classes,
 } from "@blueprintjs/core";
 
 @connect((state) => ({
@@ -18,8 +18,8 @@ class Occupancy extends React.PureComponent {
   _HEIGHT = 11;
 
   createHistogram = () => {
-    /* 
-      Knowing that colorScale is based off continous data, 
+    /*
+      Knowing that colorScale is based off continous data,
       createHistogram fetches the continous data in relation to the cells releveant to the catagory value.
       It then seperates that data into 50 bins for drawing the mini-histogram
     */
@@ -75,8 +75,8 @@ class Occupancy extends React.PureComponent {
   };
 
   createOccupancyStack = () => {
-    /* 
-      Knowing that the color scale is based off of catagorical data, 
+    /*
+      Knowing that the color scale is based off of catagorical data,
       createOccupancyStack obtains a map showing the number if cells per colored value
       Using the colorScale a stack of colored bars is drawn representing the map
      */
@@ -155,7 +155,7 @@ class Occupancy extends React.PureComponent {
         popoverClassName={Classes.POPOVER_CONTENT_SIZING}
       >
         <canvas
-          className="bp3-popover-targer"
+          className={Classes.POPOVER_TARGET}
           style={{
             marginRight: 5,
             width: this._WIDTH,

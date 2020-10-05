@@ -17,7 +17,9 @@ setDefaultOptions({ timeout: 20 * 1000 });
 
 jest.retryTimes(ENV_DEFAULT.RETRY_ATTEMPTS);
 
-(async () => {
+beforeEach(async () => {
+  await jestPuppeteer.resetBrowser();
+
   const userAgent = await browser.userAgent();
   await page.setUserAgent(`${userAgent}bot`);
 
@@ -53,6 +55,4 @@ jest.retryTimes(ENV_DEFAULT.RETRY_ATTEMPTS);
       }
     }
   });
-})().catch((error) => {
-  console.error("puppeteer.setup.js error", error);
 });

@@ -8,8 +8,12 @@ import numpy as np
 import tiledb
 from pandas import Series, DataFrame
 
-from server.common.utils.cxg_generation_utils import (convert_dictionary_to_cxg_group, convert_dataframe_to_cxg_array,
-                                                      convert_ndarray_to_cxg_dense_array, convert_matrix_to_cxg_array)
+from server.common.utils.cxg_generation_utils import (
+    convert_dictionary_to_cxg_group,
+    convert_dataframe_to_cxg_array,
+    convert_ndarray_to_cxg_dense_array,
+    convert_matrix_to_cxg_array,
+)
 
 PROJECT_ROOT = popen("git rev-parse --show-toplevel").read().strip()
 
@@ -28,8 +32,9 @@ class TestCxgGenerationUtils(unittest.TestCase):
         dictionary_name = "favorite_desserts"
         expected_array_directory = f"{self.testing_cxg_temp_directory}/{dictionary_name}"
 
-        convert_dictionary_to_cxg_group(self.testing_cxg_temp_directory, random_dictionary,
-                                        group_metadata_name=dictionary_name)
+        convert_dictionary_to_cxg_group(
+            self.testing_cxg_temp_directory, random_dictionary, group_metadata_name=dictionary_name
+        )
 
         array = tiledb.open(expected_array_directory)
         actual_stored_metadata = dict(array.meta.items())
@@ -44,13 +49,16 @@ class TestCxgGenerationUtils(unittest.TestCase):
         random_dataframe_name = f"random_dataframe_{uuid4()}"
         random_dataframe = DataFrame(data={"int_category": random_int_category, "bool_category": random_bool_category})
 
-        convert_dataframe_to_cxg_array(self.testing_cxg_temp_directory, random_dataframe_name, random_dataframe,
-                                       "int_category", tiledb.Ctx())
+        convert_dataframe_to_cxg_array(
+            self.testing_cxg_temp_directory, random_dataframe_name, random_dataframe, "int_category", tiledb.Ctx()
+        )
 
         expected_array_directory = f"{self.testing_cxg_temp_directory}/{random_dataframe_name}"
         expected_array_metadata = {
-            "cxg_schema": json.dumps({"int_category": {"type": "int32"}, "bool_category": {"type": "boolean"},
-                                      "index": "int_category"})}
+            "cxg_schema": json.dumps(
+                {"int_category": {"type": "int32"}, "bool_category": {"type": "boolean"}, "index": "int_category"}
+            )
+        }
 
         actual_stored_dataframe_array = tiledb.open(expected_array_directory)
         actual_stored_dataframe_metadata = dict(actual_stored_dataframe_array.meta.items())
@@ -95,7 +103,7 @@ class TestCxgGenerationUtils(unittest.TestCase):
 
         self.assertTrue(path.isdir(matrix_name))
         self.assertTrue(isinstance(actual_stored_array, tiledb.SparseArray))
-        self.assertTrue(actual_stored_array[:, :][''].size == 0)
+        self.assertTrue(actual_stored_array[:, :][""].size == 0)
 
     def test__convert_matrix_to_cxg_array__sparse_array_only_store_nonzeros(self):
         matrix = np.zeros([3, 3])
@@ -110,10 +118,10 @@ class TestCxgGenerationUtils(unittest.TestCase):
 
         self.assertTrue(path.isdir(matrix_name))
         self.assertTrue(isinstance(actual_stored_array, tiledb.SparseArray))
-        self.assertTrue(actual_stored_array[0, 0][''] == 1)
-        self.assertTrue(actual_stored_array[1, 1][''] == 1)
-        self.assertTrue(actual_stored_array[2, 2][''] == 2)
-        self.assertTrue(actual_stored_array[:, :][''].size == 3)
+        self.assertTrue(actual_stored_array[0, 0][""] == 1)
+        self.assertTrue(actual_stored_array[1, 1][""] == 1)
+        self.assertTrue(actual_stored_array[2, 2][""] == 2)
+        self.assertTrue(actual_stored_array[:, :][""].size == 3)
 
     def test__convert_matrix_to_cxg_array__sparse_array_with_column_encoding_empty_array(self):
         matrix_name = f"{self.testing_cxg_temp_directory}/awesome_column_shift_matrix_{uuid4()}"
@@ -122,14 +130,15 @@ class TestCxgGenerationUtils(unittest.TestCase):
         # a matrix of zeros which is sparse.
         column_shift = np.ones((3, 2))
 
-        convert_matrix_to_cxg_array(matrix_name, matrix, True, tiledb.Ctx(),
-                                    column_shift_for_sparse_encoding=column_shift)
+        convert_matrix_to_cxg_array(
+            matrix_name, matrix, True, tiledb.Ctx(), column_shift_for_sparse_encoding=column_shift
+        )
 
         actual_stored_array = tiledb.open(matrix_name)
 
         self.assertTrue(path.isdir(matrix_name))
         self.assertTrue(isinstance(actual_stored_array, tiledb.SparseArray))
-        self.assertTrue(actual_stored_array[:, :][''].size == 0)
+        self.assertTrue(actual_stored_array[:, :][""].size == 0)
 
     def test__convert_matrix_to_cxg_array__sparse_array_with_column_encoding_partial_array(self):
         matrix_name = f"{self.testing_cxg_temp_directory}/awesome_column_shift_matrix_{uuid4()}"
@@ -137,13 +146,14 @@ class TestCxgGenerationUtils(unittest.TestCase):
         # Only column shift the first column of ones.
         column_shift = np.array([[1, 0], [1, 0]])
 
-        convert_matrix_to_cxg_array(matrix_name, matrix, True, tiledb.Ctx(),
-                                    column_shift_for_sparse_encoding=column_shift)
+        convert_matrix_to_cxg_array(
+            matrix_name, matrix, True, tiledb.Ctx(), column_shift_for_sparse_encoding=column_shift
+        )
 
         actual_stored_array = tiledb.open(matrix_name)
 
         self.assertTrue(path.isdir(matrix_name))
         self.assertTrue(isinstance(actual_stored_array, tiledb.SparseArray))
-        self.assertTrue(actual_stored_array[0, 1][''] == 1)
-        self.assertTrue(actual_stored_array[1, 1][''] == 1)
-        self.assertTrue(actual_stored_array[:, :][''].size == 2)
+        self.assertTrue(actual_stored_array[0, 1][""] == 1)
+        self.assertTrue(actual_stored_array[1, 1][""] == 1)
+        self.assertTrue(actual_stored_array[:, :][""].size == 2)

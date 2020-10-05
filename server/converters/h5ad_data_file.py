@@ -24,14 +24,14 @@ class H5ADDataFile:
     another format (currently just CXG is supported). """
 
     def __init__(
-            self,
-            input_filename,
-            backed=False,
-            dataset_title=None,
-            dataset_about=None,
-            obs_index_column_name=None,
-            vars_index_column_name=None,
-            use_corpora_schema=True,
+        self,
+        input_filename,
+        backed=False,
+        dataset_title=None,
+        dataset_about=None,
+        obs_index_column_name=None,
+        vars_index_column_name=None,
+        use_corpora_schema=True,
     ):
         self.input_filename = input_filename
         self.backed = backed

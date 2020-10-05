@@ -1,3 +1,5 @@
+## UPDATE (9/30/2020): Starting today, the name Corpora will only be used as the internal project name, with cellxgene Data Portal being the official product name
+
 # CXG Data Format Specification
 
 Document Status: _draft_

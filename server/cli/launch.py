@@ -3,15 +3,14 @@ import functools
 import logging
 import sys
 import webbrowser
-from os import devnull
-
+import os
 import click
 from flask_compress import Compress
 from flask_cors import CORS
 
+from server.default_config import default_config
 from server.app.app import Server
-from server.common.app_config import AppConfig
-from server.common.default_config import default_config
+from server.common.config.app_config import AppConfig
 from server.common.errors import DatasetAccessError, ConfigurationError
 from server.common.utils.utils import sort_options
 
@@ -33,7 +32,7 @@ def annotation_args(func):
         multiple=False,
         metavar="<path>",
         help="CSV file to initialize editing of existing annotations; will be altered in-place. "
-             "Incompatible with --annotations-dir.",
+        "Incompatible with --annotations-dir.",
     )
     @click.option(
         "--annotations-dir",
@@ -42,7 +41,7 @@ def annotation_args(func):
         multiple=False,
         metavar="<directory path>",
         help="Directory of where to save output annotations; filename will be specified in the application. "
-             "Incompatible with --annotations-file.",
+        "Incompatible with --annotations-file.",
     )
     @click.option(
         "--experimental-annotations-ontology",
@@ -170,7 +169,7 @@ def server_args(func):
         default=DEFAULT_CONFIG.server_config.app__debug,
         show_default=True,
         help="Run in debug mode. This is helpful for cellxgene developers, "
-             "or when you want more information about an error condition.",
+        "or when you want more information about an error condition.",
     )
     @click.option(
         "--verbose",
@@ -203,7 +202,7 @@ def server_args(func):
         multiple=True,
         metavar="<text>",
         help="Additional script files to include in HTML page. If not specified, "
-             "no additional script files will be included.",
+        "no additional script files will be included.",
         show_default=False,
     )
     @functools.wraps(func)
@@ -223,7 +222,7 @@ def launch_args(func):
         default=DEFAULT_CONFIG.server_config.multi_dataset__dataroot,
         metavar="<data directory>",
         help="Enable cellxgene to serve multiple files. Supply path (local directory or URL)"
-             " to folder containing H5AD and/or CXG datasets.",
+        " to folder containing H5AD and/or CXG datasets.",
         hidden=True,
     )  # TODO, unhide when dataroot is supported)
     @click.argument("datapath", required=False, metavar="<path to data file>")
@@ -307,32 +306,32 @@ class CliLaunchServer(Server):
 )
 @launch_args
 def launch(
-        datapath,
-        dataroot,
-        verbose,
-        debug,
-        open_browser,
-        port,
-        host,
-        embedding,
-        obs_names,
-        var_names,
-        max_category_items,
-        disable_custom_colors,
-        diffexp_lfc_cutoff,
-        title,
-        scripts,
-        about,
-        disable_annotations,
-        annotations_file,
-        annotations_dir,
-        backed,
-        disable_diffexp,
-        experimental_annotations_ontology,
-        experimental_annotations_ontology_obo,
-        experimental_enable_reembedding,
-        config_file,
-        dump_default_config,
+    datapath,
+    dataroot,
+    verbose,
+    debug,
+    open_browser,
+    port,
+    host,
+    embedding,
+    obs_names,
+    var_names,
+    max_category_items,
+    disable_custom_colors,
+    diffexp_lfc_cutoff,
+    title,
+    scripts,
+    about,
+    disable_annotations,
+    annotations_file,
+    annotations_dir,
+    backed,
+    disable_diffexp,
+    experimental_annotations_ontology,
+    experimental_annotations_ontology_obo,
+    experimental_enable_reembedding,
+    config_file,
+    dump_default_config,
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -443,7 +442,7 @@ def launch(
     click.echo("[cellxgene] Type CTRL-C at any time to exit.")
 
     if not server_config.app__verbose:
-        f = open(devnull, "w")
+        f = open(os.devnull, "w")
         sys.stdout = f
 
     try:

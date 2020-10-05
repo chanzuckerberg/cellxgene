@@ -3,7 +3,7 @@ import json
 
 from server.data_anndata.anndata_adaptor import AnndataAdaptor
 from server.common.data_locator import DataLocator
-from server.common.app_config import AppConfig
+from server.common.config.app_config import AppConfig
 from server.test import PROJECT_ROOT
 
 
