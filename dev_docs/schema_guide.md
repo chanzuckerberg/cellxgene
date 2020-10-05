@@ -15,20 +15,20 @@ schema.
 
 ## `cellxgene schema apply`
 
-To enable this, we have a new cellxgene subcommand, `cellxgene schema`, that handles applying and verify the schema. Its
-first subcommand, `cellxgene schema apply`, takes three inputs:
+To enable this, we have a new cellxgene subcommand, `cellxgene schema`, that handles applying and verifying the schema.
+Its first subcommand, `cellxgene schema apply`, takes three inputs:
 
 1. A source h5ad file. The input needs to be an AnnData file, so if a submitter has, say, a serialized Seurat or
    SingleCellExperiment object, it needs to be converted to AnnData first. This can be done with
-   (sceasy)[https://github.com/cellgeni/sceasy] or via
-   (Seurat)[https://satijalab.org/seurat/v3.1/conversion_vignette.html].
+   [sceasy](https://github.com/cellgeni/sceasy) or via
+   [Seurat](https://satijalab.org/seurat/v3.1/conversion_vignette.html).
 2. A configuration yaml file that describes the fields to add and conversions to apply (see below).
 3. A name for the new h5ad file that should follow the schema.
 
 ### Configuration yaml
 
 The configuration yaml file describes how to apply the schema. This is an example of a "skeleton" yaml that has all the
-fields required for the 1.0.0 schema but is not yet filled in with any logic.
+fields required for the 1.0.0 schema but is not yet filled in with any logic:
 
 ```
 uns:
@@ -54,7 +54,7 @@ fixup_gene_symbols:
 
 #### Unstructured metadata
 The first section is `uns`, which includes metadata fields that describe the whole dataset (see 
-(here)[https://anndata.readthedocs.io/en/latest/] for further description of `uns` and `obs`.).
+[here](https://anndata.readthedocs.io/en/latest/) for further description of `uns` and `obs`.).
 
 The first line is `version`, which is required for most of our tooling to work. The schema version is set at
 1.0.0 in the example above, but of course for future versions that should be changed.
@@ -77,8 +77,8 @@ contributors:
 dataset.
 
 `layer_descriptions` is free text descriptions of the different
-(layers)[https://anndata.readthedocs.io/en/latest/anndata.AnnData.layers.html] of the AnnData file. It should look like
-this when complete:
+[layers](https://anndata.readthedocs.io/en/latest/anndata.AnnData.layers.html) of the AnnData file. It should look like
+this when complete, depending on what layers are present:
 ```
 layer_descriptions:
   X: CPM and logged
@@ -103,7 +103,7 @@ into the appropriate field.
 
 
 #### Observation metadata
-The next section is `obs`, which is metadata than can very for each observation (and "observation" usually means cell).
+The next section is `obs`, which is metadata than can vary for each observation (and "observation" usually means cell).
 These fields are all ontology fields except for `sex`, which has its own enumerated set of permitted values.
 
 There are two ways to fill in the `obs` fields. The first is useful when there is only one value for all the
@@ -125,7 +125,7 @@ cell_type_ontology_term_id:
     b-cell: CL:0000236
 ```
 
-This will look at the `obs.CellType` field in the dataset, and where it has the value "T cell", it will insert
+This will look at the `obs.CellType` field in the dataset, and where it has the value "t-cell", it will insert
 `CL:0000084` into `cell_type_ontology_term_id` and its label `T cell` into `cell_type`.
 
 Now there are often situations where there is no valid ontology term for some field. For example, the dataset may have
@@ -165,8 +165,8 @@ or SCTransform functions, the correct choice is usually `log1p`.
 
 ### `cellxgene schema validate`
 
-The next `cellxgene schema` subcommand validates that a given h5ad follows a version of the schema. It accepts two
-parameters:
+The next `cellxgene schema` subcommand is `cellxgene schema validate`, and it validates that a given h5ad follows a
+version of the schema. It accepts two parameters:
 
 1. The h5ad file to check
 2. The version of the schema to check against.
