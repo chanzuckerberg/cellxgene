@@ -33,7 +33,7 @@ start-frontend:
 .PHONY: smoke-test
 smoke-test:
 	start_server_and_test \
-		'CXG_OPTIONS="--config $(CXG_CONFIG)" $(MAKE) start-server' \
+		'CXG_OPTIONS="--config-file $(CXG_CONFIG)" $(MAKE) start-server' \
 		$(CXG_SERVER_PORT) \
 		'CXG_URL_BASE="http://localhost:$(CXG_SERVER_PORT)" npm run e2e -- --verbose false'
 
