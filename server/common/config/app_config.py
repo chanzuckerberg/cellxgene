@@ -80,14 +80,14 @@ class AppConfig(object):
 
     def update_single_config_from_path_and_value(self, path, value):
         """Update a single config parameter with the value.
-        path is a list of string, that gives a path to the config parameter to be udpated.
+        path is a list of string, that gives a path to the config parameter to be updated.
         For example, path may be ["server","app","port"].
         """
         self.is_complete = False
-        if type(path) != list:
+        if not isinstance(path, list):
             raise ConfigurationError(f"path must be a list of strings, got '{str(path)}'")
         for part in path:
-            if type(part) != str:
+            if not isinstance(part, str):
                 raise ConfigurationError(f"path must be a list of strings, got '{str(path)}'")
 
         if len(path) < 1 or path[0] not in ("server", "dataset", "per_dataset_config"):
@@ -145,7 +145,7 @@ class AppConfig(object):
 
         self.is_complete = False
 
-    def write_config(self, config_file):
+    def config_to_dict(self):
         """output the config to a yaml file"""
         server = self.server_config.create_mapping(self.server_config.default_config)
         dataset = self.default_dataset_config.create_mapping(self.default_dataset_config.default_config)
@@ -165,6 +165,10 @@ class AppConfig(object):
             config["external__" + attrname] = getattr(self.external_config, attrname)
 
         config = unflatten(config, splitter=lambda key: key.split("__"))
+        return config
+
+    def write_config(self, config_file):
+        config = self.config_to_dict()
         yaml.dump(config, open(config_file, "w"))
 
     def changes_from_default(self):

@@ -6,7 +6,6 @@ from unittest import mock
 import yaml
 
 from server.test import FIXTURES_ROOT
-from server.default_config import get_default_config
 
 
 def mockenv(**envvars):
@@ -135,6 +134,9 @@ class ConfigTests(unittest.TestCase):
         enable_difexp="true",
         lfc_cutoff=0.01,
         top_n=10,
+        environment=None,
+        aws_secrets_manager_region=None,
+        aws_secrets_manager_secrets=[],
         config_file_name="app_config.yml",
     ):
         random_num = random.randrange(999999)
@@ -203,17 +205,17 @@ class ConfigTests(unittest.TestCase):
             top_n=top_n,
             config_file_name=f"temp_dataset_config_{random_num}.yml",
         )
+        external_config = self.custom_external_config(
+            environment=environment,
+            aws_secrets_manager_region=aws_secrets_manager_region,
+            aws_secrets_manager_secrets=aws_secrets_manager_secrets,
+            config_file_name=f"temp_external_config_{random_num}.yml",
+        )
 
-        default_config = get_default_config()
-        external_config = {"external": default_config["external"]}
-        with open(server_config) as server_config:
-            with open(dataset_config) as dataset_config:
-                with open(configfile, "w") as app_config_file:
-                    for line in server_config:
-                        app_config_file.write(line)
-                    for line in dataset_config:
-                        app_config_file.write(line)
-                    yaml.dump(external_config, app_config_file)
+        with open(configfile, "w") as app_config_file:
+            app_config_file.write(open(server_config).read())
+            app_config_file.write(open(dataset_config).read())
+            app_config_file.write(open(external_config).read())
 
         return configfile
 
@@ -249,4 +251,33 @@ class ConfigTests(unittest.TestCase):
         with open(configfile, "w") as dataset_config_file:
             dataset_config_file.write(dataset_config)
 
+        return configfile
+
+    def custom_external_config(
+        self,
+        environment=None,
+        aws_secrets_manager_region=None,
+        aws_secrets_manager_secrets=[],
+        config_file_name="external_config.yaml",
+    ):
+        # set to the default if environment is None
+        if environment is None:
+            environment = [
+                dict(name="CXG_SECRET_KEY", path=["server", "app", "flask_secret_key"], required=False),
+                dict(
+                    name="CXG_OAUTH_CLIENT_SECRET",
+                    path=["server", "authentication", "params_oauth", "client_secret"],
+                    required=False,
+                ),
+            ]
+        external_config = {
+            "external": {
+                "environment": environment,
+                "aws_secrets_manager": {"region": aws_secrets_manager_region, "secrets": aws_secrets_manager_secrets},
+            }
+        }
+
+        configfile = os.path.join(self.tmp_fixtures_directory, config_file_name)
+        with open(configfile, "w") as external_config_file:
+            yaml.dump(external_config, external_config_file)
         return configfile
