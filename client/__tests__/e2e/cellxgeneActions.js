@@ -322,7 +322,7 @@ export async function login() {
 
   await goToPage(appUrlBase);
 
-  await clickOn("auth-button");
+  await clickOn("log-in");
 
   // (thuang): Auth0 form is unstable and unsafe for input until verified
   await waitUntilFormFieldStable('[name="email"]');
@@ -342,15 +342,14 @@ export async function login() {
 
 export async function logout() {
   await clickOnUntil("menu", async () => {
-    await expect(page).toMatch("Log Out");
-
+    await waitByID("log-out");
     await Promise.all([
       page.waitForNavigation({ waitUntil: "networkidle0" }),
-      expect(page).toClick("a", { text: "Log Out" }),
+      clickOn("log-out"),
     ]);
   });
 
-  await expect(page).toMatch("Log In");
+  await waitByID("log-in");
 }
 
 async function waitUntilFormFieldStable(selector) {
