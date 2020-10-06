@@ -1,4 +1,3 @@
-import json
 import string
 from contextlib import contextmanager
 from timeit import default_timer
@@ -11,12 +10,12 @@ import pandas as pd
 import random
 
 """
-Before running, sign into the dataportal, copy the cookie and paste it below. To test in staging or prod update the 
-url base below. It is also possible to configure the number of categories created and the number of unique labels per 
-category 
+Before running, sign into the dataportal, copy the cookie and paste it below. To test in staging or prod update the
+url base below. It is also possible to configure the number of categories created and the number of unique labels per
+category.
 """
 # Example Cookie
-cookie = "cxguser=eyJhY2Nlc3NfdG9rZW4iOiAiY1lDcDBhQTJ5aGlUVU14R2FIZkNYVExxeEpFNHZxZkoiLCAiaWRfdG9rZW4iOiAiZXlKaGJHY2lPaUpTVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0lzSW10cFpDSTZJazVpUlVOS2VEbFRWRWh6Tm5FeVgxSm9ORVZGTFNKOS5leUp1YVdOcmJtRnRaU0k2SW1ObGJHeDRaMlZ1WlMxemJXOXJaUzEwWlhOMEsyUmxkaUlzSW01aGJXVWlPaUpqWld4c2VHZGxibVV0YzIxdmEyVXRkR1Z6ZEN0a1pYWkFZMmhoYm5wMVkydGxjbUpsY21jdVkyOXRJaXdpY0dsamRIVnlaU0k2SW1oMGRIQnpPaTh2Y3k1bmNtRjJZWFJoY2k1amIyMHZZWFpoZEdGeUx6ZGtNekUyWm1Sak1URTNOV1JqWVRJME9HTmtabUppWXpsbE5UbGlZalF6UDNNOU5EZ3dKbkk5Y0djbVpEMW9kSFJ3Y3lVelFTVXlSaVV5Um1Oa2JpNWhkWFJvTUM1amIyMGxNa1poZG1GMFlYSnpKVEpHWTJVdWNHNW5JaXdpZFhCa1lYUmxaRjloZENJNklqSXdNakF0TURrdE16QlVNVGc2TURZNk1UTXVNREk0V2lJc0ltVnRZV2xzSWpvaVkyVnNiSGhuWlc1bExYTnRiMnRsTFhSbGMzUXJaR1YyUUdOb1lXNTZkV05yWlhKaVpYSm5MbU52YlNJc0ltVnRZV2xzWDNabGNtbG1hV1ZrSWpwbVlXeHpaU3dpYVhOeklqb2lhSFIwY0hNNkx5OXNiMmRwYmk1alpXeHNlR2RsYm1VdVpHVjJMbk5wYm1kc1pTMWpaV3hzTG1ONmFTNTBaV05vYm05c2IyZDVMeUlzSW5OMVlpSTZJbUYxZEdnd2ZEVm1Oekk0TVRnd05EZGlNVGhpTURBM05tRTBZakV6WmlJc0ltRjFaQ0k2SW1NelR6VjJkelpzVkdWMVREVjFhRkozWWpWR2RVc3hTbmR4TWpKdFVqVlNJaXdpYVdGMElqb3hOakF4TkRnNU1UY3pMQ0psZUhBaU9qRTJNREUxTWpVeE56TXNJbTV2Ym1ObElqb2lTSE51WkVvNFVGZFpTRlJ5YTBkTVVWcDBhM0lpZlEuaEZCcDM3VnJUVi1vX3RMR0p1SW1ieURyRXVZU0tBSlBjT0dxdW9YWm5QZ1Q5UW9PX2RGZGdBZzVnQ2RtVTlUa2dQTkxSXzJsczlPX0lxX2ZBX2NMbTNpVW5rY0ZnOFBsUVByMmh6RzVlN1AzLUVmX3RxZVdOTGw5LW9RTWJwekUyUTlaMXJyaTgyQklJMndzcEFnVWNJVHRYcDdLOTloOTVoYmM5a3U3REI0ZEtYUHNmQ0M0ZDFBc1cwcGNtcXJyMElEeHhPOVZ2LVB6cVNNdm5PQ2t2WmRza3ctMEpHOElsTm9ZOXBBWkxNWG9wMTIwNkZKdU95WHBCVWxiTUxJOVE5aVNhbEQ1dzduU0VQUzhjUl9YTHZXTzhiQ1ZxaXRURTZsajhnRlR1Rlc3emxfY005WVpqbVRwbUcweE95Q3R4VXdfQ0NCMi1NUmx2dU9GN3NmOHRnIiwgInJlZnJlc2hfdG9rZW4iOiAiTTlKakdLSnV2eklPMjRIbW9wQkhreEJwem5jcmxTSU4zaVZCMWxZaWxQRFh4IiwgImV4cGlyZXNfYXQiOiAxNjAxNTc1NTczfQ==; session=eyJfYXV0aDBfYXV0aGxpYl9ub25jZV8iOiJIc25kSjhQV1lIVHJrR0xRWnRrciJ9.X3TJFQ.1aZy0qSeclvinL6PESQl6rNuoU"
+cookie = "cxguser=eyJhY2Nlc3NfdG9rZW4iOiAiY1lDcDBhQTJ5aGlUVU14R2FIZkNYVExxeEpFNHZxZkoiLCAiaWRfdG9rZW4iOiAiZXlKaGJHY2lPaUpTVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0lzSW10cFpDSTZJazVpUlVOS2VEbFRWRWh6Tm5FeVgxSm9ORVZGTFNKOS5leUp1YVdOcmJtRnRaU0k2SW1ObGJHeDRaMlZ1WlMxemJXOXJaUzEwWlhOMEsyUmxkaUlzSW01aGJXVWlPaUpqWld4c2VHZGxibVV0YzIxdmEyVXRkR1Z6ZEN0a1pYWkFZMmhoYm5wMVkydGxjbUpsY21jdVkyOXRJaXdpY0dsamRIVnlaU0k2SW1oMGRIQnpPaTh2Y3k1bmNtRjJZWFJoY2k1amIyMHZZWFpoZEdGeUx6ZGtNekUyWm1Sak1URTNOV1JqWVRJME9HTmtabUppWXpsbE5UbGlZalF6UDNNOU5EZ3dKbkk5Y0djbVpEMW9kSFJ3Y3lVelFTVXlSaVV5Um1Oa2JpNWhkWFJvTUM1amIyMGxNa1poZG1GMFlYSnpKVEpHWTJVdWNHNW5JaXdpZFhCa1lYUmxaRjloZENJNklqSXdNakF0TURrdE16QlVNVGc2TURZNk1UTXVNREk0V2lJc0ltVnRZV2xzSWpvaVkyVnNiSGhuWlc1bExYTnRiMnRsTFhSbGMzUXJaR1YyUUdOb1lXNTZkV05yWlhKaVpYSm5MbU52YlNJc0ltVnRZV2xzWDNabGNtbG1hV1ZrSWpwbVlXeHpaU3dpYVhOeklqb2lhSFIwY0hNNkx5OXNiMmRwYmk1alpXeHNlR2RsYm1VdVpHVjJMbk5wYm1kc1pTMWpaV3hzTG1ONmFTNTBaV05vYm05c2IyZDVMeUlzSW5OMVlpSTZJbUYxZEdnd2ZEVm1Oekk0TVRnd05EZGlNVGhpTURBM05tRTBZakV6WmlJc0ltRjFaQ0k2SW1NelR6VjJkelpzVkdWMVREVjFhRkozWWpWR2RVc3hTbmR4TWpKdFVqVlNJaXdpYVdGMElqb3hOakF4TkRnNU1UY3pMQ0psZUhBaU9qRTJNREUxTWpVeE56TXNJbTV2Ym1ObElqb2lTSE51WkVvNFVGZFpTRlJ5YTBkTVVWcDBhM0lpZlEuaEZCcDM3VnJUVi1vX3RMR0p1SW1ieURyRXVZU0tBSlBjT0dxdW9YWm5QZ1Q5UW9PX2RGZGdBZzVnQ2RtVTlUa2dQTkxSXzJsczlPX0lxX2ZBX2NMbTNpVW5rY0ZnOFBsUVByMmh6RzVlN1AzLUVmX3RxZVdOTGw5LW9RTWJwekUyUTlaMXJyaTgyQklJMndzcEFnVWNJVHRYcDdLOTloOTVoYmM5a3U3REI0ZEtYUHNmQ0M0ZDFBc1cwcGNtcXJyMElEeHhPOVZ2LVB6cVNNdm5PQ2t2WmRza3ctMEpHOElsTm9ZOXBBWkxNWG9wMTIwNkZKdU95WHBCVWxiTUxJOVE5aVNhbEQ1dzduU0VQUzhjUl9YTHZXTzhiQ1ZxaXRURTZsajhnRlR1Rlc3emxfY005WVpqbVRwbUcweE95Q3R4VXdfQ0NCMi1NUmx2dU9GN3NmOHRnIiwgInJlZnJlc2hfdG9rZW4iOiAiTTlKakdLSnV2eklPMjRIbW9wQkhreEJwem5jcmxTSU4zaVZCMWxZaWxQRFh4IiwgImV4cGlyZXNfYXQiOiAxNjAxNTc1NTczfQ==; session=eyJfYXV0aDBfYXV0aGxpYl9ub25jZV8iOiJIc25kSjhQV1lIVHJrR0xRWnRrciJ9.X3TJFQ.1aZy0qSeclvinL6PESQl6rNuoU"  # noqa E501
 
 test_datasets = {
     "smallest": {
@@ -30,7 +29,7 @@ test_datasets = {
         "num_cells": 9409,
     },
     "80k": {
-        "dataset_url": "Single_cell_gene_expression_profiling_of_SARS_CoV_2_infected_human_cell_lines_H1299-27-remixed.cxg",
+        "dataset_url": "Single_cell_gene_expression_profiling_of_SARS_CoV_2_infected_human_cell_lines_H1299-27-remixed.cxg",  # noqa E501
         "name": "80k",
         "num_cells": 81736,
     },
@@ -40,9 +39,9 @@ test_datasets = {
     "4million": {"dataset_url": None, "name": "4million", "num_cells": 4000000},
 }
 
-url_base = f"https://api.cellxgene.dev.single-cell.czi.technology/cellxgene/e/"
-annotations_category_count = [50, 75, 90]
-max_labels = [5, 50, 200]
+url_base = "https://api.cellxgene.dev.single-cell.czi.technology/cellxgene/e/"
+annotations_category_count = [1, 10, 50]
+max_labels = [5, 50, 100]
 
 
 class PerformanceTestingAnnotations:
@@ -58,7 +57,6 @@ class PerformanceTestingAnnotations:
         self.max_labels = max_labels
         self.url_base = url_base
         self.test_notes = self.create_info_dict()
-        self.token = self.get_token(dev_payload)
 
     def create_info_dict(self):
         request_info = {}
@@ -70,7 +68,7 @@ class PerformanceTestingAnnotations:
                     request_info[dataset][f"num_categories_{cat_count}"][f"max_label_{unique_labels}"] = {}
         return request_info
 
-    def create_annotations_dict_threaded(self, dataset_name, category_count, label_max):
+    def create_annotations_dict_multi_process(self, dataset_name, category_count, label_max):
         annotation_dict = {}
         futures = []
         categories = [f"Category{i}" for i in range(category_count)]
@@ -122,14 +120,14 @@ class PerformanceTestingAnnotations:
     @contextmanager
     def elapsed_timer(self):
         start = default_timer()
-        elapser = lambda: default_timer() - start
+        elapser = lambda: default_timer() - start  # noqa E731
         yield lambda: elapser()
         end = default_timer()
-        elapser = lambda: end - start
+        elapser = lambda: end - start  # noqa E731
 
     def create_matrix(self, dataset_name, num_cat, max_labels):
         with self.elapsed_timer() as elapsed:
-            annon_dict = self.create_annotations_dict_threaded(dataset_name, num_cat, max_labels)
+            annon_dict = self.create_annotations_dict_multi_process(dataset_name, num_cat, max_labels)
             dict_size = sum(sys.getsizeof(value) for value in annon_dict.values()) / 1024 ** 2
             self.test_notes[dataset_name][f"num_categories_{num_cat}"][f"max_label_{max_labels}"]["annotation_dict"] = {
                 "creation_time": str(elapsed()),
@@ -154,8 +152,6 @@ class PerformanceTestingAnnotations:
                 return []
 
     def send_put_request(self, dataset_url, data):
-        if not data:
-            return [], 0.0
         url = self.url_base + f"{dataset_url}/api/v0.2/annotations/obs"
         with self.elapsed_timer() as elapsed:
             try:
@@ -171,22 +167,22 @@ class PerformanceTestingAnnotations:
             for category_count in self.annotations_category_count:
                 print(f"Starting dataset: {dataset_name}, categories: {category_count}, labels: {unique_labels}")
                 fbs_matrix = self.create_matrix(dataset_name, category_count, unique_labels)
-                response, response_time = self.send_put_request(
-                    self.test_datasets[dataset_name]["dataset_url"], fbs_matrix
-                )
-                if response is None:
-                    self.test_notes[dataset_name][f"num_categories_{category_count}"][f"max_label_{unique_labels}"][
-                        "put_request"
-                    ] = {"response_status": "failed", "request_time": str(response_time)}
-                else:
-                    self.test_notes[dataset_name][f"num_categories_{category_count}"][f"max_label_{unique_labels}"][
-                        "put_request"
-                    ] = {"response_status": response.status_code, "request_time": str(response_time)}
+                if self.test_datasets[dataset_name]["dataset_url"] and fbs_matrix:
+                    response, response_time = self.send_put_request(
+                        self.test_datasets[dataset_name]["dataset_url"], fbs_matrix
+                    )
+                    if response is None:
+                        self.test_notes[dataset_name][f"num_categories_{category_count}"][f"max_label_{unique_labels}"][
+                            "put_request"
+                        ] = {"response_status": "failed", "request_time": str(response_time)}
+                    else:
+                        self.test_notes[dataset_name][f"num_categories_{category_count}"][f"max_label_{unique_labels}"][
+                            "put_request"
+                        ] = {"response_status": response.status_code, "request_time": str(response_time)}
 
 
 def test_all_datasets():
     """
-    To run
     Run time is dependent on number of datasets, dataset size, number of categories/number being tested and number of
      unique label counts being tested. However it generally takes a long time. I recommend running this in tmux
     """
@@ -198,3 +194,12 @@ def test_all_datasets():
         except Exception as e:
             print(f"something went wrong with {dataset_name}: {e}")
     return perf_test.test_notes
+
+
+def main():
+    notes = test_all_datasets()
+    print(notes)
+
+
+if __name__ == "__main__":
+    main()
