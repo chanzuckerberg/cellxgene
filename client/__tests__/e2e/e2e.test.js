@@ -17,6 +17,7 @@ import {
   goToPage,
   typeInto,
   waitByID,
+  clickOnUntil,
 } from "./puppeteerUtils";
 
 import {
@@ -519,6 +520,17 @@ test("lasso moves after pan", async () => {
   const panCount = await getCellSetCount(2);
 
   expect(panCount).toBe(initialCount);
+});
+
+describe("auth buttons", () => {
+  test("login then logout", async () => {
+    await goToPage(appUrlBase);
+    await clickOnUntil("log-in", async () => {
+      await page.waitForNavigation({ waitUntil: "networkidle0" });
+      await waitByID("menu");
+    });
+    await logout();
+  });
 });
 
 const conditionalDescribe =
