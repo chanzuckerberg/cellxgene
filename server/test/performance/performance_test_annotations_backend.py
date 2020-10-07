@@ -1,3 +1,4 @@
+import json
 import string
 from contextlib import contextmanager
 from timeit import default_timer
@@ -14,8 +15,8 @@ Before running, sign into the dataportal, copy the cookie and paste it below. To
 url base below. It is also possible to configure the number of categories created and the number of unique labels per
 category.
 """
-# Example Cookie
-cookie = "cxguser=eyJhY2Nlc3NfdG9rZW4iOiAiY1lDcDBhQTJ5aGlUVU14R2FIZkNYVExxeEpFNHZxZkoiLCAiaWRfdG9rZW4iOiAiZXlKaGJHY2lPaUpTVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0lzSW10cFpDSTZJazVpUlVOS2VEbFRWRWh6Tm5FeVgxSm9ORVZGTFNKOS5leUp1YVdOcmJtRnRaU0k2SW1ObGJHeDRaMlZ1WlMxemJXOXJaUzEwWlhOMEsyUmxkaUlzSW01aGJXVWlPaUpqWld4c2VHZGxibVV0YzIxdmEyVXRkR1Z6ZEN0a1pYWkFZMmhoYm5wMVkydGxjbUpsY21jdVkyOXRJaXdpY0dsamRIVnlaU0k2SW1oMGRIQnpPaTh2Y3k1bmNtRjJZWFJoY2k1amIyMHZZWFpoZEdGeUx6ZGtNekUyWm1Sak1URTNOV1JqWVRJME9HTmtabUppWXpsbE5UbGlZalF6UDNNOU5EZ3dKbkk5Y0djbVpEMW9kSFJ3Y3lVelFTVXlSaVV5Um1Oa2JpNWhkWFJvTUM1amIyMGxNa1poZG1GMFlYSnpKVEpHWTJVdWNHNW5JaXdpZFhCa1lYUmxaRjloZENJNklqSXdNakF0TURrdE16QlVNVGc2TURZNk1UTXVNREk0V2lJc0ltVnRZV2xzSWpvaVkyVnNiSGhuWlc1bExYTnRiMnRsTFhSbGMzUXJaR1YyUUdOb1lXNTZkV05yWlhKaVpYSm5MbU52YlNJc0ltVnRZV2xzWDNabGNtbG1hV1ZrSWpwbVlXeHpaU3dpYVhOeklqb2lhSFIwY0hNNkx5OXNiMmRwYmk1alpXeHNlR2RsYm1VdVpHVjJMbk5wYm1kc1pTMWpaV3hzTG1ONmFTNTBaV05vYm05c2IyZDVMeUlzSW5OMVlpSTZJbUYxZEdnd2ZEVm1Oekk0TVRnd05EZGlNVGhpTURBM05tRTBZakV6WmlJc0ltRjFaQ0k2SW1NelR6VjJkelpzVkdWMVREVjFhRkozWWpWR2RVc3hTbmR4TWpKdFVqVlNJaXdpYVdGMElqb3hOakF4TkRnNU1UY3pMQ0psZUhBaU9qRTJNREUxTWpVeE56TXNJbTV2Ym1ObElqb2lTSE51WkVvNFVGZFpTRlJ5YTBkTVVWcDBhM0lpZlEuaEZCcDM3VnJUVi1vX3RMR0p1SW1ieURyRXVZU0tBSlBjT0dxdW9YWm5QZ1Q5UW9PX2RGZGdBZzVnQ2RtVTlUa2dQTkxSXzJsczlPX0lxX2ZBX2NMbTNpVW5rY0ZnOFBsUVByMmh6RzVlN1AzLUVmX3RxZVdOTGw5LW9RTWJwekUyUTlaMXJyaTgyQklJMndzcEFnVWNJVHRYcDdLOTloOTVoYmM5a3U3REI0ZEtYUHNmQ0M0ZDFBc1cwcGNtcXJyMElEeHhPOVZ2LVB6cVNNdm5PQ2t2WmRza3ctMEpHOElsTm9ZOXBBWkxNWG9wMTIwNkZKdU95WHBCVWxiTUxJOVE5aVNhbEQ1dzduU0VQUzhjUl9YTHZXTzhiQ1ZxaXRURTZsajhnRlR1Rlc3emxfY005WVpqbVRwbUcweE95Q3R4VXdfQ0NCMi1NUmx2dU9GN3NmOHRnIiwgInJlZnJlc2hfdG9rZW4iOiAiTTlKakdLSnV2eklPMjRIbW9wQkhreEJwem5jcmxTSU4zaVZCMWxZaWxQRFh4IiwgImV4cGlyZXNfYXQiOiAxNjAxNTc1NTczfQ==; session=eyJfYXV0aDBfYXV0aGxpYl9ub25jZV8iOiJIc25kSjhQV1lIVHJrR0xRWnRrciJ9.X3TJFQ.1aZy0qSeclvinL6PESQl6rNuoU"  # noqa E501
+
+cookie = ""
 
 test_datasets = {
     "smallest": {
@@ -58,6 +59,13 @@ class PerformanceTestingAnnotations:
         self.url_base = url_base
         self.test_notes = self.create_info_dict()
 
+    def set_cell_count(self, dataset_name):
+        dataset_url = self.test_datasets[dataset_name]["dataset_url"]
+        headers = {"Content-Type": "application/octet-stream", "Cookie": cookie}
+        response = self.client.get(f"{self.url_base}{dataset_url}/api/v0.2/schema", headers=headers)
+        cell_count = json.loads(response._content)["schema"]["dataframe"]["nObs"]
+        self.test_datasets[dataset_name]["cell_count"] = cell_count
+
     def create_info_dict(self):
         request_info = {}
         for dataset in self.test_datasets.keys():
@@ -72,6 +80,8 @@ class PerformanceTestingAnnotations:
         annotation_dict = {}
         futures = []
         categories = [f"Category{i}" for i in range(category_count)]
+        if not self.test_datasets[dataset_name]["num_cells"]:
+            self.set_cell_count(dataset_name)
         with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
             for category in categories:
                 futures.append(
