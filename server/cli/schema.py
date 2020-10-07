@@ -53,22 +53,20 @@ def schema_apply(source_h5ad, remix_config, output_filename):
     name="validate",
     short_help="Check that an h5ad follows the cellxgene data integration schema.",
 )
-@click.option(
-    "--h5ad",
-    help="h5ad file to validate.",
+@click.argument(
+    "h5ad",
     nargs=1,
-    required=True,
     type=click.Path(exists=True, dir_okay=False),
 )
 @click.option(
-    "--deep",
-    help="When true, check all the fields in h5ad rather than just the version information.",
-    default=True,
+    "--shallow",
+    help="When true, just check that the correct version information is present.",
+    default=False,
     show_default=True,
     is_flag=True,
 )
-def schema_validate(h5ad_path, deep_check):
-    validate.validate(h5ad_path, deep_check)
+def schema_validate(h5ad, shallow):
+    validate.validate(h5ad, shallow)
 
 
 schema_cli.add_command(schema_apply)

@@ -6,7 +6,7 @@ components:
         keys:
             version:
                 type: dict
-                keys:    
+                keys:
                     corpora_schema_version: null
                     corpora_encoding_version: null
             title:
@@ -20,7 +20,7 @@ components:
             organism:
                 type: string
                 nullable: false
-            organism_ontology_id:
+            organism_ontology_term_id:
                 type: curie
                 prefixes:
                     - NCBITaxon
@@ -62,7 +62,7 @@ components:
             cell_type:
                 type: human-readable string
                 nullable: false
-            cell_type_ontology_id:
+            cell_type_ontology_term_id:
                 type: curie
                 nullable: true
                 prefixes:
@@ -87,7 +87,7 @@ components:
             development_stage:
                 type: human-readable string
                 nullable: false
-            development_stage_ontology_id:
+            development_stage_ontology_term_id:
                 type: curie
                 nullable: true
                 prefixes:

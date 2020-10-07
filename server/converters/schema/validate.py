@@ -47,7 +47,8 @@ def _validate_curie(c, prefixes):
     if not c:
         return True
 
-    match = re.match(r"([A-Z]\dw+):\d+$", c)
+    match = re.match(r"([A-Z]\w+):\d+$", c)
+
     if prefixes:
         return match and match.group(1) in prefixes
     else:
@@ -85,7 +86,7 @@ def _validate_column(column, column_name, df_name, schema_def):
                 f"{non_valid_curies[0]}."
             )
             if "prefixes" in schema_def:
-                errors[-1].append(f" Values must be curies from one of these ontologies {schema_def['prefixes']}.")
+                errors[-1] += f" Values must be curies from one of these ontologies {schema_def['prefixes']}."
 
     if "enum" in schema_def:
         bad_enums = [v for v in column if v not in schema_def["enum"]]
@@ -103,23 +104,22 @@ def _validate_dict(dict_, dict_name, schema_def):
 
     errors = []
 
-    for key in schema_def:
+    for key in schema_def.get("keys", []):
         if key not in dict_:
             errors.append(f"{dict_name} is missing key {key}.")
-
-        if schema_def[key]:
-            if schema_def[key]["type"] == "stringified list of dicts":
-                if not _validate_stringified_list_of_dicts(dict_name, dict_[key]):
+        elif schema_def["keys"][key]:
+            if schema_def["keys"][key]["type"] == "stringified list of dicts":
+                if not _validate_stringified_list_of_dicts(dict_[key]):
                     errors.append(
                         f"Key {key} in {dict_name} should be a JSON-encoded list of dicts, but it is {dict_[key]}"
                     )
-            elif schema_def[key]["type"] == "dict":
-                errors.extend(_validate_dict(dict_[key], key, schema_def[key]))
-            elif schema_def[key]["type"] == "curie":
-                if not _validate_curie(dict_[key], schema_def[key]["prefixes"]):
-                    errors.extend(_validate_curie(dict_[key], schema_def[key]["prefixes"]))
+            elif schema_def["keys"][key]["type"] == "dict":
+                errors.extend(_validate_dict(dict_[key], key, schema_def["keys"][key]))
+            elif schema_def["keys"][key]["type"] == "curie":
+                if not _validate_curie(dict_[key], schema_def["keys"][key]["prefixes"]):
+                    errors.extend(_validate_curie(dict_[key], schema_def["keys"][key]["prefixes"]))
 
-            if "nullable" in schema_def[key] and not schema_def[key]["nullable"]:
+            if "nullable" in schema_def["keys"][key] and not schema_def["keys"][key]["nullable"]:
                 if len(dict_[key]) == 0:
                     errors.append(f"Key {key} in dict {dict_name} is an empty value.")
 
@@ -132,7 +132,7 @@ def _validate_dataframe(df, df_name, schema_def):
     errors = []
 
     if "index" in schema_def:
-        errors.extend(_validate_column(df.index, df_name, schema_def["index"]))
+        errors.extend(_validate_column(df.index, "index", df_name, schema_def["index"]))
 
     for column in schema_def.get("columns", []):
         if column not in df.columns:
@@ -166,19 +166,19 @@ def deep_check(adata, schema_def):
 
     errors = []
 
-    for component in schema_def["components"]:
-        if component["type"] == "dataframe":
-            errors.extend(_validate_dataframe(getattr(adata, component), component, schema_def[component]))
-        elif component["type"] == "dict":
-            errors.extend(_validate_dict(getattr(adata, component), component, schema_def[component]))
+    for component, component_def in schema_def["components"].items():
+        if component_def["type"] == "dataframe":
+            errors.extend(_validate_dataframe(getattr(adata, component), component, component_def))
+        elif component_def["type"] == "dict":
+            errors.extend(_validate_dict(getattr(adata, component), component, component_def))
         else:
             raise ValueError(f"Unexpected component type {component['type']}")
 
     return errors
 
 
-def validate_adata(adata, deep_check):
-    """Validate an AnnData object. If not deep_check, just check that the required version information is
+def validate_adata(adata, shallow):
+    """Validate an AnnData object. If shallow, just check that the required version information is
     present.
     """
 
@@ -189,7 +189,7 @@ def validate_adata(adata, deep_check):
 
     # We can stop here if it's a "shallow" check, that is, if we're just
     # checking that version is present.
-    if not deep_check:
+    if shallow:
         return True
 
     schema_def = get_schema_definition(adata.uns["version"]["corpora_schema_version"])
@@ -202,7 +202,7 @@ def validate_adata(adata, deep_check):
     return not errors
 
 
-def validate(h5ad_path, deep_check=False):
+def validate(h5ad_path, shallow=False):
     """Entry point for validation."""
 
     try:
@@ -211,10 +211,10 @@ def validate(h5ad_path, deep_check=False):
         raise ImportError("scanpy must be installed for cellxgene schema")
 
     try:
-        adata = scanpy.read_h5ad(h5ad_path)
+        adata = scanpy.read_h5ad(h5ad_path, backed="r")
     except (OSError, TypeError):
         print(f"Unable to open {h5ad_path} with scanpy.")
         sys.exit(1)
 
-    if not validate_adata(adata, deep_check):
+    if not validate_adata(adata, shallow):
         sys.exit(1)
