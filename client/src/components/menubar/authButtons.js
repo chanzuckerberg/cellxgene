@@ -12,10 +12,10 @@ import { IconNames } from "@blueprintjs/icons";
 import * as globals from "../../globals";
 import styles from "./menubar.css";
 
-const baseEmoji = [0x1f9d1, 0x1f468, 0x1f469];
-const skinTones = [0x1f3fb, 0x1f3fc, 0x1f3fd, 0x1f3fe, 0x1f3ff];
-const microscope = 0x1f52c;
-const zeroWidthJoiner = 0x0200d;
+const BASE_EMOJI = [0x1f9d1, 0x1f468, 0x1f469];
+const SKIN_TONES = [0x1f3fb, 0x1f3fc, 0x1f3fd, 0x1f3fe, 0x1f3ff];
+const MICROSCOPE = 0x1f52c;
+const ZERO_WIDTH_JOINER = 0x0200d;
 
 const Auth = React.memo((props) => {
   const { auth, userinfo } = props;
@@ -25,31 +25,32 @@ const Auth = React.memo((props) => {
   const skinToneIndex = Math.floor(randomInt % 5);
 
   const scientist = String.fromCodePoint(
-    baseEmoji[sexIndex],
-    skinTones[skinToneIndex],
-    zeroWidthJoiner,
-    microscope
+    BASE_EMOJI[sexIndex],
+    SKIN_TONES[skinToneIndex],
+    ZERO_WIDTH_JOINER,
+    MICROSCOPE
   );
 
   if (!auth?.["requires_client_login"]) return null;
-  if (userinfo?.["is_authenticated"])
+
+  if (userinfo?.["is_authenticated"]) {
+    const PopoverContent = (
+      <Menu>
+        <MenuItem
+          data-testid="user-email"
+          text={`Logged in as: ${userinfo.email}`}
+        />
+        <MenuItem
+          data-testid="log-out"
+          text="Log Out"
+          href={auth.logout}
+          icon={IconNames.LOG_OUT}
+        />
+      </Menu>
+    );
+
     return (
-      <Popover
-        content={
-          <Menu>
-            <MenuItem
-              data-testid="user-email"
-              text={`Logged in as: ${userinfo.email}`}
-            />
-            <MenuItem
-              data-testid="log-out"
-              text="Log Out"
-              href={auth.logout}
-              icon={IconNames.LOG_OUT}
-            />
-          </Menu>
-        }
-      >
+      <Popover content={PopoverContent}>
         <Button className={styles.menubarButton} style={{ padding: 0 }}>
           {userinfo?.picture ? (
             <img alt="profile" src={userinfo?.picture} />
@@ -59,6 +60,8 @@ const Auth = React.memo((props) => {
         </Button>
       </Popover>
     );
+  }
+
   return (
     <Tooltip
       content="Log in to cellxgene"

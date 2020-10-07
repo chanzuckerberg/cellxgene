@@ -30,26 +30,19 @@ const InformationMenu = React.memo((props) => {
             text="Github"
             rel="noopener"
           />
-          <MenuItem
-            target="_blank"
-            text={
-              libraryVersions && libraryVersions.cellxgene
-                ? libraryVersions.cellxgene
-                : null
-            }
-          />
+          <MenuItem target="_blank" text={libraryVersions?.cellxgene || null} />
           <MenuItem text="MIT License" />
-          {tosURL ? (
+          {tosURL && (
             <MenuItem href={tosURL} target="_blank" text="Terms of Service" />
-          ) : null}
-          {privacyURL ? (
+          )}
+          {privacyURL && (
             <MenuItem
               href={privacyURL}
               target="_blank"
               text="Privacy Policy"
               rel="noopener"
             />
-          ) : null}
+          )}
         </Menu>
       }
       position={Position.BOTTOM_RIGHT}
