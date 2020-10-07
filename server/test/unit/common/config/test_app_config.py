@@ -15,6 +15,7 @@ class AppConfigTest(ConfigTests):
     def setUp(self):
         self.config_file_name = f"{unittest.TestCase.id(self).split('.')[-1]}.yml"
         self.config = AppConfig()
+        self.config.update_server_config(app__flask_secret_key="secret")
         self.config.update_server_config(multi_dataset__dataroot=FIXTURES_ROOT)
         self.server_config = self.config.server_config
         self.config.complete_config()
@@ -106,6 +107,8 @@ class AppConfigTest(ConfigTests):
             with open(configfile, "w") as fconfig:
                 config = """
                 server:
+                    app:
+                        flask_secret_key: secret
                     multi_dataset:
                         dataroot: test_dataroot
 
@@ -116,7 +119,10 @@ class AppConfigTest(ConfigTests):
             app_config.update_from_config_file(configfile)
             server_changes = app_config.server_config.changes_from_default()
             dataset_changes = app_config.default_dataset_config.changes_from_default()
-            self.assertEqual(server_changes, [("multi_dataset__dataroot", "test_dataroot", None)])
+            self.assertEqual(
+                server_changes,
+                [("app__flask_secret_key", "secret", None), ("multi_dataset__dataroot", "test_dataroot", None)],
+            )
             self.assertEqual(dataset_changes, [])
 
     def test_configfile_no_server_section(self):

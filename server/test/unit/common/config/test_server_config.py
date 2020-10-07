@@ -23,6 +23,7 @@ class TestServerConfig(ConfigTests):
     def setUp(self):
         self.config_file_name = f"{unittest.TestCase.id(self).split('.')[-1]}.yml"
         self.config = AppConfig()
+        self.config.update_server_config(app__flask_secret_key="secret")
         self.config.update_server_config(multi_dataset__dataroot=FIXTURES_ROOT)
         self.server_config = self.config.server_config
         self.config.complete_config()
@@ -103,6 +104,7 @@ class TestServerConfig(ConfigTests):
         # Note if the port is set in the config file it will NOT be overwritten by a different envvar
         os.environ["CXG_SERVER_PORT"] = "4008"
         self.config = AppConfig()
+        self.config.update_server_config(app__flask_secret_key="secret")
         self.config.server_config.handle_app(self.context)
         self.assertEqual(self.config.server_config.app__port, 4008)
         del os.environ["CXG_SERVER_PORT"]
@@ -152,6 +154,7 @@ class TestServerConfig(ConfigTests):
         config = AppConfig()
         backend_port = find_available_port("localhost", 10000)
         config.update_server_config(
+            app__flask_secret_key="secret",
             app__api_base_url=f"http://localhost:{backend_port}/additional/path",
             multi_dataset__dataroot=f"{PROJECT_ROOT}/example-dataset",
         )
