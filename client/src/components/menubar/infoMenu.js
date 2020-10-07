@@ -3,38 +3,21 @@ import React from "react";
 import {
   Button,
   ButtonGroup,
-  Classes,
   Menu,
   MenuItem,
   Popover,
   Position,
 } from "@blueprintjs/core";
+import { IconNames } from "@blueprintjs/icons";
 import styles from "./menubar.css";
 
-const handleClick = (dispatch) => {
-  dispatch({ type: "toggle dataset drawer" });
-};
-
 const InformationMenu = React.memo((props) => {
-  const {
-    libraryVersions,
-    tosURL,
-    privacyURL,
-    auth,
-    userinfo,
-    dispatch,
-  } = props;
+  const { libraryVersions, tosURL, privacyURL } = props;
   return (
     <ButtonGroup className={`${styles.menubarButton}`}>
       <Popover
         content={
           <Menu>
-            <MenuItem
-              onClick={() => handleClick(dispatch)}
-              icon="info-sign"
-              text="Dataset Overview"
-            />
-
             <MenuItem
               href="https://chanzuckerberg.github.io/cellxgene/"
               target="_blank"
@@ -76,14 +59,6 @@ const InformationMenu = React.memo((props) => {
                 rel="noopener"
               />
             ) : null}
-
-            {auth?.["requires_client_login"] &&
-            userinfo?.["is_authenticated"] ? (
-              <>
-                <MenuItem text={`Logged in as: ${userinfo.email}`} />
-                <MenuItem text="Log Out" href={auth.logout} />
-              </>
-            ) : null}
           </Menu>
         }
         position={Position.BOTTOM_RIGHT}
@@ -95,7 +70,7 @@ const InformationMenu = React.memo((props) => {
         <Button
           data-testid="menu"
           type="button"
-          className={`${Classes.BUTTON} bp3-icon-info-sign`}
+          icon={IconNames.INFO_SIGN}
           style={{
             cursor: "pointer",
           }}
