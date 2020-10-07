@@ -1,30 +1,80 @@
 import React from "react";
-import { AnchorButton, ButtonGroup, Tooltip } from "@blueprintjs/core";
+import {
+  AnchorButton,
+  Button,
+  MenuItem,
+  Tooltip,
+  Popover,
+  Menu,
+} from "@blueprintjs/core";
+import { IconNames } from "@blueprintjs/icons";
+
 import * as globals from "../../globals";
 import styles from "./menubar.css";
+
+const baseEmoji = [0x1f9d1, 0x1f468, 0x1f469];
+const skinTones = [0x1f3fb, 0x1f3fc, 0x1f3fd, 0x1f3fe, 0x1f3ff];
+const microscope = 0x1f52c;
+const zeroWidthJoiner = 0x0200d;
 
 const Auth = React.memo((props) => {
   const { auth, userinfo } = props;
 
-  if (!auth || (auth && !auth.requires_client_login)) return null;
+  const randomInt = Math.random() * 15;
+  const sexIndex = Math.floor(randomInt / 5);
+  const skinToneIndex = Math.floor(randomInt % 5);
 
-  return (
-    <ButtonGroup className={styles.menubarButton}>
-      <Tooltip
-        content="Log in to cellxgene"
-        position="bottom"
-        hoverOpenDelay={globals.tooltipHoverOpenDelay}
+  const scientist = String.fromCodePoint(
+    baseEmoji[sexIndex],
+    skinTones[skinToneIndex],
+    zeroWidthJoiner,
+    microscope
+  );
+
+  if (!auth?.["requires_client_login"]) return null;
+  if (userinfo?.["is_authenticated"])
+    return (
+      <Popover
+        content={
+          <Menu>
+            <MenuItem
+              data-testid="user-email"
+              text={`Logged in as: ${userinfo.email}`}
+            />
+            <MenuItem
+              data-testid="log-out"
+              text="Log Out"
+              href={auth.logout}
+              icon={IconNames.LOG_OUT}
+            />
+          </Menu>
+        }
       >
-        <AnchorButton
-          type="button"
-          data-testid="auth-button"
-          disabled={false}
-          href={!userinfo.is_authenticated ? auth.login : auth.logout}
-        >
-          {!userinfo.is_authenticated ? "Log In" : "Log Out"}
-        </AnchorButton>
-      </Tooltip>
-    </ButtonGroup>
+        <Button className={styles.menubarButton} style={{ padding: 0 }}>
+          {userinfo?.picture ? (
+            <img alt="profile" src={userinfo?.picture} />
+          ) : (
+            <span style={{ fontSize: "18px" }}>{scientist}</span>
+          )}
+        </Button>
+      </Popover>
+    );
+  return (
+    <Tooltip
+      content="Log in to cellxgene"
+      position="bottom"
+      hoverOpenDelay={globals.tooltipHoverOpenDelay}
+    >
+      <AnchorButton
+        type="button"
+        data-testid="log-in"
+        disabled={false}
+        href={auth.login}
+        className={styles.menubarButton}
+      >
+        Log In
+      </AnchorButton>
+    </Tooltip>
   );
 });
 
