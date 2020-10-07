@@ -33,7 +33,12 @@ const InformationMenu = React.memo((props) => {
           <MenuItem target="_blank" text={libraryVersions?.cellxgene || null} />
           <MenuItem text="MIT License" />
           {tosURL && (
-            <MenuItem href={tosURL} target="_blank" text="Terms of Service" />
+            <MenuItem
+              href={tosURL}
+              target="_blank"
+              text="Terms of Service"
+              rel="noopener"
+            />
           )}
           {privacyURL && (
             <MenuItem
