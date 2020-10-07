@@ -178,7 +178,12 @@ class AppConfigTest(ConfigTests):
             ),
             (["does", "not", "exist"], "path must start with 'server', 'dataset', or 'per_dataset_config'"),
             ([], "path must start with 'server', 'dataset', or 'per_dataset_config'"),
-            (["per_dataset_config"], "path is invalid: got '['per_dataset_config']'"),
+            (["per_dataset_config"], "missing dataroot when using per_dataset_config: got '['per_dataset_config']'"),
+            (
+                ["per_dataset_config", "unknown"],
+                "unknown dataroot when using per_dataset_config: got '['per_dataset_config', 'unknown']',"
+                " dataroots specified in config are ['s1', 's2']",
+            ),
             ([1, 2, 3], "path must be a list of strings, got '[1, 2, 3]'"),
             ("string", "path must be a list of strings, got 'string'"),
         ]

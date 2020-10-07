@@ -80,7 +80,7 @@ class AppConfig(object):
 
     def update_single_config_from_path_and_value(self, path, value):
         """Update a single config parameter with the value.
-        path is a list of string, that gives a path to the config parameter to be updated.
+        Path is a list of string, that gives a path to the config parameter to be updated.
         For example, path may be ["server","app","port"].
         """
         self.is_complete = False
@@ -108,10 +108,14 @@ class AppConfig(object):
 
         elif path[0] == "per_dataset_config":
             if len(path) < 2:
-                raise ConfigurationError(f"path is invalid: got '{path}'")
+                raise ConfigurationError(f"missing dataroot when using per_dataset_config: got '{path}'")
             dataroot = path[1]
             if dataroot not in self.dataroot_config:
-                raise ConfigurationError(f"unknown dataroot in path: got '{path}'")
+                dataroots = str(list(self.dataroot_config.keys()))
+                raise ConfigurationError(
+                    f"unknown dataroot when using per_dataset_config: got '{path}',"
+                    f" dataroots specified in config are {dataroots}"
+                )
 
             attr = "__".join(path[2:])
             try:
