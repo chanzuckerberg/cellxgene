@@ -7,7 +7,7 @@ import * as globals from "../../globals";
 import Logo from "../framework/logo";
 import Truncate from "../util/truncate";
 import InfoDrawer from "../infoDrawer/infoDrawer";
-import InformationMenu from "../menubar/infoMenu";
+import InformationMenu from "./infoMenu";
 
 const DATASET_TITLE_FONT_SIZE = 14;
 
