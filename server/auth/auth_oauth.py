@@ -146,21 +146,19 @@ class AuthTypeOAuth(AuthTypeClientBase):
 
     def get_user_id(self):
         payload = self.get_userinfo()
-        if payload and payload.get("sub"):
-            return payload.get("sub")
-        return None
+        return payload.get("sub") if payload else None
 
     def get_user_name(self):
         payload = self.get_userinfo()
-        if payload and payload.get("name"):
-            return payload.get("name")
-        return None
+        return payload.get("name") if payload else None
 
     def get_user_email(self):
         payload = self.get_userinfo()
-        if payload and payload.get("email"):
-            return payload.get("email")
-        return None
+        return payload.get("email") if payload else None
+
+    def get_user_picture(self):
+        payload = self.get_userinfo()
+        return payload.get("picture") if payload else None
 
     def update_response(self, response):
         response.cache_control.update(dict(public=True, max_age=0, no_store=True, no_cache=True, must_revalidate=True))

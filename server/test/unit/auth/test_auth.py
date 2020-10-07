@@ -82,6 +82,7 @@ class AuthTest(unittest.TestCase):
             userinfo = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/userinfo").json()
             self.assertTrue(userinfo["userinfo"]["is_authenticated"])
             self.assertEqual(userinfo["userinfo"]["username"], "test_account")
+            self.assertEqual(userinfo["userinfo"]["picture"], None)
             self.assertTrue(config["config"]["parameters"]["annotations"])
 
             r = session.get(f"{server}/{logout_uri}")
@@ -99,6 +100,12 @@ class AuthTest(unittest.TestCase):
             userinfo = session.get(f"{server}/no-auth/pbmc3k.cxg/api/v0.2/userinfo").json()
             self.assertIsNone(userinfo)
             self.assertFalse(config["config"]["parameters"]["annotations"])
+
+            # login with a picture
+            r = session.get(f"{server}/{login_uri}&picture=myimage.png")
+            userinfo = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/userinfo").json()
+            self.assertTrue(userinfo["userinfo"]["is_authenticated"])
+            self.assertEqual(userinfo["userinfo"]["picture"], "myimage.png")
 
     def test_auth_test_single(self):
         c = AppConfig()
