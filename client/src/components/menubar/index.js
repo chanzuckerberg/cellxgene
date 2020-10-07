@@ -7,6 +7,7 @@ import styles from "./menubar.css";
 import actions from "../../actions";
 import Clip from "./clip";
 
+import AuthButtons from "./authButtons";
 import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
 import DiffexpButtons from "./diffexpButtons";
@@ -216,6 +217,8 @@ class MenuBar extends React.PureComponent {
       subsetPossible,
       subsetResetPossible,
       enableReembedding,
+      userinfo,
+      auth,
     } = this.props;
     const { pendingClipPercentiles } = this.state;
 
@@ -241,6 +244,7 @@ class MenuBar extends React.PureComponent {
           zIndex: 3,
         }}
       >
+        <AuthButtons auth={auth} userinfo={userinfo} />
         <UndoRedoReset
           dispatch={dispatch}
           undoDisabled={undoDisabled}
