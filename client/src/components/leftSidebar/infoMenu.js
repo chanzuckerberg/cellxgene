@@ -64,6 +64,7 @@ const InformationMenu = React.memo((props) => {
         icon={IconNames.INFO_SIGN}
         style={{
           cursor: "pointer",
+          verticalAlign: "middle",
         }}
       />
     </Popover>

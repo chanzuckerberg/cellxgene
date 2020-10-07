@@ -74,7 +74,7 @@ class LeftSideBar extends React.Component {
             gene
           </span>
         </div>
-        <div style={{ marginRight: 5, position: "relative", top: -7 }}>
+        <div style={{ marginRight: 5, height: "100%" }}>
           <Button
             minimal
             style={{
