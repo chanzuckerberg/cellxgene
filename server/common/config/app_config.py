@@ -146,7 +146,7 @@ class AppConfig(object):
         self.is_complete = False
 
     def config_to_dict(self):
-        """output the config to a yaml file"""
+        """return the configuration as an unflattened dict"""
         server = self.server_config.create_mapping(self.server_config.default_config)
         dataset = self.default_dataset_config.create_mapping(self.default_dataset_config.default_config)
         external = self.external_config.create_mapping(self.external_config.default_config)
@@ -168,6 +168,7 @@ class AppConfig(object):
         return config
 
     def write_config(self, config_file):
+        """output the config to a yaml file"""
         config = self.config_to_dict()
         yaml.dump(config, open(config_file, "w"))
 
