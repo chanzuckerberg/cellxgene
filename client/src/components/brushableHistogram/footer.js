@@ -10,6 +10,7 @@ const HistogramFooter = React.memo(
     rangeColorMax,
     logFoldChange,
     pvalAdj,
+    isObs,
   }) => {
     /*
     Footer of each histogram.  Will render range, title, and optionally 
@@ -43,7 +44,7 @@ const HistogramFooter = React.memo(
             data-testclass="brushable-histogram-field-name"
             style={{ fontStyle: "italic" }}
           >
-            {displayName}
+            {isObs ? displayName : null}
           </span>
           <div style={{ display: hideRanges ? "block" : "none" }}>
             : {rangeMin}

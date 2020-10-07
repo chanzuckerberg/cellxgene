@@ -11,10 +11,18 @@ import HistogramBrush from "../brushableHistogram";
 
 // import TestMiniHisto from "./test_miniHisto";
 import * as globals from "../../globals";
+import actions from "../../actions";
+
 // import GeneMenus from "./menus/geneMenus";
 
-@connect(() => {
-  return {};
+@connect((state, ownProps) => {
+  const { gene } = ownProps;
+
+  return {
+    isColorAccessor: state.colors.colorAccessor === gene,
+    isScatterplotXXaccessor: state.controls.scatterplotXXaccessor === gene,
+    isScatterplotYYaccessor: state.controls.scatterplotYYaccessor === gene,
+  };
 })
 class Gene extends React.Component {
   constructor(props) {
@@ -26,10 +34,7 @@ class Gene extends React.Component {
 
   onColorChangeClick = () => {
     const { dispatch, gene } = this.props;
-    dispatch({
-      type: "color by expression",
-      colorAccessor: gene,
-    });
+    dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(gene));
   };
 
   handleGeneExpandClick = () => {
@@ -37,26 +42,42 @@ class Gene extends React.Component {
     this.setState({ geneIsExpanded: !geneIsExpanded });
   };
 
+  handleSetGeneAsScatterplotX = () => {
+    const { dispatch, gene } = this.props;
+    dispatch({
+      type: "set scatterplot x",
+      data: gene,
+    });
+  };
+
+  handleSetGeneAsScatterplotY = () => {
+    const { dispatch, gene } = this.props;
+    dispatch({
+      type: "set scatterplot y",
+      data: gene,
+    });
+  };
+
   render() {
-    const { gene } = this.props;
+    const {
+      gene,
+      isColorAccessor,
+      isScatterplotXXaccessor,
+      isScatterplotYYaccessor,
+    } = this.props;
     const { geneIsExpanded } = this.state;
     return (
       <div>
         <div
           style={{
             marginLeft: 15,
+            marginRight: 0,
+            marginTop: 2,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
-          <Icon
-            icon="drag-handle-horizontal"
-            iconSize={12}
-            style={{
-              marginRight: 10,
-              cursor: "grab",
-              position: "relative",
-              top: -2,
-            }}
-          />
           <span
             role="menuitem"
             tabIndex="0"
@@ -65,8 +86,20 @@ class Gene extends React.Component {
             onKeyPress={/* todo_genesets */ () => {}}
             style={{
               cursor: "pointer",
+              display: "flex",
+              justifyContent: "space-between",
             }}
           >
+            <Icon
+              icon="drag-handle-horizontal"
+              iconSize={12}
+              style={{
+                marginRight: 7,
+                cursor: "grab",
+                position: "relative",
+                top: 3,
+              }}
+            />
             <Truncate>
               <span
                 style={{
@@ -79,22 +112,58 @@ class Gene extends React.Component {
                 {gene}
               </span>
             </Truncate>
+            {!geneIsExpanded ? (
+              <HistogramBrush isUserDefined field={gene} mini />
+            ) : null}
+          </span>
+          <span>
+            <AnchorButton
+              minimal
+              small
+              data-testid={`plot-x-${gene}`}
+              onClick={this.handleSetGeneAsScatterplotX}
+              active={isScatterplotXXaccessor}
+              intent={isScatterplotXXaccessor ? "primary" : "none"}
+              style={{ fontWeight: 700, marginRight: 2 }}
+            >
+              x
+            </AnchorButton>
+            <AnchorButton
+              minimal
+              small
+              data-testid={`plot-y-${gene}`}
+              onClick={this.handleSetGeneAsScatterplotY}
+              active={isScatterplotYYaccessor}
+              intent={isScatterplotYYaccessor ? "primary" : "none"}
+              style={{ fontWeight: 700, marginRight: 2 }}
+            >
+              y
+            </AnchorButton>
             <AnchorButton
               minimal
               small
               data-testclass="maximize"
               data-testid={`maximize-${gene}`}
               onClick={this.handleGeneExpandClick}
-              active={false /* todo gene sets */}
+              active={geneIsExpanded}
               intent="none"
               icon={<Icon icon="maximize" iconSize={10} />}
+              style={{ marginRight: 2 }}
             />
-            {/* <TestMiniHisto /> */}
+            <AnchorButton
+              minimal
+              small
+              data-testclass="colorby"
+              data-testid={`colorby-${gene}`}
+              onClick={this.onColorChangeClick}
+              active={isColorAccessor}
+              intent={isColorAccessor ? "primary" : "none"}
+              icon={<Icon icon="tint" iconSize={12} />}
+            />
           </span>
+          {/* <TestMiniHisto /> */}
         </div>
-
-        <HistogramBrush isUserDefined field={gene} mini={!geneIsExpanded} />
-
+        {geneIsExpanded ? <HistogramBrush isUserDefined field={gene} /> : null}
         {/* <GeneMenus genesetsEditable gene={gene} /> */}
       </div>
     );
@@ -102,17 +171,6 @@ class Gene extends React.Component {
 }
 
 export default Gene;
-
-// <AnchorButton
-//   minimal
-//   small
-//   data-testclass="colorby"
-//   data-testid={`colorby-${gene}`}
-//   onClick={/* todo gene sets */ () => {}}
-//   active={false /* todo gene sets */}
-//   intent="none"
-//   icon={<Icon icon="tint" iconSize={12} />}
-// />
 
 // {geneIsExpanded ? (
 //   <FaChevronDown

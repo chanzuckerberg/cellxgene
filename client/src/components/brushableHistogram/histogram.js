@@ -75,62 +75,64 @@ const Histogram = ({
         );
     }
 
-    // BRUSH
-    // Note the brushable area is bounded by the data on three sides, but goes down to cover the x-axis
-    const brushX = d3
-      .brushX()
-      .extent([
-        [x.range()[0], y.range()[1]],
-        [x.range()[1], marginTop + height + marginBottom],
-      ])
-      /*
+    if (!mini) {
+      // BRUSH
+      // Note the brushable area is bounded by the data on three sides, but goes down to cover the x-axis
+      const brushX = d3
+        .brushX()
+        .extent([
+          [x.range()[0], y.range()[1]],
+          [x.range()[1], marginTop + height + marginBottom],
+        ])
+        /*
         emit start so that the Undoable history can save an undo point
         upon drag start, and ignore the subsequent intermediate drag events.
         */
-      .on("start", onBrush(field, x.invert, "start"))
-      .on("brush", onBrush(field, x.invert, "brush"))
-      .on("end", onBrushEnd(field, x.invert));
+        .on("start", onBrush(field, x.invert, "start"))
+        .on("brush", onBrush(field, x.invert, "brush"))
+        .on("end", onBrushEnd(field, x.invert));
 
-    const brushXselection = container
-      .insert("g")
-      .attr("class", "brush")
-      .attr("data-testid", `${svgRef.current.dataset.testid}-brushable-area`)
-      .call(brushX);
+      const brushXselection = container
+        .insert("g")
+        .attr("class", "brush")
+        .attr("data-testid", `${svgRef.current.dataset.testid}-brushable-area`)
+        .call(brushX);
 
-    /* X AXIS */
-    container
-      .insert("g")
-      .attr("class", "axis axis--x")
-      .attr("transform", `translate(0,${marginTop + height})`)
-      .call(
-        d3
-          .axisBottom(x)
-          .ticks(4)
-          .tickFormat(d3.format(maybeScientific(x)))
-      );
+      /* X AXIS */
+      container
+        .insert("g")
+        .attr("class", "axis axis--x")
+        .attr("transform", `translate(0,${marginTop + height})`)
+        .call(
+          d3
+            .axisBottom(x)
+            .ticks(4)
+            .tickFormat(d3.format(maybeScientific(x)))
+        );
 
-    /* Y AXIS */
-    container
-      .insert("g")
-      .attr("class", "axis axis--y")
-      .attr("transform", `translate(${marginLeft + width},0)`)
-      .call(
-        d3
-          .axisRight(y)
-          .ticks(3)
-          .tickFormat(
-            d3.format(
-              y.domain().some((n) => Math.abs(n) >= 10000) ? ".0e" : ","
+      /* Y AXIS */
+      container
+        .insert("g")
+        .attr("class", "axis axis--y")
+        .attr("transform", `translate(${marginLeft + width},0)`)
+        .call(
+          d3
+            .axisRight(y)
+            .ticks(3)
+            .tickFormat(
+              d3.format(
+                y.domain().some((n) => Math.abs(n) >= 10000) ? ".0e" : ","
+              )
             )
-          )
-      );
+        );
 
-    /* axis style */
-    svg.selectAll(".axis text").style("fill", "rgb(80,80,80)");
-    svg.selectAll(".axis path").style("stroke", "rgb(230,230,230)");
-    svg.selectAll(".axis line").style("stroke", "rgb(230,230,230)");
+      /* axis style */
+      svg.selectAll(".axis text").style("fill", "rgb(80,80,80)");
+      svg.selectAll(".axis path").style("stroke", "rgb(230,230,230)");
+      svg.selectAll(".axis line").style("stroke", "rgb(230,230,230)");
 
-    setBrush({ brushX, brushXselection });
+      setBrush({ brushX, brushXselection });
+    }
   }, [histogram, isColorBy]);
 
   useEffect(() => {

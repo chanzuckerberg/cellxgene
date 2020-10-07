@@ -54,11 +54,6 @@ class HistogramBrush extends React.PureComponent {
     const marginBottom = 25; // space for X axis & labels
     const marginTop = 3;
 
-    const marginLeftMini = 10; // Space for 0 tick label on X axis
-    const marginRightMini = 54; // space for Y axis & labels
-    const marginBottomMini = 25; // space for X axis & labels
-    const marginTopMini = 3;
-
     this.state = {
       margin: {
         marginLeft,
@@ -69,13 +64,13 @@ class HistogramBrush extends React.PureComponent {
       width: 340 - marginLeft - marginRight,
       height: 135 - marginTop - marginBottom,
       marginMini: {
-        marginLeftMini,
-        marginRightMini,
-        marginBottomMini,
-        marginTopMini,
+        marginLeft: 0, // Space for 0 tick label on X axis
+        marginRight: 0, // space for Y axis & labels
+        marginBottom: 0, // space for X axis & labels
+        marginTop: 0,
       },
-      widthMini: 340 - marginLeft - marginRight,
-      heightMini: 135 - marginTop - marginBottom,
+      widthMini: 120,
+      heightMini: 15,
     };
   }
 
@@ -271,16 +266,20 @@ class HistogramBrush extends React.PureComponent {
 
   // eslint-disable-next-line class-methods-use-this -- instance method allows for memoization per annotation
   calcHistogramCache(col, margin, width, height) {
+    /* make this more structured and doing a forEach */
     /*
      recalculate expensive stuff, notably bins, summaries, etc.
     */
-    const histogramCache = {};
-    const summary = col.summarize();
+    const histogramCache = {}; /* maybe change this so that it computes ... */
+    const summary = col.summarize(); /* this is memoized, so it's free the second time you call it */
     const { min: domainMin, max: domainMax } = summary;
     const numBins = 40;
-    const { marginTop, marginLeft } = margin;
+    const { marginTop, marginLeft } = margin; /* changes with mini */
 
-    histogramCache.domain = [domainMin, domainMax];
+    histogramCache.domain = [
+      domainMin,
+      domainMax,
+    ]; /* doesn't change with mini */
 
     histogramCache.x = d3
       .scaleLinear()
@@ -290,7 +289,7 @@ class HistogramBrush extends React.PureComponent {
     histogramCache.bins = histogramContinuous(col, numBins, [
       domainMin,
       domainMax,
-    ]);
+    ]); /* memoized */
     histogramCache.binWidth = (domainMax - domainMin) / numBins;
 
     histogramCache.binStart = (i) => domainMin + i * histogramCache.binWidth;
@@ -377,11 +376,11 @@ class HistogramBrush extends React.PureComponent {
                     : "histogram-continuous-metadata"
                 }
                 style={{
-                  padding: globals.leftSidebarSectionPadding,
+                  padding: mini ? 0 : globals.leftSidebarSectionPadding,
                   backgroundColor: zebra ? globals.lightestGrey : "white",
                 }}
               >
-                {!mini ? (
+                {!mini && isObs ? (
                   <HistogramHeader
                     fieldId={field}
                     isColorBy={isColorAccessor}
@@ -416,6 +415,7 @@ class HistogramBrush extends React.PureComponent {
                 />
                 {!mini ? (
                   <HistogramFooter
+                    isObs={isObs}
                     displayName={field}
                     hideRanges={asyncProps.isSingleValue}
                     rangeMin={asyncProps.unclippedRange[0]}
