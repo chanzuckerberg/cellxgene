@@ -138,3 +138,77 @@ class AppConfigTest(ConfigTests):
             dataset_changes = app_config.default_dataset_config.changes_from_default()
             self.assertEqual(server_changes, [])
             self.assertEqual(dataset_changes, [("user_annotations__enable", False, True)])
+
+    def test_simple_update_single_config_from_path_and_value(self):
+        """Update a simple config parameter"""
+
+        config = AppConfig()
+        config.server_config.multi_dataset__dataroot = dict(
+            s1=dict(dataroot="my_dataroot_s1", base_url="my_baseurl_s1"),
+            s2=dict(dataroot="my_dataroot_s2", base_url="my_baseurl_s2"),
+        )
+        config.add_dataroot_config("s1")
+        config.add_dataroot_config("s2")
+
+        # test simple value in server
+        config.update_single_config_from_path_and_value(["server", "app", "flask_secret_key"], "mysecret")
+        self.assertEqual(config.server_config.app__flask_secret_key, "mysecret")
+
+        # test simple value in default dataset
+        config.update_single_config_from_path_and_value(
+            ["dataset", "user_annotations", "hosted_tiledb_array", "db_uri"], "mydburi",
+        )
+        self.assertEqual(config.default_dataset_config.user_annotations__hosted_tiledb_array__db_uri, "mydburi")
+        self.assertEqual(config.dataroot_config["s1"].user_annotations__hosted_tiledb_array__db_uri, "mydburi")
+        self.assertEqual(config.dataroot_config["s2"].user_annotations__hosted_tiledb_array__db_uri, "mydburi")
+
+        # test simple value in specific dataset
+        config.update_single_config_from_path_and_value(
+            ["per_dataset_config", "s1", "user_annotations", "hosted_tiledb_array", "db_uri"], "s1dburi"
+        )
+        self.assertEqual(config.default_dataset_config.user_annotations__hosted_tiledb_array__db_uri, "mydburi")
+        self.assertEqual(config.dataroot_config["s1"].user_annotations__hosted_tiledb_array__db_uri, "s1dburi")
+        self.assertEqual(config.dataroot_config["s2"].user_annotations__hosted_tiledb_array__db_uri, "mydburi")
+
+        # error checking
+        bad_paths = [
+            (
+                ["dataset", "does", "not", "exist"],
+                "unknown config parameter at path: '['dataset', 'does', 'not', 'exist']'",
+            ),
+            (["does", "not", "exist"], "path must start with 'server', 'dataset', or 'per_dataset_config'"),
+            ([], "path must start with 'server', 'dataset', or 'per_dataset_config'"),
+            (["per_dataset_config"], "missing dataroot when using per_dataset_config: got '['per_dataset_config']'"),
+            (
+                ["per_dataset_config", "unknown"],
+                "unknown dataroot when using per_dataset_config: got '['per_dataset_config', 'unknown']',"
+                " dataroots specified in config are ['s1', 's2']",
+            ),
+            ([1, 2, 3], "path must be a list of strings, got '[1, 2, 3]'"),
+            ("string", "path must be a list of strings, got 'string'"),
+        ]
+        for bad_path, error_message in bad_paths:
+            with self.assertRaises(ConfigurationError) as config_error:
+                config.update_single_config_from_path_and_value(bad_path, "value")
+
+            self.assertEqual(config_error.exception.message, error_message)
+
+    def test_dict_update_single_config_from_path_and_value(self):
+        """Update a config parameter that has a value of dict"""
+
+        # the path leads to a dict config param, set the config parameter to the new value
+        config = AppConfig()
+        config.update_single_config_from_path_and_value(
+            ["server", "authentication", "params_oauth", "cookie"], dict(key="mykey1", max_age=100)
+        )
+        self.assertEqual(config.server_config.authentication__params_oauth__cookie, dict(key="mykey1", max_age=100))
+
+        # the path leads to an entry within a dict config param, the value is simple
+        config = AppConfig()
+        config.server_config.authentication__params_oauth__cookie = dict(key="mykey1", max_age=100)
+        config.update_single_config_from_path_and_value(
+            ["server", "authentication", "params_oauth", "cookie", "httponly"], True,
+        )
+        self.assertEqual(
+            config.server_config.authentication__params_oauth__cookie, dict(key="mykey1", max_age=100, httponly=True)
+        )

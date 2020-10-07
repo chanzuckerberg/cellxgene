@@ -18,6 +18,6 @@ def get_secret_key(region_name, secret_name):
             return secret
     except Exception as e:
         logging.critical(f"Caught exception during get_secret_key, {e}", exc_info=True)
-        raise SecretKeyRetrievalError
+        raise SecretKeyRetrievalError(str(e))
 
     return None

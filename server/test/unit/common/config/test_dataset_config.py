@@ -155,7 +155,7 @@ class TestDatasetConfig(ConfigTests):
         # test for illegal url_dataroots
         for illegal in ("../b", "!$*", "\\n", "", "(bad)"):
             config.update_server_config(
-                multi_dataset__dataroot={"tag": {"base_url": illegal, "dataroot": "{PROJECT_ROOT}/example-dataset"}}
+                multi_dataset__dataroot={"tag": {"base_url": illegal, "dataroot": f"{PROJECT_ROOT}/example-dataset"}}
             )
             with self.assertRaises(ConfigurationError):
                 config.complete_config()
@@ -163,7 +163,7 @@ class TestDatasetConfig(ConfigTests):
         # test for legal url_dataroots
         for legal in ("d", "this.is-okay_", "a/b"):
             config.update_server_config(
-                multi_dataset__dataroot={"tag": {"base_url": legal, "dataroot": "{PROJECT_ROOT}/example-dataset"}}
+                multi_dataset__dataroot={"tag": {"base_url": legal, "dataroot": f"{PROJECT_ROOT}/example-dataset"}}
             )
             config.complete_config()
 

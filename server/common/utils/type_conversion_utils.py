@@ -151,3 +151,17 @@ def convert_pandas_series_to_numpy(series_to_convert: pd.Series, dtype):
         logging.error("Cannot convert a pandas Series object to an integer dtype if it contains NaNs.")
 
     return series_to_convert.to_numpy(dtype)
+
+
+def convert_string_to_value(value: str):
+    """convert a string to value with the most appropriate type"""
+    if value.lower() == "true":
+        return True
+    if value.lower() == "false":
+        return False
+    if value == "null":
+        return None
+    try:
+        return eval(value)
+    except:  # noqa E722
+        return value
