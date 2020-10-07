@@ -39,3 +39,11 @@ create-test-db:
 clean-test-db:
 	-docker stop test_db
 	-docker rm test_db
+
+.PHONY: test-annotations-performance
+test-annotations-performance:
+	python test/performance/performance_test_annotations_backend.py
+
+.PHONY: test-annotations-scale
+test-annotations-scale:
+	locust -f test/performance/scale_test_annotations.py --headless -u 30 -r 10 --host https://api.cellxgene.dev.single-cell.czi.technology/cellxgene/e/ --run-time 5m 2>&1 | tee locust_dev_stats.txt
