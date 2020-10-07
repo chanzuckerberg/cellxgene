@@ -117,5 +117,6 @@ def get_client_userinfo(app_config, data_adaptor):
             "username": auth.get_user_name(),
             "user_id": auth.get_user_id(),
             "email": auth.get_user_email(),
+            "picture": auth.get_user_picture(),
         }
         return userinfo
