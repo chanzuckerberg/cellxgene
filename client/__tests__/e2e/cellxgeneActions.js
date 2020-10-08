@@ -341,7 +341,7 @@ export async function login() {
 }
 
 export async function logout() {
-  await clickOnUntil("menu", async () => {
+  await clickOnUntil("user-info", async () => {
     await waitByID("log-out");
     await Promise.all([
       page.waitForNavigation({ waitUntil: "networkidle0" }),

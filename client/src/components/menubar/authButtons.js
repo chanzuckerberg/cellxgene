@@ -51,7 +51,11 @@ const Auth = React.memo((props) => {
 
     return (
       <Popover content={PopoverContent}>
-        <Button className={styles.menubarButton} style={{ padding: 0 }}>
+        <Button
+          data-testid="user-info"
+          className={styles.menubarButton}
+          style={{ padding: 0 }}
+        >
           {userinfo?.picture ? (
             <img alt="profile" src={userinfo?.picture} />
           ) : (

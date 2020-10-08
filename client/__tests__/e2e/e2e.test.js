@@ -527,7 +527,7 @@ describe("auth buttons", () => {
     await goToPage(appUrlBase);
     await clickOnUntil("log-in", async () => {
       await page.waitForNavigation({ waitUntil: "networkidle0" });
-      await waitByID("menu");
+      await waitByID("user-info");
     });
     await logout();
   });
