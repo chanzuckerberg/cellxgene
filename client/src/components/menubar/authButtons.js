@@ -56,8 +56,9 @@ const Auth = React.memo((props) => {
           className={styles.menubarButton}
           style={{ padding: 0 }}
         >
-          {userinfo?.picture ? (
-            <img alt="profile" src={userinfo?.picture} />
+          {/*  eslint-disable-next-line no-constant-condition -- disable profile picture until CSP is tweaked */}
+          {userinfo?.picture && false ? (
+            <img alt="profile" size="21px" src={userinfo?.picture} />
           ) : (
             <span style={{ fontSize: "18px" }}>{scientist}</span>
           )}
