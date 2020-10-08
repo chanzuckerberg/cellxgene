@@ -114,7 +114,7 @@ class ServerConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute("app__port", (type(None), int))
         self.validate_correct_type_of_configuration_attribute("app__open_browser", bool)
         self.validate_correct_type_of_configuration_attribute("app__force_https", bool)
-        self.validate_correct_type_of_configuration_attribute("app__flask_secret_key", (type(None), str))
+        self.validate_correct_type_of_configuration_attribute("app__flask_secret_key", str)
         self.validate_correct_type_of_configuration_attribute("app__generate_cache_control_headers", bool)
         self.validate_correct_type_of_configuration_attribute("app__server_timing_headers", bool)
         self.validate_correct_type_of_configuration_attribute("app__csp_directives", (type(None), dict))
