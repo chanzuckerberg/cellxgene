@@ -522,7 +522,10 @@ test("lasso moves after pan", async () => {
   expect(panCount).toBe(initialCount);
 });
 
-describe("auth buttons", () => {
+const describeIfCalledByMakeFileTarget =
+  process.env.CXG_AUTH_TYPE === "test" ? describe : describe.skip;
+
+describeIfCalledByMakeFileTarget("auth buttons", () => {
   test("login then logout", async () => {
     await goToPage(appUrlBase);
     await clickOnUntil("log-in", async () => {
