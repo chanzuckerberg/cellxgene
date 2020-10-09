@@ -2,6 +2,7 @@ import copy
 import logging
 import sys
 from http import HTTPStatus
+import zlib
 
 from flask import make_response, jsonify, current_app, abort
 from werkzeug.urls import url_unquote
@@ -159,13 +160,21 @@ def annotations_put_fbs_helper(data_adaptor, fbs):
     annotations.write_labels(new_label_df, data_adaptor)
 
 
+def inflate(data):
+    # https://docs.python.org/3/library/zlib.html#zlib.decompressobj
+    decompress = zlib.decompressobj()
+    decompressed_data = decompress.decompress(data)
+    decompressed_data += decompress.flush()
+    return decompressed_data
+
+
 def annotations_obs_put(request, data_adaptor):
     annotations = data_adaptor.dataset_config.user_annotations
     if annotations is None:
         return abort(HTTPStatus.NOT_IMPLEMENTED)
 
     anno_collection = request.args.get("annotation-collection-name", default=None)
-    fbs = request.get_data()
+    fbs = inflate(request.get_data())
 
     if anno_collection is not None:
         if not annotations.is_safe_collection_name(anno_collection):

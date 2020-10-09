@@ -2,6 +2,7 @@
 Action creators for user annotation
 */
 import _ from "lodash";
+import pako from "pako";
 import * as globals from "../globals";
 import { MatrixFBS, AnnotationsHelpers } from "../util/stateManager";
 
@@ -153,7 +154,7 @@ export const annotationCreateLabelInCategory = (
   assignSelected
 ) => async (dispatch, getState) => {
   /*
-  Add a new label to a user-defined category.  If assignSelected is true, assign 
+  Add a new label to a user-defined category.  If assignSelected is true, assign
   the label to all currently selected cells.
   */
   const {
@@ -347,6 +348,7 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
 
   const df = await annoMatrix.fetch("obs", writableAnnotations(annoMatrix));
   const matrix = MatrixFBS.encodeMatrixFBS(df);
+  const compressedMatrix = pako.deflate(matrix);
   try {
     const queryString =
       !dataCollectionNameIsReadOnly && !!dataCollectionName
@@ -358,7 +360,7 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
       `${globals.API.prefix}${globals.API.version}annotations/obs${queryString}`,
       {
         method: "PUT",
-        body: matrix,
+        body: compressedMatrix,
         headers: new Headers({
           "Content-Type": "application/octet-stream",
         }),
