@@ -523,7 +523,9 @@ test("lasso moves after pan", async () => {
 });
 
 const describeIfCalledByMakeFileTarget =
-  process.env.CXG_AUTH_TYPE === "test" ? describe : describe.skip;
+  process.env.CXG_AUTH_TYPE?.toLowerCase() === "test"
+    ? describe
+    : describe.skip;
 
 describeIfCalledByMakeFileTarget("auth buttons", () => {
   test("login then logout", async () => {
