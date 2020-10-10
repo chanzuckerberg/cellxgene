@@ -4,10 +4,7 @@ import { Drawer } from "@blueprintjs/core";
 import Async from "react-async";
 
 import InfoFormat from "./infoFormat";
-import {
-  selectableCategoryNames,
-  createCategorySummaryFromDfCol,
-} from "../../util/stateManager/controlsHelpers";
+import { selectableCategoryNames } from "../../util/stateManager/controlsHelpers";
 
 @connect((state) => {
   return {
@@ -26,34 +23,17 @@ class InfoDrawer extends PureComponent {
 
   fetchAsyncProps = async (props) => {
     const { schema } = props.watchProps;
-    const { annoMatrix } = this.props;
 
     const allCategoryNames = selectableCategoryNames(schema).sort();
+    const singleValueCategories = new Map();
 
-    const nonUserAnnoCategories = allCategoryNames.map((catName) => {
+    allCategoryNames.forEach((catName) => {
       const isUserAnno = schema?.annotations?.obsByName[catName]?.writable;
-      if (!isUserAnno) return annoMatrix.fetch("obs", catName);
-      return null;
-    });
-    const singleValueCategories = (
-      await Promise.all(nonUserAnnoCategories)
-    ).reduce((acc, categoryData, i) => {
-      // Actually check to see if it is null(user anno)
-      if (!categoryData) return acc;
-      const catName = allCategoryNames[i];
-
-      const column = categoryData.icol(0);
       const colSchema = schema.annotations.obsByName[catName];
-
-      const categorySummary = createCategorySummaryFromDfCol(column, colSchema);
-
-      const { numCategoryValues } = categorySummary;
-      //  Add to the array if the category has only one value
-      if (numCategoryValues === 1) {
-        acc.set(catName, categorySummary.allCategoryValues[0]);
+      if (!isUserAnno && colSchema.categories?.length === 1) {
+        singleValueCategories.set(catName, colSchema.categories[0]);
       }
-      return acc;
-    }, new Map());
+    });
 
     return { singleValueCategories };
   };
