@@ -1,15 +1,15 @@
-import { H3, H1, UL, Classes } from "@blueprintjs/core";
+import { H3, H1, UL } from "@blueprintjs/core";
 import React from "react";
 
 import Truncate from "../util/truncate";
 
-const renderContributors = (contributors, affiliations, skeleton) => {
+const renderContributors = (contributors, affiliations) => {
   // eslint-disable-next-line no-constant-condition --  Temp removed contributor section to avoid publishing PII
   if (!contributors || contributors.length === 0 || true) return null;
   return (
     <>
-      <H3 className={skeleton ? Classes.SKELETON : null}>Contributors</H3>
-      <p className={skeleton ? Classes.SKELETON : null}>
+      <H3>Contributors</H3>
+      <p>
         {contributors.map((contributor) => {
           const { email, name, institution } = contributor;
 
@@ -22,7 +22,7 @@ const renderContributors = (contributors, affiliations, skeleton) => {
           );
         })}
       </p>
-      {renderAffiliations(affiliations, skeleton)}
+      {renderAffiliations(affiliations)}
     </>
   );
 };
@@ -39,14 +39,14 @@ const buildAffiliations = (contributors = []) => {
   return affiliations;
 };
 
-const renderAffiliations = (affiliations, skeleton) => {
+const renderAffiliations = (affiliations) => {
   if (affiliations.length === 0) return null;
   return (
     <>
-      <H3 className={skeleton ? Classes.SKELETON : null}>Affiliations</H3>
+      <H3>Affiliations</H3>
       <UL>
         {affiliations.map((item, index) => (
-          <div key={item} className={skeleton ? Classes.SKELETON : null}>
+          <div key={item}>
             <sup>{index + 1}</sup>
             {"  "}
             {item}
@@ -57,12 +57,12 @@ const renderAffiliations = (affiliations, skeleton) => {
   );
 };
 
-const renderDOILink = (type, doi, skeleton) => {
+const renderDOILink = (type, doi) => {
   if (!doi) return null;
   return (
     <>
-      <H3 className={skeleton ? Classes.SKELETON : null}>{type}</H3>
-      <p className={skeleton ? Classes.SKELETON : null}>
+      <H3>{type}</H3>
+      <p>
         <a href={doi} target="_blank" rel="noopener">
           {doi}
         </a>
@@ -71,12 +71,12 @@ const renderDOILink = (type, doi, skeleton) => {
   );
 };
 
-const renderOrganism = (organism, skeleton) => {
+const renderOrganism = (organism) => {
   if (!organism) return null;
   return (
     <>
-      <H3 className={skeleton ? Classes.SKELETON : null}>Organism</H3>
-      <p className={skeleton ? Classes.SKELETON : null}>{organism}</p>
+      <H3>Organism</H3>
+      <p>{organism}</p>
     </>
   );
 };
@@ -85,11 +85,11 @@ const ONTOLOGY_KEY = "ontology_term_id";
 const CAT_WIDTH = "30%";
 const VAL_WIDTH = "35%";
 // Render list of metadata attributes found in categorical field
-const renderSingleValueCategories = (singleValueCategories, skeleton) => {
+const renderSingleValueCategories = (singleValueCategories) => {
   if (singleValueCategories.size === 0) return null;
   return (
     <>
-      <H3 className={skeleton ? Classes.SKELETON : null}>Dataset Metadata</H3>
+      <H3>Dataset Metadata</H3>
       <UL>
         {Array.from(singleValueCategories).reduce((elems, pair) => {
           const [category, value] = pair;
@@ -115,11 +115,7 @@ const renderSingleValueCategories = (singleValueCategories, skeleton) => {
           } else {
             // Create the list item
             elems.push(
-              <li
-                className={skeleton ? Classes.SKELETON : null}
-                key={category}
-                style={{ width: "100%" }}
-              >
+              <li key={category} style={{ width: "100%" }}>
                 <Truncate>
                   <span style={{ width: CAT_WIDTH }}>{`${category}:`}</span>
                 </Truncate>
@@ -138,20 +134,17 @@ const renderSingleValueCategories = (singleValueCategories, skeleton) => {
 
 // Renders any links found in the config where link_type is not "SUMMARY"
 // If there are no links in the config, render the aboutURL
-const renderLinks = (projectLinks, aboutURL, skeleton) => {
+const renderLinks = (projectLinks, aboutURL) => {
   if (!projectLinks && !aboutURL) return null;
   if (projectLinks)
     return (
       <>
-        <H3 className={skeleton ? Classes.SKELETON : null}>Project Links</H3>
+        <H3>Project Links</H3>
         <UL>
           {projectLinks.map((link) => {
             if (link.link_type === "SUMMARY") return null;
             return (
-              <li
-                key={link.link_name}
-                className={skeleton ? Classes.SKELETON : null}
-              >
+              <li key={link.link_name}>
                 <a href={link.link_url} target="_blank" rel="noopener">
                   {link.link_name}
                 </a>
@@ -164,14 +157,9 @@ const renderLinks = (projectLinks, aboutURL, skeleton) => {
 
   return (
     <>
-      <H3 className={skeleton ? Classes.SKELETON : null}>More Info</H3>
+      <H3>More Info</H3>
       <p>
-        <a
-          className={skeleton ? Classes.SKELETON : null}
-          href={aboutURL}
-          target="_blank"
-          rel="noopener"
-        >
+        <a href={aboutURL} target="_blank" rel="noopener">
           {aboutURL}
         </a>
       </p>
@@ -179,22 +167,12 @@ const renderLinks = (projectLinks, aboutURL, skeleton) => {
   );
 };
 
-const NUM_CATEGORIES = 8;
-
-// Generates arbitrary placeholder array for singleValueCategories skeleton shape
-const singleValueCategoriesPlaceholder = Array.from(Array(NUM_CATEGORIES)).map(
-  (_, index) => {
-    return [index, index];
-  }
-);
-
 const InfoFormat = React.memo(
   ({
     datasetTitle,
-    singleValueCategories = new Map(singleValueCategoriesPlaceholder),
+    singleValueCategories,
     aboutURL = "thisisabouthtelengthofaurl",
     dataPortalProps = {},
-    skeleton = false,
   }) => {
     if (dataPortalProps.corpora_schema_version === "1.0.0") {
       dataPortalProps = {};
@@ -212,15 +190,13 @@ const InfoFormat = React.memo(
 
     return (
       <div style={{ margin: 24, overflow: "auto" }}>
-        <H1 className={skeleton ? Classes.SKELETON : null}>
-          {title ?? datasetTitle}
-        </H1>
-        {renderContributors(contributors, affiliations, skeleton)}
-        {renderDOILink("DOI", doi, skeleton)}
-        {renderDOILink("Preprint DOI", preprintDOI, skeleton)}
-        {renderOrganism(organism, skeleton)}
-        {renderSingleValueCategories(singleValueCategories, skeleton)}
-        {renderLinks(projectLinks, aboutURL, skeleton)}
+        <H1>{title ?? datasetTitle}</H1>
+        {renderContributors(contributors, affiliations)}
+        {renderDOILink("DOI", doi)}
+        {renderDOILink("Preprint DOI", preprintDOI)}
+        {renderOrganism(organism)}
+        {renderSingleValueCategories(singleValueCategories)}
+        {renderLinks(projectLinks, aboutURL)}
       </div>
     );
   }
