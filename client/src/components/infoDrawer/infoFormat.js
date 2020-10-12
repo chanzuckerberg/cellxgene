@@ -171,7 +171,7 @@ const InfoFormat = React.memo(
   ({
     datasetTitle,
     singleValueCategories,
-    aboutURL = "thisisabouthtelengthofaurl",
+    aboutURL,
     dataPortalProps = {},
   }) => {
     if (dataPortalProps.version?.corpora_schema_version !== "1.0.0") {
