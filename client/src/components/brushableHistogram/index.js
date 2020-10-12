@@ -650,7 +650,8 @@ class HistogramBrush extends React.PureComponent {
       Number.isNaN(summary.min) ||
       Number.isNaN(summary.max);
 
-    const OK2Render = !summary.categorical && !nonFiniteExtent;
+    const OK2Render =
+      !summary.categorical && !nonFiniteExtent && !isSingleValue;
 
     return {
       histogram,
