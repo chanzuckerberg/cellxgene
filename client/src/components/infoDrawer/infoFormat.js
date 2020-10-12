@@ -174,7 +174,7 @@ const InfoFormat = React.memo(
     aboutURL = "thisisabouthtelengthofaurl",
     dataPortalProps = {},
   }) => {
-    if (dataPortalProps.corpora_schema_version === "1.0.0") {
+    if (dataPortalProps.version?.corpora_schema_version !== "1.0.0") {
       dataPortalProps = {};
     }
     const {
