@@ -1,7 +1,7 @@
 import React, { PureComponent } from "react";
-import { connect } from "react-redux";
+import { connect, shallowEqual } from "react-redux";
 import { Drawer } from "@blueprintjs/core";
-
+import Async from "react-async";
 import InfoFormat from "./infoFormat";
 import { selectableCategoryNames } from "../../util/stateManager/controlsHelpers";
 
@@ -24,7 +24,6 @@ class InfoDrawer extends PureComponent {
     const { schema } = props.watchProps;
     const { annoMatrix } = this.props;
 
-    const allCategoryNames = selectableCategoryNames(schema).sort();
     const obsIndex = schema.annotations.obs.index;
     const allContinuousNames = schema.annotations.obs.columns
       .filter((col) => col.type === "int32" || col.type === "float32")
@@ -34,7 +33,7 @@ class InfoDrawer extends PureComponent {
     const annoContinous = allContinuousNames.map((catName) => {
       return annoMatrix.fetch("obs", catName);
     });
-    const singleValueContinous = (await Promise.all(annoContinous)).reduce(
+    const singleValueContinuous = (await Promise.all(annoContinous)).reduce(
       (acc, continuousData, i) => {
         if (!continuousData) return acc;
         const column = continuousData.icol(0);
@@ -47,34 +46,7 @@ class InfoDrawer extends PureComponent {
       },
       new Map()
     );
-    const nonUserAnnoCategories = allCategoryNames.map((catName) => {
-      const isUserAnno = schema?.annotations?.obsByName[catName]?.writable;
-      if (!isUserAnno) return annoMatrix.fetch("obs", catName);
-      return null;
-    });
-    const singleValueCategories = (
-      await Promise.all(nonUserAnnoCategories)
-    ).reduce((acc, categoryData, i) => {
-      // Actually check to see if it is null(user anno)
-      if (!categoryData) return acc;
-      const catName = allCategoryNames[i];
-
-      const column = categoryData.icol(0);
-      const colSchema = schema.annotations.obsByName[catName];
-
-      const categorySummary = createCategorySummaryFromDfCol(column, colSchema);
-
-      const { numCategoryValues } = categorySummary;
-      //  Add to the array if the category has only one value
-      if (numCategoryValues === 1) {
-        acc.set(catName, categorySummary.allCategoryValues[0]);
-      }
-      return acc;
-    }, new Map());
-    for (const [key, value] of singleValueContinous.entries()) {
-      singleValueCategories.set(key, value);
-    }
-    return { singleValueCategories };
+    return { singleValueContinuous };
   };
 
   handleClose = () => {
@@ -92,10 +64,8 @@ class InfoDrawer extends PureComponent {
       isOpen,
       dataPortalProps,
     } = this.props;
-
     const allCategoryNames = selectableCategoryNames(schema).sort();
     const singleValueCategories = new Map();
-
     allCategoryNames.forEach((catName) => {
       const isUserAnno = schema?.annotations?.obsByName[catName]?.writable;
       const colSchema = schema.annotations.obsByName[catName];
@@ -110,14 +80,46 @@ class InfoDrawer extends PureComponent {
         onClose={this.handleClose}
         {...{ isOpen, position }}
       >
-        <InfoFormat
-          {...{
-            datasetTitle,
-            aboutURL,
-            singleValueCategories,
-            dataPortalProps,
-          }}
-        />
+        <Async
+          watchFn={InfoDrawer.watchAsync}
+          promiseFn={this.fetchAsyncProps}
+          watchProps={{ schema }}
+        >
+          <Async.Pending>
+            <InfoFormat
+              {...{
+                datasetTitle,
+                aboutURL,
+                singleValueCategories,
+                dataPortalProps,
+              }}
+            />
+          </Async.Pending>
+          <Async.Rejected>
+            {(error) => {
+              console.error(error);
+              return <span>Failed to load info</span>;
+            }}
+          </Async.Rejected>
+          <Async.Fulfilled>
+            {(asyncProps) => {
+              const { singleValueContinuous } = asyncProps;
+              for (const [key, value] of singleValueContinuous.entries()) {
+                singleValueCategories.set(key, value);
+              }
+              return (
+                <InfoFormat
+                  {...{
+                    datasetTitle,
+                    aboutURL,
+                    singleValueCategories,
+                    dataPortalProps,
+                  }}
+                />
+              );
+            }}
+          </Async.Fulfilled>
+        </Async>
       </Drawer>
     );
   }
