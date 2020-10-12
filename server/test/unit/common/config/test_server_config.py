@@ -311,29 +311,3 @@ class TestServerConfig(ConfigTests):
             {"sm.tile_cache_size": 10, "sm.num_reader_threads": 2, "vfs.s3.region": "us-east-1"}
         )
 
-    @mockenv(CXG_AWS_SECRET_NAME="TESTING", CXG_AWS_SECRET_REGION_NAME="TEST_REGION")
-    @patch("server.common.config.get_secret_key")
-    def test_get_config_vars_from_aws_secrets(self, mock_get_secret_key):
-        mock_get_secret_key.return_value = {
-            "flask_secret_key": "mock_flask_secret",
-            "oauth_client_secret": "mock_oauth_secret",
-            "db_uri": "mock_db_uri",
-        }
-
-        config = AppConfig()
-
-        with self.assertLogs(level="INFO") as logger:
-            from server.common.config import handle_config_from_secret
-
-            # should not throw error
-            # "AttributeError: 'XConfig' object has no attribute 'x'"
-            handle_config_from_secret(config)
-
-            # should log 3 lines (one for each var set from a secret)
-            self.assertEqual(len(logger.output), 3)
-            self.assertIn("INFO:root:set app__flask_secret_key from secret", logger.output[0])
-            self.assertIn("INFO:root:set authentication__params_oauth__client_secret from secret", logger.output[1])
-            self.assertIn("INFO:root:set user_annotations__hosted_tiledb_array__db_uri from secret", logger.output[2])
-            self.assertEqual(config.server_config.app__flask_secret_key, "mock_flask_secret")
-            self.assertEqual(config.server_config.authentication__params_oauth__client_secret, "mock_oauth_secret")
-            self.assertEqual(config.default_dataset_config.user_annotations__hosted_tiledb_array__db_uri, "mock_db_uri")
