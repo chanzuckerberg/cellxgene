@@ -168,12 +168,7 @@ const renderLinks = (projectLinks, aboutURL) => {
 };
 
 const InfoFormat = React.memo(
-  ({
-    datasetTitle,
-    singleValueCategories,
-    aboutURL,
-    dataPortalProps = {},
-  }) => {
+  ({ datasetTitle, singleValueCategories, aboutURL, dataPortalProps = {} }) => {
     if (dataPortalProps.version?.["corpora_schema_version"] !== "1.0.0") {
       dataPortalProps = {};
     }
