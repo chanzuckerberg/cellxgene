@@ -608,7 +608,7 @@ class HistogramBrush extends React.PureComponent {
   };
 
   fetchAsyncProps = async () => {
-    const { annoMatrix } = this.props;
+    const { annoMatrix, field, dispatch } = this.props;
     const { isClipped } = annoMatrix;
 
     const query = this.createQuery();
@@ -619,6 +619,24 @@ class HistogramBrush extends React.PureComponent {
     // as we need the absolute min/max range, not just the clipped min/max.
     const summary = column.summarize();
     const range = [summary.min, summary.max];
+
+    if (summary.min === summary.max && !isClipped) {
+      dispatch({
+        type: "add single continuous value",
+        field,
+        value: summary.min,
+      });
+      return {
+        histogram: undefined,
+        range,
+        unclippedRange: range,
+        unclippedRangeColor: globals.blue,
+        isSingleValue: true,
+        OK2Render: false,
+      };
+    }
+
+    const isSingleValue = summary.min === summary.max;
 
     let unclippedRange = [...range];
     if (isClipped) {
@@ -643,15 +661,13 @@ class HistogramBrush extends React.PureComponent {
       this.height
     );
 
-    const isSingleValue = summary.min === summary.max;
     const nonFiniteExtent =
       summary.min === undefined ||
       summary.max === undefined ||
       Number.isNaN(summary.min) ||
       Number.isNaN(summary.max);
 
-    const OK2Render =
-      !summary.categorical && !nonFiniteExtent && !isSingleValue;
+    const OK2Render = !summary.categorical && !nonFiniteExtent;
 
     return {
       histogram,
