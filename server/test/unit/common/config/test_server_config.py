@@ -310,4 +310,3 @@ class TestServerConfig(ConfigTests):
         mock_tiledb_context.assert_called_once_with(
             {"sm.tile_cache_size": 10, "sm.num_reader_threads": 2, "vfs.s3.region": "us-east-1"}
         )
-
