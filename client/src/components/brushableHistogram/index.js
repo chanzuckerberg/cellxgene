@@ -611,20 +611,24 @@ class HistogramBrush extends React.PureComponent {
   fetchAsyncProps = async () => {
     const { annoMatrix, field, dispatch, singleContinuousValues } = this.props;
     const { isClipped } = annoMatrix;
-
+    if (singleContinuousValues.has(field)) {
+      return {
+        histogram: undefined,
+        range: undefined,
+        unclippedRange: undefined,
+        unclippedRangeColor: globals.blue,
+        isSingleValue: true,
+        OK2Render: false,
+      };
+    }
     const query = this.createQuery();
     const df = await annoMatrix.fetch(...query);
     const column = df.icol(0);
 
-    // if we are clipped, fetch both our value and our unclipped value,
-    // as we need the absolute min/max range, not just the clipped min/max.
     const summary = column.summarize();
     const range = [summary.min, summary.max];
 
-    if (
-      (summary.min === summary.max && !isClipped) ||
-      singleContinuousValues.has(field)
-    ) {
+    if (summary.min === summary.max && !isClipped) {
       dispatch({
         type: "add single continuous value",
         field,
@@ -641,7 +645,8 @@ class HistogramBrush extends React.PureComponent {
     }
 
     const isSingleValue = summary.min === summary.max;
-
+    // if we are clipped, fetch both our value and our unclipped value,
+    // as we need the absolute min/max range, not just the clipped min/max.
     let unclippedRange = [...range];
     if (isClipped) {
       const parent = await annoMatrix.viewOf.fetch(...query);
