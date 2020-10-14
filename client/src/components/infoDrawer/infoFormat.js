@@ -85,13 +85,13 @@ const ONTOLOGY_KEY = "ontology_term_id";
 const CAT_WIDTH = "30%";
 const VAL_WIDTH = "35%";
 // Render list of metadata attributes found in categorical field
-const renderSingleValues = (singleValues) => {
-  if (singleValues.size === 0) return null;
+const renderSingleValueCategories = (singleValueCategories) => {
+  if (singleValueCategories.size === 0) return null;
   return (
     <>
       <H3>Dataset Metadata</H3>
       <UL>
-        {Array.from(singleValues).reduce((elems, pair) => {
+        {Array.from(singleValueCategories).reduce((elems, pair) => {
           const [category, value] = pair;
           // If the value is empty skip it
           if (!value) return elems;
@@ -168,7 +168,7 @@ const renderLinks = (projectLinks, aboutURL) => {
 };
 
 const InfoFormat = React.memo(
-  ({ datasetTitle, allSingleValues, aboutURL, dataPortalProps = {} }) => {
+  ({ datasetTitle, singleValueCategories, aboutURL, dataPortalProps = {} }) => {
     if (dataPortalProps.version?.["corpora_schema_version"] !== "1.0.0") {
       dataPortalProps = {};
     }
@@ -190,7 +190,7 @@ const InfoFormat = React.memo(
         {renderDOILink("DOI", doi)}
         {renderDOILink("Preprint DOI", preprintDOI)}
         {renderOrganism(organism)}
-        {renderSingleValues(allSingleValues)}
+        {renderSingleValueCategories(singleValueCategories)}
         {renderLinks(projectLinks, aboutURL)}
       </div>
     );
