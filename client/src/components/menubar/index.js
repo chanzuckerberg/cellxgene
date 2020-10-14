@@ -42,7 +42,7 @@ import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
     celllist2: state.differential.celllist2,
     libraryVersions: state.config?.["library_versions"],
     auth: state.config?.authentication,
-    userinfo: state.userinfo,
+    userInfo: state.userInfo,
     undoDisabled: state["@@undoable/past"].length === 0,
     redoDisabled: state["@@undoable/future"].length === 0,
     aboutLink: state.config?.links?.["about-dataset"],
@@ -217,7 +217,7 @@ class MenuBar extends React.PureComponent {
       subsetPossible,
       subsetResetPossible,
       enableReembedding,
-      userinfo,
+      userInfo,
       auth,
     } = this.props;
     const { pendingClipPercentiles } = this.state;
@@ -244,7 +244,7 @@ class MenuBar extends React.PureComponent {
           zIndex: 3,
         }}
       >
-        <AuthButtons auth={auth} userinfo={userinfo} />
+        <AuthButtons {...{ auth, userInfo }} />
         <UndoRedoReset
           dispatch={dispatch}
           undoDisabled={undoDisabled}
