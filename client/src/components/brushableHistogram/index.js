@@ -450,6 +450,7 @@ const Histogram = ({
     isScatterplotYYaccessor: state.controls.scatterplotYYaccessor === field,
     continuousSelectionRange: state.continuousSelection[myName],
     isColorAccessor: state.colors.colorAccessor === field,
+    singleContinuousValues: state.singleContinuousValue.singleContinuousValues,
   };
 })
 class HistogramBrush extends React.PureComponent {
@@ -608,7 +609,7 @@ class HistogramBrush extends React.PureComponent {
   };
 
   fetchAsyncProps = async () => {
-    const { annoMatrix, field, dispatch } = this.props;
+    const { annoMatrix, field, dispatch, singleContinuousValues } = this.props;
     const { isClipped } = annoMatrix;
 
     const query = this.createQuery();
@@ -620,7 +621,10 @@ class HistogramBrush extends React.PureComponent {
     const summary = column.summarize();
     const range = [summary.min, summary.max];
 
-    if (summary.min === summary.max && !isClipped) {
+    if (
+      (summary.min === summary.max && !isClipped) ||
+      singleContinuousValues.has(field)
+    ) {
       dispatch({
         type: "add single continuous value",
         field,
