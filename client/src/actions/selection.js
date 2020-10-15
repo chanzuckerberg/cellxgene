@@ -1,5 +1,5 @@
 /*
-Action creators for selection 
+Action creators for selection
 */
 export const selectContinuousMetadataAction = (
   type,
@@ -14,7 +14,7 @@ export const selectContinuousMetadataAction = (
         mode: "range",
         lo: range[0],
         hi: range[1],
-        inclusive: true, // [lo, hi] incluisve selection
+        inclusive: true, // [lo, hi] inclusive selection
       }
     : { mode: "all" };
 

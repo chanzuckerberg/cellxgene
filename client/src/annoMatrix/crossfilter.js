@@ -33,7 +33,7 @@ export default class AnnoMatrixObsCrossfilter {
   }
 
   /**
-  Managing the associated annoMatrix.  These wrappers are necessary to 
+  Managing the associated annoMatrix.  These wrappers are necessary to
   make coordinated changes to BOTH the crossfilter and annoMatrix, and
   ensure that all state stays synchronized.
 
@@ -256,6 +256,9 @@ export default class AnnoMatrixObsCrossfilter {
     }
     if (type === "float32") {
       return ["scalar", col.asArray(), Float32Array];
+    }
+    if (type === "float64") {
+      return ["scalar", col.asArray(), Float64Array];
     }
     // Currently not supporting boolean and categorical types.
     console.error(
