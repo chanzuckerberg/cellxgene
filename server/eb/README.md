@@ -265,4 +265,22 @@ store it in the AWS Secrets Manager.
 
 ### User Annotations
 
-TODO
+User annotations can be configured in the configuration file both generally and for a specific data route. The annotations feature is only available when Authorization is enabled. 
+To enable Annotations, it is necessary to create a relational database and add the database uri (typically `postgresql://[user[:password]@][netloc][:port][/dbname]`) to the secrets manager under `DB_URI`. 
+The hosted version of cellxgene runs on AWS's [Aurora PostgreSQL](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraPostgreSQL.html) but any sqlalchemy compatible relational database should work. 
+Once the database is set up apply the cellxgene schema to your database by running the following inside the cellxgene repo
+`PROJECT_ROOT=$(git rev-parse --show-toplevel)`
+`python3`
+Inside the python console
+`from sqlalchemy import create_engine`
+`from server.db.cellxgene_orm import Base`
+`uri = "[DB_URI]”`
+`engine = create_engine(uri)`
+
+ Base.metadata.create_all(engine)`
+
+To check the schema was properly applied (or just to check what is in the database at any point)
+ssh into your database. For a postgres database this entails running:  
+`psql [DB_URI]`
+
+You'll also need to update your IAM policies to allow the instance to write to the s3 bucket.
