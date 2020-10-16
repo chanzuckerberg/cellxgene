@@ -9,8 +9,6 @@ from flask import json
 import logging
 from flask_talisman import Talisman
 from flask_cors import CORS
-from server.common.config import handle_config_from_secret
-from server.common.errors import SecretKeyRetrievalError
 
 
 if os.path.isdir("/opt/python/log"):
@@ -165,26 +163,14 @@ try:
         logging.info("Configuration from CXG_DATAROOT")
         app_config.update_server_config(multi_dataset__dataroot=dataroot)
 
-    # update from secret manager
-    try:
-        handle_config_from_secret(app_config)
-    except SecretKeyRetrievalError:
-        sys.exit(1)
-
-    # features are unsupported in the current hosted server
+    # overwrite configuration for the eb app
     app_config.update_default_dataset_config(embeddings__enable_reembedding=False,)
     app_config.update_server_config(multi_dataset__allowed_matrix_types=["cxg"],)
+
+    # complete config
     app_config.complete_config(logging.info)
 
-    if not app_config.server_config.app__flask_secret_key:
-        logging.critical(
-            "flask_secret_key is not provided.  Either set in config file, CXG_SECRET_KEY environment variable, "
-            "or in AWS Secret Manager"
-        )
-        sys.exit(1)
-
     server = WSGIServer(app_config)
-
     debug = False
     application = server.app
 

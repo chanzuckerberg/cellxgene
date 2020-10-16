@@ -19,8 +19,8 @@ def main():
     args = parser.parse_args()
 
     app_config = AppConfig()
-    app_config.update_from_config_file(args.config_file)
     try:
+        app_config.update_from_config_file(args.config_file)
         app_config.complete_config()
     except Exception as e:
         print(f"Error: {str(e)}")
