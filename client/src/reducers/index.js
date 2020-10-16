@@ -4,7 +4,7 @@ import thunk from "redux-thunk";
 import cascadeReducers from "./cascade";
 import undoable from "./undoable";
 import config from "./config";
-import userinfo from "./userinfo";
+import userInfo from "./userInfo";
 import annoMatrix from "./annoMatrix";
 import obsCrossfilter from "./obsCrossfilter";
 import categoricalSelection from "./categoricalSelection";
@@ -21,7 +21,7 @@ import centroidLabels from "./centroidLabels";
 import pointDialation from "./pointDilation";
 import { reembedController } from "./reembed";
 import { gcMiddleware as annoMatrixGC } from "../annoMatrix";
-
+import singleContinuousValue from "./singleContinuousValue";
 import undoableConfig from "./undoableConfig";
 
 const Reducer = undoable(
@@ -32,6 +32,7 @@ const Reducer = undoable(
     ["ontology", ontology],
     ["annotations", annotations],
     ["layoutChoice", layoutChoice],
+    ["singleContinuousValue", singleContinuousValue],
     ["categoricalSelection", categoricalSelection],
     ["continuousSelection", continuousSelection],
     ["graphSelection", graphSelection],
@@ -42,7 +43,7 @@ const Reducer = undoable(
     ["pointDilation", pointDialation],
     ["reembedController", reembedController],
     ["autosave", autosave],
-    ["userinfo", userinfo],
+    ["userInfo", userInfo],
   ]),
   [
     "annoMatrix",
