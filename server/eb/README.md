@@ -98,7 +98,7 @@ Example: you want to include an "about_legal_tos" and "about_legal_privacy" page
 Assume files called "tos.html" and "privacy.html" exist.
 
 ```
-$ mkdir static
+$ mkdir -p customize/deploy
 $ cp <source_dir>/tos.html customize/deploy/tos.html
 $ cp <source_dir>/privacy.html customize/deploy/privacy.html
 
@@ -120,7 +120,7 @@ To include these scripts in the deployment, use the following steps:
 For example, to add an inline script called "myscript.js":
 
 ```
-$ mkdir scripts
+$ mkdir -p customize/inline_scripts
 $ cp <source_dir>/myscript.js customize/inline_scripts/myscript.js
 # edit the config.yaml
 $ grep inline_scripts config.yaml
@@ -132,7 +132,7 @@ $ grep inline_scripts config.yaml
 Optionally, you can add plugins to the server python code. To include a plugin in the deployment use the following steps:
 
 ```
-$ mkdir plugins
+$ mkdir -p customize/plugins
 $ cp <source_dir>/<my_plugin>.py customize/plugins/<my_plugin>.py
 ```
 
@@ -165,6 +165,20 @@ Keep the customize/requirememts.txt file, and reuse it for each deployment.
 If a future cellxgene version updates its requirements by modifying a module version
 or adding a new dependency, then the `make build` process will detect any
 incompatibilities and raise an error.
+
+#### File structure for customizations
+
+The following diagram shows the file structure for the customization directory.
+
+```
+customization
++-- config.yaml
++-- deploy/  
++-- inline_scripts/
++-- plugins/
++-- ebextensions/ 
++-- requirements.txt
+```
 
 ### 5. Create the artifact.zip file for the application
 
