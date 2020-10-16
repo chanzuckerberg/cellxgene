@@ -4,8 +4,8 @@ This directory contains scripts to aid in creating and deploying cellxgene on
 AWS Elastic Beanstalk.
 
 This will result in a variant of cellxgene, running on AWS EC2 instances, serving data from S3.
-All datasets must be in the new CXG (tiledb) format (see `cellxene convert --help`),
-and located in a single S3 prefix, which is accessible to the instance.
+All datasets must be in the CXG (tiledb) format (see `cellxene convert --help`),
+and located under a single S3 prefix, which is accessible to the instance.
 In the current incarnation, no access control is available
 (outside of anything you configure yourself), so this is most appropriate for public datasets.
 
@@ -41,7 +41,7 @@ AWS supports a feature to back the Lustre filesystem with S3, which gives an eas
 performance option.
 
 Once the storage is in place, the next step is to copy your data files to that location.
-Currently cellxgene supports a flat file organization. Each matrix file is located from
+Currently cellxgene supports a flat file organization. Each matrix file is located under
 the same s3 prefix or filesystem directory. This location is specified in the configuration
 as the dataroot.
 
@@ -55,7 +55,7 @@ eb init -p python-3.6 $EB_APP
 ### 3. Configuring cellxgene
 
 All the cellxgene configuration options can be set from a configuration file.
-This file can be generated like this:
+A yaml config file containing all of the default configuration options can be generated like this:
 
 `cellxgene launch --dump-default-config > myconfig.yaml`
 
@@ -265,4 +265,22 @@ store it in the AWS Secrets Manager.
 
 ### User Annotations
 
-TODO
+User annotations can be configured in the configuration file both generally and for a specific data route. The annotations feature is only available when Authorization is enabled. 
+To enable Annotations, it is necessary to create a relational database and add the database uri (typically `postgresql://[user[:password]@][netloc][:port][/dbname]`) to the secrets manager under `DB_URI`. 
+The hosted version of cellxgene runs on AWS's [Aurora PostgreSQL](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraPostgreSQL.html) but any sqlalchemy compatible relational database should work. 
+Once the database is set up apply the cellxgene schema to your database by running the following inside the cellxgene repo
+`PROJECT_ROOT=$(git rev-parse --show-toplevel)`
+`python3`
+Inside the python console
+`from sqlalchemy import create_engine`
+`from server.db.cellxgene_orm import Base`
+`uri = "[DB_URI]”`
+`engine = create_engine(uri)`
+
+ Base.metadata.create_all(engine)`
+
+To check the schema was properly applied (or just to check what is in the database at any point)
+ssh into your database. For a postgres database this entails running:  
+`psql [DB_URI]`
+
+You'll also need to update your IAM policies to allow the instance to write to the s3 bucket.
