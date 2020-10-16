@@ -97,15 +97,7 @@ def can_cast_to_float32(dtype, array_values):
     """
 
     if dtype.kind == "f":
-        # Try to convert the array to float32
-        converted_float32_values = array_values.to_numpy(np.float32)
-        original_values = array_values.to_numpy()
-
-        # Verify that the two arrays are equal except for NaNs (which will equate to be unequal).
-        if not ((converted_float32_values != original_values) == np.isnan(original_values)).all():
-            return False
-
-        if dtype != np.float32:
+        if not np.can_cast(dtype, np.float32):
             logging.warning(f"Type {dtype.name} will be converted to 32 bit float and may lose precision.")
 
         return True
