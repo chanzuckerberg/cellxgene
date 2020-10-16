@@ -106,15 +106,19 @@ export function loadUserColorConfig(userColors) {
         return -1;
       })
       .reduce(
-        (acc, label, i) => {
+        (acc, label) => {
           const color = parseRGB(userColors[category][label]);
           acc[0][label] = color;
-          acc[1][i] = d3.rgb(255 * color[0], 255 * color[1], 255 * color[2]);
+          acc[1][label] = d3.rgb(
+            255 * color[0],
+            255 * color[1],
+            255 * color[2]
+          );
           return acc;
         },
         [{}, {}]
       );
-    const scale = (i) => scaleMap[i];
+    const scale = (label) => scaleMap[label];
     convertedUserColors[category] = { colors, scale };
   });
   return convertedUserColors;
