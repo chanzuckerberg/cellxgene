@@ -41,7 +41,7 @@ AWS supports a feature to back the Lustre filesystem with S3, which gives an eas
 performance option.
 
 Once the storage is in place, the next step is to copy your data files to that location.
-Currently cellxgene supports a flat file organization. Each matrix file is located from
+Currently cellxgene supports a flat file organization. Each matrix file is located under
 the same s3 prefix or filesystem directory. This location is specified in the configuration
 as the dataroot.
 
