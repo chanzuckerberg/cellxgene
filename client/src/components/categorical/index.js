@@ -15,7 +15,7 @@ import actions from "../../actions";
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
   schema: state.annoMatrix?.schema,
   ontology: state.ontology,
-  userinfo: state.userinfo,
+  userInfo: state.userInfo,
 }))
 class Categories extends React.Component {
   constructor(props) {
@@ -132,7 +132,7 @@ class Categories extends React.Component {
       writableCategoriesEnabled,
       schema,
       ontology,
-      userinfo,
+      userInfo,
     } = this.props;
     const ontologyEnabled = ontology?.enabled ?? false;
     /* all names, sorted in display order.  Will be rendered in this order */
@@ -213,7 +213,7 @@ class Categories extends React.Component {
         {writableCategoriesEnabled ? (
           <Tooltip
             content={
-              userinfo.is_authenticated
+              userInfo.is_authenticated
                 ? "Create a new category"
                 : "You must be logged in to create new categorical fields"
             }
@@ -230,7 +230,7 @@ class Categories extends React.Component {
               data-testid="open-annotation-dialog"
               onClick={this.handleEnableAnnoMode}
               intent="primary"
-              disabled={!userinfo.is_authenticated}
+              disabled={!userInfo.is_authenticated}
             >
               Create new category
             </AnchorButton>
