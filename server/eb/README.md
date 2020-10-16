@@ -55,7 +55,7 @@ eb init -p python-3.6 $EB_APP
 ### 3. Configuring cellxgene
 
 All the cellxgene configuration options can be set from a configuration file.
-This file can be generated like this:
+A yaml config file containing all of the default configuration options can be generated like this:
 
 `cellxgene launch --dump-default-config > myconfig.yaml`
 
