@@ -43,12 +43,12 @@ async function configFetch(dispatch) {
 
 async function userInfoFetch(dispatch) {
   return fetchJson("userinfo").then((response) => {
-    const { userinfo } = response || {};
+    const { userinfo: userInfo } = response || {};
     dispatch({
-      type: "userinfo load complete",
-      userinfo,
+      type: "userInfo load complete",
+      userInfo,
     });
-    return userinfo;
+    return userInfo;
   });
 }
 
