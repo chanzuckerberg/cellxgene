@@ -44,4 +44,4 @@ dataset:
 
   embeddings:
     names: []
-    enable_reembedding: false
+    enable_reembedding: true
