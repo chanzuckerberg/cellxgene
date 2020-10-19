@@ -31,11 +31,11 @@ const LOGIN_PROMPT_OFF = "off";
 const Auth = React.memo((props) => {
   const [isPromptOpen, setIsPromptOpen] = useState(shouldShowPrompt());
 
-  const { auth, userinfo } = props;
+  const { auth, userInfo } = props;
 
-  const isAuthenticated = userinfo && userinfo.is_authenticated;
+  const isAuthenticated = userInfo && userInfo.is_authenticated;
 
-  window.userinfo = userinfo;
+  window.userInfo = userInfo;
 
   const randomInt = Math.random() * 15;
   const sexIndex = Math.floor(randomInt / 5);
@@ -55,7 +55,7 @@ const Auth = React.memo((props) => {
       <Menu>
         <MenuItem
           data-testid="user-email"
-          text={`Logged in as: ${userinfo.email}`}
+          text={`Logged in as: ${userInfo.email}`}
         />
         <MenuItem
           data-testid="log-out"
@@ -74,8 +74,8 @@ const Auth = React.memo((props) => {
           style={{ padding: 0 }}
         >
           {/*  eslint-disable-next-line no-constant-condition -- disable profile picture until CSP is tweaked */}
-          {userinfo?.picture && false ? (
-            <img alt="profile" size="21px" src={userinfo?.picture} />
+          {userInfo?.picture && false ? (
+            <img alt="profile" size="21px" src={userInfo?.picture} />
           ) : (
             <span style={{ fontSize: "18px" }}>{scientist}</span>
           )}
