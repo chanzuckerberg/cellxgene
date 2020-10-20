@@ -3,6 +3,7 @@ import re
 import os
 import sys
 
+import pandas as pd
 import yaml
 
 
@@ -21,7 +22,7 @@ def _validate_stringified_list_of_dicts(s):
             if not isinstance(el, dict):
                 return False
         return True
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, TypeError):
         pass
     return False
 
@@ -55,6 +56,16 @@ def _validate_curie(c, prefixes):
         return match
 
 
+def _validate_suffixed_curie(c, prefixes):
+    """Verify that a string is a compact URI with an optional suffix like 'EFO:00001 (cell culture)'"""
+
+    # Pull off the suffix
+    suffix = re.findall(r"\ \(.*\)$", c)
+    if suffix:
+        c = c[:-len(suffix[0])]
+    return _validate_curie(c, prefixes)
+
+
 def _validate_column(column, column_name, df_name, schema_def):
     """Given a schema definition and the column of a dataframe, verify that the column satifies
     the schema.
@@ -67,7 +78,7 @@ def _validate_column(column, column_name, df_name, schema_def):
             errors.append(f"Column {column_name} in dataframe {df_name} is not unique.")
 
     if "nullable" in schema_def and not schema_def["nullable"]:
-        if any(len(v) == 0 for v in column):
+        if any(pd.isnull(v) or (isinstance(v, str) and len(v) == 0) for v in column):
             errors.append(f"Column {column_name} in dataframe {df_name} contains empty values.")
 
     if schema_def.get("type") == "human-readable string":
@@ -78,8 +89,9 @@ def _validate_column(column, column_name, df_name, schema_def):
                 f"values like {non_readables[0]}"
             )
 
-    if schema_def.get("type") == "curie":
-        non_valid_curies = [v for v in column if not _validate_curie(v, schema_def.get("prefixes"))]
+    if schema_def.get("type") in ("curie", "suffixed curie"):
+        validation_func = _validate_curie if schema_def.get("type") == "curie" else _validate_suffixed_curie
+        non_valid_curies = [v for v in column if not validation_func(v, schema_def.get("prefixes"))]
         if non_valid_curies:
             errors.append(
                 f"Column {column_name} in dataframe {df_name} contains invalid ontology values like "
