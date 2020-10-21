@@ -88,24 +88,15 @@ def get_schema_type_hint_from_dtype(dtype, array_values=None):
 
 def can_cast_to_float32(dtype, array_values):
     """
-    A dtype can be cast to float32 if it is a float type and converting it to float32 presents the same output as the
-    original values. Note that NaNs fail equality (i.e. np.NaN != np.NaN) so we use np.testing.assert_equal to ensure
-    that the arrays are equal minus NaNs.
+    Optimistically returns True signifying that a type downcast to float32 is possible whenever the incoming type is
+    a float.
 
     We also handle a special case here where the array is a Series object with integer categorical values AND NaNs.
-    Since NaNs are floating points in numpy, we upcast the integer array to float32.
+    Since NaNs are floating points in numpy, we upcast the integer array to float32 and return True.
     """
 
     if dtype.kind == "f":
-        # Try to convert the array to float32
-        converted_float32_values = array_values.to_numpy(np.float32)
-        original_values = array_values.to_numpy()
-
-        # Verify that the two arrays are equal except for NaNs (which will equate to be unequal).
-        if not ((converted_float32_values != original_values) == np.isnan(original_values)).all():
-            return False
-
-        if dtype != np.float32:
+        if not np.can_cast(dtype, np.float32):
             logging.warning(f"Type {dtype.name} will be converted to 32 bit float and may lose precision.")
 
         return True
@@ -138,9 +129,9 @@ def can_cast_to_int32(dtype, array_values=None):
             return True
         ii32 = np.iinfo(np.int32)
         if (
-            not ordered_array_values.empty
-            and (ordered_array_values.min() >= ii32.min and ordered_array_values.max() <= ii32.max)
-            or ordered_array_values.empty
+                not ordered_array_values.empty
+                and (ordered_array_values.min() >= ii32.min and ordered_array_values.max() <= ii32.max)
+                or ordered_array_values.empty
         ):
             return True
     return False
