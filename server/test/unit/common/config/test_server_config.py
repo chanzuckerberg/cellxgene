@@ -23,6 +23,7 @@ class TestServerConfig(ConfigTests):
     def setUp(self):
         self.config_file_name = f"{unittest.TestCase.id(self).split('.')[-1]}.yml"
         self.config = AppConfig()
+        self.config.update_server_config(app__flask_secret_key="secret")
         self.config.update_server_config(multi_dataset__dataroot=FIXTURES_ROOT)
         self.server_config = self.config.server_config
         self.config.complete_config()
@@ -103,15 +104,17 @@ class TestServerConfig(ConfigTests):
         # Note if the port is set in the config file it will NOT be overwritten by a different envvar
         os.environ["CXG_SERVER_PORT"] = "4008"
         self.config = AppConfig()
+        self.config.update_server_config(app__flask_secret_key="secret")
         self.config.server_config.handle_app(self.context)
         self.assertEqual(self.config.server_config.app__port, 4008)
+        del os.environ["CXG_SERVER_PORT"]
 
     def test_handle_app__can_get_secret_key_from_envvar_or_config_file_with_envvar_given_preference(self):
         config = self.get_config(flask_secret_key="KEY_FROM_FILE")
         self.assertEqual(config.server_config.app__flask_secret_key, "KEY_FROM_FILE")
 
         os.environ["CXG_SECRET_KEY"] = "KEY_FROM_ENV"
-        config.server_config.handle_app(self.context)
+        config.external_config.handle_environment(self.context)
         self.assertEqual(config.server_config.app__flask_secret_key, "KEY_FROM_ENV")
 
     def test_handle_app__sets_web_base_url(self):
@@ -124,7 +127,7 @@ class TestServerConfig(ConfigTests):
         self.assertEqual(config.server_config.authentication__params_oauth__client_secret, "KEY_FROM_FILE")
 
         os.environ["CXG_OAUTH_CLIENT_SECRET"] = "KEY_FROM_ENV"
-        config.server_config.handle_authentication()
+        config.external_config.handle_environment(self.context)
 
         self.assertEqual(config.server_config.authentication__params_oauth__client_secret, "KEY_FROM_ENV")
 
@@ -151,6 +154,7 @@ class TestServerConfig(ConfigTests):
         config = AppConfig()
         backend_port = find_available_port("localhost", 10000)
         config.update_server_config(
+            app__flask_secret_key="secret",
             app__api_base_url=f"http://localhost:{backend_port}/additional/path",
             multi_dataset__dataroot=f"{PROJECT_ROOT}/example-dataset",
         )
@@ -215,7 +219,7 @@ class TestServerConfig(ConfigTests):
         # test for illegal url_dataroots
         for illegal in ("../b", "!$*", "\\n", "", "(bad)"):
             self.config.update_server_config(
-                multi_dataset__dataroot={"tag": {"base_url": illegal, "dataroot": "{PROJECT_ROOT}/example-dataset"}}
+                multi_dataset__dataroot={"tag": {"base_url": illegal, "dataroot": f"{PROJECT_ROOT}/example-dataset"}}
             )
             with self.assertRaises(ConfigurationError):
                 self.config.complete_config()
@@ -224,7 +228,7 @@ class TestServerConfig(ConfigTests):
         # test for legal url_dataroots
         for legal in ("d", "this.is-okay_", "a/b"):
             self.config.update_server_config(
-                multi_dataset__dataroot={"tag": {"base_url": legal, "dataroot": "{PROJECT_ROOT}/example-dataset"}}
+                multi_dataset__dataroot={"tag": {"base_url": legal, "dataroot": f"{PROJECT_ROOT}/example-dataset"}}
             )
             self.config.complete_config()
 
@@ -306,30 +310,3 @@ class TestServerConfig(ConfigTests):
         mock_tiledb_context.assert_called_once_with(
             {"sm.tile_cache_size": 10, "sm.num_reader_threads": 2, "vfs.s3.region": "us-east-1"}
         )
-
-    @mockenv(CXG_AWS_SECRET_NAME="TESTING", CXG_AWS_SECRET_REGION_NAME="TEST_REGION")
-    @patch("server.common.config.get_secret_key")
-    def test_get_config_vars_from_aws_secrets(self, mock_get_secret_key):
-        mock_get_secret_key.return_value = {
-            "flask_secret_key": "mock_flask_secret",
-            "oauth_client_secret": "mock_oauth_secret",
-            "db_uri": "mock_db_uri",
-        }
-
-        config = AppConfig()
-
-        with self.assertLogs(level="INFO") as logger:
-            from server.common.config import handle_config_from_secret
-
-            # should not throw error
-            # "AttributeError: 'XConfig' object has no attribute 'x'"
-            handle_config_from_secret(config)
-
-            # should log 3 lines (one for each var set from a secret)
-            self.assertEqual(len(logger.output), 3)
-            self.assertIn("INFO:root:set app__flask_secret_key from secret", logger.output[0])
-            self.assertIn("INFO:root:set authentication__params_oauth__client_secret from secret", logger.output[1])
-            self.assertIn("INFO:root:set user_annotations__hosted_tiledb_array__db_uri from secret", logger.output[2])
-            self.assertEqual(config.server_config.app__flask_secret_key, "mock_flask_secret")
-            self.assertEqual(config.server_config.authentication__params_oauth__client_secret, "mock_oauth_secret")
-            self.assertEqual(config.default_dataset_config.user_annotations__hosted_tiledb_array__db_uri, "mock_db_uri")

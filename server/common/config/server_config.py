@@ -44,17 +44,17 @@ class ServerConfig(BaseConfig):
             self.authentication__type = default_config["authentication"]["type"]
             self.authentication__params_oauth__oauth_api_base_url = default_config["authentication"]["params_oauth"][
                 "oauth_api_base_url"
-            ]  # noqa E501
+            ]
             self.authentication__params_oauth__client_id = default_config["authentication"]["params_oauth"]["client_id"]
             self.authentication__params_oauth__client_secret = default_config["authentication"]["params_oauth"][
                 "client_secret"
-            ]  # noqa E501
+            ]
             self.authentication__params_oauth__jwt_decode_options = default_config["authentication"]["params_oauth"][
                 "jwt_decode_options"
-            ]  # noqa E501
+            ]
             self.authentication__params_oauth__session_cookie = default_config["authentication"]["params_oauth"][
                 "session_cookie"
-            ]  # noqa E501
+            ]
             self.authentication__params_oauth__cookie = default_config["authentication"]["params_oauth"]["cookie"]
 
             self.multi_dataset__dataroot = default_config["multi_dataset"]["dataroot"]
@@ -62,10 +62,10 @@ class ServerConfig(BaseConfig):
             self.multi_dataset__allowed_matrix_types = default_config["multi_dataset"]["allowed_matrix_types"]
             self.multi_dataset__matrix_cache__max_datasets = default_config["multi_dataset"]["matrix_cache"][
                 "max_datasets"
-            ]  # noqa E501
+            ]
             self.multi_dataset__matrix_cache__timelimit_s = default_config["multi_dataset"]["matrix_cache"][
                 "timelimit_s"
-            ]  # noqa E501
+            ]
 
             self.single_dataset__datapath = default_config["single_dataset"]["datapath"]
             self.single_dataset__obs_names = default_config["single_dataset"]["obs_names"]
@@ -114,7 +114,7 @@ class ServerConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute("app__port", (type(None), int))
         self.validate_correct_type_of_configuration_attribute("app__open_browser", bool)
         self.validate_correct_type_of_configuration_attribute("app__force_https", bool)
-        self.validate_correct_type_of_configuration_attribute("app__flask_secret_key", (type(None), str))
+        self.validate_correct_type_of_configuration_attribute("app__flask_secret_key", str)
         self.validate_correct_type_of_configuration_attribute("app__generate_cache_control_headers", bool)
         self.validate_correct_type_of_configuration_attribute("app__server_timing_headers", bool)
         self.validate_correct_type_of_configuration_attribute("app__csp_directives", (type(None), dict))
@@ -151,11 +151,6 @@ class ServerConfig(BaseConfig):
         if not self.app__verbose:
             sys.tracebacklimit = 0
 
-        # secret key:
-        #   first, from CXG_SECRET_KEY environment variable
-        #   second, from config file
-        self.app__flask_secret_key = os.environ.get("CXG_SECRET_KEY", self.app__flask_secret_key)
-
         # CSP Directives are a dict of string: list(string) or string: string
         if self.app__csp_directives is not None:
             for k, v in self.app__csp_directives.items():
@@ -178,25 +173,20 @@ class ServerConfig(BaseConfig):
         ptypes = str if self.authentication__type == "oauth" else (type(None), str)
         self.validate_correct_type_of_configuration_attribute(
             "authentication__params_oauth__oauth_api_base_url", ptypes
-        )  # noqa E501
+        )
         self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__client_id", ptypes)
         self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__client_secret", ptypes)
         self.validate_correct_type_of_configuration_attribute(
             "authentication__params_oauth__jwt_decode_options", (type(None), dict)
-        )  # noqa E501
+        )
         self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__session_cookie", bool)
 
         if self.authentication__params_oauth__session_cookie:
             self.validate_correct_type_of_configuration_attribute(
                 "authentication__params_oauth__cookie", (type(None), dict)
-            )  # noqa E501
+            )
         else:
             self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__cookie", dict)
-        #   secret key: first, from CXG_OAUTH_CLIENT_SECRET environment variable
-        #   second, from config file
-        self.authentication__params_oauth__client_secret = os.environ.get(
-            "CXG_OAUTH_CLIENT_SECRET", self.authentication__params_oauth__client_secret
-        )
 
         self.auth = AuthTypeFactory.create(self.authentication__type, self)
         if self.auth is None:
@@ -286,7 +276,7 @@ class ServerConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute("multi_dataset__matrix_cache__max_datasets", int)
         self.validate_correct_type_of_configuration_attribute(
             "multi_dataset__matrix_cache__timelimit_s", (type(None), int, float)
-        )  # noqa E501
+        )
 
         if self.multi_dataset__dataroot is None:
             return

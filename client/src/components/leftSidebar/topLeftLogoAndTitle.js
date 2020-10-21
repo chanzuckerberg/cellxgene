@@ -7,15 +7,12 @@ import * as globals from "../../globals";
 import Logo from "../framework/logo";
 import Truncate from "../util/truncate";
 import InfoDrawer from "../infoDrawer/infoDrawer";
-import AuthButtons from "../menubar/authButtons";
-import InformationMenu from "../menubar/infoMenu";
+import InformationMenu from "./infoMenu";
 
 const DATASET_TITLE_FONT_SIZE = 14;
 
 @connect((state) => ({
   datasetTitle: state.config?.displayNames?.dataset ?? "",
-  auth: state.config?.authentication,
-  userinfo: state.userinfo,
   libraryVersions: state.config?.["library_versions"],
   aboutLink: state.config?.links?.["about-dataset"],
   tosURL: state.config?.parameters?.["about_legal_tos"],
@@ -30,8 +27,6 @@ class LeftSideBar extends React.Component {
   render() {
     const {
       datasetTitle,
-      auth,
-      userinfo,
       libraryVersions,
       aboutLink,
       privacyURL,
@@ -79,7 +74,7 @@ class LeftSideBar extends React.Component {
             gene
           </span>
         </div>
-        <div style={{ marginRight: 5, position: "relative", top: -7 }}>
+        <div style={{ marginRight: 5, height: "100%" }}>
           <Button
             minimal
             style={{
@@ -102,14 +97,9 @@ class LeftSideBar extends React.Component {
               aboutLink,
               tosURL,
               privacyURL,
-              auth,
               dispatch,
-              userinfo,
             }}
           />
-          {!userinfo.is_authenticated ? (
-            <AuthButtons auth={auth} userinfo={userinfo} />
-          ) : null}
         </div>
       </div>
     );

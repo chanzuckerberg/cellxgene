@@ -160,12 +160,14 @@ class AuthTest(unittest.TestCase):
     def test_auth_oauth_session(self):
         # test with session cookies
         app_config = AppConfig()
+        app_config.update_server_config(app__flask_secret_key="secret")
         app_config.update_server_config(authentication__params_oauth__session_cookie=True,)
         self.auth_flow(app_config)
 
     def test_auth_oauth_cookie(self):
         # test with specified cookie
         app_config = AppConfig()
+        app_config.update_server_config(app__flask_secret_key="secret")
         app_config.update_server_config(
             authentication__params_oauth__session_cookie=False,
             authentication__params_oauth__cookie=dict(key="test_cxguser", httponly=True, max_age=60),

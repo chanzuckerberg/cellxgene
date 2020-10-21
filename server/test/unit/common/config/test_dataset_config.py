@@ -19,6 +19,7 @@ class TestDatasetConfig(ConfigTests):
     def setUp(self):
         self.config_file_name = f"{unittest.TestCase.id(self).split('.')[-1]}.yml"
         self.config = AppConfig()
+        self.config.update_server_config(app__flask_secret_key="secret")
         self.config.update_server_config(multi_dataset__dataroot=FIXTURES_ROOT)
         self.dataset_config = self.config.default_dataset_config
         self.config.complete_config()
@@ -155,7 +156,8 @@ class TestDatasetConfig(ConfigTests):
         # test for illegal url_dataroots
         for illegal in ("../b", "!$*", "\\n", "", "(bad)"):
             config.update_server_config(
-                multi_dataset__dataroot={"tag": {"base_url": illegal, "dataroot": "{PROJECT_ROOT}/example-dataset"}}
+                app__flask_secret_key="secret",
+                multi_dataset__dataroot={"tag": {"base_url": illegal, "dataroot": f"{PROJECT_ROOT}/example-dataset"}},
             )
             with self.assertRaises(ConfigurationError):
                 config.complete_config()
@@ -163,17 +165,19 @@ class TestDatasetConfig(ConfigTests):
         # test for legal url_dataroots
         for legal in ("d", "this.is-okay_", "a/b"):
             config.update_server_config(
-                multi_dataset__dataroot={"tag": {"base_url": legal, "dataroot": "{PROJECT_ROOT}/example-dataset"}}
+                app__flask_secret_key="secret",
+                multi_dataset__dataroot={"tag": {"base_url": legal, "dataroot": f"{PROJECT_ROOT}/example-dataset"}},
             )
             config.complete_config()
 
         # test that multi dataroots work end to end
         config.update_server_config(
+            app__flask_secret_key="secret",
             multi_dataset__dataroot=dict(
                 s1=dict(dataroot=f"{PROJECT_ROOT}/example-dataset", base_url="set1/1/2"),
                 s2=dict(dataroot=f"{FIXTURES_ROOT}", base_url="set2"),
                 s3=dict(dataroot=f"{FIXTURES_ROOT}", base_url="set3"),
-            )
+            ),
         )
 
         # Change this default to test if the dataroot overrides below work.

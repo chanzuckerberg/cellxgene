@@ -43,6 +43,10 @@ class AuthTypeBase(ABC):
         """Return the name of the user (string)"""
         pass
 
+    def get_user_picture(self):
+        """Return the location to the user's picture"""
+        return None
+
 
 class AuthTypeClientBase(AuthTypeBase):
     """Base type for all authentication types that require the client to login"""

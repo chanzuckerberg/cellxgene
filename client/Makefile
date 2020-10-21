@@ -3,6 +3,8 @@ include ../common.mk
 ANNOTATIONS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../server/test/fixtures/pbmc3k-annotations.csv)
 ANNOTATIONS_FILENAME := $(shell basename $(ANNOTATIONS))
 
+CXG_CONFIG := $(if $(CXG_CONFIG), $(CXG_CONFIG), ./__tests__/e2e/test_config.yaml)
+
 # Packaging
 .PHONY: clean
 clean:
@@ -31,9 +33,9 @@ start-frontend:
 .PHONY: smoke-test
 smoke-test:
 	start_server_and_test \
-		'CXG_OPTIONS="--disable-annotations" $(MAKE) start-server' \
+		'CXG_OPTIONS="--config-file $(CXG_CONFIG)" $(MAKE) start-server' \
 		$(CXG_SERVER_PORT) \
-		'CXG_URL_BASE="http://localhost:$(CXG_SERVER_PORT)" npm run e2e -- --verbose false'
+		'CXG_URL_BASE="http://localhost:$(CXG_SERVER_PORT)" CXG_AUTH_TYPE="test" npm run e2e -- --verbose false'
 
 # start an instance of cellxgene and run the end-to-end annotations tests
 .PHONY: smoke-test-annotations

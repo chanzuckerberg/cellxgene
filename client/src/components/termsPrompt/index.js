@@ -8,26 +8,7 @@ import {
   Colors,
   Icon,
 } from "@blueprintjs/core";
-
-const CookieDecision = "cxg.cookieDecision";
-
-function storageGet(key, defaultValue = null) {
-  try {
-    const val = window.localStorage.getItem(key);
-    if (val === null) return defaultValue;
-    return val;
-  } catch (e) {
-    return defaultValue;
-  }
-}
-
-function storageSet(key, value) {
-  try {
-    window.localStorage.setItem(key, value);
-  } catch {
-    // continue
-  }
-}
+import { storageGet, storageSet, KEYS } from "../util/localStorage";
 
 @connect((state) => ({
   tosURL: state.config?.parameters?.["about_legal_tos"],
@@ -37,7 +18,7 @@ class TermsPrompt extends React.PureComponent {
   constructor(props) {
     super(props);
     const { tosURL, privacyURL } = this.props;
-    const cookieDecision = storageGet(CookieDecision, null);
+    const cookieDecision = storageGet(KEYS.COOKIE_DECISION, null);
     const hasDecided = cookieDecision !== null;
     this.state = {
       hasDecided,
@@ -55,7 +36,7 @@ class TermsPrompt extends React.PureComponent {
 
   handleOK = () => {
     this.setState({ isOpen: false });
-    storageSet(CookieDecision, "yes");
+    storageSet(KEYS.COOKIE_DECISION, "yes");
     if (window.cookieDecisionCallback instanceof Function) {
       try {
         window.cookieDecisionCallback();
@@ -67,7 +48,7 @@ class TermsPrompt extends React.PureComponent {
 
   handleNo = () => {
     this.setState({ isOpen: false });
-    storageSet(CookieDecision, "no");
+    storageSet(KEYS.COOKIE_DECISION, "no");
   };
 
   renderTos() {

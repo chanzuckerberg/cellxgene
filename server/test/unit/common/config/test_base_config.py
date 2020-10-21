@@ -10,6 +10,7 @@ class BaseConfigTest(ConfigTests):
     def setUp(self):
         self.config_file_name = f"{unittest.TestCase.id(self).split('.')[-1]}.yml"
         self.config = AppConfig()
+        self.config.update_server_config(app__flask_secret_key="secret")
         self.config.update_server_config(multi_dataset__dataroot=FIXTURES_ROOT)
         self.server_config = self.config.server_config
         self.config.complete_config()
@@ -47,6 +48,7 @@ class BaseConfigTest(ConfigTests):
             server_changes,
             [
                 ("app__verbose", True, False),
+                ("app__flask_secret_key", "secret", None),
                 ("multi_dataset__dataroot", FIXTURES_ROOT, None),
                 ("multi_dataset__matrix_cache__timelimit_s", 5, 30),
                 ("data_locator__s3__region_name", "us-east-1", True),
