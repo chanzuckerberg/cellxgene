@@ -59,7 +59,12 @@ def logout():
 
 @mock_oauth_app.route("/.well-known/jwks.json")
 def jwks():
-    data = dict(alg="RS256", kty="RSA", use="sig", kid="fake_kid",)
+    data = dict(
+        alg="RS256",
+        kty="RSA",
+        use="sig",
+        kid="fake_kid",
+    )
     return make_response(jsonify(dict(keys=[data])))
 
 
@@ -148,14 +153,14 @@ class AuthTest(unittest.TestCase):
                 self.assertNotEqual(access_token_before, access_token_after)
                 self.assertNotEqual(id_token_before, id_token_after)
 
-                 # check that invalid cookie fails
+                # check that invalid cookie fails
                 session.cookies.set(cookie_key, "TEST_" + cookie)
                 userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
                 self.assertFalse(userinfo["userinfo"]["is_authenticated"])
                 self.assertIsNone(userinfo["userinfo"]["username"])
                 self.assertTrue(config["config"]["parameters"]["annotations"])
 
-                #check that invalid id_token fails
+                # check that invalid id_token fails
                 test_token = '{"access_token": "zZxLicQYGA2r93ldYGJGKHT6RD5ZGTq9", "id_token": "TEST_eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik5iRUNKeDlTVEhzNnEyX1JoNEVFLSJ9.eyJuaWNrbmFtZSI6InRodWFuZyswIiwibmFtZSI6InRodWFuZyswQGNoYW56dWNrZXJiZXJnLmNvbSIsInBpY3R1cmUiOiJodHRwczovL3MuZ3JhdmF0YXIuY29tL2F2YXRhci9hM2E1NWZlZmFiMDM0NmVhMzEwMjg2NTA3Mjc4NzczND9zPTQ4MCZyPXBnJmQ9aHR0cHMlM0ElMkYlMkZjZG4uYXV0aDAuY29tJTJGYXZhdGFycyUyRnRoLnBuZyIsInVwZGF0ZWRfYXQiOiIyMDIwLTEwLTA2VDIzOjQ0OjM0LjU5OVoiLCJlbWFpbCI6InRodWFuZyswQGNoYW56dWNrZXJiZXJnLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiaXNzIjoiaHR0cHM6Ly9sb2dpbi5jZWxseGdlbmUuZGV2LnNpbmdsZS1jZWxsLmN6aS50ZWNobm9sb2d5LyIsInN1YiI6ImF1dGgwfDVmN2QwMTYyNDdiMThiMDA3NmE3YjJkOCIsImF1ZCI6ImMzTzV2dzZsVGV1TDV1aFJ3YjVGdUsxSndxMjJtUjVSIiwiaWF0IjoxNjAyMDI3ODc1LCJleHAiOjE2MDIwNjM4NzUsIm5vbmNlIjoiNEJxcTVQa2tXRkNYUFdqMXZpOUEifQ.T9mzUkQuWcxuCgZMxXKR4fNzs3TuKczWQZqZYXkDLERU0vn3pd3uHEnZKz2q7mCTwh3rajcOSgHKD9b_8eeJeF3na4GmOZ5on-Z-uW1I5dW-mmrSXEi8bDWxinvriKsEZmBNS_4hXDmy31e5GATazI8raubb-kk0Llh7lNF6fnLPIAocKOak80CqR0ZeuislvGTuZHgOvXBhQAlsictm0QW8l_li0lCV1DOPL8PbsSdY9ix25-0Q7nhP2JvqmlDN1rPH0qJDUDxzoRbRG2rSmS4slNE7kzVH1lULdP4Pul9WxjrljqociGhSrATgkh4tjiGM70qEQEm3Js0hbZLFxw", "refresh_token": "XYj0BaiRFhCgJQrDUFaQWMBuIoIdqiLLnv2Bh23BTqJHq", "expires_at": 1602114275, "alg": "RS256"}'
                 encoded_cookie = base64.b64encode(test_token)
                 session.cookies.set(cookie_key, encoded_cookie)
@@ -178,7 +183,9 @@ class AuthTest(unittest.TestCase):
         # test with session cookies
         app_config = AppConfig()
         app_config.update_server_config(app__flask_secret_key="secret")
-        app_config.update_server_config(authentication__params_oauth__session_cookie=True,)
+        app_config.update_server_config(
+            authentication__params_oauth__session_cookie=True,
+        )
         self.auth_flow(app_config)
 
     def test_auth_oauth_cookie(self):
