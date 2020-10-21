@@ -7,6 +7,11 @@ import pandas as pd
 import yaml
 
 
+def _is_null(v):
+    """Return True if v is null, for one of the multiple ways a "null" value shows up in an h5ad."""
+    return pd.isnull(v) or (hasattr(v, "__len__") and len(v) == 0)
+
+
 def _validate_stringified_list_of_dicts(s):
     """Verify that a string can be parsed into a list.
 
@@ -62,7 +67,7 @@ def _validate_suffixed_curie(c, prefixes):
     # Pull off the suffix
     suffix = re.findall(r"\ \(.*\)$", c)
     if suffix:
-        c = c[:-len(suffix[0])]
+        c = c[: -len(suffix[0])]
     return _validate_curie(c, prefixes)
 
 
@@ -78,7 +83,7 @@ def _validate_column(column, column_name, df_name, schema_def):
             errors.append(f"Column {column_name} in dataframe {df_name} is not unique.")
 
     if "nullable" in schema_def and not schema_def["nullable"]:
-        if any(pd.isnull(v) or (isinstance(v, str) and len(v) == 0) for v in column):
+        if any(_is_null(v) for v in column):
             errors.append(f"Column {column_name} in dataframe {df_name} contains empty values.")
 
     if schema_def.get("type") == "human-readable string":
@@ -129,10 +134,9 @@ def _validate_dict(dict_, dict_name, schema_def):
                 errors.extend(_validate_dict(dict_[key], key, schema_def["keys"][key]))
             elif schema_def["keys"][key]["type"] == "curie":
                 if not _validate_curie(dict_[key], schema_def["keys"][key]["prefixes"]):
-                    errors.extend(_validate_curie(dict_[key], schema_def["keys"][key]["prefixes"]))
-
+                    errors.append(f"Key {key} in {dict_name} contains invalid ontology value.")
             if "nullable" in schema_def["keys"][key] and not schema_def["keys"][key]["nullable"]:
-                if len(dict_[key]) == 0:
+                if _is_null(dict_[key]):
                     errors.append(f"Key {key} in dict {dict_name} is an empty value.")
 
     return errors

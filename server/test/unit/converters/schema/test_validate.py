@@ -1,9 +1,13 @@
 import json
+import os
 import unittest
 
 import pandas as pd
+import scanpy as sc
 
 from server.converters.schema import validate
+
+PROJECT_ROOT = os.popen("git rev-parse --show-toplevel").read().strip()
 
 
 class TestFieldValidation(unittest.TestCase):
@@ -191,3 +195,241 @@ class TestColumnValidation(unittest.TestCase):
         errors = validate._validate_column(enum_df["col1"], "col1", "enum_df", schema_def)
         self.assertEqual(len(errors), 1)
         self.assertIn("unpermitted values", errors[0])
+
+
+class TestDictValidations(unittest.TestCase):
+
+
+    def test_key_presence(self):
+
+        schema_def = {"keys": {"abc": None, "def": None}}
+
+        dict_ = {"abc": "123", "def": "456"}
+        errors = validate._validate_dict(dict_, "d", schema_def)
+        self.assertFalse(errors)
+
+        # Missing keys are bad
+        dict_ = {"abc": "123"}
+        errors = validate._validate_dict(dict_, "d", schema_def)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("missing key", errors[0])
+
+        # Extra keys are okay
+        dict_ = {"abc": "123", "def": "456", "xyz": "789"}
+        errors = validate._validate_dict(dict_, "d", schema_def)
+        self.assertFalse(errors)
+
+        # Better not be empty come on
+        dict_ = {}
+        errors = validate._validate_dict(dict_, "d", schema_def)
+        self.assertEqual(len(errors), 2)
+
+    def test_nullable(self):
+
+        schema_def = {"keys": {"abc": {"type": "string", "nullable": False},
+                               "def": {"type": "string", "nullable": True}}}
+
+        dict_ = {"abc": "xyz", "def": ""}
+        errors = validate._validate_dict(dict_, "d", schema_def)
+        self.assertFalse(errors)
+
+        dict_ = {"abc": "", "def": ""}
+        errors = validate._validate_dict(dict_, "d", schema_def)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("empty value", errors[0])
+
+    def test_recurse(self):
+
+        schema_def = {
+            "keys": {
+                "subdict": {
+                    "type": "dict",
+                    "keys": {
+                        "subdict_key1": None,
+                        "subdict_key2": None
+                    }
+                },
+                "ontology": {
+                    "type": "curie",
+                    "prefixes": ["ONTOLOGY"]
+                },
+                "blob": {
+                    "type": "stringified list of dicts"
+                }
+            }
+        }
+
+        dict_ = {
+            "subdict": {"subdict_key1": "any", "subdict_key2": "any"},
+            "ontology": "ONTOLOGY:123456",
+            "blob": json.dumps([{"abc": 123}, {"def": 456}])
+        }
+        errors = validate._validate_dict(dict_, "d", schema_def)
+        self.assertFalse(errors)
+
+        dict_ = {
+            "subdict": {"subdict_key1": "any"},
+            "ontology": "ONTOLOGY:123456",
+            "blob": json.dumps([{"abc": 123}, {"def": 456}])
+        }
+        errors = validate._validate_dict(dict_, "d", schema_def)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("missing key", errors[0])
+
+        dict_ = {
+            "subdict": {"subdict_key1": "any", "subdict_key2": "any"},
+            "ontology": "oh no not an ontology term",
+            "blob": json.dumps([{"abc": 123}, {"def": 456}])
+        }
+        errors = validate._validate_dict(dict_, "d", schema_def)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("invalid ontology", errors[0])
+
+        dict_ = {
+            "subdict": {"subdict_key1": "any", "subdict_key2": "any"},
+            "ontology": "ONTOLOGY:123456",
+            "blob": [{"abc": 123}, {"def": 456}]
+        }
+        errors = validate._validate_dict(dict_, "d", schema_def)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("JSON-encoded list of dicts", errors[0])
+
+        # Multiple errors
+        dict_ = {
+            "subdict": {"subdict_key1": "any"},
+            "ontology": "oh no not an ontology term",
+            "blob": json.dumps([{"abc": 123}, {"def": 456}])
+        }
+        errors = validate._validate_dict(dict_, "d", schema_def)
+        self.assertEqual(len(errors), 2)
+
+
+class TestDataframeValidation(unittest.TestCase):
+
+    def test_column_presence(self):
+        df = pd.DataFrame(
+            [["abc", "EFO:123"],
+             ["def", "UBERON:456"]],
+            columns=["hr_string", "ontology"],
+            index=["X", "Y"]
+        )
+
+        schema_def = {
+            "columns": {
+                "hr_string": {"type": "human-readable string"},
+                "ontology": {"type": "curie", "prefixes": ["EFO", "UBERON"]}
+            }
+        }
+        errors = validate._validate_dataframe(df, "df", schema_def)
+        self.assertFalse(errors)
+
+        schema_def = {
+            "columns": {
+                "hr_string": {"type": "human-readable string"},
+                "another_hr_string": {"type": "human-readable string"},
+                "ontology": {"type": "curie", "prefixes": ["EFO", "UBERON"]}
+            }
+        }
+        errors = validate._validate_dataframe(df, "df", schema_def)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("missing column", errors[0])
+
+        # Extra is okay
+        df = pd.DataFrame(
+            [["abc", "EFO:123", "extra"],
+             ["def", "UBERON:456", "extra"]],
+            columns=["hr_string", "ontology", "extra"],
+            index=["X", "Y"]
+        )
+        schema_def = {
+            "columns": {
+                "hr_string": {"type": "human-readable string"},
+                "ontology": {"type": "curie", "prefixes": ["EFO", "UBERON"]}
+            }
+        }
+        errors = validate._validate_dataframe(df, "df", schema_def)
+        self.assertFalse(errors)
+
+
+    def test_index(self):
+        df = pd.DataFrame(
+            [["abc", "123"],
+             ["def", "456"]],
+            columns=["col1", "col2"],
+            index=["ENSG0001", "ENSG0002"]
+        )
+
+        schema_def = {"index": {"unique": True}}
+        errors = validate._validate_dataframe(df, "df", schema_def)
+        self.assertFalse(errors)
+
+        schema_def = {"index": {"type": "human-readable string"}}
+        errors = validate._validate_dataframe(df, "df", schema_def)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("non-human-readable", errors[0])
+
+        df = pd.DataFrame(
+            [["abc", "123"],
+             ["def", "456"]],
+            columns=["col1", "col2"],
+            index=["ENSG0001", "ENSG0001"]
+        )
+        schema_def = {"index": {"unique": True}}
+        errors = validate._validate_dataframe(df, "df", schema_def)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("is not unique", errors[0])
+
+    def test_recurse(self):
+
+        df = pd.DataFrame(
+            [["abc", "HsapDv:0001"],
+             ["EFO:123", "UBERON:456"]],
+            columns=["hr_string", "ontology"],
+            index=["X", "Y"]
+        )
+        schema_def = {
+            "columns": {
+                "hr_string": {"type": "human-readable string"},
+                "ontology": {"type": "curie", "prefixes": ["EFO", "UBERON"]}
+            }
+        }
+        errors = validate._validate_dataframe(df, "df", schema_def)
+        self.assertEqual(len(errors), 2)
+        self.assertEqual(len([e for e in errors if "non-human-readable" in e]), 1)
+        self.assertEqual(len([e for e in errors if "invalid ontology" in e]), 1)
+
+
+class TestGetSchema(unittest.TestCase):
+
+    def test_get_schema(self):
+        self.assertIsInstance(validate.get_schema_definition("1.0.0"), dict)
+
+        with self.assertRaises(ValueError):
+            validate.get_schema_definition("10.1.5")
+
+
+class TestValidate(unittest.TestCase):
+
+    def setUp(self):
+        self.source_h5ad_path = f"{PROJECT_ROOT}/server/test/fixtures/pbmc3k-CSC-gz.h5ad"
+
+    def test_shallow(self):
+
+        adata = sc.read_h5ad(self.source_h5ad_path)
+        self.assertFalse(validate.validate_adata(adata, True))
+
+        adata.uns["version"] = {
+            "corpora_schema_version": "1.0.0",
+            "corpora_encoding_version": "0.1.0"
+        }
+        self.assertTrue(validate.validate_adata(adata, True))
+
+    def test_deep(self):
+        adata = sc.read_h5ad(self.source_h5ad_path)
+        self.assertFalse(validate.validate_adata(adata, False))
+
+        adata.uns["version"] = {
+            "corpora_schema_version": "1.0.0",
+            "corpora_encoding_version": "0.1.0"
+        }
+        self.assertFalse(validate.validate_adata(adata, False))
