@@ -19,6 +19,7 @@ class TestApplySchema(unittest.TestCase):
         self.source_h5ad_path = f"{PROJECT_ROOT}/server/test/fixtures/pbmc3k-CSC-gz.h5ad"
         self.output_h5ad_path = f"{PROJECT_ROOT}/server/test/fixtures/test_remix.h5ad"
         self.config_path = f"{PROJECT_ROOT}/server/test/fixtures/test_config.yaml"
+        self.bad_config_path = f"{PROJECT_ROOT}/server/test/fixtures/test_bad_config.yaml"
 
     def tearDown(self):
         try:
@@ -39,8 +40,16 @@ class TestApplySchema(unittest.TestCase):
             sorted(new_adata.obs["cell_type_ontology_term_id"].unique().tolist())
         )
 
-        self.assertIn("version", new_adata.uns)
+        self.assertIn("version", new_adata.uns_keys())
 
+    @unittest.mock.patch("server.converters.schema.ontology.get_ontology_label")
+    def test_apply_bad_schema(self, mock_get_ontology_label):
+        mock_get_ontology_label.return_value = "test label"
+        remix.apply_schema(self.source_h5ad_path, self.bad_config_path, self.output_h5ad_path)
+        new_adata = sc.read_h5ad(self.output_h5ad_path)
+
+        # Should refuse to write the version
+        self.assertNotIn("version", new_adata.uns_keys())
 
 class TestFieldParsing(unittest.TestCase):
 

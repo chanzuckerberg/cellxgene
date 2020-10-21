@@ -14,7 +14,7 @@ obs:
     tissue_ontology_term_id: UBERON:12345
     assay_ontology_term_id: EFO:12345
     disease_ontology_term_id: MONDO:12345
-    ethnicity_ontology_term_id: HANCESTRO:12345
+    ethnicity_ontology_term_id: MANCESTRO:12345
     development_stage_ontology_term_id: HsapDv:12345
     sex: other
 uns:

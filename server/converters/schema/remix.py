@@ -1,4 +1,5 @@
 import argparse
+import collections
 import json
 import logging
 import math
@@ -11,6 +12,7 @@ import yaml
 
 from . import gene_symbol
 from . import ontology
+from . import validate
 
 REPLACE_SUFFIX = "_original"
 ONTOLOGY_SUFFIX = "_ontology_term_id"
@@ -214,6 +216,11 @@ def fixup_gene_symbols(adata, fixup_config):
 
     return fixup_adata
 
+def _strip_version(adata):
+    """Remove version information from the AnnData object."""
+
+    if "version" in adata.uns_keys():
+        del adata.uns["version"]
 
 def apply_schema(source_h5ad, remix_config, output_filename):
 
@@ -228,6 +235,23 @@ def apply_schema(source_h5ad, remix_config, output_filename):
 
     if config.get("fixup_gene_symbols"):
         adata = fixup_gene_symbols(adata, config["fixup_gene_symbols"])
+
+    if ("version" in adata.uns_keys()
+            and isinstance(adata.uns["version"], collections.Mapping)
+            and "corpora_schema_version" in adata.uns["version"]):
+        schema_version = adata.uns["version"]["corpora_schema_version"]
+        try:
+            schema_def = validate.get_schema_definition(schema_version)
+        except ValueError:
+            logging.warning(f"Stripping version information out of AnnData because schema "
+                            f"version {schema_version} is unknown.")
+            _strip_version(adata)
+
+        if not validate.validate_adata(adata, shallow=False):
+            logging.warning(f"Stripping version information out of AnnData because it does not "
+                            f"follow schema version {schema_version} .")
+            _strip_version(adata)
+
     adata.write_h5ad(output_filename, compression="gzip")
 
 
