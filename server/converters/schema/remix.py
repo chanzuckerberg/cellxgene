@@ -241,7 +241,7 @@ def apply_schema(source_h5ad, remix_config, output_filename):
             and "corpora_schema_version" in adata.uns["version"]):
         schema_version = adata.uns["version"]["corpora_schema_version"]
         try:
-            schema_def = validate.get_schema_definition(schema_version)
+            validate.get_schema_definition(schema_version)
         except ValueError:
             logging.warning(f"Stripping version information out of AnnData because schema "
                             f"version {schema_version} is unknown.")
