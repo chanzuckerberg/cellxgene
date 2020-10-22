@@ -129,9 +129,9 @@ def can_cast_to_int32(dtype, array_values=None):
             return True
         ii32 = np.iinfo(np.int32)
         if (
-                not ordered_array_values.empty
-                and (ordered_array_values.min() >= ii32.min and ordered_array_values.max() <= ii32.max)
-                or ordered_array_values.empty
+            not ordered_array_values.empty
+            and (ordered_array_values.min() >= ii32.min and ordered_array_values.max() <= ii32.max)
+            or ordered_array_values.empty
         ):
             return True
     return False
