@@ -160,7 +160,7 @@ class AuthTest(unittest.TestCase):
 
                 # invalid id_token fails
                 test_token = token
-                test_token["id_token"] = "TEST_" + id_token_before
+                test_token["id_token"] = "TEST_" + id_token_after
                 encoded_cookie = base64.b64encode(json.dumps(test_token).encode())
                 session.cookies.set(cookie_key, encoded_cookie)
                 userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
