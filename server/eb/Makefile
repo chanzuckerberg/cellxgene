@@ -27,6 +27,9 @@ build: clean
 	  if [ -f customize/config.yaml ] ; then \
 	     cp customize/config.yaml artifact.dir;  \
 	  fi ; \
+	  if [ -f customize/Dockerfile ] ; then \
+	     cp customize/Dockerfile artifact.dir;  \
+	  fi ; \
 	  if [ -f customize/requirements.txt ] ; then \
 	     pip install requirements-parser ; \
 	     pip install packaging ; \
