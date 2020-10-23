@@ -59,12 +59,7 @@ def logout():
 
 @mock_oauth_app.route("/.well-known/jwks.json")
 def jwks():
-    data = dict(
-        alg="RS256",
-        kty="RSA",
-        use="sig",
-        kid="fake_kid",
-    )
+    data = dict(alg="RS256", kty="RSA", use="sig", kid="fake_kid",)
     return make_response(jsonify(dict(keys=[data])))
 
 
@@ -152,18 +147,25 @@ class AuthTest(unittest.TestCase):
                 self.assertNotEqual(access_token_before, access_token_after)
                 self.assertNotEqual(id_token_before, id_token_after)
 
-                # invalid cookie fails
-                # (THIS CURRENTLY 500's ON THE SERVER, BUT SHOULD RETURN EMPTY USERINFO OR 401)
+                # invalid cookie is rejected
                 session.cookies.set(cookie_key, "TEST_" + cookie)
-                userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
-                self.assertIsNone(userinfo.get("userinfo"))
+                self.assertTrue(cookie_key in session.cookies)
+                response = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo")
+                # this is not an error, the invalid cookie is just ignored.
+                self.assertEqual(response.status_code, 200)
+                userinfo = response.json()
+                self.assertFalse(userinfo["userinfo"]["is_authenticated"])
+                self.assertIsNone(userinfo["userinfo"]["username"])
 
-                # invalid id_token fails
+                # invalid id_token is rejected
                 test_token = token
                 test_token["id_token"] = "TEST_" + id_token_after
                 encoded_cookie = base64.b64encode(json.dumps(test_token).encode()).decode()
                 session.cookies.set(cookie_key, encoded_cookie)
-                userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
+                response = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo")
+                # this is not an error, the invalid id_token is just ignored.
+                self.assertEqual(response.status_code, 200)
+                userinfo = response.json()
                 self.assertFalse(userinfo["userinfo"]["is_authenticated"])
                 self.assertIsNone(userinfo["userinfo"]["username"])
 
@@ -181,9 +183,7 @@ class AuthTest(unittest.TestCase):
         # test with session cookies
         app_config = AppConfig()
         app_config.update_server_config(app__flask_secret_key="secret")
-        app_config.update_server_config(
-            authentication__params_oauth__session_cookie=True,
-        )
+        app_config.update_server_config(authentication__params_oauth__session_cookie=True,)
         self.auth_flow(app_config)
 
     def test_auth_oauth_cookie(self):

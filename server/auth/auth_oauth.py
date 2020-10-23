@@ -226,14 +226,13 @@ class AuthTypeOAuth(AuthTypeClientBase):
             else:
                 value = request.cookies.get(self.cookie_params["key"])
                 value = base64.b64decode(value)
-                try:
-                    tokensdict = json.loads(value)
-                    g.tokens = Tokens(**tokensdict)
-                except (TypeError, KeyError, json.decoder.JSONDecodeError):
-                    g.pop("tokens", None)
-                    return None
+                tokensdict = json.loads(value)
+                g.tokens = Tokens(**tokensdict)
 
-        except (TypeError, KeyError):
+        except Exception:
+            # there are many types of exceptions that can be raise in the above section.
+            # It is impractical to list all the exceptions here, since that would be brittle.
+            # If an exception occurs, then return None, meaning that no token could be retrieved.
             g.pop("tokens", None)
             return None
 
@@ -331,6 +330,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
 
         # if there is no id_token, return None (user is not authenticated)
         tokens = self.get_tokens()
+
         if tokens is None or tokens.id_token is None:
             return None
 
