@@ -153,7 +153,7 @@ class AuthTest(unittest.TestCase):
                 self.assertNotEqual(id_token_before, id_token_after)
 
                 # invalid cookie fails
-                # (THIS CURRENTLY ERRORS ON THE SERVER, BUT SHOULD RETURN EMPTY USERINFO OR 401)
+                # (THIS CURRENTLY 500's ON THE SERVER, BUT SHOULD RETURN EMPTY USERINFO OR 401)
                 session.cookies.set(cookie_key, "TEST_" + cookie)
                 userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
                 self.assertIsNone(userinfo.get("userinfo"))
@@ -161,7 +161,7 @@ class AuthTest(unittest.TestCase):
                 # invalid id_token fails
                 test_token = token
                 test_token["id_token"] = "TEST_" + id_token_after
-                encoded_cookie = base64.b64encode(json.dumps(test_token).encode())
+                encoded_cookie = base64.b64encode(json.dumps(test_token).encode()).decode()
                 session.cookies.set(cookie_key, encoded_cookie)
                 userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
                 self.assertFalse(userinfo["userinfo"]["is_authenticated"])
