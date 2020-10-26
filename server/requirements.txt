@@ -1,4 +1,4 @@
-anndata>=0.7
+anndata>=0.7.0
 boto3>=1.12.18
 click>=7.1.2
 fastobo>=0.6.1
