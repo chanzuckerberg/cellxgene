@@ -180,7 +180,7 @@ class AnndataAdaptor(DataAdaptor):
         if anndata_version_is_pre_070():
             warnings.warn(
                 "Use of anndata versions older than 0.7 will have serious issues. Please update to at "
-                "issues. Please update to at least anndata 0.7 or later."
+                "least anndata 0.7 or later."
             )
 
         # var and obs column names must be unique
