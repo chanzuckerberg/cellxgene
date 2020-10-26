@@ -63,16 +63,8 @@ def jwks():
     return make_response(jsonify(dict(keys=[data])))
 
 
-# The port that the mock oauth server will listen on
-PORT = random.randint(10000, 12000)
-
-
-# function to launch the mock oauth server
-def launch_mock_oauth():
-    mock_oauth_app.run(port=PORT)
-
-
 class AuthTest(unittest.TestCase):
+<<<<<<< HEAD
     @classmethod
     def setUpClass(cls):
         cls.dataset_dataroot = FIXTURES_ROOT
@@ -83,12 +75,16 @@ class AuthTest(unittest.TestCase):
     def tearDownClass(cls):
         cls.mock_oauth_process.terminate()
 
+    # function to launch the mock oauth server
+    def launch_mock_oauth(self):
+        mock_oauth_app.run(port=self.PORT)
+
     def auth_flow(self, app_config, cookie_key=None):
 
         app_config.update_server_config(
             app__api_base_url="local",
             authentication__type="oauth",
-            authentication__params_oauth__oauth_api_base_url=f"http://localhost:{PORT}",
+            authentication__params_oauth__oauth_api_base_url=f"http://localhost:{self.PORT}",
             authentication__params_oauth__client_id="mock_client_id",
             authentication__params_oauth__client_secret="mock_client_secret",
             authentication__params_oauth__jwt_decode_options={"verify_signature": False, "verify_iss": False},
