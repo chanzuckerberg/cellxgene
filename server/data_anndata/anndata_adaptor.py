@@ -177,10 +177,10 @@ class AnndataAdaptor(DataAdaptor):
             )
 
     def _validate_and_initialize(self):
-        if anndata_version_is_pre_070() and self.server_config.adaptor__anndata_adaptor__backed:
+        if anndata_version_is_pre_070():
             warnings.warn(
-                "Use of --backed mode with anndata versions older than 0.7 will have serious "
-                "performance issues. Please update to at least anndata 0.7 or later."
+                "Use of anndata versions older than 0.7 will have serious issues. Please update to at "
+                "least anndata 0.7 or later."
             )
 
         # var and obs column names must be unique
