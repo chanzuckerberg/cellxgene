@@ -218,21 +218,24 @@ class AuthTypeOAuth(AuthTypeClientBase):
 
         try:
             if self.session_cookie:
-                tokensdict = session.get(self.CXG_TOKENS)
-                if tokensdict:
-                    g.tokens = Tokens(**tokensdict)
+                value = session.get(self.CXG_TOKENS)
+                if value:
+                    g.tokens = Tokens(**value)
                 else:
                     return None
             else:
                 value = request.cookies.get(self.cookie_params["key"])
+                if value is None:
+                    return None
                 value = base64.b64decode(value)
-                tokensdict = json.loads(value)
-                g.tokens = Tokens(**tokensdict)
+                value = json.loads(value)
+                g.tokens = Tokens(**value)
 
         except Exception:
             # there are many types of exceptions that can be raise in the above section.
             # It is impractical to list all the exceptions here, since that would be brittle.
             # If an exception occurs, then return None, meaning that no token could be retrieved.
+            current_app.logger.warning(f"auth cookie is in the wrong format: {str(value)}")
             g.pop("tokens", None)
             return None
 
