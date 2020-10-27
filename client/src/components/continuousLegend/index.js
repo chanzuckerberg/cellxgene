@@ -156,6 +156,7 @@ class ContinuousLegend extends React.Component {
           left: 8,
           top: 35,
           zIndex: 1,
+          pointerEvents: "none",
         }}
       />
     );
