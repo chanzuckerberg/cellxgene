@@ -3,6 +3,8 @@ import React from "react";
 
 import Truncate from "../util/truncate";
 
+import { lightestGrey } from "../../globals";
+
 const renderContributors = (contributors, affiliations) => {
   // eslint-disable-next-line no-constant-condition --  Temp removed contributor section to avoid publishing PII
   if (!contributors || contributors.length === 0 || true) return null;
@@ -71,26 +73,53 @@ const renderDOILink = (type, doi) => {
   );
 };
 
-const renderOrganism = (organism) => {
-  if (!organism) return null;
-  return (
-    <>
-      <H3>Organism</H3>
-      <p>{organism}</p>
-    </>
-  );
-};
-
 const ONTOLOGY_KEY = "ontology_term_id";
 const CAT_WIDTH = "30%";
 const VAL_WIDTH = "35%";
 // Render list of metadata attributes found in categorical field
-const renderSingleValueCategories = (singleValueCategories) => {
+const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
   if (singleValueCategories.size === 0) return null;
+  let zebra = false;
   return (
     <>
       <H3>Dataset Metadata</H3>
       <UL>
+        <div
+          style={{
+            width: "100%",
+            marginBottom: "6px",
+            fontWeight: "bold",
+          }}
+        >
+          <Truncate>
+            <span style={{ width: CAT_WIDTH }}>Field</span>
+          </Truncate>
+          <Truncate>
+            <span style={{ width: VAL_WIDTH }}>Label</span>
+          </Truncate>
+          <Truncate>
+            <span style={{ width: VAL_WIDTH }}>Ontology ID</span>
+          </Truncate>
+        </div>
+        {Object.entries(corporaMetadata).map(([key, value]) => {
+          zebra = !zebra;
+          return (
+            <li
+              {...{ key }}
+              style={{
+                width: "100%",
+                backgroundColor: zebra ? lightestGrey : "white",
+              }}
+            >
+              <Truncate>
+                <span style={{ width: CAT_WIDTH }}>{`${key}:`}</span>
+              </Truncate>
+              <Truncate>
+                <span style={{ width: VAL_WIDTH }}>{value}</span>
+              </Truncate>
+            </li>
+          );
+        })}
         {Array.from(singleValueCategories).reduce((elems, pair) => {
           const [category, value] = pair;
           // If the value is empty skip it
@@ -113,9 +142,16 @@ const renderSingleValueCategories = (singleValueCategories) => {
               )
             );
           } else {
+            zebra = !zebra;
             // Create the list item
             elems.push(
-              <li key={category} style={{ width: "100%" }}>
+              <li
+                key={category}
+                style={{
+                  width: "100%",
+                  backgroundColor: zebra ? lightestGrey : "white",
+                }}
+              >
                 <Truncate>
                   <span style={{ width: CAT_WIDTH }}>{`${category}:`}</span>
                 </Truncate>
@@ -188,10 +224,9 @@ const InfoFormat = React.memo(
         <H1>{title ?? datasetTitle}</H1>
         {renderContributors(contributors, affiliations)}
         {renderDOILink("DOI", doi)}
-        {renderDOILink("Preprint DOI", preprintDOI)}
-        {renderOrganism(organism)}
-        {renderSingleValueCategories(singleValueCategories)}
+        {renderDatasetMetadata(singleValueCategories, { organism })}
         {renderLinks(projectLinks, aboutURL)}
+        {renderDOILink("Preprint DOI", preprintDOI)}
       </div>
     );
   }
