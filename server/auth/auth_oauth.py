@@ -218,22 +218,24 @@ class AuthTypeOAuth(AuthTypeClientBase):
 
         try:
             if self.session_cookie:
-                tokensdict = session.get(self.CXG_TOKENS)
-                if tokensdict:
-                    g.tokens = Tokens(**tokensdict)
+                value = session.get(self.CXG_TOKENS)
+                if value:
+                    g.tokens = Tokens(**value)
                 else:
                     return None
             else:
                 value = request.cookies.get(self.cookie_params["key"])
-                value = base64.b64decode(value)
-                try:
-                    tokensdict = json.loads(value)
-                    g.tokens = Tokens(**tokensdict)
-                except (TypeError, KeyError, json.decoder.JSONDecodeError):
-                    g.pop("tokens", None)
+                if value is None:
                     return None
+                value = base64.b64decode(value)
+                value = json.loads(value)
+                g.tokens = Tokens(**value)
 
-        except (TypeError, KeyError):
+        except Exception:
+            # there are many types of exceptions that can be raise in the above section.
+            # It is impractical to list all the exceptions here, since that would be brittle.
+            # If an exception occurs, then return None, meaning that no token could be retrieved.
+            current_app.logger.warning(f"auth cookie is in the wrong format: {str(value)}")
             g.pop("tokens", None)
             return None
 
@@ -331,6 +333,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
 
         # if there is no id_token, return None (user is not authenticated)
         tokens = self.get_tokens()
+
         if tokens is None or tokens.id_token is None:
             return None
 
