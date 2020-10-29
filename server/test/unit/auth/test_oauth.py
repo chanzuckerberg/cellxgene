@@ -70,13 +70,6 @@ PORT = random.randint(10000, 12000)
 def launch_mock_oauth():
     mock_oauth_app.run(port=PORT)
 
-PORT = random.randint(10000, 12000)
-
-
-# function to launch the mock oauth server
-def launch_mock_oauth():
-    mock_oauth_app.run(port=PORT)
-
 
 class AuthTest(unittest.TestCase):
     @classmethod
