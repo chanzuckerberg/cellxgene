@@ -73,13 +73,15 @@ def launch_mock_oauth():
 
 
 class AuthTest(unittest.TestCase):
-    def setUp(self):
-        self.dataset_dataroot = FIXTURES_ROOT
-        self.mock_oauth_process = Process(target=launch_mock_oauth)
-        self.mock_oauth_process.start()
+    @classmethod
+    def setUpClass(cls):
+        cls.dataset_dataroot = FIXTURES_ROOT
+        cls.mock_oauth_process = Process(target=launch_mock_oauth)
+        cls.mock_oauth_process.start()
 
-    def tearDown(self):
-        self.mock_oauth_process.terminate()
+    @classmethod
+    def tearDownClass(cls):
+        cls.mock_oauth_process.terminate()
 
     def auth_flow(self, app_config, cookie_key=None):
 

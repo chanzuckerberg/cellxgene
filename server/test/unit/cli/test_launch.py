@@ -20,7 +20,6 @@ class CLIPLaunchTests(unittest.TestCase):
     def tearDownClass(cls) -> None:
         shutil.rmtree(cls.tmp_dir)
 
-
     def test_dump_default_config(self):
         os.system(f"cellxgene launch --dump-default-config > {self.tmp_dir}/test_config_dump.txt")
         with open(f"{self.tmp_dir}/expected_config_dump.txt", "w") as expected_config:
