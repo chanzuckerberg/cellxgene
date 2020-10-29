@@ -1,9 +1,7 @@
-import { H3, H1, UL } from "@blueprintjs/core";
+import { H3, H1, UL, HTMLTable, Classes } from "@blueprintjs/core";
 import React from "react";
 
 import Truncate from "../util/truncate";
-
-import { lightestGrey } from "../../globals";
 
 const renderContributors = (contributors, affiliations) => {
   // eslint-disable-next-line no-constant-condition --  Temp removed contributor section to avoid publishing PII
@@ -79,91 +77,90 @@ const VAL_WIDTH = "35%";
 // Render list of metadata attributes found in categorical field
 const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
   if (singleValueCategories.size === 0) return null;
-  let zebra = false;
   return (
     <>
       <H3>Dataset Metadata</H3>
-      <UL>
-        <div
-          style={{
-            width: "100%",
-            marginBottom: "6px",
-            fontWeight: "bold",
-          }}
-        >
-          <Truncate>
-            <span style={{ width: CAT_WIDTH }}>Field</span>
-          </Truncate>
-          <Truncate>
-            <span style={{ width: VAL_WIDTH }}>Label</span>
-          </Truncate>
-          <Truncate>
-            <span style={{ width: VAL_WIDTH }}>Ontology ID</span>
-          </Truncate>
-        </div>
-        {Object.entries(corporaMetadata).map(([key, value]) => {
-          zebra = !zebra;
-          return (
-            <li
-              {...{ key }}
-              style={{
-                width: "100%",
-                backgroundColor: zebra ? lightestGrey : "white",
-              }}
-            >
+      <HTMLTable striped condensed>
+        <thead>
+          <tr>
+            <th style={{ width: CAT_WIDTH }}>
               <Truncate>
-                <span style={{ width: CAT_WIDTH }}>{`${key}:`}</span>
+                <span>Field</span>
               </Truncate>
+            </th>
+            <th style={{ width: VAL_WIDTH }}>
               <Truncate>
-                <span style={{ width: VAL_WIDTH }}>{value}</span>
+                <span>Label</span>
               </Truncate>
-            </li>
-          );
-        })}
-        {Array.from(singleValueCategories).reduce((elems, pair) => {
-          const [category, value] = pair;
-          // If the value is empty skip it
-          if (!value) return elems;
+            </th>
 
-          // If this category is a ontology term, let's add its value to the previous node
-          if (String(category).includes(ONTOLOGY_KEY)) {
-            const prevElem = elems.pop();
-            // Props aren't extensible so we must clone and alter the component to append the new child
-            elems.push(
-              React.cloneElement(
-                prevElem,
-                prevElem.props,
-                // Concat returns a new array
-                prevElem.props.children.concat([
-                  <Truncate key="ontology">
-                    <span style={{ width: VAL_WIDTH }}>{value}</span>
-                  </Truncate>,
-                ])
-              )
+            <th style={{ width: VAL_WIDTH }}>
+              <Truncate>
+                <span>Ontology ID</span>
+              </Truncate>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(corporaMetadata).map(([key, value]) => {
+            return (
+              <tr {...{ key }}>
+                <td style={{ width: CAT_WIDTH }}>
+                  <Truncate>
+                    <span>{`${key}:`}</span>
+                  </Truncate>
+                </td>
+                <td style={{ width: VAL_WIDTH }}>
+                  <Truncate>
+                    <span>{value}</span>
+                  </Truncate>
+                </td>
+                <td />
+              </tr>
             );
-          } else {
-            zebra = !zebra;
-            // Create the list item
-            elems.push(
-              <li
-                key={category}
-                style={{
-                  width: "100%",
-                  backgroundColor: zebra ? lightestGrey : "white",
-                }}
-              >
-                <Truncate>
-                  <span style={{ width: CAT_WIDTH }}>{`${category}:`}</span>
-                </Truncate>
-                <Truncate>
-                  <span style={{ width: VAL_WIDTH }}>{value}</span>
-                </Truncate>
-              </li>
-            );
-          }
-          return elems;
-        }, [])}
-      </UL>
+          })}
+          {Array.from(singleValueCategories).reduce((elems, pair) => {
+            const [category, value] = pair;
+            // If the value is empty skip it
+            if (!value) return elems;
+
+            // If this category is a ontology term, let's add its value to the previous node
+            if (String(category).includes(ONTOLOGY_KEY)) {
+              const prevElem = elems.pop();
+              const newChildren = [...prevElem.props.children];
+              newChildren.splice(2, 1, [
+                <td key="ontology" style={{ width: VAL_WIDTH }}>
+                  <Truncate>
+                    <span>{value}</span>
+                  </Truncate>
+                </td>,
+              ]);
+              // Props aren't extensible so we must clone and alter the component to append the new child
+              elems.push(
+                React.cloneElement(prevElem, prevElem.props, newChildren)
+              );
+            } else {
+              // Create the list item
+              elems.push(
+                <tr key={category}>
+                  <td style={{ width: CAT_WIDTH }}>
+                    <Truncate>
+                      <span>{`${category}:`}</span>
+                    </Truncate>
+                  </td>
+                  <td style={{ width: VAL_WIDTH }}>
+                    <Truncate>
+                      <span>{value}</span>
+                    </Truncate>
+                  </td>
+                  <td style={{ width: VAL_WIDTH }} />
+                </tr>
+              );
+            }
+            return elems;
+          }, [])}
+        </tbody>
+      </HTMLTable>
     </>
   );
 };
@@ -220,13 +217,15 @@ const InfoFormat = React.memo(
     const affiliations = buildAffiliations(contributors);
 
     return (
-      <div style={{ margin: 24, overflow: "auto" }}>
-        <H1>{title ?? datasetTitle}</H1>
-        {renderContributors(contributors, affiliations)}
-        {renderDOILink("DOI", doi)}
-        {renderDatasetMetadata(singleValueCategories, { organism })}
-        {renderLinks(projectLinks, aboutURL)}
-        {renderDOILink("Preprint DOI", preprintDOI)}
+      <div className={Classes.DIALOG_BODY}>
+        <div className={Classes.DIALOG_BODY}>
+          <H1>{title ?? datasetTitle}</H1>
+          {renderContributors(contributors, affiliations)}
+          {renderDatasetMetadata(singleValueCategories, { organism })}
+          {renderLinks(projectLinks, aboutURL)}
+          {renderDOILink("DOI", doi)}
+          {renderDOILink("Preprint DOI", preprintDOI)}
+        </div>
       </div>
     );
   }
