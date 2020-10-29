@@ -62,7 +62,7 @@ def jwks():
     data = dict(alg="RS256", kty="RSA", use="sig", kid="fake_kid",)
     return make_response(jsonify(dict(keys=[data])))
 
-
+# The port that the mock oauth server will listen on
 PORT = random.randint(10000, 12000)
 
 
