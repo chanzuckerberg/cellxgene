@@ -1,8 +1,6 @@
 import { H3, H1, UL, HTMLTable, Classes } from "@blueprintjs/core";
 import React from "react";
 
-import Truncate from "../util/truncate";
-
 const renderContributors = (contributors, affiliations) => {
   // eslint-disable-next-line no-constant-condition --  Temp removed contributor section to avoid publishing PII
   if (!contributors || contributors.length === 0 || true) return null;
@@ -72,49 +70,30 @@ const renderDOILink = (type, doi) => {
 };
 
 const ONTOLOGY_KEY = "ontology_term_id";
-const CAT_WIDTH = "30%";
-const VAL_WIDTH = "35%";
 // Render list of metadata attributes found in categorical field
 const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
   if (singleValueCategories.size === 0) return null;
   return (
     <>
       <H3>Dataset Metadata</H3>
-      <HTMLTable striped condensed>
+      <HTMLTable
+        striped
+        condensed
+        style={{ display: "block", width: "100%", overflowX: "auto" }}
+      >
         <thead>
           <tr>
-            <th style={{ width: CAT_WIDTH }}>
-              <Truncate>
-                <span>Field</span>
-              </Truncate>
-            </th>
-            <th style={{ width: VAL_WIDTH }}>
-              <Truncate>
-                <span>Label</span>
-              </Truncate>
-            </th>
-
-            <th style={{ width: VAL_WIDTH }}>
-              <Truncate>
-                <span>Ontology ID</span>
-              </Truncate>
-            </th>
+            <th>Field</th>
+            <th>Label</th>
+            <th>Ontology ID</th>
           </tr>
         </thead>
         <tbody>
           {Object.entries(corporaMetadata).map(([key, value]) => {
             return (
               <tr {...{ key }}>
-                <td style={{ width: CAT_WIDTH }}>
-                  <Truncate>
-                    <span>{`${key}:`}</span>
-                  </Truncate>
-                </td>
-                <td style={{ width: VAL_WIDTH }}>
-                  <Truncate>
-                    <span>{value}</span>
-                  </Truncate>
-                </td>
+                <td>{`${key}:`}</td>
+                <td>{value}</td>
                 <td />
               </tr>
             );
@@ -128,13 +107,7 @@ const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
             if (String(category).includes(ONTOLOGY_KEY)) {
               const prevElem = elems.pop();
               const newChildren = [...prevElem.props.children];
-              newChildren.splice(2, 1, [
-                <td key="ontology" style={{ width: VAL_WIDTH }}>
-                  <Truncate>
-                    <span>{value}</span>
-                  </Truncate>
-                </td>,
-              ]);
+              newChildren.splice(2, 1, [<td key="ontology">{value}</td>]);
               // Props aren't extensible so we must clone and alter the component to append the new child
               elems.push(
                 React.cloneElement(prevElem, prevElem.props, newChildren)
@@ -143,17 +116,9 @@ const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
               // Create the list item
               elems.push(
                 <tr key={category}>
-                  <td style={{ width: CAT_WIDTH }}>
-                    <Truncate>
-                      <span>{`${category}:`}</span>
-                    </Truncate>
-                  </td>
-                  <td style={{ width: VAL_WIDTH }}>
-                    <Truncate>
-                      <span>{value}</span>
-                    </Truncate>
-                  </td>
-                  <td style={{ width: VAL_WIDTH }} />
+                  <td>{`${category}:`}</td>
+                  <td>{value}</td>
+                  <td />
                 </tr>
               );
             }
