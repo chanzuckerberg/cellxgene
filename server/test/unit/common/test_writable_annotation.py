@@ -129,9 +129,11 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
             with self.assertRaises(KeyError):
                 self.annotation_put_fbs(fbs_bad)
 
-    @patch("server.common.annotations.hosted_tiledb.current_app")
-    def test_write_labels_stores_df_as_tiledb_array(self, mock_user_id):
-        mock_user_id.auth.get_user_id.return_value = "1234"
+    @patch("server.common.annotations.hosted_tiledb.AnnotationsHostedTileDB.get_user_id")
+    @patch("server.common.annotations.hosted_tiledb.AnnotationsHostedTileDB.get_user_name")
+    def test_write_labels_stores_df_as_tiledb_array(self, mock_user_name, mock_user_id):
+        mock_user_id.return_value = "1234"
+        mock_user_name.return_value = "user1234"
         self.annotations.write_labels(self.df, self.data)
         # get uri
         dataset_id = self.db.query([CellxGeneDataset], [CellxGeneDataset.name == self.data.get_location()])[0].id
