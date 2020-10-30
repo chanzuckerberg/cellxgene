@@ -21,8 +21,8 @@ def schema_cli():
 
 @click.command(
     name="apply",
-    short_help="Apply the cellxgene data integration schema to an h5ad.",
-    help="Using a yaml file that describes schema values to insert or convert and in input "
+    short_help="(experimental) Apply the cellxgene data integration schema to an h5ad.",
+    help="(experimental) Using a yaml file that describes schema values to insert or convert and in input "
     "h5ad file, apply the schema changes and create a new, conforming h5ad.",
 )
 @click.option(
@@ -51,7 +51,7 @@ def schema_apply(source_h5ad, remix_config, output_filename):
 
 @click.command(
     name="validate",
-    short_help="Check that an h5ad follows the cellxgene data integration schema.",
+    short_help="(experimental) Check that an h5ad follows the cellxgene data integration schema.",
 )
 @click.argument(
     "h5ad",
