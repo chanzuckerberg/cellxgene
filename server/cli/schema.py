@@ -16,7 +16,6 @@ def schema_cli():
         raise click.ClickException(
             "[cellxgene] cellxgene schema requires scanpy"
         )
-    scanpy.__version__
 
 
 @click.command(
