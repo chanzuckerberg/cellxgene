@@ -11,7 +11,7 @@ from server.converters.schema import remix, validate
 )
 def schema_cli():
     try:
-        import scanpy
+        import scanpy  # noqa: F401
     except ImportError:
         raise click.ClickException(
             "[cellxgene] cellxgene schema requires scanpy"
