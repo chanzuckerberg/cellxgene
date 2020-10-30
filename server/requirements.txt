@@ -1,5 +1,5 @@
 anndata==0.7.1
-boto3==1.16.18
+boto3==1.16.8
 click==7.1.2
 fastobo==0.9.2
 Flask==1.1.2
