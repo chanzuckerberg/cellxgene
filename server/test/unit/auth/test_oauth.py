@@ -76,6 +76,8 @@ class AuthTest(unittest.TestCase):
         cls.dataset_dataroot = FIXTURES_ROOT
         cls.mock_oauth_process = Process(target=launch_mock_oauth, args=(cls.mock_port,))
         cls.mock_oauth_process.start()
+
+        # Verify that the mock oauth server is ready (accepting requests) before starting the tests.
         server_okay = False
         for _ in range(5):
             try:
