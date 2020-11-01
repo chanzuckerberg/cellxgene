@@ -62,21 +62,43 @@ def jwks():
     data = dict(alg="RS256", kty="RSA", use="sig", kid="fake_kid",)
     return make_response(jsonify(dict(keys=[data])))
 
-# The port that the mock oauth server will listen on
-PORT = random.randint(10000, 12000)
-
 
 # function to launch the mock oauth server
-def launch_mock_oauth():
-    mock_oauth_app.run(port=PORT)
+def launch_mock_oauth(mock_port):
+    mock_oauth_app.run(port=mock_port)
 
 
 class AuthTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        # The port that the mock oauth server will listen on
+        cls.mock_port = random.randint(10000, 12000)
         cls.dataset_dataroot = FIXTURES_ROOT
-        cls.mock_oauth_process = Process(target=launch_mock_oauth)
+        cls.mock_oauth_process = Process(target=launch_mock_oauth, args=(cls.mock_port,))
         cls.mock_oauth_process.start()
+
+        # Verify that the mock oauth server is ready (accepting requests) before starting the tests.
+
+        # The following lines are polling until the mock server is ready.
+        # The issue is we are starting a mock oauth server, then we are starting a cellxgene server,
+        # which will start making requests to the mock oauth server.
+        # So there is a race condition because the mock oauth server needs to be ready before it gets requests.
+        # We check to see if it is ready, and if not we wait 1 second, then try again.
+        # If it gets to 5 seconds, which is shouldn't, we assume something has gone wrong and fail the test.
+        server_okay = False
+        for _ in range(5):
+            try:
+                response = requests.get(f"http://localhost:{cls.mock_port}/.well-known/jwks.json")
+                if response.status_code == 200:
+                    server_okay = True
+                    break
+            except:  # noqa: E722
+                pass
+
+            # wait one second and try again
+            time.sleep(1)
+
+        assert(server_okay)
 
     @classmethod
     def tearDownClass(cls):
@@ -87,7 +109,7 @@ class AuthTest(unittest.TestCase):
         app_config.update_server_config(
             app__api_base_url="local",
             authentication__type="oauth",
-            authentication__params_oauth__oauth_api_base_url=f"http://localhost:{PORT}",
+            authentication__params_oauth__oauth_api_base_url=f"http://localhost:{self.mock_port}",
             authentication__params_oauth__client_id="mock_client_id",
             authentication__params_oauth__client_secret="mock_client_secret",
             authentication__params_oauth__jwt_decode_options={"verify_signature": False, "verify_iss": False},
