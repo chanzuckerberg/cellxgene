@@ -78,6 +78,13 @@ class AuthTest(unittest.TestCase):
         cls.mock_oauth_process.start()
 
         # Verify that the mock oauth server is ready (accepting requests) before starting the tests.
+
+        # The following lines are polling until the mock server is ready.
+        # The issue is we are starting a mock oauth server, then we are starting a cellxgene server,
+        # which will start making requests to the mock oauth server.
+        # So there is a race condition because the mock oauth server needs to be ready before it gets requests.
+        # We check to see if it is ready, and if not we wait 1 second, then try again.
+        # If it gets to 5 seconds, which is shouldn't, we assume something has gone wrong and fail the test.
         server_okay = False
         for _ in range(5):
             try:
