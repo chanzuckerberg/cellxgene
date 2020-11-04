@@ -1,4 +1,3 @@
-// jshint esversion: 6
 import React from "react";
 import { connect } from "react-redux";
 import { Button } from "@blueprintjs/core";
@@ -11,13 +10,19 @@ import InformationMenu from "./infoMenu";
 
 const DATASET_TITLE_FONT_SIZE = 14;
 
-@connect((state) => ({
-  datasetTitle: state.config?.displayNames?.dataset ?? "",
-  libraryVersions: state.config?.["library_versions"],
-  aboutLink: state.config?.links?.["about-dataset"],
-  tosURL: state.config?.parameters?.["about_legal_tos"],
-  privacyURL: state.config?.parameters?.["about_legal_privacy"],
-}))
+@connect((state) => {
+  const { corpora_props: corporaProps } = state.config;
+  const correctVersion =
+    corporaProps?.version?.["corpora_schema_version"] !== "1.0.0";
+  return {
+    datasetTitle: state.config?.displayNames?.dataset ?? "",
+    libraryVersions: state.config?.["library_versions"],
+    aboutLink: state.config?.links?.["about-dataset"],
+    tosURL: state.config?.parameters?.["about_legal_tos"],
+    privacyURL: state.config?.parameters?.["about_legal_privacy"],
+    title: correctVersion ? corporaProps?.title : undefined,
+  };
+})
 class LeftSideBar extends React.Component {
   handleClick = () => {
     const { dispatch } = this.props;
@@ -32,6 +37,7 @@ class LeftSideBar extends React.Component {
       privacyURL,
       tosURL,
       dispatch,
+      title,
     } = this.props;
 
     return (
@@ -86,7 +92,7 @@ class LeftSideBar extends React.Component {
           >
             <Truncate>
               <span style={{ maxWidth: 155 }} data-testid="header">
-                {datasetTitle}
+                {title ?? datasetTitle}
               </span>
             </Truncate>
           </Button>
