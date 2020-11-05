@@ -34,6 +34,12 @@ class AnnotationsHostedTileDB(Annotations):
                 f"{unsanitary_original_category_names} are not valid category names, please resubmit"
             )
 
+    def get_user_name(self):
+        return current_app.auth.get_user_name()
+
+    def get_user_id(self):
+        return current_app.auth.get_user_id()
+
     def is_safe_collection_name(self, name):
         """
         return true if this is a safe collection name
@@ -48,7 +54,7 @@ class AnnotationsHostedTileDB(Annotations):
         self.CXG_ANNO_COLLECTION = name
 
     def read_labels(self, data_adaptor):
-        user_id = current_app.auth.get_user_id()
+        user_id = self.get_user_id()
         if user_id is None:
             return
         dataset_name = data_adaptor.get_location()
@@ -103,8 +109,8 @@ class AnnotationsHostedTileDB(Annotations):
         return new_df
 
     def write_labels(self, df, data_adaptor):
-        auth_user_id = current_app.auth.get_user_id()
-        user_name = current_app.auth.get_user_name()
+        auth_user_id = self.get_user_id()
+        user_name = self.get_user_name()
         timestamp = time.time()
         dataset_location = data_adaptor.get_location()
         dataset_id = self.db.get_or_create_dataset(dataset_location)
