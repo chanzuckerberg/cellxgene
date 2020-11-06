@@ -41,6 +41,11 @@ class TestHGNCSymbolChecker(unittest.TestCase):
         self.assertEqual(self.hgnc_checker.upgrade_symbol("NOTASYMBOL"), "NOTASYMBOL")
         self.assertEqual(self.hgnc_checker.upgrade_symbol("notasymbol"), "notasymbol")
 
+        # Upgrade HGNC ids unless you can't find it
+        self.assertEqual(self.hgnc_checker.upgrade_symbol("HGNC:286"), "ADRB2")
+        self.assertEqual(self.hgnc_checker.upgrade_symbol("HGNC:4812"), "HAP1")
+        self.assertEqual(self.hgnc_checker.upgrade_symbol("HGNC:123456"), "HGNC:123456")
+
     def test_check_symbol(self):
         self.assertEqual(self.hgnc_checker.check_symbol("SEPT1"), gene_symbol.SymbolStatus.UPGRADABLE)
         self.assertEqual(self.hgnc_checker.check_symbol("DIFF6"), gene_symbol.SymbolStatus.AMBIGUOUS)
