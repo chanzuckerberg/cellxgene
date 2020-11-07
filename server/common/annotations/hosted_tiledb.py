@@ -64,7 +64,15 @@ class AnnotationsHostedTileDB(Annotations):
             Annotation, [Annotation.user_id == user_id, Annotation.dataset_id == dataset_id]
         )
         if annotation_object:
-            df = tiledb.open(annotation_object.tiledb_uri)
+            if annotation_object.tiledb_uri == "":
+                # this mean the user has removed all the categories.
+                return None
+            try:
+                df = tiledb.open(annotation_object.tiledb_uri)
+            except tiledb.TileDBError:
+                # don't crash if the annotations file is missing or can't be read.
+                current_app.logger.warning(f"Cannot read annotation file: {annotation_object.tiledb_uri}")
+                return None
             pandas_df = self.convert_to_pandas_df(df, annotation_object.schema_hints)
             return pandas_df
         else:
@@ -130,12 +138,6 @@ class AnnotationsHostedTileDB(Annotations):
         else:
             os.makedirs(uri, exist_ok=True)
         _, dataframe_schema_type_hints = get_dtypes_and_schemas_of_dataframe(df)
-        annotation = Annotation(
-            tiledb_uri=uri,
-            user_id=user_id,
-            dataset_id=str(dataset_id),
-            schema_hints=json.dumps(dataframe_schema_type_hints),
-        )
         if not df.empty:
             self.check_category_names(df)
             # convert to tiledb datatypes
@@ -143,7 +145,15 @@ class AnnotationsHostedTileDB(Annotations):
             for col in df:
                 df[col] = df[col].astype(get_dtype_of_array(df[col]))
             tiledb.from_pandas(uri, df)
+        else:
+            uri = ""
 
+        annotation = Annotation(
+            tiledb_uri=uri,
+            user_id=user_id,
+            dataset_id=str(dataset_id),
+            schema_hints=json.dumps(dataframe_schema_type_hints),
+        )
         self.db.session.add(annotation)
         self.db.session.commit()
 
