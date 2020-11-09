@@ -1,7 +1,5 @@
-import { H3, H1, UL } from "@blueprintjs/core";
+import { H3, H1, UL, HTMLTable, Classes } from "@blueprintjs/core";
 import React from "react";
-
-import Truncate from "../util/truncate";
 
 const renderContributors = (contributors, affiliations) => {
   // eslint-disable-next-line no-constant-condition --  Temp removed contributor section to avoid publishing PII
@@ -71,63 +69,63 @@ const renderDOILink = (type, doi) => {
   );
 };
 
-const renderOrganism = (organism) => {
-  if (!organism) return null;
-  return (
-    <>
-      <H3>Organism</H3>
-      <p>{organism}</p>
-    </>
-  );
-};
-
 const ONTOLOGY_KEY = "ontology_term_id";
-const CAT_WIDTH = "30%";
-const VAL_WIDTH = "35%";
 // Render list of metadata attributes found in categorical field
-const renderSingleValueCategories = (singleValueCategories) => {
+const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
   if (singleValueCategories.size === 0) return null;
   return (
     <>
       <H3>Dataset Metadata</H3>
-      <UL>
-        {Array.from(singleValueCategories).reduce((elems, pair) => {
-          const [category, value] = pair;
-          // If the value is empty skip it
-          if (!value) return elems;
+      <HTMLTable
+        striped
+        condensed
+        style={{ display: "block", width: "100%", overflowX: "auto" }}
+      >
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Label</th>
+            <th>Ontology ID</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(corporaMetadata).map(([key, value]) => {
+            return (
+              <tr {...{ key }}>
+                <td>{`${key}:`}</td>
+                <td>{value}</td>
+                <td />
+              </tr>
+            );
+          })}
+          {Array.from(singleValueCategories).reduce((elems, pair) => {
+            const [category, value] = pair;
+            // If the value is empty skip it
+            if (!value) return elems;
 
-          // If this category is a ontology term, let's add its value to the previous node
-          if (String(category).includes(ONTOLOGY_KEY)) {
-            const prevElem = elems.pop();
-            // Props aren't extensible so we must clone and alter the component to append the new child
-            elems.push(
-              React.cloneElement(
-                prevElem,
-                prevElem.props,
-                // Concat returns a new array
-                prevElem.props.children.concat([
-                  <Truncate key="ontology">
-                    <span style={{ width: VAL_WIDTH }}>{value}</span>
-                  </Truncate>,
-                ])
-              )
-            );
-          } else {
-            // Create the list item
-            elems.push(
-              <li key={category} style={{ width: "100%" }}>
-                <Truncate>
-                  <span style={{ width: CAT_WIDTH }}>{`${category}:`}</span>
-                </Truncate>
-                <Truncate>
-                  <span style={{ width: VAL_WIDTH }}>{value}</span>
-                </Truncate>
-              </li>
-            );
-          }
-          return elems;
-        }, [])}
-      </UL>
+            // If this category is a ontology term, let's add its value to the previous node
+            if (String(category).includes(ONTOLOGY_KEY)) {
+              const prevElem = elems.pop();
+              const newChildren = [...prevElem.props.children];
+              newChildren.splice(2, 1, [<td key="ontology">{value}</td>]);
+              // Props aren't extensible so we must clone and alter the component to append the new child
+              elems.push(
+                React.cloneElement(prevElem, prevElem.props, newChildren)
+              );
+            } else {
+              // Create the list item
+              elems.push(
+                <tr key={category}>
+                  <td>{`${category}:`}</td>
+                  <td>{value}</td>
+                  <td />
+                </tr>
+              );
+            }
+            return elems;
+          }, [])}
+        </tbody>
+      </HTMLTable>
     </>
   );
 };
@@ -184,14 +182,15 @@ const InfoFormat = React.memo(
     const affiliations = buildAffiliations(contributors);
 
     return (
-      <div style={{ margin: 24, overflow: "auto" }}>
-        <H1>{title ?? datasetTitle}</H1>
-        {renderContributors(contributors, affiliations)}
-        {renderDOILink("DOI", doi)}
-        {renderDOILink("Preprint DOI", preprintDOI)}
-        {renderOrganism(organism)}
-        {renderSingleValueCategories(singleValueCategories)}
-        {renderLinks(projectLinks, aboutURL)}
+      <div className={Classes.DIALOG_BODY}>
+        <div className={Classes.DIALOG_BODY}>
+          <H1>{title ?? datasetTitle}</H1>
+          {renderContributors(contributors, affiliations)}
+          {renderDatasetMetadata(singleValueCategories, { organism })}
+          {renderLinks(projectLinks, aboutURL)}
+          {renderDOILink("DOI", doi)}
+          {renderDOILink("Preprint DOI", preprintDOI)}
+        </div>
       </div>
     );
   }
