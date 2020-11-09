@@ -109,6 +109,9 @@ class HGNCSymbolChecker:
                 if record[field] is not np.nan:
                     for symbol in record[field].split("|"):
                         yield format_symbol(symbol)[0]
+            # Sometimes something like HGNC:1234 appears in datasets, which we
+            # want to fix as well.
+            yield record["hgnc_id"]
 
         hgnc_records = pd.read_csv(hgnc_dataset_path, sep="\t", header=0, low_memory=False).to_dict("records")
 
