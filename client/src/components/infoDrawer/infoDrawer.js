@@ -7,12 +7,11 @@ import { selectableCategoryNames } from "../../util/stateManager/controlsHelpers
 
 @connect((state) => {
   return {
-    annoMatrix: state.annoMatrix,
     schema: state.annoMatrix.schema,
     datasetTitle: state.config?.displayNames?.dataset ?? "",
     aboutURL: state.config?.links?.["about-dataset"],
     isOpen: state.controls.datasetDrawer,
-    dataPortalProps: state.config?.["corpora_props"] ?? {},
+    dataPortalProps: state.config?.["corpora_props"],
   };
 })
 class InfoDrawer extends PureComponent {
@@ -54,7 +53,7 @@ class InfoDrawer extends PureComponent {
             datasetTitle,
             aboutURL,
             singleValueCategories,
-            dataPortalProps,
+            dataPortalProps: dataPortalProps ?? {},
           }}
         />
       </Drawer>

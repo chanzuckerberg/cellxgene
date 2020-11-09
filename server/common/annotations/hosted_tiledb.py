@@ -34,6 +34,12 @@ class AnnotationsHostedTileDB(Annotations):
                 f"{unsanitary_original_category_names} are not valid category names, please resubmit"
             )
 
+    def get_user_name(self):
+        return current_app.auth.get_user_name()
+
+    def get_user_id(self):
+        return current_app.auth.get_user_id()
+
     def is_safe_collection_name(self, name):
         """
         return true if this is a safe collection name
@@ -48,7 +54,7 @@ class AnnotationsHostedTileDB(Annotations):
         self.CXG_ANNO_COLLECTION = name
 
     def read_labels(self, data_adaptor):
-        user_id = current_app.auth.get_user_id()
+        user_id = self.get_user_id()
         if user_id is None:
             return
         dataset_name = data_adaptor.get_location()
@@ -58,7 +64,15 @@ class AnnotationsHostedTileDB(Annotations):
             Annotation, [Annotation.user_id == user_id, Annotation.dataset_id == dataset_id]
         )
         if annotation_object:
-            df = tiledb.open(annotation_object.tiledb_uri)
+            if annotation_object.tiledb_uri == "":
+                # this mean the user has removed all the categories.
+                return None
+            try:
+                df = tiledb.open(annotation_object.tiledb_uri)
+            except tiledb.TileDBError:
+                # don't crash if the annotations file is missing or can't be read.
+                current_app.logger.warning(f"Cannot read annotation file: {annotation_object.tiledb_uri}")
+                return None
             pandas_df = self.convert_to_pandas_df(df, annotation_object.schema_hints)
             return pandas_df
         else:
@@ -103,8 +117,8 @@ class AnnotationsHostedTileDB(Annotations):
         return new_df
 
     def write_labels(self, df, data_adaptor):
-        auth_user_id = current_app.auth.get_user_id()
-        user_name = current_app.auth.get_user_name()
+        auth_user_id = self.get_user_id()
+        user_name = self.get_user_name()
         timestamp = time.time()
         dataset_location = data_adaptor.get_location()
         dataset_id = self.db.get_or_create_dataset(dataset_location)
@@ -124,12 +138,6 @@ class AnnotationsHostedTileDB(Annotations):
         else:
             os.makedirs(uri, exist_ok=True)
         _, dataframe_schema_type_hints = get_dtypes_and_schemas_of_dataframe(df)
-        annotation = Annotation(
-            tiledb_uri=uri,
-            user_id=user_id,
-            dataset_id=str(dataset_id),
-            schema_hints=json.dumps(dataframe_schema_type_hints),
-        )
         if not df.empty:
             self.check_category_names(df)
             # convert to tiledb datatypes
@@ -137,7 +145,15 @@ class AnnotationsHostedTileDB(Annotations):
             for col in df:
                 df[col] = df[col].astype(get_dtype_of_array(df[col]))
             tiledb.from_pandas(uri, df)
+        else:
+            uri = ""
 
+        annotation = Annotation(
+            tiledb_uri=uri,
+            user_id=user_id,
+            dataset_id=str(dataset_id),
+            schema_hints=json.dumps(dataframe_schema_type_hints),
+        )
         self.db.session.add(annotation)
         self.db.session.commit()
 

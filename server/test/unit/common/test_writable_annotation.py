@@ -2,7 +2,7 @@ import json
 import shutil
 import unittest
 from os import path, listdir
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import numpy as np
 import pandas as pd
@@ -129,18 +129,34 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
             with self.assertRaises(KeyError):
                 self.annotation_put_fbs(fbs_bad)
 
-    @patch("server.common.annotations.hosted_tiledb.current_app")
-    def test_write_labels_stores_df_as_tiledb_array(self, mock_user_id):
-        mock_user_id.auth.get_user_id.return_value = "1234"
-        self.annotations.write_labels(self.df, self.data)
-        # get uri
-        dataset_id = self.db.query([CellxGeneDataset], [CellxGeneDataset.name == self.data.get_location()])[0].id
-        annotation = self.db.query_for_most_recent(
-            Annotation, [Annotation.user_id == "1234", Annotation.dataset_id == str(dataset_id)]
-        )
+    def test_write_labels_stores_df_as_tiledb_array(self):
+        with self.app.test_request_context():
+            self.annotations.write_labels(self.df, self.data)
+            # get uri
+            dataset_id = self.db.query([CellxGeneDataset], [CellxGeneDataset.name == self.data.get_location()])[0].id
+            annotation = self.db.query_for_most_recent(
+                Annotation, [Annotation.user_id == "1234", Annotation.dataset_id == str(dataset_id)]
+            )
 
-        df = tiledb.open(annotation.tiledb_uri)
-        self.assertEqual(type(df), tiledb.array.SparseArray)
+            df = tiledb.open(annotation.tiledb_uri)
+            self.assertEqual(type(df), tiledb.array.SparseArray)
+
+    def test_remove_categories(self):
+        with self.app.test_request_context():
+            # update empty category data, which is how annotations are removed
+            empty = make_fbs({})
+            self.annotation_put_fbs(empty)
+
+            # verify that the tiledb uri is an empty string.
+            dataset_id = self.db.query([CellxGeneDataset], [CellxGeneDataset.name == self.data.get_location()])[0].id
+            annotation = self.db.query_for_most_recent(
+                Annotation, [Annotation.user_id == self.user_id, Annotation.dataset_id == str(dataset_id)]
+            )
+            self.assertEqual(annotation.tiledb_uri, "")
+
+            # verify that read_labels returns None
+            df = self.annotations.read_labels(self.data)
+            self.assertIsNone(df)
 
 
 class WritableAnnotationTest(unittest.TestCase):
