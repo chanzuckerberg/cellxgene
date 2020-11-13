@@ -730,14 +730,25 @@ class Graph extends React.Component {
     );
   });
 
-  updateReglAndRender(asyncProps) {
+  updateReglAndRender(asyncProps, prevAsyncProps) {
     const { positions, colors, flags } = asyncProps;
     this.cachedAsyncProps = asyncProps;
     const { pointBuffer, colorBuffer, flagBuffer } = this.state;
-    pointBuffer({ data: positions, dimension: 2 });
-    colorBuffer({ data: colors, dimension: 3 });
-    flagBuffer({ data: flags, dimension: 1 });
-    this.renderCanvas();
+    let needToRenderCanvas = false;
+
+    if (positions !== prevAsyncProps?.positions) {
+      pointBuffer({ data: positions, dimension: 2 });
+      needToRenderCanvas = true;
+    }
+    if (colors !== prevAsyncProps?.colors) {
+      colorBuffer({ data: colors, dimension: 3 });
+      needToRenderCanvas = true;
+    }
+    if (flags !== prevAsyncProps?.flags) {
+      flagBuffer({ data: flags, dimension: 1 });
+      needToRenderCanvas = true;
+    }
+    if (needToRenderCanvas) this.renderCanvas();
   }
 
   updateColorTable(colors, colorDf) {
@@ -906,7 +917,7 @@ class Graph extends React.Component {
           <Async.Fulfilled>
             {(asyncProps) => {
               if (regl && !shallowEqual(asyncProps, this.cachedAsyncProps)) {
-                this.updateReglAndRender(asyncProps);
+                this.updateReglAndRender(asyncProps, this.cachedAsyncProps);
               }
               return null;
             }}

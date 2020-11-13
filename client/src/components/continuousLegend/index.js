@@ -11,20 +11,20 @@ import {
 
 // create continuous color legend
 // http://bl.ocks.org/syntagmatic/e8ccca52559796be775553b467593a9f
-const continuous = (selectorId, colorscale, colorAccessor) => {
-  const legendheight = 200;
-  const legendwidth = 80;
+const continuous = (selectorId, colorScale, colorAccessor) => {
+  const legendHeight = 200;
+  const legendWidth = 80;
   const margin = { top: 10, right: 60, bottom: 10, left: 2 };
 
   const canvas = d3
     .select(selectorId)
-    .style("height", `${legendheight}px`)
-    .style("width", `${legendwidth}px`)
+    .style("height", `${legendHeight}px`)
+    .style("width", `${legendWidth}px`)
     .append("canvas")
-    .attr("height", legendheight - margin.top - margin.bottom)
+    .attr("height", legendHeight - margin.top - margin.bottom)
     .attr("width", 1)
-    .style("height", `${legendheight - margin.top - margin.bottom}px`)
-    .style("width", `${legendwidth - margin.left - margin.right}px`)
+    .style("height", `${legendHeight - margin.top - margin.bottom}px`)
+    .style("width", `${legendWidth - margin.left - margin.right}px`)
     .style("position", "absolute")
     .style("top", `${margin.top + 1}px`)
     .style("left", `${margin.left + 1}px`)
@@ -37,18 +37,18 @@ const continuous = (selectorId, colorscale, colorAccessor) => {
 
   const ctx = canvas.getContext("2d");
 
-  const legendscale = d3
+  const legendScale = d3
     .scaleLinear()
-    .range([1, legendheight - margin.top - margin.bottom])
+    .range([1, legendHeight - margin.top - margin.bottom])
     .domain([
-      colorscale.domain()[1],
-      colorscale.domain()[0],
+      colorScale.domain()[1],
+      colorScale.domain()[0],
     ]); /* we flip this to make viridis colors dark if high in the color scale */
 
   // image data hackery based on http://bl.ocks.org/mbostock/048d21cf747371b11884f75ad896e5a5
-  const image = ctx.createImageData(1, legendheight);
-  d3.range(legendheight).forEach((i) => {
-    const c = d3.rgb(colorscale(legendscale.invert(i)));
+  const image = ctx.createImageData(1, legendHeight);
+  d3.range(legendHeight).forEach((i) => {
+    const c = d3.rgb(colorScale(legendScale.invert(i)));
     image.data[4 * i] = c.r;
     image.data[4 * i + 1] = c.g;
     image.data[4 * i + 2] = c.b;
@@ -66,20 +66,20 @@ const continuous = (selectorId, colorscale, colorAccessor) => {
   });
   */
 
-  const legendaxis = d3
-    .axisRight(legendscale)
+  const legendAxis = d3
+    .axisRight(legendScale)
     .ticks(6)
     .tickFormat(
       d3.format(
-        legendscale.domain().some((n) => Math.abs(n) >= 10000) ? ".0e" : ","
+        legendScale.domain().some((n) => Math.abs(n) >= 10000) ? ".0e" : ","
       )
     );
 
   const svg = d3
     .select(selectorId)
     .append("svg")
-    .attr("height", `${legendheight}px`)
-    .attr("width", `${legendwidth}px`)
+    .attr("height", `${legendHeight}px`)
+    .attr("width", `${legendWidth}px`)
     .style("position", "absolute")
     .style("left", "0px")
     .style("top", "0px");
@@ -89,16 +89,16 @@ const continuous = (selectorId, colorscale, colorAccessor) => {
     .attr("class", "axis")
     .attr(
       "transform",
-      `translate(${legendwidth - margin.left - margin.right + 3},${margin.top})`
+      `translate(${legendWidth - margin.left - margin.right + 3},${margin.top})`
     )
-    .call(legendaxis);
+    .call(legendAxis);
 
   // text label for the y axis
   svg
     .append("text")
     .attr("transform", "rotate(-90)")
     .attr("y", 2)
-    .attr("x", 0 - legendheight / 2)
+    .attr("x", 0 - legendHeight / 2)
     .attr("dy", "1em")
     .style("text-anchor", "middle")
     .style("fill", "white")
@@ -110,24 +110,7 @@ const continuous = (selectorId, colorscale, colorAccessor) => {
   colors: state.colors,
 }))
 class ContinuousLegend extends React.Component {
-  constructor(props) {
-    super(props);
-    this.ref = null;
-    this.state = {
-      colorAccessor: null,
-      colorScale: null,
-    };
-  }
-
-  componentDidMount() {
-    this.updateState(null);
-  }
-
-  componentDidUpdate(prevProps) {
-    this.updateState(prevProps);
-  }
-
-  async updateState(prevProps) {
+  async componentDidUpdate(prevProps) {
     const { annoMatrix, colors } = this.props;
     if (!colors || !annoMatrix) return;
 
@@ -161,35 +144,19 @@ class ContinuousLegend extends React.Component {
           );
         }
       }
-
-      this.setState({
-        colorAccessor,
-        colorScale: colorTable.scale,
-      });
     }
   }
 
   render() {
-    const { colorAccessor, colorScale } = this.state;
-    if (
-      colorScale?.domain &&
-      colorScale.domain()[1] === colorScale.domain()[0]
-    ) {
-      /* it's a single value, not a distribution, min max are the same */
-      return null;
-    }
     return (
       <div
         id="continuous_legend"
-        ref={(ref) => {
-          this.ref = ref;
-        }}
         style={{
-          display: colorAccessor ? "inherit" : "none",
           position: "absolute",
           left: 8,
           top: 35,
           zIndex: 1,
+          pointerEvents: "none",
         }}
       />
     );
