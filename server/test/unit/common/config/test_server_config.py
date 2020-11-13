@@ -173,12 +173,6 @@ class TestServerConfig(ConfigTests):
             response = session.get(f"{server}/additional/path/health")
             assert response.json()["status"] == "pass"
 
-            # also check that the old URL still works.
-            # NOTE:  this old URL location will soon be deprecated, and when that happens
-            # this check can be removed.
-            response = session.get(f"{server}/health")
-            assert response.json()["status"] == "pass"
-
     def test_get_web_base_url_works(self):
         config = self.get_config(web_base_url="www.thisisawebsite.com")
         web_base_url = config.server_config.get_web_base_url()

@@ -105,17 +105,6 @@ def dataset_index(url_dataroot=None, dataset=None):
         )
 
 
-# TODO:  This route will be deprecated, but needs to be left for a short time until all the
-# deployments are upgraded to the new location for the health check (or else the upgrade will
-# fail).  Once the upgrade is complete, the deployments can move to the new health check URL
-# and this route will be removed.
-@webbp.route("/health", methods=["GET"])
-@cache_control_always(no_store=True)
-def health():
-    config = current_app.app_config
-    return health_check(config)
-
-
 @webbp.errorhandler(RequestException)
 def handle_request_exception(error):
     return common_rest.abort_and_log(error.status_code, error.message, loglevel=logging.INFO, include_exc_info=True)
