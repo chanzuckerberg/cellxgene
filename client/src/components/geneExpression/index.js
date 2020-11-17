@@ -4,9 +4,7 @@ import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import { Button } from "@blueprintjs/core";
-import HistogramBrush from "../brushableHistogram";
 import GeneSet from "./geneSet";
-import AddGenes from "./menus/addGenes";
 
 import testGeneSets from "./test_data";
 import CreateGenesetDialogue from "./menus/createGenesetDialogue";
@@ -31,13 +29,34 @@ class GeneExpression extends React.Component {
     return sets;
   };
 
+  renderDiffexpGeneSets = () => {
+    const { differential } = this.props;
+
+    const setGenes = [];
+
+    if (differential.diffExp) {
+      differential.diffExp.forEach((diffexpGene) => {
+        setGenes.push(diffexpGene[0]);
+      });
+    }
+
+    console.log(differential.diffExp);
+
+    return differential.diffExp ? (
+      <GeneSet
+        key="Temp DiffExp Set"
+        setGenes={setGenes}
+        setName="Temp DiffExp Set"
+      />
+    ) : null;
+  };
+
   handleActivateCreateGenesetMode = () => {
     const { dispatch } = this.props;
     dispatch({ type: "geneset: activate add new geneset mode" });
   };
 
   render() {
-    const { userDefinedGenes, differential } = this.props;
     const geneSetsFeatureEnabledTODO = true;
     return (
       <div>
@@ -54,37 +73,8 @@ class GeneExpression extends React.Component {
             </div>
           ) : null}
           <CreateGenesetDialogue />
-          <AddGenes />
-          {userDefinedGenes.length > 0
-            ? _.map(userDefinedGenes, (geneName, index) => {
-                return (
-                  <HistogramBrush
-                    key={geneName}
-                    field={geneName}
-                    zebra={index % 2 === 0}
-                    isUserDefined
-                  />
-                );
-              })
-            : null}
         </div>
-        <div>
-          {differential.diffExp
-            ? _.map(differential.diffExp, (value, index) => {
-                return (
-                  <HistogramBrush
-                    key={value[0]}
-                    field={value[0]}
-                    zebra={index % 2 === 0}
-                    isDiffExp
-                    logFoldChange={value[1]}
-                    pval={value[2]}
-                    pvalAdj={value[3]}
-                  />
-                );
-              })
-            : null}
-        </div>
+        <div>{this.renderDiffexpGeneSets()}</div>
         <div>{this.renderTestGeneSets()}</div>
       </div>
     );
