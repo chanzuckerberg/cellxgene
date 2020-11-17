@@ -4,15 +4,14 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
-import { AnchorButton, Icon, Tooltip, Position } from "@blueprintjs/core";
+import { Tooltip, Position, Switch } from "@blueprintjs/core";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
 import actions from "../../actions";
 import Gene from "./gene";
 import { memoize } from "../../util/dataframe/util";
 import Truncate from "../util/truncate";
-// import TestMiniHisto from "./test_miniHisto";
 import * as globals from "../../globals";
-// import GenesetMenus from "./menus/genesetMenus";
+import GenesetMenus from "./menus/genesetMenus";
 
 @connect((state, ownProps) => {
   return {
@@ -29,6 +28,7 @@ class GeneSet extends React.Component {
     super(props);
     this.state = {
       isOpen: false,
+      toggleSummaryHisto: false,
     };
   }
 
@@ -96,9 +96,14 @@ class GeneSet extends React.Component {
     });
   };
 
+  toggleSummaryHisto = () => {
+    const { toggleSummaryHisto } = this.state;
+    this.setState({ toggleSummaryHisto: !toggleSummaryHisto });
+  };
+
   render() {
-    const { setName, setGenes, isColorAccessor } = this.props;
-    const { isOpen } = this.state;
+    const { setName, setGenes } = this.props;
+    const { isOpen, toggleSummaryHisto } = this.state;
     return (
       <div style={{ marginBottom: 3 }}>
         <div
@@ -135,7 +140,7 @@ class GeneSet extends React.Component {
                 style={{
                   maxWidth:
                     globals.leftSidebarWidth -
-                    150 /* todo_genesets this magic number determines how much of a long geneset name we see, and will be tweaked as we build */,
+                    120 /* todo_genesets this magic number determines how much of a long geneset name we see, and will be tweaked as we build */,
                 }}
                 data-testid={`${setName}:geneset-label`}
               >
@@ -144,11 +149,15 @@ class GeneSet extends React.Component {
             </Truncate>
           </span>
           <div>
-            {/* <TestMiniHisto /> */}
-            {/* <GenesetMenus genesetsEditable geneset={setName} /> */}
+            <GenesetMenus genesetsEditable geneset={setName} />
+          </div>
+        </div>
+
+        <div style={{ marginLeft: 15, marginTop: 5, marginRight: 0 }}>
+          {isOpen ? (
             <Tooltip
-              content="Color by geneset"
-              position={Position.LEFT}
+              content="Aggregate all genes in this geneset, and allow coloring by and selecting on the entire set."
+              position={Position.BOTTOM_RIGHT}
               usePortal
               hoverOpenDelay={globals.tooltipHoverOpenDelay}
               modifiers={{
@@ -156,20 +165,20 @@ class GeneSet extends React.Component {
                 hide: { enabled: false },
               }}
             >
-              <AnchorButton
-                disabled
-                data-testclass="colorby"
-                data-testid={`colorby-${setName}`}
-                onClick={this.onColorChangeClick}
-                active={isColorAccessor}
-                intent={isColorAccessor ? "primary" : "none"}
-                icon={<Icon icon="tint" iconSize={16} />}
+              <Switch
+                style={{ fontStyle: "italic" }}
+                checked={toggleSummaryHisto}
+                label="Show mean expression for genes in set"
+                alignIndicator="left"
+                innerLabel="off"
+                innerLabelChecked="on"
+                onChange={this.toggleSummaryHisto}
               />
             </Tooltip>
-          </div>
+          ) : null}
         </div>
 
-        {isOpen
+        {isOpen && !toggleSummaryHisto
           ? _.map(setGenes, (gene) => {
               return <Gene key={gene} gene={gene} geneset={setName} />;
             })
