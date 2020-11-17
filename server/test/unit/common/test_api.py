@@ -1,6 +1,7 @@
 import shutil
 import time
 import unittest
+import zlib
 from http import HTTPStatus
 
 import pandas as pd
@@ -343,7 +344,7 @@ class EndPointsAnnotations(EndPoints):
         url = f"{self.URL_BASE}{endpoint}?{query}"
         n_rows = self.data.get_shape()[0]
         fbs = make_fbs({"cat_A": pd.Series(["label_A"] * n_rows, dtype="category")})
-        result = self.session.put(url, data=fbs)
+        result = self.session.put(url, data=zlib.compress(fbs))
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
         self.assertEqual(result.json(), {"status": "OK"})
