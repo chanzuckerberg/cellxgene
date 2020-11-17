@@ -161,11 +161,7 @@ def annotations_put_fbs_helper(data_adaptor, fbs):
 
 
 def inflate(data):
-    # https://docs.python.org/3/library/zlib.html#zlib.decompressobj
-    decompress = zlib.decompressobj()
-    decompressed_data = decompress.decompress(data)
-    decompressed_data += decompress.flush()
-    return decompressed_data
+    return zlib.decompress(data)
 
 
 def annotations_obs_put(request, data_adaptor):
