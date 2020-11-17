@@ -182,6 +182,35 @@ class Categories extends React.Component {
           }
         />
 
+        {writableCategoriesEnabled ? (
+          <div style={{ marginBottom: 10 }}>
+            <Tooltip
+              content={
+                userinfo.is_authenticated
+                  ? "Create a new category"
+                  : "You must be logged in to create new categorical fields"
+              }
+              position={Position.RIGHT}
+              boundary="viewport"
+              hoverOpenDelay={globals.tooltipHoverOpenDelay}
+              modifiers={{
+                preventOverflow: { enabled: false },
+                hide: { enabled: false },
+              }}
+            >
+              <AnchorButton
+                type="button"
+                data-testid="open-annotation-dialog"
+                onClick={this.handleEnableAnnoMode}
+                intent="primary"
+                disabled={!userinfo.is_authenticated}
+              >
+                Create new <strong>category</strong>
+              </AnchorButton>
+            </Tooltip>
+          </div>
+        ) : null}
+
         {/* READ ONLY CATEGORICAL FIELDS */}
         {/* this is duplicative but flat, could be abstracted */}
         {allCategoryNames.map((catName) =>
@@ -207,33 +236,6 @@ class Categories extends React.Component {
             />
           ) : null
         )}
-
-        {writableCategoriesEnabled ? (
-          <Tooltip
-            content={
-              userinfo.is_authenticated
-                ? "Create a new category"
-                : "You must be logged in to create new categorical fields"
-            }
-            position={Position.RIGHT}
-            boundary="viewport"
-            hoverOpenDelay={globals.tooltipHoverOpenDelay}
-            modifiers={{
-              preventOverflow: { enabled: false },
-              hide: { enabled: false },
-            }}
-          >
-            <AnchorButton
-              type="button"
-              data-testid="open-annotation-dialog"
-              onClick={this.handleEnableAnnoMode}
-              intent="primary"
-              disabled={!userinfo.is_authenticated}
-            >
-              Create new <strong>category</strong>
-            </AnchorButton>
-          </Tooltip>
-        ) : null}
       </div>
     );
   }
