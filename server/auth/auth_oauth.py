@@ -24,7 +24,7 @@ except ModuleNotFoundError:
 class Tokens:
     """Simple class to represent the tokens that are saved/restored from the cookie"""
 
-    def __init__(self, access_token, id_token, refresh_token, expires_at):
+    def __init__(self, access_token, id_token, refresh_token, expires_at, **kwargs):
         self.access_token = access_token
         self.id_token = id_token
         self.refresh_token = refresh_token
