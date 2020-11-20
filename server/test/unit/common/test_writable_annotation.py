@@ -292,13 +292,13 @@ class WritableAnnotationTest(unittest.TestCase):
         n_rows = self.data.get_shape()[0]
 
         # verifies that floating point with decimals fail.
-        fbs = make_fbs( { "cat_F_FAIL": pd.Series([1.1] * n_rows, dtype=np.dtype("float"))} )
+        fbs = make_fbs({"cat_F_FAIL": pd.Series([1.1] * n_rows, dtype=np.dtype("float"))})
         with self.assertRaises(ValueError) as exception_context:
             res = self.annotation_put_fbs(fbs)
         self.assertEqual(str(exception_context.exception), "Columns may not have floating point types")
 
         # verifies that floating point that can be converted to int passes
-        fbs = make_fbs( { "cat_F_PASS": pd.Series([1.0] * n_rows, dtype="category")})
+        fbs = make_fbs({"cat_F_PASS": pd.Series([1.0] * n_rows, dtype="float")})
         res = self.annotation_put_fbs(fbs)
         self.assertEqual(res, json.dumps({"status": "OK"}))
 
@@ -309,8 +309,7 @@ class WritableAnnotationTest(unittest.TestCase):
         annotations = decode_fbs.decode_matrix_FBS(fbsAll)
         self.assertEqual(annotations["n_rows"], n_rows)
         all_col_schema = {c["name"]: c for c in schema["annotations"]["obs"]["columns"]}
-        print("ALL_", all_col_schema["cat_F_PASS"])
         self.assertEqual(
             all_col_schema["cat_F_PASS"],
-            {"name": "cat_F_PASS", "type": "categorical", "categories": [1.0], "writable": True},
+            {"name": "cat_F_PASS", "type": "int32", "writable": True},
         )

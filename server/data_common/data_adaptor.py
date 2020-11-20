@@ -253,13 +253,18 @@ class DataAdaptor(metaclass=ABCMeta):
         # This case can occur when a user makes a copy of a category that originally contained integer data.
         # The client always copies array data to floats, therefore the copy will contain floats instead of integers.
         # float data is not allowed as a categorical type.
-
         if any([np.issubdtype(coltype.type, np.floating) for coltype in labels_df.dtypes]):
             labels_df = labels_df.convert_dtypes()
+            for col, dtype in zip(labels_df, labels_df.dtypes):
+                if isinstance(dtype, pd.Int32Dtype):
+                    labels_df[col] = labels_df[col].astype("int32")
+                if isinstance(dtype, pd.Int64Dtype):
+                    labels_df[col] = labels_df[col].astype("int64")
 
         if any([np.issubdtype(coltype.type, np.floating) for coltype in labels_df.dtypes]):
             raise ValueError("Columns may not have floating point types")
 
+        return labels_df
 
     def data_frame_to_fbs_matrix(self, filter, axis):
         """
