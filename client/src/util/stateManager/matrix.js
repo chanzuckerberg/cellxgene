@@ -178,26 +178,26 @@ function promoteTypedArray(o) {
   */
   if (isFpTypedArray(o) || Array.isArray(o)) return o;
 
-  let TyepdArrayCtor;
+  let TypedArrayCtor;
   switch (o.constructor) {
     case Int8Array:
     case Uint8Array:
     case Uint8ClampedArray:
     case Int16Array:
     case Uint16Array:
-      TyepdArrayCtor = Float32Array;
+      TypedArrayCtor = Float32Array;
       break;
 
     case Int32Array:
     case Uint32Array:
-      TyepdArrayCtor = Float64Array;
+      TypedArrayCtor = Float64Array;
       break;
 
     default:
       throw new Error("Unexpected data type returned from server.");
   }
-  if (o.constructor === TyepdArrayCtor) return o;
-  return new TyepdArrayCtor(o);
+  if (o.constructor === TypedArrayCtor) return o;
+  return new TypedArrayCtor(o);
 }
 
 export function matrixFBSToDataframe(arrayBuffers) {

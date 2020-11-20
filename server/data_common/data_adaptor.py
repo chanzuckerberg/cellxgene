@@ -249,6 +249,18 @@ class DataAdaptor(metaclass=ABCMeta):
         if labels_df.shape[0] != shape[0]:
             raise ValueError("Labels file must have same number of rows as data file.")
 
+        # This will convert a float column that contains integer data into an integer type.
+        # This case can occur when a user makes a copy of a category that originally contained integer data.
+        # The client always copies array data to floats, therefore the copy will contain floats instead of integers.
+        # float data is not allowed as a categorical type.
+
+        if any([np.issubdtype(coltype.type, np.floating) for coltype in labels_df.dtypes]):
+            labels_df = labels_df.convert_dtypes()
+
+        if any([np.issubdtype(coltype.type, np.floating) for coltype in labels_df.dtypes]):
+            raise ValueError("Columns may not have floating point types")
+
+
     def data_frame_to_fbs_matrix(self, filter, axis):
         """
         Retrieves data 'X' and returns in a flatbuffer Matrix.
