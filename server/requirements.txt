@@ -1,4 +1,4 @@
-anndata>=0.7.0
+anndata>=0.7.5
 boto3>=1.12.18
 click>=7.1.2
 fastobo>=0.6.1
@@ -12,7 +12,7 @@ flatbuffers>=1.11.0
 flatten-dict>=0.2.0
 fsspec>=0.4.4,<0.8.0
 gunicorn>=20.0.4
-h5py<3.0.0 # h5py returns bytes instead of str, which breaks many assumptions
+h5py>=3.0.0
 numba>=0.49.1
 numpy>=1.15.0
 packaging>=20.0
