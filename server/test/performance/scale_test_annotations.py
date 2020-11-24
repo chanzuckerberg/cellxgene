@@ -27,7 +27,6 @@ class WebsiteUser(HttpUser):
     dataset_urls = [
         "human_cell_landscape.cxg",
         "Single_cell_drug_screening_a549-42-remixed.cxg",
-        "kampmann_lab_human_AD_snRNAseq_EC_inhibitoryNeurons-53-remixed.cxg",
         "krasnow_lab_human_lung_cell_atlas_smartseq2-2-remixed.cxg",
         "Single_cell_gene_expression_profiling_of_SARS_CoV_2_infected_human_cell_lines_H1299-27-remixed.cxg",
     ]

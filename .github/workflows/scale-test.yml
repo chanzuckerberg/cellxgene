@@ -1,0 +1,30 @@
+name: "Scale test cellxgene APIs for initial loading"
+
+on:
+  schedule:
+    - cron: "0 0 * * Sun"
+
+jobs:
+  locust-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        run: |
+          pip install -r server/test/locust/requirements-locust.txt
+      - name: Dev Scale Test
+        run: |
+          locust -f server/test/locust/locustfile.py --headless -u 30 -r 10 --host https://api.cellxgene.dev.single-cell.czi.technology/cellxgene/e/ --run-time 5m 2>&1 | tee locust_dev_stats.txt
+      - name: Slack success webhook
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          DEV_STATS=$(tail -n 61 locust_dev_stats.txt)
+          DEV_MSG="\`\`\`CELLXGENE EXPLORER DEV SCALE TEST RESULTS: ${DEV_STATS}\`\`\`"
+          curl -X POST -H 'Content-type: application/json' --data "{'text':'${DEV_MSG}'}" $SLACK_WEBHOOK
+
+
