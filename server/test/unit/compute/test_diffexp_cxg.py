@@ -34,6 +34,7 @@ class DiffExpTest(unittest.TestCase):
     def compare_diffexp_results(self, results, expects):
         self.assertEqual(len(results), len(expects))
         for result, expect in zip(results, expects):
+            print(f"Result: {result}; expect: {expect}")
             self.assertEqual(result[0], expect[0])
             self.assertTrue(np.isclose(result[1], expect[1], 1e-6, 1e-4))
             self.assertTrue(np.isclose(result[2], expect[2], 1e-6, 1e-4))
