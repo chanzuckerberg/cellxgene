@@ -5,6 +5,8 @@ on:
     - cron: '0 8 7 * 2'
   push:
     branches: "*"
+  pull_request:
+    branches: "*"
 
 env:
   JEST_ENV: prod
