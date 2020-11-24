@@ -130,7 +130,7 @@ class CellXGeneTasks(TaskSet):
                     stream=True,
                 )
 
-            layouts = self.parent.layolut_names()
+            layouts = self.parent.layout_names()
             for name in layouts:
                 self.client.get(
                     f"{self.dataset}/{API_SUFFIX}/annotations/obs?layout-name={name}",
