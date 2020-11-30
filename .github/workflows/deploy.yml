@@ -2,7 +2,9 @@ name: Deploy via single cell infra repo
 
 on:
   push:
-    branches: main
+    branches:
+      - main
+      - dunitz/deploy-bug
 
 jobs:
   deploy:
