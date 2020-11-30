@@ -144,7 +144,7 @@ class AnnotationsHostedTileDB(Annotations):
 
             for col in df:
                 df[col] = df[col].astype(get_dtype_of_array(df[col]))
-            tiledb.from_pandas(uri, df)
+            tiledb.from_pandas(uri, df, sparse=True)
         else:
             uri = ""
 
