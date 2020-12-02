@@ -731,11 +731,14 @@ class Graph extends React.Component {
   });
 
   updateReglAndRender(asyncProps, prevAsyncProps) {
-    const { positions, colors, flags } = asyncProps;
+    const { positions, colors, flags, height, width } = asyncProps;
     this.cachedAsyncProps = asyncProps;
     const { pointBuffer, colorBuffer, flagBuffer } = this.state;
     let needToRenderCanvas = false;
 
+    if (height !== prevAsyncProps?.height || width !== prevAsyncProps?.width) {
+      needToRenderCanvas = true;
+    }
     if (positions !== prevAsyncProps?.positions) {
       pointBuffer({ data: positions, dimension: 2 });
       needToRenderCanvas = true;
