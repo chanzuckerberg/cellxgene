@@ -24,7 +24,7 @@ except ModuleNotFoundError:
 class Tokens:
     """Simple class to represent the tokens that are saved/restored from the cookie"""
 
-    def __init__(self, access_token, id_token, refresh_token, expires_at):
+    def __init__(self, access_token, id_token, refresh_token, expires_at, **kwargs):
         self.access_token = access_token
         self.id_token = id_token
         self.refresh_token = refresh_token
@@ -97,8 +97,17 @@ class AuthTypeOAuth(AuthTypeClientBase):
             return
 
         valid_keys = {
-            "verify_signature", "verify_aud", "verify_iat", "verify_exp", "verify_nbf", "verify_iss",
-            "verify_sub", "verify_jti", "verify_at_hash", "leeway"}
+            "verify_signature",
+            "verify_aud",
+            "verify_iat",
+            "verify_exp",
+            "verify_nbf",
+            "verify_iss",
+            "verify_sub",
+            "verify_jti",
+            "verify_at_hash",
+            "leeway",
+        }
         keys = set(self.jwt_decode_options.keys())
         unknown = keys - valid_keys
         if unknown:
@@ -114,6 +123,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
         parse = urlparse(self.api_base_url)
         app.add_url_rule(f"{parse.path}/login", "login", self.login, methods=["GET"])
         app.add_url_rule(f"{parse.path}/logout", "logout", self.logout, methods=["GET"])
+        app.add_url_rule(f"{parse.path}/logout_redirect", "logout_redirect", self.logout_redirect, methods=["GET"])
         app.add_url_rule(f"{parse.path}/oauth2/callback", "callback", self.callback, methods=["GET"])
 
     def complete_setup(self, flask_app):
@@ -136,21 +146,19 @@ class AuthTypeOAuth(AuthTypeClientBase):
 
     def get_user_id(self):
         payload = self.get_userinfo()
-        if payload and payload.get("sub"):
-            return payload.get("sub")
-        return None
+        return payload.get("sub") if payload else None
 
     def get_user_name(self):
         payload = self.get_userinfo()
-        if payload and payload.get("name"):
-            return payload.get("name")
-        return None
+        return payload.get("name") if payload else None
 
     def get_user_email(self):
         payload = self.get_userinfo()
-        if payload and payload.get("email"):
-            return payload.get("email")
-        return None
+        return payload.get("email") if payload else None
+
+    def get_user_picture(self):
+        payload = self.get_userinfo()
+        return payload.get("picture") if payload else None
 
     def update_response(self, response):
         response.cache_control.update(dict(public=True, max_age=0, no_store=True, no_cache=True, must_revalidate=True))
@@ -158,7 +166,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
     def login(self):
         callbackurl = f"{self.api_base_url}/oauth2/callback"
         return_path = request.args.get("dataset", "")
-        return_to = f"{self.web_base_url}/{return_path}/"
+        return_to = f"{self.web_base_url}/{return_path}"
         # save the return path in the session cookie, accessed in the callback function
         session["oauth_callback_redirect"] = return_to
         response = self.client.authorize_redirect(redirect_uri=callbackurl)
@@ -166,9 +174,26 @@ class AuthTypeOAuth(AuthTypeClientBase):
         return response
 
     def logout(self):
+        """
+        We would like for the user to remain on the same dataset after logout.  oauth requires that
+        the redirect `returnTo` path be whitelisted by the oauth server, therefore a level of
+        indirection is used.  We first redirect to a single path "logout_redirect", and logout_redirect
+        will redirect the user's browser back to the current page.
+        """
         self.remove_tokens()
-        params = {"returnTo": self.web_base_url, "client_id": self.client_id}
+        redirect_path = request.args.get("dataset", "")
+        redirect_to = f"{self.web_base_url}/{redirect_path}"
+        session["oauth_logout_redirect"] = redirect_to
+
+        return_to = f"{self.api_base_url}/logout_redirect"
+        params = {"returnTo": return_to, "client_id": self.client_id}
         response = redirect(self.client.api_base_url + "/v2/logout?" + urlencode(params))
+        self.update_response(response)
+        return response
+
+    def logout_redirect(self):
+        oauth_logout_redirect = session.pop("oauth_logout_redirect", "/")
+        response = redirect(oauth_logout_redirect)
         self.update_response(response)
         return response
 
@@ -193,22 +218,24 @@ class AuthTypeOAuth(AuthTypeClientBase):
 
         try:
             if self.session_cookie:
-                tokensdict = session.get(self.CXG_TOKENS)
-                if tokensdict:
-                    g.tokens = Tokens(**tokensdict)
+                value = session.get(self.CXG_TOKENS)
+                if value:
+                    g.tokens = Tokens(**value)
                 else:
                     return None
             else:
                 value = request.cookies.get(self.cookie_params["key"])
-                value = base64.b64decode(value)
-                try:
-                    tokensdict = json.loads(value)
-                    g.tokens = Tokens(**tokensdict)
-                except (TypeError, KeyError, json.decoder.JSONDecodeError):
-                    g.pop("tokens", None)
+                if value is None:
                     return None
+                value = base64.b64decode(value)
+                value = json.loads(value)
+                g.tokens = Tokens(**value)
 
-        except (TypeError, KeyError):
+        except Exception:
+            # there are many types of exceptions that can be raise in the above section.
+            # It is impractical to list all the exceptions here, since that would be brittle.
+            # If an exception occurs, then return None, meaning that no token could be retrieved.
+            current_app.logger.warning(f"auth cookie is in the wrong format: {str(value)}")
             g.pop("tokens", None)
             return None
 
@@ -253,7 +280,10 @@ class AuthTypeOAuth(AuthTypeClientBase):
 
     def get_logout_url(self, data_adaptor):
         """Return the url for the logout route"""
-        return f"{self.api_base_url}/logout"
+        if data_adaptor and current_app.app_config.is_multi_dataset():
+            return f"{self.api_base_url}/logout?dataset={data_adaptor.uri_path}/"
+        else:
+            return f"{self.api_base_url}/logout"
 
     def check_jwt_payload(self, id_token):
         try:
@@ -303,6 +333,7 @@ class AuthTypeOAuth(AuthTypeClientBase):
 
         # if there is no id_token, return None (user is not authenticated)
         tokens = self.get_tokens()
+
         if tokens is None or tokens.id_token is None:
             return None
 

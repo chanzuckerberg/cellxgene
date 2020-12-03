@@ -205,6 +205,60 @@ dataset:
     lfc_cutoff: 0.01
     top_n: 10
 
+external:
+  # You can retrieve configuration parameters from this config file, the environment,
+  # the AWS secrets manager, or from the "cellxgene launch" command line arguments.
+  # They are applied in that order, meaning that if a parameter is defined in more
+  # than one location, the last one applied takes effect.
+
+  # environment variables:
+  # This section describes how to map environment variables to configuration parameters.
+  # The format is a list defining an environment variable.
+  # Each entry in the list is a dictionary with three entries:
+  # name:  the name of the environment variable
+  # path: the path within the cellxgene configuration to update.
+  # required: (default=False) a boolean.  If true, then it is an error if the environment variable is not set.
+
+  environment:
+     - name: CXG_SECRET_KEY
+       path: [server, app, flask_secret_key]
+       required: false
+     - name: CXG_OAUTH_CLIENT_SECRET
+       path: [server, authentication, params_oauth, client_secret]
+       required: false
+
+  # AWS Secrets Manager
+  # This section describes how to map aws secrets to configuration parameters.
+  # The format is the region for the secrets manager, then a list of secrets.
+  # each secret has a name, and a list of values.
+  # Each entry in the list of values is a dictionary with three entries:
+  # key:  the key of the aws secret.
+  # path: the path within the cellxgene configuration to update.
+  # required: (default=False) a boolean.  If true, then it is an error if the key does not exist in the secret.
+  #
+  # example:
+  # aws_secrets_manager:
+  #   region: us-west-2
+  #    - name: my_first_secret
+  #      values:
+  #      - key: flask_secret_key
+  #        path: [server, app, flask_secret_key]
+  #        required: true
+  #      - key: db_uri
+  #        path: [dataset, user_annotations, hosted_tiledb_array, db_uri]
+  #        required: true
+  #    - name:  my_auth_secret
+  #      values:
+  #      - key: client_secret
+  #        path: [server, authentication, params_oauth, client_secret]
+  #        required: true
+  #      - key: client_id
+  #        path: [server, authentication, params_oauth, client_id]
+  #        required: true
+
+  aws_secrets_manager:
+    region: null
+    secrets: []
 """
 
 

@@ -17,6 +17,7 @@ import {
   goToPage,
   typeInto,
   waitByID,
+  clickOnUntil,
 } from "./puppeteerUtils";
 
 import {
@@ -31,6 +32,8 @@ import {
   runDiffExp,
   selectCategory,
   subset,
+  login,
+  logout,
 } from "./cellxgeneActions";
 
 const data = datasets[DATASET];
@@ -517,5 +520,35 @@ test("lasso moves after pan", async () => {
   const panCount = await getCellSetCount(2);
 
   expect(panCount).toBe(initialCount);
+});
+
+const describeIfCalledByMakeFileTarget =
+  process.env.CXG_AUTH_TYPE?.toLowerCase() === "test"
+    ? describe
+    : describe.skip;
+
+describeIfCalledByMakeFileTarget("auth buttons", () => {
+  test("login then logout", async () => {
+    await goToPage(appUrlBase);
+    await clickOnUntil("log-in", async () => {
+      await page.waitForNavigation({ waitUntil: "networkidle0" });
+      await waitByID("user-info");
+    });
+    await logout();
+  });
+});
+
+const conditionalDescribe =
+  process.env.TEST_AUTH_INTEGRATION === "true" ? describe : describe.skip;
+
+conditionalDescribe("AuthN Integration", () => {
+  it("logs in", async () => {
+    await login();
+  });
+
+  it("logs out", async () => {
+    await login();
+    await logout();
+  });
 });
 /* eslint-enable no-await-in-loop -- await in loop is needed to emulate sequential user actions */

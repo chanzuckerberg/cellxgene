@@ -10,12 +10,14 @@ class AuthTypeTest(AuthTypeClientBase):
     CXGUID = "cxguid_test"
     CXGUNAME = "cxguname_test"
     CXGUEMAIL = "cxguemail_test"
+    CXGUPICTURE = "cxgupicture_test"
 
     def __init__(self, app_config):
         super().__init__()
         self.user_name = "test_account"
         self.user_id = "id0001"
         self.user_email = "test_account@test.com"
+        self.user_picture = None
 
     def is_valid_authentication_type(self):
         return True
@@ -42,11 +44,16 @@ class AuthTypeTest(AuthTypeClientBase):
     def get_user_email(self):
         return session.get(self.CXGUEMAIL)
 
+    def get_user_picture(self):
+        return session.get(self.CXGUPICTURE)
+
     def login(self):
         args = request.args
         return_to = args.get("dataset", "/")
         session[self.CXGUID] = args.get("userid", self.user_id)
         session[self.CXGUNAME] = args.get("username", self.user_name)
+        session[self.CXGUEMAIL] = args.get("email", self.user_email)
+        session[self.CXGUPICTURE] = args.get("picture", self.user_picture)
         return redirect(return_to)
 
     def logout(self):

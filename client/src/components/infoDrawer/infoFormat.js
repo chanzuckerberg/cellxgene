@@ -1,13 +1,13 @@
-import { H3, H1, UL, Classes } from "@blueprintjs/core";
+import { H3, H1, UL, HTMLTable, Classes } from "@blueprintjs/core";
 import React from "react";
 
-const renderContributors = (contributors, affiliations, skeleton) => {
+const renderContributors = (contributors, affiliations) => {
   // eslint-disable-next-line no-constant-condition --  Temp removed contributor section to avoid publishing PII
   if (!contributors || contributors.length === 0 || true) return null;
   return (
     <>
-      <H3 className={skeleton ? Classes.SKELETON : null}>Contributors</H3>
-      <p className={skeleton ? Classes.SKELETON : null}>
+      <H3>Contributors</H3>
+      <p>
         {contributors.map((contributor) => {
           const { email, name, institution } = contributor;
 
@@ -20,7 +20,7 @@ const renderContributors = (contributors, affiliations, skeleton) => {
           );
         })}
       </p>
-      {renderAffiliations(affiliations, skeleton)}
+      {renderAffiliations(affiliations)}
     </>
   );
 };
@@ -37,14 +37,14 @@ const buildAffiliations = (contributors = []) => {
   return affiliations;
 };
 
-const renderAffiliations = (affiliations, skeleton) => {
+const renderAffiliations = (affiliations) => {
   if (affiliations.length === 0) return null;
   return (
     <>
-      <H3 className={skeleton ? Classes.SKELETON : null}>Affiliations</H3>
+      <H3>Affiliations</H3>
       <UL>
         {affiliations.map((item, index) => (
-          <div key={item} className={skeleton ? Classes.SKELETON : null}>
+          <div key={item}>
             <sup>{index + 1}</sup>
             {"  "}
             {item}
@@ -55,12 +55,12 @@ const renderAffiliations = (affiliations, skeleton) => {
   );
 };
 
-const renderDOILink = (type, doi, skeleton) => {
+const renderDOILink = (type, doi) => {
   if (!doi) return null;
   return (
     <>
-      <H3 className={skeleton ? Classes.SKELETON : null}>{type}</H3>
-      <p className={skeleton ? Classes.SKELETON : null}>
+      <H3>{type}</H3>
+      <p>
         <a href={doi} target="_blank" rel="noopener">
           {doi}
         </a>
@@ -69,54 +69,80 @@ const renderDOILink = (type, doi, skeleton) => {
   );
 };
 
-const renderOrganism = (organism, skeleton) => {
-  if (!organism) return null;
-  return (
-    <>
-      <H3 className={skeleton ? Classes.SKELETON : null}>Organism</H3>
-      <p className={skeleton ? Classes.SKELETON : null}>{organism}</p>
-    </>
-  );
-};
-
+const ONTOLOGY_KEY = "ontology_term_id";
 // Render list of metadata attributes found in categorical field
-// Ignores categories with empty or null values
-const renderSingleValueCategories = (singleValueCategories, skeleton) => {
+const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
   if (singleValueCategories.size === 0) return null;
   return (
     <>
-      <H3 className={skeleton ? Classes.SKELETON : null}>Dataset Metadata</H3>
-      <UL>
-        {Array.from(singleValueCategories).map((pair) => {
-          if (!pair[1] || pair[1] === "") return null;
-          return (
-            <li
-              className={skeleton ? Classes.SKELETON : null}
-              key={pair[0]}
-            >{`${pair[0]}: ${pair[1]}`}</li>
-          );
-        })}
-      </UL>
+      <H3>Dataset Metadata</H3>
+      <HTMLTable
+        striped
+        condensed
+        style={{ display: "block", width: "100%", overflowX: "auto" }}
+      >
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Label</th>
+            <th>Ontology ID</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(corporaMetadata).map(([key, value]) => {
+            return (
+              <tr {...{ key }}>
+                <td>{`${key}:`}</td>
+                <td>{value}</td>
+                <td />
+              </tr>
+            );
+          })}
+          {Array.from(singleValueCategories).reduce((elems, pair) => {
+            const [category, value] = pair;
+            // If the value is empty skip it
+            if (!value) return elems;
+
+            // If this category is a ontology term, let's add its value to the previous node
+            if (String(category).includes(ONTOLOGY_KEY)) {
+              const prevElem = elems.pop();
+              const newChildren = [...prevElem.props.children];
+              newChildren.splice(2, 1, [<td key="ontology">{value}</td>]);
+              // Props aren't extensible so we must clone and alter the component to append the new child
+              elems.push(
+                React.cloneElement(prevElem, prevElem.props, newChildren)
+              );
+            } else {
+              // Create the list item
+              elems.push(
+                <tr key={category}>
+                  <td>{`${category}:`}</td>
+                  <td>{value}</td>
+                  <td />
+                </tr>
+              );
+            }
+            return elems;
+          }, [])}
+        </tbody>
+      </HTMLTable>
     </>
   );
 };
 
 // Renders any links found in the config where link_type is not "SUMMARY"
 // If there are no links in the config, render the aboutURL
-const renderLinks = (projectLinks, aboutURL, skeleton) => {
+const renderLinks = (projectLinks, aboutURL) => {
   if (!projectLinks && !aboutURL) return null;
   if (projectLinks)
     return (
       <>
-        <H3 className={skeleton ? Classes.SKELETON : null}>Project Links</H3>
+        <H3>Project Links</H3>
         <UL>
           {projectLinks.map((link) => {
             if (link.link_type === "SUMMARY") return null;
             return (
-              <li
-                key={link.link_name}
-                className={skeleton ? Classes.SKELETON : null}
-              >
+              <li key={link.link_name}>
                 <a href={link.link_url} target="_blank" rel="noopener">
                   {link.link_name}
                 </a>
@@ -129,14 +155,9 @@ const renderLinks = (projectLinks, aboutURL, skeleton) => {
 
   return (
     <>
-      <H3 className={skeleton ? Classes.SKELETON : null}>More Info</H3>
+      <H3>More Info</H3>
       <p>
-        <a
-          className={skeleton ? Classes.SKELETON : null}
-          href={aboutURL}
-          target="_blank"
-          rel="noopener"
-        >
+        <a href={aboutURL} target="_blank" rel="noopener">
           {aboutURL}
         </a>
       </p>
@@ -144,24 +165,9 @@ const renderLinks = (projectLinks, aboutURL, skeleton) => {
   );
 };
 
-const NUM_CATEGORIES = 8;
-
-// Generates arbitrary placeholder array for singleValueCategories skeleton shape
-const singleValueCategoriesPlaceholder = Array.from(Array(NUM_CATEGORIES)).map(
-  (_, index) => {
-    return [index, index];
-  }
-);
-
 const InfoFormat = React.memo(
-  ({
-    datasetTitle,
-    singleValueCategories = new Map(singleValueCategoriesPlaceholder),
-    aboutURL = "thisisabouthtelengthofaurl",
-    dataPortalProps = {},
-    skeleton = false,
-  }) => {
-    if (dataPortalProps.corpora_schema_version === "1.0.0") {
+  ({ datasetTitle, singleValueCategories, aboutURL, dataPortalProps = {} }) => {
+    if (dataPortalProps.version?.["corpora_schema_version"] !== "1.0.0") {
       dataPortalProps = {};
     }
     const {
@@ -176,16 +182,15 @@ const InfoFormat = React.memo(
     const affiliations = buildAffiliations(contributors);
 
     return (
-      <div style={{ margin: 24, overflow: "auto" }}>
-        <H1 className={skeleton ? Classes.SKELETON : null}>
-          {title ?? datasetTitle}
-        </H1>
-        {renderContributors(contributors, affiliations, skeleton)}
-        {renderDOILink("DOI", doi, skeleton)}
-        {renderDOILink("Preprint DOI", preprintDOI, skeleton)}
-        {renderOrganism(organism, skeleton)}
-        {renderSingleValueCategories(singleValueCategories, skeleton)}
-        {renderLinks(projectLinks, aboutURL, skeleton)}
+      <div className={Classes.DIALOG_BODY}>
+        <div className={Classes.DIALOG_BODY}>
+          <H1>{title ?? datasetTitle}</H1>
+          {renderContributors(contributors, affiliations)}
+          {renderDatasetMetadata(singleValueCategories, { organism })}
+          {renderLinks(projectLinks, aboutURL)}
+          {renderDOILink("DOI", doi)}
+          {renderDOILink("Preprint DOI", preprintDOI)}
+        </div>
       </div>
     );
   }

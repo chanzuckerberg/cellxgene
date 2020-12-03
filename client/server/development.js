@@ -1,5 +1,3 @@
-const path = require("path");
-const historyApiFallback = require("connect-history-api-fallback");
 const chalk = require("chalk");
 const express = require("express");
 const favicon = require("serve-favicon");
@@ -11,35 +9,51 @@ const utils = require("./utils");
 process.env.NODE_ENV = "development";
 
 const CLIENT_PORT = process.env.CXG_CLIENT_PORT;
+const { CXG_SERVER_PORT } = process.env;
+
+const API = {
+  prefix: `http://localhost:${CXG_SERVER_PORT}/`,
+};
 
 // Set up compiler
 const compiler = webpack(config);
 
-compiler.plugin("invalid", () => {
+compiler.hooks.invalid.tap("invalid", () => {
   utils.clearConsole();
   console.log("Compiling...");
 });
 
-compiler.plugin("done", (stats) => {
+compiler.hooks.done.tap("done", (stats) => {
   utils.formatStats(stats, CLIENT_PORT);
 });
 
 // Launch server
 const app = express();
 
-app.use(historyApiFallback({ verbose: false }));
-
 app.use(
   devMiddleware(compiler, {
     logLevel: "warn",
     publicPath: config.output.publicPath,
+    index: true,
   })
 );
 
 app.use(favicon("./favicon.png"));
 
-app.get("*", (req, res) => {
-  res.sendFile(path.resolve("index.html"));
+app.get("/login", async (req, res) => {
+  try {
+    res.redirect(`${API.prefix}login?dataset=http://localhost:${CLIENT_PORT}`);
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+app.get("/logout", async (req, res) => {
+  try {
+    res.redirect(`${API.prefix}logout?dataset=http://localhost:${CLIENT_PORT}`);
+  } catch (err) {
+    console.error(err);
+  }
 });
 
 app.listen(CLIENT_PORT, (err) => {

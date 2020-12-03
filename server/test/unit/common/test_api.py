@@ -1,6 +1,7 @@
 import shutil
 import time
 import unittest
+import zlib
 from http import HTTPStatus
 
 import pandas as pd
@@ -8,8 +9,14 @@ import requests
 
 import server.test.unit.decode_fbs as decode_fbs
 from server.data_common.matrix_loader import MatrixDataType
-from server.test import (data_with_tmp_annotations, make_fbs, PROJECT_ROOT, FIXTURES_ROOT, start_test_server,
-                         stop_test_server)
+from server.test import (
+    data_with_tmp_annotations,
+    make_fbs,
+    PROJECT_ROOT,
+    FIXTURES_ROOT,
+    start_test_server,
+    stop_test_server,
+)
 from server.test.fixtures.fixtures import pbmc3k_colors
 
 BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
@@ -43,7 +50,6 @@ class EndPoints(object):
         result_data = result.json()
         self.assertIn("library_versions", result_data["config"])
         self.assertEqual(result_data["config"]["displayNames"]["dataset"], "pbmc3k")
-        self.assertEqual(len(result_data["config"]["features"]), 5)
 
     def test_get_layout_fbs(self):
         endpoint = "layout/obs"
@@ -338,7 +344,7 @@ class EndPointsAnnotations(EndPoints):
         url = f"{self.URL_BASE}{endpoint}?{query}"
         n_rows = self.data.get_shape()[0]
         fbs = make_fbs({"cat_A": pd.Series(["label_A"] * n_rows, dtype="category")})
-        result = self.session.put(url, data=fbs)
+        result = self.session.put(url, data=zlib.compress(fbs))
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
         self.assertEqual(result.json(), {"status": "OK"})
@@ -381,11 +387,14 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
 
     @classmethod
     def setUpClass(cls):
-        cls._setupClass(cls, [
-            f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
-            "--disable-annotations",
-            "--experimental-enable-reembedding",
-        ])
+        cls._setupClass(
+            cls,
+            [
+                f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
+                "--disable-annotations",
+                "--experimental-enable-reembedding",
+            ],
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -403,10 +412,7 @@ class EndPointsCxg(unittest.TestCase, EndPoints):
 
     @classmethod
     def setUpClass(cls):
-        cls._setupClass(cls, [
-            f"{FIXTURES_ROOT}/pbmc3k.cxg",
-            "--disable-annotations",
-        ])
+        cls._setupClass(cls, [f"{FIXTURES_ROOT}/pbmc3k.cxg", "--disable-annotations"])
 
     @classmethod
     def tearDownClass(cls):
@@ -423,7 +429,7 @@ class EndPointsAnndataAnnotations(unittest.TestCase, EndPointsAnnotations):
         cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_annotations(
             MatrixDataType.H5AD, annotations_fixture=True
         )
-        cls._setupClass(cls, ["--annotations-file", cls.annotations.output_file, cls.data.get_location(), ])
+        cls._setupClass(cls, ["--annotations-file", cls.annotations.output_file, cls.data.get_location()])
 
     @classmethod
     def tearDownClass(cls):
@@ -439,11 +445,7 @@ class EndPointsCxgAnnotations(unittest.TestCase, EndPointsAnnotations):
     @classmethod
     def setUpClass(cls):
         cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_annotations(MatrixDataType.CXG, annotations_fixture=True)
-        cls._setupClass(cls, [
-            "--annotations-file",
-            cls.annotations.output_file,
-            cls.data.get_location(),
-        ])
+        cls._setupClass(cls, ["--annotations-file", cls.annotations.output_file, cls.data.get_location()])
 
     @classmethod
     def tearDownClass(cls):

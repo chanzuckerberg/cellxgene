@@ -7,7 +7,7 @@
 
 <!-- Begin Jekyll SEO tag v2.6.1 -->
 <title>Hosting cellxgene on the web | cellxgene</title>
-<meta name="generator" content="Jekyll v3.8.7" />
+<meta name="generator" content="Jekyll v3.9.0" />
 <meta property="og:title" content="Hosting cellxgene on the web" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="An interactive explorer for single-cell transcriptomics data" />
@@ -16,10 +16,10 @@
 <meta property="og:url" content="https://chanzuckerberg.github.io/cellxgene/posts/hosted.html" />
 <meta property="og:site_name" content="cellxgene" />
 <script type="application/ld+json">
-{"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://chanzuckerberg.github.io/cellxgene/cellxgene-logo.png"}},"description":"An interactive explorer for single-cell transcriptomics data","@type":"WebPage","headline":"Hosting cellxgene on the web","url":"https://chanzuckerberg.github.io/cellxgene/posts/hosted.html","@context":"https://schema.org"}</script>
+{"url":"https://chanzuckerberg.github.io/cellxgene/posts/hosted.html","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://chanzuckerberg.github.io/cellxgene/cellxgene-logo.png"}},"headline":"Hosting cellxgene on the web","description":"An interactive explorer for single-cell transcriptomics data","@type":"WebPage","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
-    <link rel="stylesheet" href="/cellxgene/assets/css/style.css?v=6bda27f5542fb7f469425e1cd99f2f37268b095f">
+    <link rel="stylesheet" href="/cellxgene/assets/css/style.css?v=3718e894edc8a8f6e7776946695ab37c5c96ec9f">
     <!--[if lt IE 9]>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
     <![endif]-->
@@ -43,6 +43,10 @@
         
         
         <a href="/cellxgene/posts/gallery" class="btn">Gallery</a><br>
+        
+        
+        
+        <a href="https://cellxgene.cziscience.com/" class="btn">Cellxgene data portal</a><br>
         
         
         
@@ -83,10 +87,6 @@
         
         
         <a href="/cellxgene/posts/contact" class="btn">Contact & finding help</a><br>
-        
-        
-        
-        <a href="/cellxgene/posts/cellxgene_cziscience_com" class="btn">cellxgene.cziscience.com</a><br>
         
         
 
@@ -139,35 +139,36 @@
 
 <h1 id="deploying-cellxgene-with-heroku">Deploying cellxgene with Heroku</h1>
 
-<h2 id="quickstart">Quickstart</h2>
+<h2 id="heroku-support">Heroku Support</h2>
 
-<p>Clicking on the following button will forward you to Heroku to begin the deployment process:</p>
+<p>The cellxgene team has decided to end our support for our experimental deploy to Heroku button as we move towards providing a supported method of hosted cellxgene.</p>
 
-<p><a href="https://heroku.com/deploy?template=https://github.com/chanzuckerberg/cellxgene">
- <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy" />
-</a></p>
+<p>While we no longer directly support Heroku, it is still possible to create a Heroku app via <a href="https://github.com/chanzuckerberg/cellxgene/blob/main/Dockerfile">our provided Dockerfile here</a> and <a href="https://devcenter.heroku.com/articles/build-docker-images-heroku-yml">Heroku’s documentation</a>.</p>
 
-<p>If not already logged in to Heroku, there you will be prompted to log in or sign up for an account.</p>
+<p>You may have to tweak the <code class="language-plaintext highlighter-rouge">Dockerfile</code> like so:</p>
 
-<p>Once logged in you will be sent to the setup page. Here you can set some of the basic settings for the app:</p>
+<pre><code class="language-Dockerfile">FROM ubuntu:bionic
 
-<h3 id="default-settings">Default settings</h3>
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
 
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">App name</code>: the unique name for your deployment</li>
-  <li>This will also serve as the default URL (e.g. https://cellxgene.herokapp.com/)</li>
-  <li><code class="language-plaintext highlighter-rouge">App owner</code>: Who will own this app. Either you personally or an organization/team</li>
-  <li><code class="language-plaintext highlighter-rouge">Region</code>: Location of the server where the app will be deployed (EU or US)</li>
-</ul>
+RUN apt-get update &amp;&amp; \
+    apt-get install -y build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests &amp;&amp; \
+    pip3 install cellxgene
 
-<h3 id="configuration">Configuration</h3>
+# ENTRYPOINT ["cellxgene"]  # Heroku doesn't work well with ENTRYPOINT
+</code></pre>
 
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">DATASET</code>: A <em>publicly</em> accessible URL pointing to a .h5ad file to view</li>
-  <li>This defaults to pbm3k.h5ad</li>
-</ul>
+<p>and provide a <code class="language-plaintext highlighter-rouge">heroku.yml</code> file similar to this:</p>
 
-<p>After filling out the settings and pressing the <code class="language-plaintext highlighter-rouge">Deploy app</code> button Heroku will begin building your deployment. This process will take a few minutes, but once completed you will have a personal free hosted version of cellxgene!</p>
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">build</span><span class="pi">:</span>
+  <span class="na">docker</span><span class="pi">:</span>
+    <span class="na">web</span><span class="pi">:</span> <span class="s">Dockerfile</span>
+<span class="na">run</span><span class="pi">:</span>
+  <span class="na">web</span><span class="pi">:</span>
+    <span class="na">command</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">cellxgene launch --host 0.0.0.0 --port $PORT $DATASET</span> <span class="c1"># the DATATSET config var must be defined in your dashboard settings.</span>
+</code></pre></div></div>
 
 <h2 id="what-is-heroku">What is Heroku?</h2>
 

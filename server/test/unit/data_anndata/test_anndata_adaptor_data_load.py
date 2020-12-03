@@ -3,7 +3,7 @@ import json
 
 from server.data_anndata.anndata_adaptor import AnndataAdaptor
 from server.common.data_locator import DataLocator
-from server.common.app_config import AppConfig
+from server.common.config.app_config import AppConfig
 from server.test import PROJECT_ROOT
 
 
@@ -16,6 +16,7 @@ class DataLoadAdaptorTest(unittest.TestCase):
         self.data_file = DataLocator(f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad")
         config = AppConfig()
         config.update_server_config(single_dataset__datapath=self.data_file.path)
+        config.update_server_config(app__flask_secret_key="secret")
         config.complete_config()
         self.data = AnndataAdaptor(self.data_file, config)
 
@@ -45,6 +46,7 @@ class DataLocatorAdaptorTest(unittest.TestCase):
         config.update_server_config(
             single_dataset__obs_names=None, single_dataset__var_names=None,
         )
+        config.update_server_config(app__flask_secret_key="secret")
         config.update_default_dataset_config(
             embeddings__names=["umap"], presentation__max_categories=100, diffexp__lfc_cutoff=0.01,
         )

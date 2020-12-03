@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from server_timing import Timing as ServerTiming
 
-from server.common.app_config import AppFeature, AppConfig
+from server.common.config.app_config import AppConfig
 from server.common.constants import Axis
 from server.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError
 from server.common.utils.utils import jsonify_numpy
@@ -155,17 +155,6 @@ class DataAdaptor(metaclass=ABCMeta):
         """
         pass
 
-    def get_features(self, annotations=None):
-        """Return list of features, to return as part of the config route"""
-        features = [
-            AppFeature("/cluster/", method="POST", available=False),
-            AppFeature("/layout/obs", method="GET", available=self.get_embedding_names() is not None),
-            AppFeature("/layout/obs", method="PUT", available=self.dataset_config.embeddings__enable_reembedding),
-            AppFeature("/diffexp/", method="POST", available=self.dataset_config.diffexp__enable),
-            AppFeature("/annotations/obs", method="PUT", available=annotations is not None),
-        ]
-        return features
-
     def update_parameters(self, parameters):
         parameters.update(self.parameters)
 
@@ -173,7 +162,7 @@ class DataAdaptor(metaclass=ABCMeta):
         mask = np.zeros((count,), dtype=np.bool)
         for i in filter:
             if type(i) == list:
-                mask[i[0]: i[1]] = True
+                mask[i[0] : i[1]] = True
             else:
                 mask[i] = True
         return mask
@@ -260,6 +249,23 @@ class DataAdaptor(metaclass=ABCMeta):
         if labels_df.shape[0] != shape[0]:
             raise ValueError("Labels file must have same number of rows as data file.")
 
+        # This will convert a float column that contains integer data into an integer type.
+        # This case can occur when a user makes a copy of a category that originally contained integer data.
+        # The client always copies array data to floats, therefore the copy will contain floats instead of integers.
+        # float data is not allowed as a categorical type.
+        if any([np.issubdtype(coltype.type, np.floating) for coltype in labels_df.dtypes]):
+            labels_df = labels_df.convert_dtypes()
+            for col, dtype in zip(labels_df, labels_df.dtypes):
+                if isinstance(dtype, pd.Int32Dtype):
+                    labels_df[col] = labels_df[col].astype("int32")
+                if isinstance(dtype, pd.Int64Dtype):
+                    labels_df[col] = labels_df[col].astype("int64")
+
+        if any([np.issubdtype(coltype.type, np.floating) for coltype in labels_df.dtypes]):
+            raise ValueError("Columns may not have floating point types")
+
+        return labels_df
+
     def data_frame_to_fbs_matrix(self, filter, axis):
         """
         Retrieves data 'X' and returns in a flatbuffer Matrix.
@@ -314,7 +320,7 @@ class DataAdaptor(metaclass=ABCMeta):
             top_n = self.dataset_config.diffexp__top_n
 
         if self.server_config.exceeds_limit(
-                "diffexp_cellcount_max", np.count_nonzero(obs_mask_A) + np.count_nonzero(obs_mask_B)
+            "diffexp_cellcount_max", np.count_nonzero(obs_mask_A) + np.count_nonzero(obs_mask_B)
         ):
             raise ExceedsLimitError("Diffexp request exceeds max cell count limit")
 

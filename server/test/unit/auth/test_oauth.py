@@ -9,7 +9,7 @@ from flask import Flask, jsonify, make_response, request, redirect
 from multiprocessing import Process
 
 import jose
-from server.common.app_config import AppConfig
+from server.common.config.app_config import AppConfig
 from server.test import FIXTURES_ROOT, test_server
 
 # This tests the oauth authentication type.
@@ -46,7 +46,7 @@ def token():
         "scope": "openid profile email",
         "expires_in": TOKEN_EXPIRES,
         "token_type": "Bearer",
-        "expires_at": expires_at
+        "expires_at": expires_at,
     }
     return make_response(jsonify(r))
 
@@ -63,35 +63,57 @@ def jwks():
     return make_response(jsonify(dict(keys=[data])))
 
 
-# The port that the mock oauth server will listen on
-PORT = random.randint(10000, 12000)
-
-
 # function to launch the mock oauth server
-def launch_mock_oauth():
-    mock_oauth_app.run(port=PORT)
+def launch_mock_oauth(mock_port):
+    mock_oauth_app.run(port=mock_port)
 
 
 class AuthTest(unittest.TestCase):
-    def setUp(self):
-        self.dataset_dataroot = FIXTURES_ROOT
-        self.mock_oauth_process = Process(target=launch_mock_oauth)
-        self.mock_oauth_process.start()
+    @classmethod
+    def setUpClass(cls):
+        # The port that the mock oauth server will listen on
+        cls.mock_port = random.randint(10000, 12000)
+        cls.dataset_dataroot = FIXTURES_ROOT
+        cls.mock_oauth_process = Process(target=launch_mock_oauth, args=(cls.mock_port,))
+        cls.mock_oauth_process.start()
 
-    def tearDown(self):
-        self.mock_oauth_process.terminate()
+        # Verify that the mock oauth server is ready (accepting requests) before starting the tests.
+
+        # The following lines are polling until the mock server is ready.
+        # The issue is we are starting a mock oauth server, then we are starting a cellxgene server,
+        # which will start making requests to the mock oauth server.
+        # So there is a race condition because the mock oauth server needs to be ready before it gets requests.
+        # We check to see if it is ready, and if not we wait 1 second, then try again.
+        # If it gets to 5 seconds, which is shouldn't, we assume something has gone wrong and fail the test.
+        server_okay = False
+        for _ in range(5):
+            try:
+                response = requests.get(f"http://localhost:{cls.mock_port}/.well-known/jwks.json")
+                if response.status_code == 200:
+                    server_okay = True
+                    break
+            except:  # noqa: E722
+                pass
+
+            # wait one second and try again
+            time.sleep(1)
+
+        assert(server_okay)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.mock_oauth_process.terminate()
 
     def auth_flow(self, app_config, cookie_key=None):
 
         app_config.update_server_config(
             app__api_base_url="local",
             authentication__type="oauth",
-            authentication__params_oauth__oauth_api_base_url=f"http://localhost:{PORT}",
+            authentication__params_oauth__oauth_api_base_url=f"http://localhost:{self.mock_port}",
             authentication__params_oauth__client_id="mock_client_id",
             authentication__params_oauth__client_secret="mock_client_secret",
-            authentication__params_oauth__jwt_decode_options={
-                "verify_signature": False, "verify_iss": False
-            })
+            authentication__params_oauth__jwt_decode_options={"verify_signature": False, "verify_iss": False},
+        )
 
         app_config.update_server_config(multi_dataset__dataroot=self.dataset_dataroot)
         app_config.complete_config()
@@ -112,7 +134,7 @@ class AuthTest(unittest.TestCase):
             logout_uri = config["config"]["authentication"]["logout"]
 
             self.assertEqual(login_uri, f"{server}/login?dataset=d/pbmc3k.cxg/")
-            self.assertEqual(logout_uri, f"{server}/logout")
+            self.assertEqual(logout_uri, f"{server}/logout?dataset=d/pbmc3k.cxg/")
 
             r = session.get(login_uri)
             # check that the login redirect worked
@@ -122,6 +144,7 @@ class AuthTest(unittest.TestCase):
             userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
             self.assertTrue(userinfo["userinfo"]["is_authenticated"])
             self.assertEqual(userinfo["userinfo"]["username"], "fake_user")
+            self.assertEqual(userinfo["userinfo"]["email"], "fake_user@email.com")
             self.assertTrue(config["config"]["parameters"]["annotations"])
 
             if cookie_key:
@@ -147,10 +170,32 @@ class AuthTest(unittest.TestCase):
                 self.assertNotEqual(access_token_before, access_token_after)
                 self.assertNotEqual(id_token_before, id_token_after)
 
+                # invalid cookie is rejected
+                session.cookies.set(cookie_key, "TEST_" + cookie)
+                self.assertTrue(cookie_key in session.cookies)
+                response = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo")
+                # this is not an error, the invalid cookie is just ignored.
+                self.assertEqual(response.status_code, 200)
+                userinfo = response.json()
+                self.assertFalse(userinfo["userinfo"]["is_authenticated"])
+                self.assertIsNone(userinfo["userinfo"]["username"])
+
+                # invalid id_token is rejected
+                test_token = token
+                test_token["id_token"] = "TEST_" + id_token_after
+                encoded_cookie = base64.b64encode(json.dumps(test_token).encode()).decode()
+                session.cookies.set(cookie_key, encoded_cookie)
+                response = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo")
+                # this is not an error, the invalid id_token is just ignored.
+                self.assertEqual(response.status_code, 200)
+                userinfo = response.json()
+                self.assertFalse(userinfo["userinfo"]["is_authenticated"])
+                self.assertIsNone(userinfo["userinfo"]["username"])
+
             r = session.get(logout_uri)
             # check that the logout redirect worked
             self.assertEqual(r.history[0].status_code, 302)
-            self.assertEqual(r.url, f"{server}")
+            self.assertEqual(r.url, f"{server}/d/pbmc3k.cxg/")
             config = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/config").json()
             userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
             self.assertFalse(userinfo["userinfo"]["is_authenticated"])
@@ -160,14 +205,14 @@ class AuthTest(unittest.TestCase):
     def test_auth_oauth_session(self):
         # test with session cookies
         app_config = AppConfig()
-        app_config.update_server_config(
-            authentication__params_oauth__session_cookie=True,
-        )
+        app_config.update_server_config(app__flask_secret_key="secret")
+        app_config.update_server_config(authentication__params_oauth__session_cookie=True,)
         self.auth_flow(app_config)
 
     def test_auth_oauth_cookie(self):
         # test with specified cookie
         app_config = AppConfig()
+        app_config.update_server_config(app__flask_secret_key="secret")
         app_config.update_server_config(
             authentication__params_oauth__session_cookie=False,
             authentication__params_oauth__cookie=dict(key="test_cxguser", httponly=True, max_age=60),

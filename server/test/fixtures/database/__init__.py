@@ -29,34 +29,26 @@ class TestDatabase:
 
     def _create_test_user(self):
         user = CellxGeneUser(id="test_user_id")
-        user2 = CellxGeneUser(id='1234')
+        user2 = CellxGeneUser(id="1234")
         self.db.session.add(user)
         self.db.session.add(user2)
         self.db.session.commit()
 
     def _create_test_dataset(self):
-        dataset = CellxGeneDataset(
-            name="test_dataset",
-        )
+        dataset = CellxGeneDataset(name="test_dataset",)
         self.db.session.add(dataset)
         self.db.session.commit()
 
     def _create_test_annotation(self):
-        dataset = self.db.query([CellxGeneDataset],
-                                [CellxGeneDataset.name == "test_dataset"],
-                                )[0]
-        annotation = Annotation(
-            tiledb_uri="tiledb_uri",
-            user_id="test_user_id",
-            dataset_id=str(dataset.id)
-        )
+        dataset = self.db.query([CellxGeneDataset], [CellxGeneDataset.name == "test_dataset"],)[0]
+        annotation = Annotation(tiledb_uri="tiledb_uri", user_id="test_user_id", dataset_id=str(dataset.id))
         self.db.session.add(annotation)
         self.db.session.commit()
 
     @staticmethod
     def get_random_string():
         letters = string.ascii_lowercase
-        return ''.join(random.choice(letters) for i in range(12))
+        return "".join(random.choice(letters) for i in range(12))
 
     def _create_test_users(self, user_count: int = 10):
         users = []
@@ -80,10 +72,8 @@ class TestDatabase:
         for i in range(annotation_count):
             dataset = self.order_by_random(CellxGeneDataset)
             user = self.order_by_random(CellxGeneUser)
-            annotations.append(Annotation(
-                tiledb_uri=self.get_random_string(),
-                user_id=user.id,
-                dataset_id=str(dataset.id)
-            ))
+            annotations.append(
+                Annotation(tiledb_uri=self.get_random_string(), user_id=user.id, dataset_id=str(dataset.id))
+            )
         self.db.session.add_all(annotations)
         self.db.session.commit()

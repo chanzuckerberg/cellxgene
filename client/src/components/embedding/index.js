@@ -2,13 +2,14 @@ import React from "react";
 import { connect } from "react-redux";
 import { useAsync } from "react-async";
 import {
-  ButtonGroup,
-  Popover,
   Button,
+  ButtonGroup,
+  H4,
+  Popover,
+  Position,
   Radio,
   RadioGroup,
   Tooltip,
-  Position,
 } from "@blueprintjs/core";
 import * as globals from "../../globals";
 import actions from "../../actions";
@@ -80,7 +81,7 @@ class Embedding extends React.PureComponent {
                 width: 400,
               }}
             >
-              <h1>Embedding Choice</h1>
+              <H4>Embedding Choice</H4>
               <p style={{ fontStyle: "italic" }}>
                 There are {schema?.dataframe?.nObs} cells in the entire dataset.
               </p>

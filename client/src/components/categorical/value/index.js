@@ -4,12 +4,13 @@ import * as d3 from "d3";
 
 import {
   Button,
+  Classes,
+  Icon,
   Menu,
   MenuItem,
   Popover,
-  Position,
-  Icon,
   PopoverInteractionKind,
+  Position,
 } from "@blueprintjs/core";
 import * as globals from "../../../globals";
 import styles from "../categorical.css";
@@ -410,7 +411,6 @@ class CategoryValue extends React.Component {
 
     return (
       <MiniStackedBar
-        /* eslint-disable react/jsx-props-no-spreading -- Disable unneeded on next release of eslint-config-airbnb */
         {...{
           colorTable,
           domainValues,
@@ -418,7 +418,6 @@ class CategoryValue extends React.Component {
           domain,
           occupancy,
         }}
-        /* eslint-enable react/jsx-props-no-spreading -- enable */
         height={VALUE_HEIGHT}
         width={CHART_WIDTH}
       />
@@ -461,14 +460,12 @@ class CategoryValue extends React.Component {
 
     return (
       <MiniHistogram
-        /* eslint-disable react/jsx-props-no-spreading -- Disable unneeded on next release of eslint-config-airbnb */
         {...{
           colorScale,
           xScale,
           yScale,
           bins,
         }}
-        /* eslint-enable react/jsx-props-no-spreading -- enable */
         obsOrVarContinuousFieldDisplayName={colorAccessor}
         domainLabel={label}
         height={VALUE_HEIGHT}
@@ -564,7 +561,7 @@ class CategoryValue extends React.Component {
           <div style={{ display: "flex", alignItems: "baseline" }}>
             <label
               htmlFor={valueToggleLabel}
-              className="bp3-control bp3-checkbox"
+              className={`${Classes.CONTROL} ${Classes.CHECKBOX}`}
               style={{ margin: 0 }}
             >
               <input
@@ -576,7 +573,7 @@ class CategoryValue extends React.Component {
                 type="checkbox"
               />
               <span
-                className="bp3-control-indicator"
+                className={Classes.CONTROL_INDICATOR}
                 onMouseEnter={this.handleMouseExit}
                 onMouseLeave={this.handleMouseEnter}
               />

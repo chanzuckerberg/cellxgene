@@ -13,6 +13,8 @@ nav:
     url: posts/install
   - title: Gallery
     url: posts/gallery
+  - title: Cellxgene data portal
+    url: https://cellxgene.cziscience.com/
   - title: Demo datasets
     url: posts/demo-data
   - title: Preparing your data
@@ -33,5 +35,3 @@ nav:
     url: posts/contribute
   - title: Contact & finding help
     url: posts/contact
-  - title: cellxgene.cziscience.com
-    url: posts/cellxgene_cziscience_com

@@ -2,10 +2,12 @@ import copy
 import logging
 import sys
 from http import HTTPStatus
+import zlib
 
 from flask import make_response, jsonify, current_app, abort
 from werkzeug.urls import url_unquote
 
+from server.common.config.client_config import get_client_config, get_client_userinfo
 from server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
 from server.common.errors import (
     FilterError,
@@ -117,12 +119,12 @@ def schema_get(data_adaptor):
 
 
 def config_get(app_config, data_adaptor):
-    config = app_config.get_client_config(data_adaptor)
+    config = get_client_config(app_config, data_adaptor)
     return make_response(jsonify(config), HTTPStatus.OK)
 
 
 def userinfo_get(app_config, data_adaptor):
-    config = app_config.get_client_userinfo(data_adaptor)
+    config = get_client_userinfo(app_config, data_adaptor)
     return make_response(jsonify(config), HTTPStatus.OK)
 
 
@@ -154,8 +156,12 @@ def annotations_put_fbs_helper(data_adaptor, fbs):
 
     new_label_df = decode_matrix_fbs(fbs)
     if not new_label_df.empty:
-        data_adaptor.check_new_labels(new_label_df)
+        new_label_df = data_adaptor.check_new_labels(new_label_df)
     annotations.write_labels(new_label_df, data_adaptor)
+
+
+def inflate(data):
+    return zlib.decompress(data)
 
 
 def annotations_obs_put(request, data_adaptor):
@@ -164,7 +170,7 @@ def annotations_obs_put(request, data_adaptor):
         return abort(HTTPStatus.NOT_IMPLEMENTED)
 
     anno_collection = request.args.get("annotation-collection-name", default=None)
-    fbs = request.get_data()
+    fbs = inflate(request.get_data())
 
     if anno_collection is not None:
         if not annotations.is_safe_collection_name(anno_collection):

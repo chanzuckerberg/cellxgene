@@ -67,7 +67,7 @@ For any errors, [report bugs on Github](https://github.com/chanzuckerberg/cellxg
 
 ### Contributing
 
-We warmly welcome contributions from the community! Please see our [contributing guide](https://chanzuckerberg.github.io/cellxgene/posts/contribute) and don't hesitate to open an issue or send a pull request to improve cellxgene.
+We warmly welcome contributions from the community! Please see our [contributing guide](https://chanzuckerberg.github.io/cellxgene/posts/contribute) and don't hesitate to open an issue or send a pull request to improve cellxgene. Please see the [dev_docs](https://github.com/chanzuckerberg/cellxgene/tree/main/dev_docs) for pull request suggestions, unit test details, local documentation preview, and other development specifics. 
 
 This project adheres to the Contributor Covenant [code of conduct](https://github.com/chanzuckerberg/.github/blob/master/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to opensource@chanzuckerberg.com.
 
@@ -81,7 +81,7 @@ If you believe you have found a security issue, we would appreciate notification
 
 # Inspiration
 
-We've been heavily inspired by several other related single-cell visualization projects, including the [UCSC Cell Browswer](http://cells.ucsc.edu/), [Cytoscape](http://www.cytoscape.org/), [Xena](https://xena.ucsc.edu/), [ASAP](https://asap.epfl.ch/), [Gene Pattern](http://genepattern-notebook.org/), and many others. We hope to explore collaborations where useful as this community works together on improving interactive visualization for single-cell data.
+We've been heavily inspired by several other related single-cell visualization projects, including the [UCSC Cell Browser](http://cells.ucsc.edu/), [Cytoscape](http://www.cytoscape.org/), [Xena](https://xena.ucsc.edu/), [ASAP](https://asap.epfl.ch/), [GenePattern](http://genepattern-notebook.org/), and many others. We hope to explore collaborations where useful as this community works together on improving interactive visualization for single-cell data.
 
 We were inspired by Mike Bostock and the [crossfilter](https://github.com/crossfilter) team for the design of our filtering implementation.
 

@@ -1,6 +1,5 @@
 import logging
 import sys
-
 from server.common.utils.utils import import_plugins
 
 __version__ = "0.16.0"

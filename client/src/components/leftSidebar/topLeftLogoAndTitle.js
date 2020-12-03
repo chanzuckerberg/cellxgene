@@ -1,19 +1,28 @@
-// jshint esversion: 6
 import React from "react";
 import { connect } from "react-redux";
 import { Button } from "@blueprintjs/core";
-import { IconNames } from "@blueprintjs/icons";
 
 import * as globals from "../../globals";
 import Logo from "../framework/logo";
 import Truncate from "../util/truncate";
 import InfoDrawer from "../infoDrawer/infoDrawer";
+import InformationMenu from "./infoMenu";
 
 const DATASET_TITLE_FONT_SIZE = 14;
 
-@connect((state) => ({
-  datasetTitle: state.config?.displayNames?.dataset ?? "",
-}))
+@connect((state) => {
+  const { corpora_props: corporaProps } = state.config;
+  const correctVersion =
+    corporaProps?.version?.["corpora_schema_version"] === "1.0.0";
+  return {
+    datasetTitle: state.config?.displayNames?.dataset ?? "",
+    libraryVersions: state.config?.["library_versions"],
+    aboutLink: state.config?.links?.["about-dataset"],
+    tosURL: state.config?.parameters?.["about_legal_tos"],
+    privacyURL: state.config?.parameters?.["about_legal_privacy"],
+    title: correctVersion ? corporaProps?.title : undefined,
+  };
+})
 class LeftSideBar extends React.Component {
   handleClick = () => {
     const { dispatch } = this.props;
@@ -21,7 +30,15 @@ class LeftSideBar extends React.Component {
   };
 
   render() {
-    const { datasetTitle } = this.props;
+    const {
+      datasetTitle,
+      libraryVersions,
+      aboutLink,
+      privacyURL,
+      tosURL,
+      dispatch,
+      title,
+    } = this.props;
 
     return (
       <div
@@ -31,50 +48,65 @@ class LeftSideBar extends React.Component {
           width: globals.leftSidebarWidth,
           zIndex: 1,
           borderBottom: `1px solid ${globals.lighterGrey}`,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        <Logo size={30} />
-        <span
-          style={{
-            fontSize: 28,
-            position: "relative",
-            top: -6,
-            fontWeight: "bold",
-            marginLeft: 5,
-            color: globals.logoColor,
-            userSelect: "none",
-          }}
-        >
-          cell
+        <div>
+          <Logo size={28} />
           <span
             style={{
-              position: "relative",
-              top: 1,
-              fontWeight: 300,
               fontSize: 24,
+              position: "relative",
+              top: -6,
+              fontWeight: "bold",
+              marginLeft: 5,
+              color: globals.logoColor,
+              userSelect: "none",
             }}
           >
-            ×
-          </span>
-          gene
-        </span>
-        <Button
-          minimal
-          icon={IconNames.BOOK}
-          style={{
-            fontSize: DATASET_TITLE_FONT_SIZE,
-            position: "absolute",
-            right: 10,
-          }}
-          onClick={this.handleClick}
-        >
-          <Truncate>
-            <span style={{ maxWidth: 155 }} data-testid="header">
-              {datasetTitle}
+            cell
+            <span
+              style={{
+                position: "relative",
+                top: 1,
+                fontWeight: 300,
+                fontSize: 24,
+              }}
+            >
+              ×
             </span>
-          </Truncate>
-        </Button>
-        <InfoDrawer />
+            gene
+          </span>
+        </div>
+        <div style={{ marginRight: 5, height: "100%" }}>
+          <Button
+            minimal
+            style={{
+              fontSize: DATASET_TITLE_FONT_SIZE,
+              position: "relative",
+              top: -1,
+            }}
+            onClick={this.handleClick}
+          >
+            <Truncate>
+              <span style={{ maxWidth: 155 }} data-testid="header">
+                {title ?? datasetTitle}
+              </span>
+            </Truncate>
+          </Button>
+          <InfoDrawer />
+          <InformationMenu
+            {...{
+              libraryVersions,
+              aboutLink,
+              tosURL,
+              privacyURL,
+              dispatch,
+            }}
+          />
+        </div>
       </div>
     );
   }

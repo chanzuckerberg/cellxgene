@@ -31,9 +31,10 @@ jobs:
       - name: Install dependencies
         run: |
           pip install flake8
+          pip install black
           cd client
           npm install
-      - name: Lint with flake8
+      - name: Format with black and lint with flake8
         run: |
           make lint-server
       - name: Lint src with eslint

@@ -25,10 +25,11 @@ jobs:
   cellxgene-main-with-python-and-anndata-versions:
     name: python versions x anndata versions
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]
-        anndata-version: [0.6.22.post1, 0.7.1]
+        python-version: [3.6, 3.7] # As of Oct 2020 Anndata is not compatible with 3.8
+        anndata-version: [0.7.0, 0.7.1, 0.7.2, 0.7.3, 0.7.4]
         test-suite: [smoke-test, smoke-test-annotations]
     steps:
     - uses: actions/checkout@v2

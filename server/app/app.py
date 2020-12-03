@@ -6,8 +6,17 @@ from urllib.parse import urlparse
 import hashlib
 import os
 
-from flask import Flask, redirect, current_app, make_response, render_template, abort, Blueprint, request, \
-    send_from_directory
+from flask import (
+    Flask,
+    redirect,
+    current_app,
+    make_response,
+    render_template,
+    abort,
+    Blueprint,
+    request,
+    send_from_directory,
+)
 from flask_restful import Api, Resource
 from server_timing import Timing as ServerTiming
 
@@ -87,23 +96,13 @@ def dataset_index(url_dataroot=None, dataset=None):
         cache_manager = current_app.matrix_data_cache_manager
         with cache_manager.data_adaptor(url_dataroot, location, app_config) as data_adaptor:
             data_adaptor.set_uri_path(f"{url_dataroot}/{dataset}")
-            args = {
-                "SCRIPTS" : scripts,
-                "INLINE_SCRIPTS" : inline_scripts
-            }
+            args = {"SCRIPTS": scripts, "INLINE_SCRIPTS": inline_scripts}
             return render_template("index.html", **args)
 
     except DatasetAccessError as e:
         return common_rest.abort_and_log(
             e.status_code, f"Invalid dataset {dataset}: {e.message}", loglevel=logging.INFO, include_exc_info=True
         )
-
-
-@webbp.route("/health", methods=["GET"])
-@cache_control_always(no_store=True)
-def health():
-    config = current_app.app_config
-    return health_check(config)
 
 
 @webbp.errorhandler(RequestException)
@@ -224,6 +223,13 @@ def dataroot_index():
         return redirect(config.server_config.multi_dataset__index)
 
 
+class HealthAPI(Resource):
+    @cache_control(no_store=True)
+    def get(self):
+        config = current_app.app_config
+        return health_check(config)
+
+
 class DatasetResource(Resource):
     """Base class for all Resources that act on datasets."""
 
@@ -312,8 +318,18 @@ class LayoutObsAPI(DatasetResource):
         return common_rest.layout_obs_put(request, data_adaptor)
 
 
-def get_api_resources(bp_api, url_dataroot=None):
-    api = Api(bp_api)
+def get_api_base_resources(bp_base):
+    """Add resources that are accessed from the api_base_url"""
+    api = Api(bp_base)
+
+    # Diagnostics routes
+    api.add_resource(HealthAPI, "/health")
+    return api
+
+
+def get_api_dataroot_resources(bp_dataroot, url_dataroot=None):
+    """Add resources that refer to a dataset"""
+    api = Api(bp_dataroot)
 
     def add_resource(resource, url):
         """convenience function to make the outer function less verbose"""
@@ -385,18 +401,24 @@ class Server:
             parse = urlparse(api_base_url)
             api_path = parse.path
 
+        bp_base = Blueprint("bp_base", __name__, url_prefix=api_path)
+        base_resources = get_api_base_resources(bp_base)
+        self.app.register_blueprint(base_resources.blueprint)
+
         if app_config.is_multi_dataset():
             # NOTE:  These routes only allow the dataset to be in the directory
             # of the dataroot, and not a subdirectory.  We may want to change
             # the route format at some point
             for dataroot_dict in server_config.multi_dataset__dataroot.values():
                 url_dataroot = dataroot_dict["base_url"]
-                bp_api = Blueprint(
-                    f"api_dataset_{url_dataroot}", __name__,
-                    url_prefix=f"{api_path}/{url_dataroot}/<dataset>" + api_version
+                bp_dataroot = Blueprint(
+                    f"api_dataset_{url_dataroot}",
+                    __name__,
+                    url_prefix=f"{api_path}/{url_dataroot}/<dataset>" + api_version,
                 )
-                resources = get_api_resources(bp_api, url_dataroot)
-                self.app.register_blueprint(resources.blueprint)
+                dataroot_resources = get_api_dataroot_resources(bp_dataroot, url_dataroot)
+                self.app.register_blueprint(dataroot_resources.blueprint)
+
                 self.app.add_url_rule(
                     f"/{url_dataroot}/<dataset>/",
                     f"dataset_index_{url_dataroot}",
@@ -407,18 +429,18 @@ class Server:
                     f"/{url_dataroot}/<dataset>/static/<path:filename>",
                     f"static_assets_{url_dataroot}",
                     view_func=lambda dataset, filename: send_from_directory("../common/web/static", filename),
-                    methods=["GET"]
+                    methods=["GET"],
                 )
 
         else:
             bp_api = Blueprint("api", __name__, url_prefix=f"{api_path}{api_version}")
-            resources = get_api_resources(bp_api)
+            resources = get_api_dataroot_resources(bp_api)
             self.app.register_blueprint(resources.blueprint)
             self.app.add_url_rule(
                 "/static/<path:filename>",
                 "static_assets",
                 view_func=lambda filename: send_from_directory("../common/web/static", filename),
-                methods=["GET"]
+                methods=["GET"],
             )
 
         self.app.matrix_data_cache_manager = server_config.matrix_data_cache_manager

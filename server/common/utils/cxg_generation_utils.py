@@ -111,7 +111,7 @@ def convert_ndarray_to_cxg_dense_array(ndarray_name, ndarray, ctx):
 
 
 def convert_matrix_to_cxg_array(
-        matrix_name, matrix, encode_as_sparse_array, ctx, column_shift_for_sparse_encoding=None
+    matrix_name, matrix, encode_as_sparse_array, ctx, column_shift_for_sparse_encoding=None
 ):
     """
     Converts a numpy array matrix into a TileDB SparseArray of DenseArray based on whether `encode_as_sparse_array`

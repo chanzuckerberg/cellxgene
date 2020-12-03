@@ -6,8 +6,8 @@ import * as globals from "../../globals";
 import styles from "./menubar.css";
 import actions from "../../actions";
 import Clip from "./clip";
+
 import AuthButtons from "./authButtons";
-import InformationMenu from "./infoMenu";
 import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
 import DiffexpButtons from "./diffexpButtons";
@@ -42,7 +42,7 @@ import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
     celllist2: state.differential.celllist2,
     libraryVersions: state.config?.["library_versions"],
     auth: state.config?.authentication,
-    userinfo: state.userinfo,
+    userInfo: state.userInfo,
     undoDisabled: state["@@undoable/past"].length === 0,
     redoDisabled: state["@@undoable/future"].length === 0,
     aboutLink: state.config?.links?.["about-dataset"],
@@ -204,7 +204,6 @@ class MenuBar extends React.PureComponent {
   render() {
     const {
       dispatch,
-      libraryVersions,
       disableDiffexp,
       undoDisabled,
       redoDisabled,
@@ -212,17 +211,14 @@ class MenuBar extends React.PureComponent {
       clipPercentileMin,
       clipPercentileMax,
       graphInteractionMode,
-      aboutLink,
       showCentroidLabels,
-      privacyURL,
-      tosURL,
       categoricalSelection,
       colorAccessor,
       subsetPossible,
       subsetResetPossible,
       enableReembedding,
+      userInfo,
       auth,
-      userinfo,
     } = this.props;
     const { pendingClipPercentiles } = this.state;
 
@@ -248,10 +244,7 @@ class MenuBar extends React.PureComponent {
           zIndex: 3,
         }}
       >
-        <AuthButtons auth={auth} userinfo={userinfo} />
-        <InformationMenu
-          {...{ libraryVersions, aboutLink, tosURL, privacyURL, dispatch }}
-        />
+        <AuthButtons {...{ auth, userInfo }} />
         <UndoRedoReset
           dispatch={dispatch}
           undoDisabled={undoDisabled}
