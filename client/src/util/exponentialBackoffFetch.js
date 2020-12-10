@@ -9,11 +9,12 @@ export default function createBackoffFetch(retryTimes = 3) {
   let retryCount = 0;
   let returnObject = initReturnObject;
 
-  const promiseExecuter = (fetchArgs) => {
+  const backoffFetch = (fetchArgs) => {
     if (retryCount >= retryTimes) {
       returnObject.inProgress = false;
       return returnObject;
     }
+    if (retryCount > 0 && !returnObject.inProgress) return returnObject;
     retryCount += 1;
     // DEBUG
     // DEBUG
@@ -25,21 +26,28 @@ export default function createBackoffFetch(retryTimes = 3) {
       fetch(...fetchArgs)
         .then((response) => {
           returnObject.response = response;
-          returnObject.inProgress = false;
+          if (response.ok) {
+            returnObject.inProgress = false;
+            return returnObject;
+          }
         })
         .catch((e) => {
           returnObject.error = e;
         });
-      return returnObject;
+      backoffFetch(fetchArgs);
     }
     timeoutRef = setTimeout(async () => {
       try {
         const response = await fetch(...fetchArgs);
         returnObject.response = response;
-        returnObject.inProgress = false;
-        clearTimeout(timeoutRef);
+        if (response.ok) {
+          returnObject.inProgress = false;
+        } else {
+          backoffFetch(fetchArgs);
+        }
       } catch (e) {
         returnObject.error = e;
+        backoffFetch(fetchArgs);
       }
     }, 700 * 5 ** retryCount - 1);
 
@@ -61,7 +69,8 @@ export default function createBackoffFetch(retryTimes = 3) {
       timeoutRef = null;
       retryCount = 0;
       returnObject = initReturnObject;
+      backoffFetch(fetchArgs);
     }
-    return promiseExecuter(fetchArgs);
+    return returnObject;
   };
 }
