@@ -325,7 +325,11 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
   const state = getState();
   const { annotations, autosave } = state;
   const { dataCollectionNameIsReadOnly, dataCollectionName } = annotations;
-  const { lastSavedAnnoMatrix, saveInProgress } = autosave;
+  const {
+    lastSavedAnnoMatrix,
+    saveInProgress,
+    exponentialBackoffFetch,
+  } = autosave;
 
   const annoMatrix = state.annoMatrix.base();
 
@@ -349,41 +353,41 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
   const df = await annoMatrix.fetch("obs", writableAnnotations(annoMatrix));
   const matrix = MatrixFBS.encodeMatrixFBS(df);
   const compressedMatrix = pako.deflate(matrix);
-  try {
-    const queryString =
-      !dataCollectionNameIsReadOnly && !!dataCollectionName
-        ? `?annotation-collection-name=${encodeURIComponent(
-            dataCollectionName
-          )}`
-        : "";
-    const res = await fetch(
-      `${globals.API.prefix}${globals.API.version}annotations/obs${queryString}`,
-      {
-        method: "PUT",
-        body: compressedMatrix,
-        headers: new Headers({
-          "Content-Type": "application/octet-stream",
-        }),
-        credentials: "include",
-      }
-    );
-    if (res.ok) {
-      dispatch({
-        type: "writable obs annotations - save complete",
-        lastSavedAnnoMatrix: annoMatrix,
-      });
-    } else {
-      dispatch({
-        type: "writable obs annotations - save error",
-        message: `HTTP error ${res.status} - ${res.statusText}`,
-        res,
-      });
+  const queryString =
+    !dataCollectionNameIsReadOnly && !!dataCollectionName
+      ? `?annotation-collection-name=${encodeURIComponent(dataCollectionName)}`
+      : "";
+  const { response, inProgress, error } = exponentialBackoffFetch(
+    `${globals.API.prefix}${globals.API.version}annotations/obs${queryString}`,
+    {
+      method: "PUT",
+      body: compressedMatrix,
+      headers: new Headers({
+        "Content-Type": "application/octet-stream",
+      }),
+      credentials: "include",
     }
-  } catch (error) {
+  );
+  if (inProgress) {
+    return;
+  }
+  if (!response && error) {
     dispatch({
       type: "writable obs annotations - save error",
       message: error.toString(),
       error,
+    });
+  }
+  if (response.ok) {
+    dispatch({
+      type: "writable obs annotations - save complete",
+      lastSavedAnnoMatrix: annoMatrix,
+    });
+  } else {
+    dispatch({
+      type: "writable obs annotations - save error",
+      message: `HTTP error ${response.status} - ${response.statusText}`,
+      response,
     });
   }
 };
