@@ -358,6 +358,7 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
       ? `?annotation-collection-name=${encodeURIComponent(dataCollectionName)}`
       : "";
   const { response, inProgress, error } = exponentialBackoffFetch(
+    annoMatrix,
     `${globals.API.prefix}${globals.API.version}annotations/obs${queryString}`,
     {
       method: "PUT",

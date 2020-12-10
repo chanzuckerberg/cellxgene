@@ -18,7 +18,7 @@ export default function createBackoffFetch(retryTimes = 3) {
     // DEBUG
     // DEBUG
     // DEBUG
-    console.log("DELAY CALL anno", fetchArgs);
+    console.log("DELAY CALL anno", ...fetchArgs);
     console.log("DELAY CALL retryCount", retryCount);
     if (retryCount === 1) {
       returnObject.inProgress = true;
@@ -46,7 +46,7 @@ export default function createBackoffFetch(retryTimes = 3) {
     return returnObject;
   };
 
-  return (hash, fetchArgs) => {
+  return (hash, ...fetchArgs) => {
     // DEBUG
     // DEBUG
     // DEBUG
