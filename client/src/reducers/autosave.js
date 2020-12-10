@@ -1,8 +1,11 @@
+import createBackoffFetch from "../util/exponentialBackoffFetch";
+
 const Autosave = (
   state = {
     saveInProgress: false,
     error: false,
     lastSavedAnnoMatrix: null,
+    exponentialBackoffFetch: null,
   },
   action
 ) => {
@@ -13,6 +16,7 @@ const Autosave = (
         error: false,
         saveInProgress: false,
         lastSavedAnnoMatrix: action.annoMatrix,
+        exponentialBackoffFetch: createBackoffFetch(3),
       };
     }
 
