@@ -11,6 +11,7 @@ export default function createBackoffFetch(retryTimes = 3) {
 
   // This will only be called by itself or when we've seen a new matrix
   const backoffFetch = (fetchArgs) => {
+    console.log(returnObject);
     // If we've expended all of our attempts
     if (retryCount >= retryTimes) {
       returnObject.inProgress = false;
@@ -70,9 +71,6 @@ export default function createBackoffFetch(retryTimes = 3) {
     // DEBUG
     console.log("-------prevAnno", prevHash);
     console.log("-------anno", hash);
-    if (!prevHash) {
-      prevHash = hash;
-    }
     if (prevHash !== hash) {
       clearTimeout(timeoutRef);
       prevHash = hash;
