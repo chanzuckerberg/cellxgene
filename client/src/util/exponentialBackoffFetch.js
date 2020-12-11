@@ -36,7 +36,7 @@ export default function createBackoffFetch(retryTimes = 3) {
               resolve(response);
             } else if (retryCount - 1 === retryTimes) {
               if (error) reject(error);
-              reject(response);
+              resolve(response);
             } else {
               // Some non 2xx response code
               promiseExecuter(resolve, reject);
