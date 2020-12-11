@@ -51,10 +51,11 @@ class Autosave extends React.Component {
   };
 
   statusMessage() {
-    const { error } = this.props;
+    const { error, saveInProgress } = this.props;
     if (error) {
       return `Autosave error: ${error}`;
     }
+    if (saveInProgress) return `Saving...`;
     return this.needToSave() ? "Unsaved" : "All saved";
   }
 
