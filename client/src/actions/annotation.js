@@ -357,38 +357,36 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
     !dataCollectionNameIsReadOnly && !!dataCollectionName
       ? `?annotation-collection-name=${encodeURIComponent(dataCollectionName)}`
       : "";
-  const { response, inProgress, error } = exponentialBackoffFetch(
-    annoMatrix,
-    `${globals.API.prefix}${globals.API.version}annotations/obs${queryString}`,
-    {
-      method: "PUT",
-      body: compressedMatrix,
-      headers: new Headers({
-        "Content-Type": "application/octet-stream",
-      }),
-      credentials: "include",
+  try {
+    const response = await exponentialBackoffFetch(
+      annoMatrix,
+      `${globals.API.prefix}${globals.API.version}annotations/obs${queryString}`,
+      {
+        method: "PUT",
+        body: compressedMatrix,
+        headers: new Headers({
+          "Content-Type": "application/octet-stream",
+        }),
+        credentials: "include",
+      }
+    );
+    if (response.ok) {
+      dispatch({
+        type: "writable obs annotations - save complete",
+        lastSavedAnnoMatrix: annoMatrix,
+      });
+    } else {
+      dispatch({
+        type: "writable obs annotations - save error",
+        message: `HTTP error ${response.status} - ${response.statusText}`,
+        response,
+      });
     }
-  );
-  if (inProgress) {
-    return;
-  }
-  if (!response && error) {
+  } catch (error) {
     dispatch({
       type: "writable obs annotations - save error",
       message: error.toString(),
       error,
-    });
-  }
-  if (response.ok) {
-    dispatch({
-      type: "writable obs annotations - save complete",
-      lastSavedAnnoMatrix: annoMatrix,
-    });
-  } else {
-    dispatch({
-      type: "writable obs annotations - save error",
-      message: `HTTP error ${response.status} - ${response.statusText}`,
-      response,
     });
   }
 };
