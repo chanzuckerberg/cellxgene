@@ -48,7 +48,7 @@ export default function createBackoffFetch(retryTimes = 3) {
             promiseExecuter(resolve, reject);
           }
           // delay amount (3.5, 17.5, 87.5, 437.5 seconds)
-        }, 700 * 5 ** retryCount - 1);
+        }, 700 * 5 ** (retryCount - 1));
       }
     };
     return new Promise(promiseExecuter);
