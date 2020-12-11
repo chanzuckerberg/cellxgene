@@ -1,6 +1,5 @@
 export default function createBackoffFetch(retryTimes = 3) {
   let prevHash = null;
-  let timeoutRef = null;
   let retryCount = 0;
   let response = null;
   let error = null;
@@ -28,8 +27,7 @@ export default function createBackoffFetch(retryTimes = 3) {
           });
       } else {
         // Timeout all other requests
-        timeoutRef = setTimeout(async () => {
-          // if (done) return;
+        setTimeout(async () => {
           try {
             const resp = await fetch(...fetchArgs);
             response = resp;
@@ -58,9 +56,7 @@ export default function createBackoffFetch(retryTimes = 3) {
 
   return (hash, ...fetchArgs) => {
     if (prevHash !== hash) {
-      clearTimeout(timeoutRef);
       prevHash = hash;
-      timeoutRef = null;
       retryCount = 0;
       response = null;
       error = null;
