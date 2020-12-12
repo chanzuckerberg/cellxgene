@@ -63,9 +63,9 @@ def corpora_get_props_from_anndata(adata):
             raise KeyError(f"missing Corpora schema field {key}")
         corpora_props[key] = adata.uns[key]
 
-    for key in CorporaConstants.REQUIRED_JSON_ENCODED_METADATA_FIELD:
+    for key in CorporaConstants.OPTIONAL_JSON_ENCODED_METADATA_FIELD:
         if key not in adata.uns:
-            raise KeyError(f"missing Corpora schema field {key}")
+            continue
         try:
             corpora_props[key] = json.loads(adata.uns[key])
         except json.JSONDecodeError:

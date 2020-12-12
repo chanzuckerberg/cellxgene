@@ -13,7 +13,7 @@ const DATASET_TITLE_FONT_SIZE = 14;
 @connect((state) => {
   const { corpora_props: corporaProps } = state.config;
   const correctVersion =
-    corporaProps?.version?.["corpora_schema_version"] === "1.0.0";
+    ["1.0.0", "1.1.0"].indexOf(corporaProps?.version?.["corpora_schema_version"]) > -1;
   return {
     datasetTitle: state.config?.displayNames?.dataset ?? "",
     libraryVersions: state.config?.["library_versions"],
