@@ -325,15 +325,12 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
   const state = getState();
   const { annotations, autosave } = state;
   const { dataCollectionNameIsReadOnly, dataCollectionName } = annotations;
-  const {
-    lastSavedAnnoMatrix,
-    saveInProgress,
-    exponentialBackoffFetch,
-  } = autosave;
+  const { lastSavedAnnoMatrix, exponentialBackoffFetch } = autosave;
 
   const annoMatrix = state.annoMatrix.base();
 
-  if (saveInProgress || annoMatrix === lastSavedAnnoMatrix) return;
+  if (annoMatrix === lastSavedAnnoMatrix) return;
+
   if (!needToSaveObsAnnotations(annoMatrix, lastSavedAnnoMatrix)) {
     dispatch({
       type: "writable obs annotations - save complete",
@@ -357,6 +354,7 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
     !dataCollectionNameIsReadOnly && !!dataCollectionName
       ? `?annotation-collection-name=${encodeURIComponent(dataCollectionName)}`
       : "";
+
   try {
     const response = await exponentialBackoffFetch(
       annoMatrix,
@@ -370,6 +368,7 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
         credentials: "include",
       }
     );
+
     if (response.ok) {
       dispatch({
         type: "writable obs annotations - save complete",

@@ -1,68 +1,56 @@
 export default function createBackoffFetch(retryTimes = 3) {
   let prevHash = null;
   let retryCount = 0;
-  let response = null;
-  let error = null;
   let promise = null;
-
-  // This will only be called by itself or when we've seen a new matrix
-  const backoffFetch = (fetchArgs) => {
-    const promiseExecuter = (resolve, reject) => {
-      retryCount += 1;
-      // We don't want to timeout our first request
-      if (retryCount === 1) {
-        fetch(...fetchArgs)
-          .then((resp) => {
-            response = resp;
-            if (resp.ok) {
-              resolve(response);
-            } else {
-              promiseExecuter(resolve, reject);
-            }
-          })
-          .catch((e) => {
-            response = null;
-            error = e;
-            promiseExecuter(resolve, reject);
-          });
-      } else {
-        // Timeout all other requests
-        setTimeout(async () => {
-          try {
-            const resp = await fetch(...fetchArgs);
-            response = resp;
-            // Fetch status 2xx
-            if (resp.ok) {
-              resolve(response);
-            } else if (retryCount - 1 === retryTimes) {
-              if (error) reject(error);
-              resolve(response);
-            } else {
-              // Some non 2xx response code
-              promiseExecuter(resolve, reject);
-            }
-          } catch (e) {
-            // Fetch API error
-            error = e;
-            if (retryCount - 1 === retryTimes) reject(error);
-            promiseExecuter(resolve, reject);
-          }
-          // delay amount (3.5, 17.5, 87.5, 437.5 seconds)
-        }, 700 * 5 ** (retryCount - 1));
-      }
-    };
-    return new Promise(promiseExecuter);
-  };
+  let timeoutId = null;
 
   return (hash, ...fetchArgs) => {
     if (prevHash !== hash) {
       prevHash = hash;
       retryCount = 0;
-      response = null;
-      error = null;
+
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+
       promise = backoffFetch(fetchArgs);
     }
+
     // This isn't an initial call, return the existing promise
     return promise;
   };
+
+  function backoffFetch(fetchArgs) {
+    return new Promise(promiseExecuter);
+
+    function promiseExecuter(resolve, reject) {
+      delayFetch();
+
+      function delayFetch() {
+        timeoutId = setTimeout(async () => {
+          try {
+            const response = await fetch(...fetchArgs);
+
+            if (!response.ok) {
+              const { status, statusText } = response;
+
+              throw Error(`${status}: ${statusText}`);
+            }
+
+            resolve(response);
+          } catch (error) {
+            if (retryCount === retryTimes) {
+              reject(error);
+            }
+
+            retryCount += 1;
+
+            delayFetch();
+          }
+          // delay amount (3.5, 17.5, 87.5, 437.5 seconds)
+        }, retryCount * 700 * 5 ** retryCount);
+      }
+    }
+  }
 }
