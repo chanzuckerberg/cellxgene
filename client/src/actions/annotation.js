@@ -366,7 +366,11 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
           "Content-Type": "application/octet-stream",
         }),
         credentials: "include",
-      }
+      },
+      // DEBUG
+      // DEBUG
+      // DEBUG
+      Math.floor(Math.random() * 100)
     );
 
     if (response.ok) {

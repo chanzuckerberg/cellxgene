@@ -29,17 +29,20 @@ export default function createBackoffFetch(retryTimes = 3) {
 
       function delayFetch() {
         timeoutId = setTimeout(async () => {
+          console.log("args:", fetchArgs[2], "attempt:", retryCount);
           try {
-            const response = await fetch(...fetchArgs);
+            const response = await mockFetch(...fetchArgs);
 
             if (!response.ok) {
               const { status, statusText } = response;
 
               throw Error(`${status}: ${statusText}`);
             }
+            console.log("success", fetchArgs[2]);
 
             resolve(response);
           } catch (error) {
+            console.log("error", fetchArgs[2]);
             if (retryCount === retryTimes) {
               reject(error);
             }
@@ -53,4 +56,21 @@ export default function createBackoffFetch(retryTimes = 3) {
       }
     }
   }
+}
+
+// DEBUG
+// DEBUG
+// DEBUG
+function mockFetch() {
+  return new Promise((resolve, reject) => {
+    const rand = Math.floor(Math.random() * 10) + 1;
+    const response = {};
+    setTimeout(() => {
+      if (rand > 5) {
+        if (rand % 2) reject(new Error("fetch error"));
+        response.ok = false;
+      } else response.ok = true;
+      resolve(response);
+    }, rand * 500);
+  });
 }
