@@ -38,8 +38,8 @@ class Autosave extends React.Component {
   }
 
   tick = () => {
-    const { dispatch, saveInProgress } = this.props;
-    if (this.needToSave() && !saveInProgress) {
+    const { dispatch } = this.props;
+    if (this.needToSave()) {
       dispatch(actions.saveObsAnnotationsAction());
     }
   };
@@ -52,10 +52,13 @@ class Autosave extends React.Component {
 
   statusMessage() {
     const { error, saveInProgress } = this.props;
+
+    if (saveInProgress) return `Saving...`;
+
     if (error) {
       return `Autosave error: ${error}`;
     }
-    if (saveInProgress) return `Saving...`;
+
     return this.needToSave() ? "Unsaved" : "All saved";
   }
 
