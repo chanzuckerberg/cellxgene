@@ -156,7 +156,7 @@ server:
       tiledb_ctx:
         sm.tile_cache_size:  8589934592
         sm.num_reader_threads:  32
-
+      
     anndata_adaptor:
       backed: false
 
@@ -204,6 +204,14 @@ dataset:
     enable: true
     lfc_cutoff: 0.01
     top_n: 10
+
+  adaptor:
+     cxg:
+        type: cxg_adaptor
+        params: null
+     h5ad:
+        type: anndata_adaptor
+        params: null
 
 external:
   # You can retrieve configuration parameters from this config file, the environment,

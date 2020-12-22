@@ -36,8 +36,8 @@ def main():
     app_config.update_server_config(app__verbose=True)
     app_config.complete_config()
 
-    loader = MatrixDataLoader(args.dataset)
-    adaptor = loader.open(app_config)
+    loader = MatrixDataLoader(args.dataset, app_config)
+    adaptor = loader.open()
 
     if args.show:
         if isinstance(adaptor, CxgAdaptor):

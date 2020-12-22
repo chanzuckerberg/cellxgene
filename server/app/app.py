@@ -114,7 +114,6 @@ def get_data_adaptor(url_dataroot=None, dataset=None):
     config = current_app.app_config
     server_config = config.server_config
     dataset_key = None
-
     if dataset is None:
         datapath = server_config.single_dataset__datapath
     else:
@@ -174,8 +173,8 @@ def dataroot_test_index():
     data += "<head><title>Hosted Cellxgene</title></head>"
     data += "<body><H1>Welcome to cellxgene</H1>"
 
-    config = current_app.app_config
-    server_config = config.server_config
+    app_config = current_app.app_config
+    server_config = app_config.server_config
 
     auth = server_config.auth
     if auth.is_valid_authentication_type():
@@ -191,11 +190,12 @@ def dataroot_test_index():
     for dataroot_dict in server_config.multi_dataset__dataroot.values():
         dataroot = dataroot_dict["dataroot"]
         url_dataroot = dataroot_dict["base_url"]
+        dataset_config = app_config.get_dataset_config(url_dataroot)
         locator = DataLocator(dataroot, region_name=server_config.data_locator__s3__region_name)
         for fname in locator.ls():
             location = path_join(dataroot, fname)
             try:
-                MatrixDataLoader(location, app_config=config)
+                MatrixDataLoader(location, app_config, dataset_config)
                 datasets.append((url_dataroot, fname))
             except DatasetAccessError:
                 # skip over invalid datasets

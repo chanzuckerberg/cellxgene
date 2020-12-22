@@ -34,4 +34,13 @@ dataset:
     enable: {enable_difexp}
     lfc_cutoff: {lfc_cutoff}
     top_n: {top_n}
+
+  adaptor:
+    cxg:
+       type: cxg_adaptor
+       params: null
+    h5ad:
+       type: anndata_adaptor
+       params: null
+
 """

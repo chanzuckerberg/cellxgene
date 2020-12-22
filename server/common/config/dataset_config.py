@@ -1,12 +1,14 @@
 import os
-from os.path import splitext, isdir
+from os.path import splitext, isdir, basename
 
+from server.common.config import BIG_FILE_SIZE_THRESHOLD
 from server.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
 from server.common.annotations.local_file_csv import AnnotationsLocalFile
 from server.common.config.base_config import BaseConfig
-from server.common.errors import ConfigurationError, OntologyLoadFailure
+from server.common.errors import ConfigurationError, OntologyLoadFailure, DatasetAccessError
 from server.compute.scanpy import get_scanpy_module
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
+from server.data_common.data_adaptor_factory import DataAdaptorTypeFactory
 from server.db.db_utils import DbUtils
 
 
@@ -14,7 +16,12 @@ class DatasetConfig(BaseConfig):
     """Manages the config attribute associated with a dataset."""
 
     def __init__(self, tag, app_config, default_config):
-        super().__init__(app_config, default_config)
+
+        dictval_cases = [
+            ("adaptor", "cxg", "params"),
+            ("adaptor", "h5ad", "params"),
+        ]
+        super().__init__(app_config, default_config, dictval_cases)
         self.tag = tag
         try:
             self.app__scripts = default_config["app"]["scripts"]
@@ -50,6 +57,11 @@ class DatasetConfig(BaseConfig):
             self.diffexp__lfc_cutoff = default_config["diffexp"]["lfc_cutoff"]
             self.diffexp__top_n = default_config["diffexp"]["top_n"]
 
+            self.adaptor__cxg__type = default_config["adaptor"]["cxg"]["type"]
+            self.adaptor__cxg__params = default_config["adaptor"]["cxg"]["params"]
+            self.adaptor__h5ad__type = default_config["adaptor"]["h5ad"]["type"]
+            self.adaptor__h5ad__params = default_config["adaptor"]["h5ad"]["params"]
+
         except KeyError as e:
             raise ConfigurationError(f"Unexpected config: {str(e)}")
 
@@ -62,6 +74,7 @@ class DatasetConfig(BaseConfig):
         self.handle_user_annotations(context)
         self.handle_embeddings()
         self.handle_diffexp(context)
+        self.handle_adaptor()
 
     def handle_app(self):
         self.validate_correct_type_of_configuration_attribute("app__scripts", list)
@@ -149,15 +162,6 @@ class DatasetConfig(BaseConfig):
 
         self.user_annotations = AnnotationsLocalFile(dirname, filename)
 
-        # if the user has specified a fixed label file, go ahead and validate it
-        # so that we can remove errors early in the process.
-        server_config = self.app_config.server_config
-        if server_config.single_dataset__datapath and self.user_annotations__local_file_csv__file:
-            with server_config.matrix_data_cache_manager.data_adaptor(
-                self.tag, server_config.single_dataset__datapath, self.app_config
-            ) as data_adaptor:
-                data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
-
     def handle_hosted_tiledb_annotations(self):
         self.validate_correct_type_of_configuration_attribute("user_annotations__hosted_tiledb_array__db_uri", str)
         self.validate_correct_type_of_configuration_attribute(
@@ -167,6 +171,33 @@ class DatasetConfig(BaseConfig):
             directory_path=self.user_annotations__hosted_tiledb_array__hosted_file_directory,
             db=DbUtils(self.user_annotations__hosted_tiledb_array__db_uri),
         )
+
+    def handle_adaptor(self):
+        self.validate_correct_type_of_configuration_attribute("adaptor__cxg__type", str)
+        self.validate_correct_type_of_configuration_attribute("adaptor__cxg__params", (type(None), dict))
+        self.validate_correct_type_of_configuration_attribute("adaptor__h5ad__type", str)
+        self.validate_correct_type_of_configuration_attribute("adaptor__h5ad__params", (type(None), dict))
+
+        # import here to avoid circular import
+        from server.data_common.data_adaptor import DataAdaptor
+
+        adaptor = DataAdaptorTypeFactory.get_type(self.adaptor__cxg__type)
+        if adaptor:
+            if issubclass(adaptor, DataAdaptor):
+                adaptor.set_adaptor_params(self.adaptor__cxg__params)
+            else:
+                raise ConfigurationError("adaptor__cxg__type does not inherit from DataAdaptor")
+        else:
+            raise ConfigurationError(f"adaptor__cxg__type is not registered: {self.adaptor__cxg__type}")
+
+        adaptor = DataAdaptorTypeFactory.get_type(self.adaptor__h5ad__type)
+        if adaptor:
+            if issubclass(adaptor, DataAdaptor):
+                adaptor.set_adaptor_params(self.adaptor__h5ad__params)
+            else:
+                raise ConfigurationError("adaptor__h5ad__type does not inherit from DataAdaptor")
+        else:
+            raise ConfigurationError(f"adaptor__h5ad__type is not registered: {self.adaptor__h5ad__type}")
 
     def check_annotation_config_vars_not_set(self, context):
         if self.user_annotations__type is not None:
@@ -196,16 +227,45 @@ class DatasetConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute("embeddings__names", list)
         self.validate_correct_type_of_configuration_attribute("embeddings__enable_reembedding", bool)
 
-        server_config = self.app_config.server_config
+    def handle_diffexp(self, context):
+        self.validate_correct_type_of_configuration_attribute("diffexp__enable", bool)
+        self.validate_correct_type_of_configuration_attribute("diffexp__lfc_cutoff", float)
+        self.validate_correct_type_of_configuration_attribute("diffexp__top_n", int)
+
+    def single_dataset_check(self, context, datapath):
+
+        # pre-load validation
+        matrix_data_loader = MatrixDataLoader(datapath, self.app_config, self)
+        try:
+            matrix_data_loader.pre_load_validation()
+        except DatasetAccessError as e:
+            raise ConfigurationError(str(e))
+
+        file_size = matrix_data_loader.file_size()
+        file_basename = basename(datapath)
+        if file_size > BIG_FILE_SIZE_THRESHOLD:
+            context["messagefn"](f"Loading data from {file_basename}, this may take a while...")
+        else:
+            context["messagefn"](f"Loading data from {file_basename}.")
+
+        # additional checks based on the default dataset configuration
+        self.single_dataset_check_embeddings()
+
+        # open the data set, and do additional checks
+        with self.app_config.server_config.matrix_data_cache_manager.data_adaptor(
+            self.tag, datapath, self.app_config
+        ) as data_adaptor:
+            self.single_dataset_check_annotations(data_adaptor)
+            self.single_dataset_check_diffexp(context, data_adaptor)
+
+    def single_dataset_check_embeddings(self):
         if self.embeddings__enable_reembedding:
-            if server_config.single_dataset__datapath:
-                matrix_data_loader = MatrixDataLoader(
-                    server_config.single_dataset__datapath, app_config=self.app_config
-                )
-                if matrix_data_loader.matrix_data_type != MatrixDataType.H5AD:
-                    raise ConfigurationError("enable-reembedding is only supported with H5AD files.")
-                if server_config.adaptor__anndata_adaptor__backed:
-                    raise ConfigurationError("enable-reembedding is not supported when run in --backed mode.")
+            server_config = self.app_config.server_config
+            matrix_data_loader = MatrixDataLoader(server_config.single_dataset__datapath, self.app_config, self)
+            if matrix_data_loader.matrix_data_type != MatrixDataType.H5AD:
+                raise ConfigurationError("enable-reembedding is only supported with H5AD files.")
+            if server_config.adaptor__anndata_adaptor__backed:
+                raise ConfigurationError("enable-reembedding is not supported when run in --backed mode.")
 
             try:
                 get_scanpy_module()
@@ -213,18 +273,14 @@ class DatasetConfig(BaseConfig):
                 # Todo add scanpy to requirements.txt and remove this check once re-embeddings is fully supported
                 raise ConfigurationError("Please install scanpy to enable UMAP re-embedding")
 
-    def handle_diffexp(self, context):
-        self.validate_correct_type_of_configuration_attribute("diffexp__enable", bool)
-        self.validate_correct_type_of_configuration_attribute("diffexp__lfc_cutoff", float)
-        self.validate_correct_type_of_configuration_attribute("diffexp__top_n", int)
+    def single_dataset_check_annotations(self, data_adaptor):
+        # if the user has specified a fixed label file, go ahead and validate it
+        # so that we can remove errors early in the process.
+        if self.user_annotations__local_file_csv__file:
+            data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
 
-        server_config = self.app_config.server_config
-        if server_config.single_dataset__datapath:
-            with server_config.matrix_data_cache_manager.data_adaptor(
-                self.tag, server_config.single_dataset__datapath, self.app_config
-            ) as data_adaptor:
-                if self.diffexp__enable and data_adaptor.parameters.get("diffexp_may_be_slow", False):
-                    context["messagefn"](
-                        "CAUTION: due to the size of your dataset, "
-                        "running differential expression may take longer or fail."
-                    )
+    def single_dataset_check_diffexp(self, context, data_adaptor):
+        if self.diffexp__enable and data_adaptor.parameters.get("diffexp_may_be_slow", False):
+            context["messagefn"](
+                "CAUTION: due to the size of your dataset, " "running differential expression may take longer or fail."
+            )

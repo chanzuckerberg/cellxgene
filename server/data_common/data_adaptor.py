@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 from server_timing import Timing as ServerTiming
 
-from server.common.config.app_config import AppConfig
 from server.common.constants import Axis
 from server.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError
 from server.common.utils.utils import jsonify_numpy
@@ -16,9 +15,6 @@ class DataAdaptor(metaclass=ABCMeta):
     """Base class for loading and accessing matrix data"""
 
     def __init__(self, data_locator, app_config, dataset_config=None):
-        if type(app_config) != AppConfig:
-            raise TypeError("config expected to be of type AppConfig")
-
         # location to the dataset
         self.data_locator = data_locator
 
@@ -34,6 +30,11 @@ class DataAdaptor(metaclass=ABCMeta):
     def set_uri_path(self, path):
         # uri path to the dataset, e.g. /d/<datasetname>
         self.uri_path = path
+
+    @staticmethod
+    def set_adaptor_params(param: dict):
+        """Params specific to this data adaptor type are set here"""
+        pass
 
     @staticmethod
     @abstractmethod
@@ -394,3 +395,20 @@ class DataAdaptor(metaclass=ABCMeta):
         except RuntimeError:
             lastmod = None
         return lastmod
+
+
+
+class DataAdaptorTypeFactory:
+    """Factory class to create a data adaptor type"""
+
+    data_adaptor_types = {}
+
+    @staticmethod
+    def register(name, data_adaptor_type):
+        assert issubclass(data_adaptor_type, DataAdaptor)
+        DataAdaptorTypeFactory.data_adaptor_types[name] = data_adaptor_type
+
+    @staticmethod
+    def get_type(name):
+        return DataAdaptorTypeFactory.data_adaptor_types.get(name)
+

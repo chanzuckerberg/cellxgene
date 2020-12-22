@@ -50,7 +50,7 @@ class TestDatasetConfig(ConfigTests):
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
         mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.dataset_config.complete_config(self.context)
-        self.assertEqual(mock_check_attrs.call_count, 21)
+        self.assertEqual(mock_check_attrs.call_count, 25)
 
     def test_app_sets_script_vars(self):
         config = self.get_config(scripts=["path/to/script"])
@@ -143,7 +143,7 @@ class TestDatasetConfig(ConfigTests):
         config.update_from_config_file(file_name)
         config.server_config.complete_config(self.context)
         with self.assertRaises(ConfigurationError):
-            config.default_dataset_config.handle_embeddings()
+            config.default_dataset_config.single_dataset_check_embeddings()
 
     def test_handle_diffexp__raises_warning_for_large_datasets(self):
         config = self.get_config(lfc_cutoff=0.02, enable_difexp="true", top_n=15)

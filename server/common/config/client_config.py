@@ -5,7 +5,6 @@ def get_client_config(app_config, data_adaptor):
     """
     Return the configuration as required by the /config REST route
     """
-
     server_config = app_config.server_config
     dataset_config = data_adaptor.dataset_config
     annotation = dataset_config.user_annotations

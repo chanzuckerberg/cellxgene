@@ -223,6 +223,10 @@ class AppConfig(object):
         for dataroot_config in self.dataroot_config.values():
             dataroot_config.complete_config(context)
 
+        # if single dataset, pre-load the dataset and perform additional checks
+        if self.server_config.single_dataset__datapath:
+            self.default_dataset_config.single_dataset_check(context, self.server_config.single_dataset__datapath)
+
         self.is_completed = True
         self.check_config()
 

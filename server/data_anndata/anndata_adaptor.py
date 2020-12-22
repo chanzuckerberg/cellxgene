@@ -16,6 +16,7 @@ from server.common.errors import PrepareError, DatasetAccessError, FilterError
 from server.common.utils.type_conversion_utils import get_schema_type_hint_of_array
 from server.compute.scanpy import scanpy_umap
 from server.data_common.data_adaptor import DataAdaptor
+from server.data_common.data_adaptor_factory import DataAdaptorTypeFactory
 from server.data_common.fbs.matrix import encode_matrix_fbs
 
 anndata_version = version.parse(str(anndata.__version__)).release
@@ -367,3 +368,5 @@ class AnndataAdaptor(DataAdaptor):
     def get_var_keys(self):
         # return list of keys
         return self.data.var.keys().to_list()
+
+DataAdaptorTypeFactory.register("anndata_adaptor", AnndataAdaptor)

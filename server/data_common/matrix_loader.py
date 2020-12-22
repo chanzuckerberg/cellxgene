@@ -2,6 +2,7 @@ from enum import Enum
 import threading
 import time
 from server.data_common.rwlock import RWLock
+from server.data_common.data_adaptor_factory import DataAdaptorTypeFactory
 from server.common.errors import DatasetAccessError
 from server.common.data_locator import DataLocator
 from contextlib import contextmanager
@@ -29,7 +30,7 @@ class MatrixDataCacheItem(object):
         self.data_lock.r_release()
         return None
 
-    def acquire_and_open(self, app_config, dataset_config=None):
+    def acquire_and_open(self):
         """returns the data_adaptor if cached.  opens the data_adaptor if not.
         In either case, the a reader lock is taken.  Must call release when
         the data_adaptor is no longer needed"""
@@ -43,7 +44,7 @@ class MatrixDataCacheItem(object):
         if not self.data_adaptor:
             try:
                 self.loader.pre_load_validation()
-                self.data_adaptor = self.loader.open(app_config, dataset_config)
+                self.data_adaptor = self.loader.open()
             except Exception as e:
                 # necessary to hold the reader lock after an exception, since
                 # the release will occur when the context exits.
@@ -134,6 +135,7 @@ class MatrixDataCacheManager(object):
     def data_adaptor(self, url_dataroot, location, app_config):
         # create a loader for to this location if it does not already exist
 
+        dataset_config = app_config.get_dataset_config(url_dataroot)
         delete_adaptor = None
         data_adaptor = None
         cache_item = None
@@ -163,7 +165,7 @@ class MatrixDataCacheManager(object):
                     del self.datasets[oldest_key]
                     delete_adaptor = oldest_cache
 
-                loader = MatrixDataLoader(location, app_config=app_config)
+                loader = MatrixDataLoader(location, app_config, dataset_config)
                 cache_item = MatrixDataCacheItem(loader)
                 item = MatrixDataCacheInfo(cache_item, time.time())
                 self.datasets[key] = item
@@ -173,8 +175,7 @@ class MatrixDataCacheManager(object):
             if delete_adaptor:
                 delete_adaptor.delete()
             if data_adaptor is None:
-                dataset_config = app_config.get_dataset_config(url_dataroot)
-                data_adaptor = cache_item.acquire_and_open(app_config, dataset_config)
+                data_adaptor = cache_item.acquire_and_open()
             yield data_adaptor
         except DatasetAccessError:
             cache_item.release()
@@ -215,10 +216,11 @@ class MatrixDataType(Enum):
 
 
 class MatrixDataLoader(object):
-    def __init__(self, location, matrix_data_type=None, app_config=None):
+    def __init__(self, location, app_config, dataset_config=None, matrix_data_type=None):
         """ location can be a string or DataLocator """
         region_name = None if app_config is None else app_config.server_config.data_locator__s3__region_name
         self.location = DataLocator(location, region_name=region_name)
+        self.app_config = app_config
         if not self.location.exists():
             raise DatasetAccessError("Dataset does not exist.", HTTPStatus.NOT_FOUND)
 
@@ -230,17 +232,17 @@ class MatrixDataLoader(object):
         if matrix_data_type is None:
             self.matrix_data_type = self.__matrix_data_type()
 
-        if not self.__matrix_data_type_allowed(app_config):
+        if not self.__matrix_data_type_allowed():
             raise DatasetAccessError("Dataset does not have an allowed type.")
 
+        if dataset_config is None:
+            dataset_config = app_config.default_dataset_config
+        self.dataset_config = dataset_config
+
         if self.matrix_data_type == MatrixDataType.H5AD:
-            from server.data_anndata.anndata_adaptor import AnndataAdaptor
-
-            self.matrix_type = AnndataAdaptor
+            self.matrix_type = DataAdaptorTypeFactory.get_type(dataset_config.adaptor__h5ad__type)
         elif self.matrix_data_type == MatrixDataType.CXG:
-            from server.data_cxg.cxg_adaptor import CxgAdaptor
-
-            self.matrix_type = CxgAdaptor
+            self.matrix_type = DataAdaptorTypeFactory.get_type(dataset_config.adaptor__cxg__type)
 
     def __matrix_data_type(self):
         if self.location.path.endswith(".h5ad"):
@@ -250,18 +252,18 @@ class MatrixDataLoader(object):
         else:
             return MatrixDataType.UNKNOWN
 
-    def __matrix_data_type_allowed(self, app_config):
+    def __matrix_data_type_allowed(self):
         if self.matrix_data_type == MatrixDataType.UNKNOWN:
             return False
 
-        if not app_config:
+        if not self.app_config:
             return True
-        if not app_config.is_multi_dataset():
+        if not self.app_config.is_multi_dataset():
             return True
-        if len(app_config.server_config.multi_dataset__allowed_matrix_types) == 0:
+        if len(self.app_config.server_config.multi_dataset__allowed_matrix_types) == 0:
             return True
 
-        for val in app_config.server_config.multi_dataset__allowed_matrix_types:
+        for val in self.app_config.server_config.multi_dataset__allowed_matrix_types:
             try:
                 if self.matrix_data_type == MatrixDataType(val):
                     return True
@@ -281,6 +283,6 @@ class MatrixDataLoader(object):
     def file_size(self):
         return self.matrix_type.file_size(self.location)
 
-    def open(self, app_config, dataset_config=None):
+    def open(self):
         # create and return a DataAdaptor object
-        return self.matrix_type.open(self.location, app_config, dataset_config)
+        return self.matrix_type.open(self.location, self.app_config, self.dataset_config)

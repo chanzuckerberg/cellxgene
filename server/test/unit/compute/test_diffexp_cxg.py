@@ -19,8 +19,8 @@ class DiffExpTest(unittest.TestCase):
 
     def load_dataset(self, path, extra_server_config={}, extra_dataset_config={}):
         config = app_config(path, extra_server_config=extra_server_config, extra_dataset_config=extra_dataset_config)
-        loader = MatrixDataLoader(path)
-        adaptor = loader.open(config)
+        loader = MatrixDataLoader(path, config)
+        adaptor = loader.open()
         return adaptor
 
     def get_mask(self, adaptor, start, stride):

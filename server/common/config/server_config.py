@@ -1,17 +1,16 @@
 import os
 import sys
 import warnings
-from os.path import basename
 from urllib.parse import urlparse, quote_plus
 
 from server.auth.auth import AuthTypeFactory
 from server.common.config.base_config import BaseConfig
-from server.common.config import DEFAULT_SERVER_PORT, BIG_FILE_SIZE_THRESHOLD
-from server.common.errors import ConfigurationError, DatasetAccessError
+from server.common.config import DEFAULT_SERVER_PORT
+from server.common.errors import ConfigurationError
 from server.common.data_locator import discover_s3_region_name
 from server.common.utils.utils import is_port_available, find_available_port, custom_format_warning
 from server.compute import diffexp_cxg as diffexp_tiledb
-from server.data_common.matrix_loader import MatrixDataCacheManager, MatrixDataLoader, MatrixDataType
+from server.data_common.matrix_loader import MatrixDataCacheManager, MatrixDataType
 
 
 class ServerConfig(BaseConfig):
@@ -238,20 +237,7 @@ class ServerConfig(BaseConfig):
         if self.matrix_data_cache_manager is None:
             self.matrix_data_cache_manager = MatrixDataCacheManager(max_cached=1, timelimit_s=None)
 
-        # preload this data set
-        matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath, app_config=self.app_config)
-        try:
-            matrix_data_loader.pre_load_validation()
-        except DatasetAccessError as e:
-            raise ConfigurationError(str(e))
-
-        file_size = matrix_data_loader.file_size()
-        file_basename = basename(self.single_dataset__datapath)
-        if file_size > BIG_FILE_SIZE_THRESHOLD:
-            context["messagefn"](f"Loading data from {file_basename}, this may take a while...")
-        else:
-            context["messagefn"](f"Loading data from {file_basename}.")
-
+        # check the about link
         if self.single_dataset__about:
 
             def url_check(url):
