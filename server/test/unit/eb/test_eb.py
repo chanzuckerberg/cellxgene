@@ -12,7 +12,7 @@ import os
 @contextmanager
 def run_eb_app(tempdirname):
     ps = subprocess.Popen(["python", "artifact.dir/application.py"], cwd=tempdirname)
-    server = "http://localhost:5000"
+    server = "http://127.0.0.1:5000"
     for _ in range(10):
         try:
             requests.get(f"{server}/health")
