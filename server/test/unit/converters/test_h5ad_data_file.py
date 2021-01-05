@@ -254,7 +254,7 @@ class TestH5ADDataFile(unittest.TestCase):
         for metadata_field in CorporaConstants.REQUIRED_SIMPLE_METADATA_FIELDS:
             uns[metadata_field] = "random"
 
-        for metadata_field in CorporaConstants.REQUIRED_JSON_ENCODED_METADATA_FIELD:
+        for metadata_field in CorporaConstants.OPTIONAL_JSON_ENCODED_METADATA_FIELD:
             uns[metadata_field] = json.dumps({"random_key": "random_value"})
 
         # Need to carefully set the corpora schema versions in order for tests to pass.
