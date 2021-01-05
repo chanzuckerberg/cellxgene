@@ -156,7 +156,7 @@ server:
       tiledb_ctx:
         sm.tile_cache_size:  8589934592
         sm.num_reader_threads:  32
-      
+
     anndata_adaptor:
       backed: false
 

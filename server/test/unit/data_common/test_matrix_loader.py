@@ -6,7 +6,9 @@ import unittest
 
 from server.common.config.app_config import AppConfig
 from server.common.errors import DatasetAccessError
-from server.data_common.matrix_loader import MatrixDataCacheManager
+from server.data_common.matrix_loader import MatrixDataCacheManager, MatrixDataType, MatrixDataLoader
+from server.data_cxg.cxg_adaptor import CxgAdaptor
+from server.data_anndata.anndata_adaptor import AnndataAdaptor
 from server.test import FIXTURES_ROOT
 
 
@@ -124,3 +126,45 @@ class MatrixCacheTest(unittest.TestCase):
             # verify that dataset is removed from the cache.
             self.use_dataset_with_error(m, dirname, app_config, 0)
             self.check_datasets(m, dirname, [])
+
+    def test_matrix_data_type(self):
+        """Pass the matrix type into the MatrixDataLoader, instead of relying on the source extension"""
+        # pass in correct matrix_data_type
+        app_config = AppConfig()
+        source = f"{FIXTURES_ROOT}/pbmc3k.cxg"
+        loader = MatrixDataLoader(source, app_config, None, MatrixDataType.CXG)
+        self.assertEqual(loader.matrix_type, CxgAdaptor)
+        # verify that the pre_load_validation succeeds (does not raise)
+        loader.pre_load_validation()
+
+        # pass in incorrect matrix_data_type
+        app_config = AppConfig()
+        source = f"{FIXTURES_ROOT}/pbmc3k.cxg"
+        loader = MatrixDataLoader(source, app_config, None, MatrixDataType.H5AD)
+        self.assertEqual(loader.matrix_type, AnndataAdaptor)
+        # verify that the pre_load_validation fails (raises DatasetAccessError)
+        with self.assertRaises(DatasetAccessError):
+            loader.pre_load_validation()
+
+    def test_non_default_dataset_config(self):
+        """Pass in a non-default dataset_config into the MatrixDataLoader"""
+        app_config = AppConfig()
+        app_config.update_server_config(
+            multi_dataset__dataroot=dict(
+                s1=dict(dataroot=f"{FIXTURES_ROOT}", base_url="s1"),
+            ),
+        )
+        # specialize the config in some way that can be checked later.
+        diffexp__top_n = app_config.default_dataset_config.diffexp__top_n + 1
+        app_config.add_dataroot_config(
+            "s1", diffexp__top_n = diffexp__top_n
+        )
+        dataset_config = app_config.get_dataset_config("s1")
+        source = f"{FIXTURES_ROOT}/pbmc3k.cxg"
+        loader = MatrixDataLoader(source, app_config, dataset_config)
+        adaptor = loader.open()
+        # verify the adaptor is using the specified dataset_config
+        self.assertEqual(adaptor.dataset_config, dataset_config)
+        self.assertEqual(adaptor.dataset_config.diffexp__top_n, diffexp__top_n)
+
+
