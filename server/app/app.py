@@ -110,9 +110,8 @@ def handle_request_exception(error):
     return common_rest.abort_and_log(error.status_code, error.message, loglevel=logging.INFO, include_exc_info=True)
 
 
-def get_data_adaptor(url_dataroot=None, dataset=None):
-    config = current_app.app_config
-    server_config = config.server_config
+def get_data_adaptor(app_config, url_dataroot=None, dataset=None):
+    server_config = app_config.server_config
     dataset_key = None
     if dataset is None:
         datapath = server_config.single_dataset__datapath
@@ -136,8 +135,8 @@ def get_data_adaptor(url_dataroot=None, dataset=None):
     if datapath is None:
         return common_rest.abort_and_log(HTTPStatus.BAD_REQUEST, "Invalid dataset NONE", loglevel=logging.INFO)
 
-    cache_manager = current_app.matrix_data_cache_manager
-    return cache_manager.data_adaptor(dataset_key, datapath, config)
+    cache_manager = server_config.matrix_data_cache_manager
+    return cache_manager.data_adaptor(dataset_key, datapath, app_config)
 
 
 def requires_authentication(func):
@@ -156,7 +155,7 @@ def rest_get_data_adaptor(func):
     @wraps(func)
     def wrapped_function(self, dataset=None):
         try:
-            with get_data_adaptor(self.url_dataroot, dataset) as data_adaptor:
+            with get_data_adaptor(current_app.app_config, self.url_dataroot, dataset) as data_adaptor:
                 data_adaptor.set_uri_path(f"{self.url_dataroot}/{dataset}")
                 return func(self, data_adaptor)
         except DatasetAccessError as e:
