@@ -146,7 +146,7 @@ const HistogramFooter = React.memo(
           </span>
         </div>
 
-        {logFoldChange && pvalAdj ? (
+        {logFoldChange !== undefined && pvalAdj !== undefined ? (
           <div
             style={{
               display: "flex",
