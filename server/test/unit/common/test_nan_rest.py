@@ -3,7 +3,7 @@ import unittest
 import math
 from server.test import start_test_server, stop_test_server
 
-import server.test.unit.decode_fbs as decode_fbs
+from server.data_common.fbs.fbs_core import decode_matrix_fbs_to_dict
 
 import requests
 
@@ -39,7 +39,7 @@ class WithNaNs(unittest.TestCase):
         result = self.session.put(url, json=filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
-        df = decode_fbs.decode_matrix_FBS(result.content)
+        df = decode_matrix_fbs_to_dict(result.content)
         self.assertTrue(math.isnan(df["columns"][3][3]))
 
     def test_annotation_obs(self):
@@ -48,7 +48,7 @@ class WithNaNs(unittest.TestCase):
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
-        df = decode_fbs.decode_matrix_FBS(result.content)
+        df = decode_matrix_fbs_to_dict(result.content)
         self.assertTrue(math.isnan(df["columns"][2][0]))
 
     def test_annotation_var(self):
@@ -57,5 +57,5 @@ class WithNaNs(unittest.TestCase):
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
-        df = decode_fbs.decode_matrix_FBS(result.content)
+        df = decode_matrix_fbs_to_dict(result.content)
         self.assertTrue(math.isnan(df["columns"][2][0]))

@@ -7,7 +7,7 @@ from http import HTTPStatus
 import pandas as pd
 import requests
 
-import server.test.unit.decode_fbs as decode_fbs
+from server.data_common.fbs.fbs_core import decode_matrix_fbs_to_dict
 from server.data_common.matrix_loader import MatrixDataType
 from server.test import (
     data_with_tmp_annotations,
@@ -58,7 +58,7 @@ class EndPoints(object):
         result = self.session.get(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
-        df = decode_fbs.decode_matrix_FBS(result.content)
+        df = decode_matrix_fbs_to_dict(result.content)
         self.assertEqual(df["n_rows"], 2638)
         self.assertEqual(df["n_cols"], 8)
         self.assertIsNotNone(df["columns"])
@@ -110,7 +110,7 @@ class EndPoints(object):
         result = self.session.get(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
-        df = decode_fbs.decode_matrix_FBS(result.content)
+        df = decode_matrix_fbs_to_dict(result.content)
         self.assertEqual(df["n_rows"], 2638)
         self.assertEqual(df["n_cols"], 6 if self.ANNOTATIONS_ENABLED else 5)
         self.assertIsNotNone(df["columns"])
@@ -131,7 +131,7 @@ class EndPoints(object):
         result = self.session.get(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
-        df = decode_fbs.decode_matrix_FBS(result.content)
+        df = decode_matrix_fbs_to_dict(result.content)
         self.assertEqual(df["n_rows"], 2638)
         self.assertEqual(df["n_cols"], 2)
         self.assertIsNotNone(df["columns"])
@@ -183,7 +183,7 @@ class EndPoints(object):
         result = self.session.get(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
-        df = decode_fbs.decode_matrix_FBS(result.content)
+        df = decode_matrix_fbs_to_dict(result.content)
         self.assertEqual(df["n_rows"], 1838)
         self.assertEqual(df["n_cols"], 2)
         self.assertIsNotNone(df["columns"])
@@ -200,7 +200,7 @@ class EndPoints(object):
         result = self.session.get(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
-        df = decode_fbs.decode_matrix_FBS(result.content)
+        df = decode_matrix_fbs_to_dict(result.content)
         self.assertEqual(df["n_rows"], 1838)
         self.assertEqual(df["n_cols"], 1)
         self.assertIsNotNone(df["columns"])
@@ -254,7 +254,7 @@ class EndPoints(object):
         result = self.session.put(url, headers=header, json=filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
-        df = decode_fbs.decode_matrix_FBS(result.content)
+        df = decode_matrix_fbs_to_dict(result.content)
         self.assertEqual(df["n_rows"], 2638)
         self.assertEqual(df["n_cols"], 3)
         self.assertIsNotNone(df["columns"])
@@ -271,7 +271,7 @@ class EndPoints(object):
         result = self.session.get(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
-        df = decode_fbs.decode_matrix_FBS(result.content)
+        df = decode_matrix_fbs_to_dict(result.content)
         self.assertEqual(df["n_rows"], 2638)
         self.assertEqual(df["n_cols"], 1)
 
@@ -284,7 +284,7 @@ class EndPoints(object):
         result = self.session.get(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
-        df = decode_fbs.decode_matrix_FBS(result.content)
+        df = decode_matrix_fbs_to_dict(result.content)
         self.assertEqual(df["n_rows"], 2638)
         self.assertEqual(df["n_cols"], 0)
 
@@ -297,7 +297,7 @@ class EndPoints(object):
         result = self.session.put(url, headers=header, json=var_filter)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
-        df = decode_fbs.decode_matrix_FBS(result.content)
+        df = decode_matrix_fbs_to_dict(result.content)
         self.assertEqual(df["n_rows"], 2638)
         self.assertEqual(df["n_cols"], 1)
 
@@ -359,7 +359,7 @@ class EndPointsAnnotations(EndPoints):
         result = self.session.get(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
-        df = decode_fbs.decode_matrix_FBS(result.content)
+        df = decode_matrix_fbs_to_dict(result.content)
         self.assertEqual(df["n_rows"], 2638)
         self.assertEqual(df["n_cols"], 1)
         self.assertListEqual(df["col_idx"], [annotation_name])

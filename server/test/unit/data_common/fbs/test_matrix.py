@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from scipy import sparse
 
-import server.test.unit.decode_fbs as decode_fbs
+from server.data_common.fbs.fbs_core import decode_matrix_fbs_to_dict
 from server.data_common.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
 
 
@@ -24,7 +24,7 @@ class FbsTests(unittest.TestCase):
             encode_matrix_fbs(matrix=np.ones((10,)))
 
     def fbs_checks(self, fbs, dims, expected_types, expected_column_idx):
-        d = decode_fbs.decode_matrix_FBS(fbs)
+        d = decode_matrix_fbs_to_dict(fbs)
         self.assertEqual(d["n_rows"], dims[0])
         self.assertEqual(d["n_cols"], dims[1])
         self.assertIsNone(d["row_idx"])

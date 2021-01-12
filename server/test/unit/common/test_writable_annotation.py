@@ -9,7 +9,7 @@ import pandas as pd
 import tiledb
 from flask import Flask
 
-import server.test.unit.decode_fbs as decode_fbs
+from server.data_common.fbs.fbs_core import decode_matrix_fbs_to_dict
 from server.common.errors import AnnotationCategoryNameError
 from server.common.rest import schema_get_helper, annotations_put_fbs_helper
 from server.data_common.matrix_loader import MatrixDataType
@@ -261,7 +261,7 @@ class WritableAnnotationTest(unittest.TestCase):
         labels = self.annotations.read_labels(None)
         fbsAll = self.data.annotation_to_fbs_matrix("obs", None, labels)
         schema = schema_get_helper(self.data)
-        annotations = decode_fbs.decode_matrix_FBS(fbsAll)
+        annotations = decode_matrix_fbs_to_dict(fbsAll)
         obs_index_col_name = schema["annotations"]["obs"]["index"]
         self.assertEqual(annotations["n_rows"], n_rows)
         self.assertEqual(annotations["n_cols"], 7)
@@ -306,7 +306,7 @@ class WritableAnnotationTest(unittest.TestCase):
         labels = self.annotations.read_labels(None)
         fbsAll = self.data.annotation_to_fbs_matrix("obs", None, labels)
         schema = schema_get_helper(self.data)
-        annotations = decode_fbs.decode_matrix_FBS(fbsAll)
+        annotations = decode_matrix_fbs_to_dict(fbsAll)
         self.assertEqual(annotations["n_rows"], n_rows)
         all_col_schema = {c["name"]: c for c in schema["annotations"]["obs"]["columns"]}
         self.assertEqual(

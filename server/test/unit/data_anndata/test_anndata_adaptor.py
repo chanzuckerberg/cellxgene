@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 from parameterized import parameterized_class
 
-import server.test.unit.decode_fbs as decode_fbs
+from server.data_common.fbs.fbs_core import decode_matrix_fbs_to_dict
 from server.common.data_locator import DataLocator
 from server.common.errors import FilterError
 from server.data_anndata.anndata_adaptor import AnndataAdaptor
@@ -62,7 +62,7 @@ class AdaptorTest(unittest.TestCase):
     def test_filter_idx(self):
         filter_ = {"filter": {"var": {"index": [1, 99, [200, 300]]}}}
         fbs = self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
-        data = decode_fbs.decode_matrix_FBS(fbs)
+        data = decode_matrix_fbs_to_dict(fbs)
         self.assertEqual(data["n_rows"], 2638)
         self.assertEqual(data["n_cols"], 102)
 
@@ -71,7 +71,7 @@ class AdaptorTest(unittest.TestCase):
             "filter": {"var": {"annotation_value": [{"name": "n_cells", "min": 10}], "index": [1, 99, [200, 300]]}}
         }
         fbs = self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
-        data = decode_fbs.decode_matrix_FBS(fbs)
+        data = decode_matrix_fbs_to_dict(fbs)
         self.assertEqual(data["n_rows"], 2638)
         self.assertEqual(data["n_cols"], 91)
 
@@ -96,7 +96,7 @@ class AdaptorTest(unittest.TestCase):
 
     def test_layout(self):
         fbs = self.data.layout_to_fbs_matrix(fields=None)
-        layout = decode_fbs.decode_matrix_FBS(fbs)
+        layout = decode_matrix_fbs_to_dict(fbs)
         self.assertEqual(layout["n_cols"], 6)
         self.assertEqual(layout["n_rows"], 2638)
 
@@ -108,20 +108,20 @@ class AdaptorTest(unittest.TestCase):
     def test_layout_fields(self):
         """ X_pca, X_tsne, X_umap are available """
         fbs = self.data.layout_to_fbs_matrix(["pca"])
-        layout = decode_fbs.decode_matrix_FBS(fbs)
+        layout = decode_matrix_fbs_to_dict(fbs)
         self.assertEqual(layout["n_cols"], 2)
         self.assertEqual(layout["n_rows"], 2638)
         self.assertCountEqual(layout["col_idx"], ["pca_0", "pca_1"])
 
         fbs = self.data.layout_to_fbs_matrix(["tsne", "pca"])
-        layout = decode_fbs.decode_matrix_FBS(fbs)
+        layout = decode_matrix_fbs_to_dict(fbs)
         self.assertEqual(layout["n_cols"], 4)
         self.assertEqual(layout["n_rows"], 2638)
         self.assertCountEqual(layout["col_idx"], ["tsne_0", "tsne_1", "pca_0", "pca_1"])
 
     def test_annotations(self):
         fbs = self.data.annotation_to_fbs_matrix("obs")
-        annotations = decode_fbs.decode_matrix_FBS(fbs)
+        annotations = decode_matrix_fbs_to_dict(fbs)
         self.assertEqual(annotations["n_rows"], 2638)
         self.assertEqual(annotations["n_cols"], 5)
         obs_index_col_name = self.data.get_schema()["annotations"]["obs"]["index"]
@@ -130,7 +130,7 @@ class AdaptorTest(unittest.TestCase):
         )
 
         fbs = self.data.annotation_to_fbs_matrix("var")
-        annotations = decode_fbs.decode_matrix_FBS(fbs)
+        annotations = decode_matrix_fbs_to_dict(fbs)
         self.assertEqual(annotations["n_rows"], 1838)
         self.assertEqual(annotations["n_cols"], 2)
         var_index_col_name = self.data.get_schema()["annotations"]["var"]["index"]
@@ -138,13 +138,13 @@ class AdaptorTest(unittest.TestCase):
 
     def test_annotation_fields(self):
         fbs = self.data.annotation_to_fbs_matrix("obs", ["n_genes", "n_counts"])
-        annotations = decode_fbs.decode_matrix_FBS(fbs)
+        annotations = decode_matrix_fbs_to_dict(fbs)
         self.assertEqual(annotations["n_rows"], 2638)
         self.assertEqual(annotations["n_cols"], 2)
 
         var_index_col_name = self.data.get_schema()["annotations"]["var"]["index"]
         fbs = self.data.annotation_to_fbs_matrix("var", [var_index_col_name])
-        annotations = decode_fbs.decode_matrix_FBS(fbs)
+        annotations = decode_matrix_fbs_to_dict(fbs)
         self.assertEqual(annotations["n_rows"], 1838)
         self.assertEqual(annotations["n_cols"], 1)
 
@@ -159,7 +159,7 @@ class AdaptorTest(unittest.TestCase):
     def test_data_frame(self):
         f1 = {"var": {"index": [[0, 10]]}}
         fbs = self.data.data_frame_to_fbs_matrix(f1, "var")
-        data = decode_fbs.decode_matrix_FBS(fbs)
+        data = decode_matrix_fbs_to_dict(fbs)
         self.assertEqual(data["n_rows"], 2638)
         self.assertEqual(data["n_cols"], 10)
 
@@ -169,7 +169,7 @@ class AdaptorTest(unittest.TestCase):
     def test_filtered_data_frame(self):
         filter_ = {"filter": {"var": {"annotation_value": [{"name": "n_cells", "min": 100}]}}}
         fbs = self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
-        data = decode_fbs.decode_matrix_FBS(fbs)
+        data = decode_matrix_fbs_to_dict(fbs)
         self.assertEqual(data["n_rows"], 2638)
         self.assertEqual(data["n_cols"], 1040)
 
@@ -181,7 +181,7 @@ class AdaptorTest(unittest.TestCase):
         var_index_col_name = self.data.get_schema()["annotations"]["var"]["index"]
         filter_ = {"filter": {"var": {"annotation_value": [{"name": var_index_col_name, "values": ["RER1"]}]}}}
         fbs = self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
-        data = decode_fbs.decode_matrix_FBS(fbs)
+        data = decode_matrix_fbs_to_dict(fbs)
         self.assertEqual(data["n_rows"], 2638)
         self.assertEqual(data["n_cols"], 1)
         self.assertEqual(data["col_idx"], [4])
@@ -190,7 +190,7 @@ class AdaptorTest(unittest.TestCase):
             "filter": {"var": {"annotation_value": [{"name": var_index_col_name, "values": ["SPEN", "TYMP", "PRMT2"]}]}}
         }
         fbs = self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
-        data = decode_fbs.decode_matrix_FBS(fbs)
+        data = decode_matrix_fbs_to_dict(fbs)
         self.assertEqual(data["n_rows"], 2638)
         self.assertEqual(data["n_cols"], 3)
         self.assertTrue((data["col_idx"] == [15, 1818, 1837]).all())

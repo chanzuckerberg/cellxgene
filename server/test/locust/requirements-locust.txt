@@ -1,1 +1,3 @@
 locust
+flatbuffers
+numpy

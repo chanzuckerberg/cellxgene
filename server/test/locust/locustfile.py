@@ -7,7 +7,7 @@ from locust import HttpUser, SequentialTaskSet, task, between, TaskSet
 from locust.clients import HttpSession
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-import server.test.unit.decode_fbs as decode_fbs
+from server.data_common.fbs.fbs_core import decode_matrix_fbs_to_dict
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -50,7 +50,7 @@ class CellXGeneTasks(TaskSet):
             catch_response=True,
         ) as var_index_response:
             if var_index_response.status_code == 200:
-                df = decode_fbs.decode_matrix_FBS(var_index_response.content)
+                df = decode_matrix_fbs_to_dict(var_index_response.content)
                 gene_names_idx = df["col_idx"].index(self.var_index_name())
                 self.gene_names = df["columns"][gene_names_idx]
             else:
