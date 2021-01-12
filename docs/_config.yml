@@ -33,5 +33,7 @@ nav:
     url: posts/roadmap
   - title: Contributing (ideas or code)
     url: posts/contribute
+  - title: Extensions
+    url: posts/extensions
   - title: Contact & finding help
     url: posts/contact
