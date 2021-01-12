@@ -76,6 +76,30 @@ class CorporaAPITest(unittest.TestCase):
         some_fields["project_links"] = json.loads(some_fields["project_links"])
         self.assertEqual(corpora_get_props_from_anndata(adata), some_fields)
 
+    def test_corpora_get_props_from_anndata_v110(self):
+        adata = self._get_h5ad()
+
+        if "version" in adata.uns:
+            del adata.uns["version"]
+        self.assertIsNone(corpora_get_props_from_anndata(adata))
+
+        # legit version, but missing required values
+        adata.uns["version"] = {"corpora_schema_version": "1.1.0", "corpora_encoding_version": "0.1.0"}
+        with self.assertRaises(KeyError):
+            corpora_get_props_from_anndata(adata)
+
+        # Metadata following schema 1.1.0, which removes some fields relative to 1.1.0
+        some_110_fields = {
+            "version": {"corpora_schema_version": "1.0.0", "corpora_encoding_version": "0.1.0"},
+            "title": "title",
+            "layer_descriptions": "layer_descriptions",
+            "organism": "organism",
+            "organism_ontology_term_id": "organism_ontology_term_id",
+        }
+        for k in some_110_fields:
+            adata.uns[k] = some_110_fields[k]
+        self.assertEqual(corpora_get_props_from_anndata(adata), some_110_fields)
+
     def _get_h5ad(self):
         return anndata.read_h5ad(f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad")
 
