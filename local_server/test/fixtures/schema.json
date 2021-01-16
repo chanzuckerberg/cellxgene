@@ -1,0 +1,83 @@
+{
+  "dataframe": {
+    "nObs": 2638,
+    "nVar": 1838,
+    "type": "float32"
+  },
+  "annotations": {
+    "obs": {
+      "index": "name_0",
+      "columns": [
+        {
+          "name": "name_0",
+          "type": "string",
+          "writable": false
+        },
+        {
+          "name": "n_genes",
+          "type": "int32",
+          "writable": false
+        },
+        {
+          "name": "percent_mito",
+          "type": "float32",
+          "writable": false
+        },
+        {
+          "name": "n_counts",
+          "type": "float32",
+          "writable": false
+        },
+        {
+          "name": "louvain",
+          "type": "categorical",
+          "categories": [
+            "CD4 T cells",
+            "CD14+ Monocytes",
+            "B cells",
+            "CD8 T cells",
+            "NK cells",
+            "FCGR3A+ Monocytes",
+            "Dendritic cells",
+            "Megakaryocytes"
+          ],
+          "writable": false
+        }
+      ]
+    },
+    "var": {
+      "index": "name_0",
+      "columns": [
+        {
+          "name": "name_0",
+          "type": "string",
+          "writable": false
+        },
+        {
+          "name": "n_cells",
+          "type": "int32",
+          "writable": false
+        }
+      ]
+    }
+  },
+  "layout": {
+    "obs": [
+      {
+        "name": "umap",
+        "type": "float32",
+        "dims": ["umap_0", "umap_1"]
+      },
+      {
+        "name": "tsne",
+        "type": "float32",
+        "dims": ["tsne_0", "tsne_1"]
+      },
+      {
+        "name": "pca",
+        "type": "float32",
+        "dims": ["pca_0", "pca_1"]
+      }
+    ]
+  }
+}
