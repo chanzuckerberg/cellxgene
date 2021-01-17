@@ -1,6 +1,5 @@
 import click
 
-from .convert_to_cxg import convert_to_cxg
 from .launch import launch
 from .prepare import prepare
 from .upgrade import log_upgrade_check
@@ -31,5 +30,4 @@ def cli(upgrade_check):
 
 cli.add_command(launch)
 cli.add_command(prepare)
-cli.add_command(convert_to_cxg)
 cli.add_command(schema_cli)
