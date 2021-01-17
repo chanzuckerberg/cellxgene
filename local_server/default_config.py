@@ -129,17 +129,6 @@ server:
     about: null
     title: null
 
-  diffexp:
-    alg_cxg:
-      # The number of threads to use is computed from: min(max_workers, cpu_multipler * cpu_count).
-      # Where cpu_count is determined at runtime.
-      max_workers: 64
-      cpu_multiplier: 4
-
-      # The target number of matrix elements that are evaluated
-      # together in one thread.
-      target_workunit: 16_000_000
-
   data_locator:
     s3:
       # s3 region name.

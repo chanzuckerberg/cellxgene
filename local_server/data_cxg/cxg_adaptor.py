@@ -8,7 +8,6 @@ import pandas as pd
 import tiledb
 from server_timing import Timing as ServerTiming
 
-import local_server.compute.diffexp_cxg as diffexp_cxg
 from local_server.common.constants import Axis
 from local_server.common.errors import DatasetAccessError, ConfigurationError
 from local_server.common.immutable_kvcache import ImmutableKVCache
@@ -203,11 +202,7 @@ class CxgAdaptor(DataAdaptor):
         raise NotImplementedError("CXG does not yet support re-embedding")
 
     def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None):
-        if top_n is None:
-            top_n = self.dataset_config.diffexp__top_n
-        if lfc_cutoff is None:
-            lfc_cutoff = self.dataset_config.diffexp__lfc_cutoff
-        return diffexp_cxg.diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff)
+        raise NotImplementedError("CXG diffexp not enabled in local server")
 
     def get_colors(self):
         if self.cxg_version == "0.0":

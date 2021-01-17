@@ -4,7 +4,6 @@ import random
 import time
 import numpy as np
 
-import local_server.compute.diffexp_cxg as diffexp_cxg
 import local_server.compute.diffexp_generic as diffexp_generic
 
 from local_server.common.config.app_config import AppConfig
@@ -82,11 +81,6 @@ def main():
             results = adaptor.compute_diffexp_ttest(maskA, maskB)
         elif args.alg == "generic":
             results = diffexp_generic.diffexp_ttest(adaptor, maskA, maskB)
-        elif args.alg == "cxg":
-            if not isinstance(adaptor, CxgAdaptor):
-                print("cxg only works with CxgAdaptor")
-                sys.exit(1)
-            results = diffexp_cxg.diffexp_ttest(adaptor, maskA, maskB)
 
         t2 = time.time()
         print("TIME=", t2 - t1)

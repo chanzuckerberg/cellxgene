@@ -10,7 +10,6 @@ from local_server.common.config import DEFAULT_SERVER_PORT, BIG_FILE_SIZE_THRESH
 from local_server.common.errors import ConfigurationError, DatasetAccessError
 from local_server.common.data_locator import discover_s3_region_name
 from local_server.common.utils.utils import is_port_available, find_available_port, custom_format_warning
-from local_server.compute import diffexp_cxg as diffexp_tiledb
 from local_server.data_common.matrix_loader import MatrixDataCacheManager, MatrixDataLoader, MatrixDataType
 
 
@@ -73,10 +72,6 @@ class ServerConfig(BaseConfig):
             self.single_dataset__about = default_config["single_dataset"]["about"]
             self.single_dataset__title = default_config["single_dataset"]["title"]
 
-            self.diffexp__alg_cxg__max_workers = default_config["diffexp"]["alg_cxg"]["max_workers"]
-            self.diffexp__alg_cxg__cpu_multiplier = default_config["diffexp"]["alg_cxg"]["cpu_multiplier"]
-            self.diffexp__alg_cxg__target_workunit = default_config["diffexp"]["alg_cxg"]["target_workunit"]
-
             self.data_locator__s3__region_name = default_config["data_locator"]["s3"]["region_name"]
 
             self.adaptor__cxg_adaptor__tiledb_ctx = default_config["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
@@ -102,7 +97,6 @@ class ServerConfig(BaseConfig):
         self.handle_adaptor()  # may depend on data_locator
         self.handle_single_dataset(context)  # may depend on adaptor
         self.handle_multi_dataset()  # may depend on adaptor
-        self.handle_diffexp()
         self.handle_limits()
 
         self.check_config()
@@ -326,17 +320,6 @@ class ServerConfig(BaseConfig):
                 max_cached=self.multi_dataset__matrix_cache__max_datasets,
                 timelimit_s=self.multi_dataset__matrix_cache__timelimit_s,
             )
-
-    def handle_diffexp(self):
-        self.validate_correct_type_of_configuration_attribute("diffexp__alg_cxg__max_workers", (str, int))
-        self.validate_correct_type_of_configuration_attribute("diffexp__alg_cxg__cpu_multiplier", int)
-        self.validate_correct_type_of_configuration_attribute("diffexp__alg_cxg__target_workunit", int)
-
-        max_workers = self.diffexp__alg_cxg__max_workers
-        cpu_multiplier = self.diffexp__alg_cxg__cpu_multiplier
-        cpu_count = os.cpu_count()
-        max_workers = min(max_workers, cpu_multiplier * cpu_count)
-        diffexp_tiledb.set_config(max_workers, self.diffexp__alg_cxg__target_workunit)
 
     def handle_adaptor(self):
         # cxg
