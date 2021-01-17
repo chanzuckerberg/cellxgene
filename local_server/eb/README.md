@@ -110,7 +110,7 @@ about_legal_privacy: /static/cellxgene/deploy/privacy.html
 
 #### Inline javascript scripts
 
-Additional scripts can be added using the server/inline_scripts config parameters.
+Additional scripts can be added using the local_server/inline_scripts config parameters.
 To include these scripts in the deployment, use the following steps:
 
 - In this directory, create a sub directory called "customize/inline_scripts".
@@ -191,7 +191,7 @@ $ make build
 The application requires a secret key to be provided to flask, the web framework used by cellxgene.
 There are three ways to provide the secret key:
 
-- In the configuration file, update the server/flask_secret_key attribute.
+- In the configuration file, update the local_server/flask_secret_key attribute.
 - In the configuration file, update the external/aws_secrets_manager section to set the
   secret name and key that defines the flask secret key.
 - An environment variable: `CXG_SECRET_KEY`
@@ -287,7 +287,7 @@ Once the database is set up apply the cellxgene schema to your database by runni
 `python3`
 Inside the python console
 `from sqlalchemy import create_engine`
-`from server.db.cellxgene_orm import Base`
+`from local_server.db.cellxgene_orm import Base`
 `uri = "[DB_URI]”`
 `engine = create_engine(uri)`
 

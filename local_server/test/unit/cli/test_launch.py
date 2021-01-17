@@ -5,8 +5,8 @@ import unittest
 
 import yaml
 
-from server.default_config import default_config
-from server.test import FIXTURES_ROOT
+from local_server.default_config import default_config
+from local_server.test import FIXTURES_ROOT
 
 
 class CLIPLaunchTests(unittest.TestCase):

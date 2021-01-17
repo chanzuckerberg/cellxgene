@@ -7,9 +7,9 @@ import zlib
 from flask import make_response, jsonify, current_app, abort
 from werkzeug.urls import url_unquote
 
-from server.common.config.client_config import get_client_config, get_client_userinfo
-from server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
-from server.common.errors import (
+from local_server.common.config.client_config import get_client_config, get_client_userinfo
+from local_server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
+from local_server.common.errors import (
     FilterError,
     JSONEncodingValueError,
     PrepareError,
@@ -20,7 +20,7 @@ from server.common.errors import (
 )
 
 import json
-from server.data_common.fbs.matrix import decode_matrix_fbs
+from local_server.data_common.fbs.matrix import decode_matrix_fbs
 
 
 def abort_and_log(code, logmsg, loglevel=logging.DEBUG, include_exc_info=False):

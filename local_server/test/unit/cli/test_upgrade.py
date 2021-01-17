@@ -1,6 +1,6 @@
 import unittest
 
-from server.cli.upgrade import validate_version_str, split_version, version_gt
+from local_server.cli.upgrade import validate_version_str, split_version, version_gt
 
 
 class CLIUpgradeTests(unittest.TestCase):

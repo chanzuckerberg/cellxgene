@@ -3,7 +3,7 @@ import json
 import unittest
 import unittest.mock
 
-from server.converters.schema import ontology
+from local_server.converters.schema import ontology
 
 
 class TestOntologyParsing(unittest.TestCase):

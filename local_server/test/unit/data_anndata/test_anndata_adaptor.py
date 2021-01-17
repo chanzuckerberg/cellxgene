@@ -8,12 +8,12 @@ import pandas as pd
 import pytest
 from parameterized import parameterized_class
 
-import server.test.unit.decode_fbs as decode_fbs
-from server.common.data_locator import DataLocator
-from server.common.errors import FilterError
-from server.data_anndata.anndata_adaptor import AnndataAdaptor
-from server.test import PROJECT_ROOT, app_config, FIXTURES_ROOT
-from server.test.fixtures.fixtures import pbmc3k_colors
+import local_server.test.unit.decode_fbs as decode_fbs
+from local_server.common.data_locator import DataLocator
+from local_server.common.errors import FilterError
+from local_server.data_anndata.anndata_adaptor import AnndataAdaptor
+from local_server.test import PROJECT_ROOT, app_config, FIXTURES_ROOT
+from local_server.test.fixtures.fixtures import pbmc3k_colors
 
 """
 Test the anndata adaptor using the pbmc3k data set.

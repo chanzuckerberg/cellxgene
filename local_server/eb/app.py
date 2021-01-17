@@ -24,9 +24,9 @@ SERVERDIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(SERVERDIR)
 
 try:
-    from server.common.config.app_config import AppConfig
-    from server.app.app import Server
-    from server.common.data_locator import DataLocator, discover_s3_region_name
+    from local_server.common.config.app_config import AppConfig
+    from local_server.app.app import Server
+    from local_server.common.data_locator import DataLocator, discover_s3_region_name
 except Exception:
     logging.critical("Exception importing server modules", exc_info=True)
     sys.exit(1)

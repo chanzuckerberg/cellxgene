@@ -9,8 +9,8 @@ import anndata
 import numpy as np
 from pandas import Series, DataFrame
 
-from server.common.utils.corpora_constants import CorporaConstants
-from server.converters.h5ad_data_file import H5ADDataFile
+from local_server.common.utils.corpora_constants import CorporaConstants
+from local_server.converters.h5ad_data_file import H5ADDataFile
 
 PROJECT_ROOT = popen("git rev-parse --show-toplevel").read().strip()
 
@@ -222,7 +222,7 @@ class TestH5ADDataFile(unittest.TestCase):
         )
 
     def _write_anndata_to_file(self, anndata):
-        temporary_filename = f"{PROJECT_ROOT}/server/test/fixtures/{uuid4()}.h5ad"
+        temporary_filename = f"{PROJECT_ROOT}/local_server/test/fixtures/{uuid4()}.h5ad"
         anndata.write(temporary_filename)
 
         return temporary_filename

@@ -3,11 +3,11 @@ from unittest.mock import patch
 
 import requests
 
-from server.common.errors import ConfigurationError
-from server.common.config.app_config import AppConfig
-from server.test import test_server, FIXTURES_ROOT
-from server.common.utils.type_conversion_utils import convert_string_to_value
-from server.test.unit.common.config import ConfigTests
+from local_server.common.errors import ConfigurationError
+from local_server.common.config.app_config import AppConfig
+from local_server.test import test_server, FIXTURES_ROOT
+from local_server.common.utils.type_conversion_utils import convert_string_to_value
+from local_server.test.unit.common.config import ConfigTests
 
 
 class TestExternalConfig(ConfigTests):
@@ -88,7 +88,7 @@ class TestExternalConfig(ConfigTests):
             app_config.complete_config()
         self.assertEqual(config_error.exception.message, "required environment variable 'THIS_ENV_IS_NOT_SET' not set")
 
-    @patch("server.common.config.external_config.get_secret_key")
+    @patch("local_server.common.config.external_config.get_secret_key")
     def test_aws_secrets_manager(self, mock_get_secret_key):
         mock_get_secret_key.return_value = {
             "oauth_client_secret": "mock_oauth_secret",
@@ -129,7 +129,7 @@ class TestExternalConfig(ConfigTests):
         self.assertEqual(app_config.server_config.authentication__params_oauth__client_secret, "mock_oauth_secret")
         self.assertEqual(app_config.default_dataset_config.user_annotations__hosted_tiledb_array__db_uri, "mock_db_uri")
 
-    @patch("server.common.config.external_config.get_secret_key")
+    @patch("local_server.common.config.external_config.get_secret_key")
     def test_aws_secrets_manager_error(self, mock_get_secret_key):
         mock_get_secret_key.return_value = {
             "oauth_client_secret": "mock_oauth_secret",

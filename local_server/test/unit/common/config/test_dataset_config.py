@@ -5,14 +5,14 @@ import requests
 import unittest
 from unittest.mock import patch
 
-from server.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
-from server.common.annotations.local_file_csv import AnnotationsLocalFile
-from server.common.config.app_config import AppConfig
-from server.common.config.base_config import BaseConfig
-from server.test import test_server, PROJECT_ROOT, FIXTURES_ROOT
+from local_server.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
+from local_server.common.annotations.local_file_csv import AnnotationsLocalFile
+from local_server.common.config.app_config import AppConfig
+from local_server.common.config.base_config import BaseConfig
+from local_server.test import test_server, PROJECT_ROOT, FIXTURES_ROOT
 
-from server.common.errors import ConfigurationError
-from server.test.unit.common.config import ConfigTests
+from local_server.common.errors import ConfigurationError
+from local_server.test.unit.common.config import ConfigTests
 
 
 class TestDatasetConfig(ConfigTests):
@@ -46,7 +46,7 @@ class TestDatasetConfig(ConfigTests):
         self.assertEqual(config.default_dataset_config.diffexp__lfc_cutoff, 0.01)
         self.assertIsNone(config.default_dataset_config.user_annotations__ontology__obo_location)
 
-    @patch("server.common.config.dataset_config.BaseConfig.validate_correct_type_of_configuration_attribute")
+    @patch("local_server.common.config.dataset_config.BaseConfig.validate_correct_type_of_configuration_attribute")
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
         mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.dataset_config.complete_config(self.context)
@@ -93,7 +93,7 @@ class TestDatasetConfig(ConfigTests):
 
         self.assertEqual(self.context["messages"], ["Warning: db_uri ignored as annotations are disabled."])
 
-    @patch("server.common.config.dataset_config.DbUtils")
+    @patch("local_server.common.config.dataset_config.DbUtils")
     def test_handle_user_annotations__instantiates_user_annotations_class_correctly(self, mock_db_utils):
         mock_db_utils.return_value = "123"
         config = self.get_config(

@@ -7,11 +7,11 @@ import pandas as pd
 import tiledb
 from flask import current_app
 
-from server.common.annotations.annotations import Annotations
-from server.common.errors import AnnotationCategoryNameError
-from server.common.utils.sanitization_utils import sanitize_values_in_list
-from server.common.utils.type_conversion_utils import get_dtypes_and_schemas_of_dataframe, get_dtype_of_array
-from server.db.cellxgene_orm import Annotation
+from local_server.common.annotations.annotations import Annotations
+from local_server.common.errors import AnnotationCategoryNameError
+from local_server.common.utils.sanitization_utils import sanitize_values_in_list
+from local_server.common.utils.type_conversion_utils import get_dtypes_and_schemas_of_dataframe, get_dtype_of_array
+from local_server.db.cellxgene_orm import Annotation
 
 
 class AnnotationsHostedTileDB(Annotations):

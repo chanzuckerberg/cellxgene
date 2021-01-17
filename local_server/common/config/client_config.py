@@ -1,4 +1,4 @@
-from server import display_version as cellxgene_display_version
+from local_server import display_version as cellxgene_display_version
 
 
 def get_client_config(app_config, data_adaptor):

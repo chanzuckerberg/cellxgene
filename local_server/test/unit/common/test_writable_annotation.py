@@ -9,12 +9,12 @@ import pandas as pd
 import tiledb
 from flask import Flask
 
-import server.test.unit.decode_fbs as decode_fbs
-from server.common.errors import AnnotationCategoryNameError
-from server.common.rest import schema_get_helper, annotations_put_fbs_helper
-from server.data_common.matrix_loader import MatrixDataType
-from server.db.cellxgene_orm import CellxGeneDataset, Annotation
-from server.test import data_with_tmp_annotations, make_fbs, data_with_tmp_tiledb_annotations
+import local_server.test.unit.decode_fbs as decode_fbs
+from local_server.common.errors import AnnotationCategoryNameError
+from local_server.common.rest import schema_get_helper, annotations_put_fbs_helper
+from local_server.data_common.matrix_loader import MatrixDataType
+from local_server.db.cellxgene_orm import CellxGeneDataset, Annotation
+from local_server.test import data_with_tmp_annotations, make_fbs, data_with_tmp_tiledb_annotations
 
 
 class auth(object):

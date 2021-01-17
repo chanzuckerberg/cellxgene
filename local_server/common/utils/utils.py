@@ -10,7 +10,7 @@ from urllib.parse import urlsplit, urljoin
 import numpy as np
 from flask import json
 
-from server.common.errors import ConfigurationError
+from local_server.common.errors import ConfigurationError
 
 
 def find_available_port(host, port=5005):
@@ -95,7 +95,7 @@ def jsonify_numpy(data):
 
 def import_plugins(plugin_module):
     """
-    Load optional plugin modules from server.common.plugins
+    Load optional plugin modules from local_server.common.plugins
 
     If you would like to customize cellxgene, you can add submodules to server.common.plugins before running the app.
     This code will import each, loading the code in each. If no plugins are defined, initializing the app continues as

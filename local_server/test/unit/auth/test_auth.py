@@ -2,8 +2,8 @@ import unittest
 
 import requests
 
-from server.common.config.app_config import AppConfig
-from server.test import FIXTURES_ROOT, test_server
+from local_server.common.config.app_config import AppConfig
+from local_server.test import FIXTURES_ROOT, test_server
 
 
 class AuthTest(unittest.TestCase):

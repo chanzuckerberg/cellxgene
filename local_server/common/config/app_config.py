@@ -1,11 +1,11 @@
 import yaml
 from flatten_dict import unflatten
 
-from server.default_config import get_default_config
-from server.common.config.dataset_config import DatasetConfig
-from server.common.config.server_config import ServerConfig
-from server.common.config.external_config import ExternalConfig
-from server.common.errors import ConfigurationError
+from local_server.default_config import get_default_config
+from local_server.common.config.dataset_config import DatasetConfig
+from local_server.common.config.server_config import ServerConfig
+from local_server.common.config.external_config import ExternalConfig
+from local_server.common.errors import ConfigurationError
 
 
 class AppConfig(object):

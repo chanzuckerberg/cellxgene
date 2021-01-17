@@ -3,16 +3,16 @@ import unittest
 from unittest import mock
 from unittest.mock import patch
 
-from server.common.config.base_config import BaseConfig
-from server.common.utils.utils import find_available_port
-from server.test import PROJECT_ROOT, FIXTURES_ROOT
+from local_server.common.config.base_config import BaseConfig
+from local_server.common.utils.utils import find_available_port
+from local_server.test import PROJECT_ROOT, FIXTURES_ROOT
 
 import requests
 
-from server.common.config.app_config import AppConfig
-from server.common.errors import ConfigurationError
-from server.test import test_server
-from server.test.unit.common.config import ConfigTests
+from local_server.common.config.app_config import AppConfig
+from local_server.common.errors import ConfigurationError
+from local_server.test import test_server
+from local_server.test.unit.common.config import ConfigTests
 
 
 def mockenv(**envvars):
@@ -49,7 +49,7 @@ class TestServerConfig(ConfigTests):
         with self.assertRaises(ConfigurationError):
             invalid_config.complete_config()
 
-    @patch("server.common.config.server_config.BaseConfig.validate_correct_type_of_configuration_attribute")
+    @patch("local_server.common.config.server_config.BaseConfig.validate_correct_type_of_configuration_attribute")
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
         mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.server_config.complete_config(self.context)
@@ -60,7 +60,7 @@ class TestServerConfig(ConfigTests):
         with self.assertRaises(ConfigurationError):
             config.server_config.handle_app(self.context)
 
-    @patch("server.common.config.server_config.discover_s3_region_name")
+    @patch("local_server.common.config.server_config.discover_s3_region_name")
     def test_handle_data_locator_works_for_default_types(self, mock_discover_region_name):
         mock_discover_region_name.return_value = None
         # Default config
@@ -81,7 +81,7 @@ class TestServerConfig(ConfigTests):
         with self.assertRaises(ConfigurationError):
             config.server_config.handle_data_locator()
 
-    @patch("server.common.config.server_config.discover_s3_region_name")
+    @patch("local_server.common.config.server_config.discover_s3_region_name")
     def test_handle_data_locator_can_read_from_dataroot(self, mock_discover_region_name):
         mock_discover_region_name.return_value = "us-west-2"
         dataroot = {
@@ -286,7 +286,7 @@ class TestServerConfig(ConfigTests):
             response = session.get(f"{server}/set2/pbmc3k.cxg/")
             self.assertEqual(response.status_code, 200)
 
-    @patch("server.common.config.server_config.diffexp_tiledb.set_config")
+    @patch("local_server.common.config.server_config.diffexp_tiledb.set_config")
     def test_handle_diffexp(self, mock_tiledb_config):
         custom_config_file = self.custom_app_config(
             dataroot=f"{FIXTURES_ROOT}",
@@ -301,7 +301,7 @@ class TestServerConfig(ConfigTests):
         # called with the min of diffexp_max_workers and cpus*cpu_multiplier
         mock_tiledb_config.assert_called_once_with(1, 4)
 
-    @patch("server.data_cxg.cxg_adaptor.CxgAdaptor.set_tiledb_context")
+    @patch("local_server.data_cxg.cxg_adaptor.CxgAdaptor.set_tiledb_context")
     def test_handle_adaptor(self, mock_tiledb_context):
         custom_config = self.custom_app_config(
             dataroot=f"{FIXTURES_ROOT}", cxg_tile_cache_size=10, cxg_num_reader_threads=2

@@ -11,18 +11,18 @@ from subprocess import Popen
 import pandas as pd
 import requests
 
-from server.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
-from server.common.annotations.local_file_csv import AnnotationsLocalFile
-from server.common.config.app_config import AppConfig
-from server.common.config import DEFAULT_SERVER_PORT
-from server.common.data_locator import DataLocator
-from server.common.utils.utils import find_available_port
-from server.data_common.fbs.matrix import encode_matrix_fbs
-from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
-from server.db.db_utils import DbUtils
+from local_server.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
+from local_server.common.annotations.local_file_csv import AnnotationsLocalFile
+from local_server.common.config.app_config import AppConfig
+from local_server.common.config import DEFAULT_SERVER_PORT
+from local_server.common.data_locator import DataLocator
+from local_server.common.utils.utils import find_available_port
+from local_server.data_common.fbs.matrix import encode_matrix_fbs
+from local_server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
+from local_server.db.db_utils import DbUtils
 
 PROJECT_ROOT = popen("git rev-parse --show-toplevel").read().strip()
-FIXTURES_ROOT = PROJECT_ROOT + "/server/test/fixtures"
+FIXTURES_ROOT = PROJECT_ROOT + "/local_server/test/fixtures"
 
 
 def data_with_tmp_tiledb_annotations(ext: MatrixDataType):
@@ -56,7 +56,7 @@ def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
     tmp_dir = tempfile.mkdtemp()
     annotations_file = path.join(tmp_dir, "test_annotations.csv")
     if annotations_fixture:
-        shutil.copyfile(f"{PROJECT_ROOT}/server/test/fixtures/pbmc3k-annotations.csv", annotations_file)
+        shutil.copyfile(f"{PROJECT_ROOT}/local_server/test/fixtures/pbmc3k-annotations.csv", annotations_file)
     fname = {
         MatrixDataType.H5AD: f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
         MatrixDataType.CXG: "test/fixtures/pbmc3k.cxg",

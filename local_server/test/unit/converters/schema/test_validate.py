@@ -5,7 +5,7 @@ import unittest
 import pandas as pd
 import scanpy as sc
 
-from server.converters.schema import validate
+from local_server.converters.schema import validate
 
 PROJECT_ROOT = os.popen("git rev-parse --show-toplevel").read().strip()
 
@@ -411,7 +411,7 @@ class TestGetSchema(unittest.TestCase):
 class TestValidate(unittest.TestCase):
 
     def setUp(self):
-        self.source_h5ad_path = f"{PROJECT_ROOT}/server/test/fixtures/pbmc3k-CSC-gz.h5ad"
+        self.source_h5ad_path = f"{PROJECT_ROOT}/local_server/test/fixtures/pbmc3k-CSC-gz.h5ad"
 
     def test_shallow(self):
 

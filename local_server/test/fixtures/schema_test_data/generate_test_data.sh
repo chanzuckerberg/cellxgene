@@ -7,7 +7,7 @@ import os
 from scipy.io import mmread, mmwrite
 import scipy.sparse
 import pandas as pd
-from server.converters.schema import gene_symbol
+from local_server.converters.schema import gene_symbol
 
 mat = mmread("filtered_gene_bc_matrices/hg19/matrix.mtx").todense()
 genes = pd.read_csv("filtered_gene_bc_matrices/hg19/genes.tsv", sep='\t', names=["gene_id", "gene_symbol"])

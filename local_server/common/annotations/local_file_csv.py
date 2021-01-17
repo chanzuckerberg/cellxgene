@@ -8,9 +8,9 @@ from hashlib import blake2b
 import pandas as pd
 from flask import session, has_request_context, current_app
 
-from server import __version__ as cellxgene_version
-from server.common.annotations.annotations import Annotations
-from server.common.errors import AnnotationsError
+from local_server import __version__ as cellxgene_version
+from local_server.common.annotations.annotations import Annotations
+from local_server.common.errors import AnnotationsError
 
 
 class AnnotationsLocalFile(Annotations):

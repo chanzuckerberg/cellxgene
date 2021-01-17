@@ -6,7 +6,7 @@ import concurrent.futures
 import numpy as np
 import requests
 import sys
-from server.data_common.fbs.matrix import encode_matrix_fbs
+from local_server.data_common.fbs.matrix import encode_matrix_fbs
 import pandas as pd
 import random
 

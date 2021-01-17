@@ -1,6 +1,6 @@
 from flask import session, request, redirect, current_app, after_this_request, has_request_context, g
-from server.auth.auth import AuthTypeClientBase, AuthTypeFactory
-from server.common.errors import AuthenticationError, ConfigurationError
+from local_server.auth.auth import AuthTypeClientBase, AuthTypeFactory
+from local_server.common.errors import AuthenticationError, ConfigurationError
 from urllib.parse import urlencode, urlparse
 import json
 import requests

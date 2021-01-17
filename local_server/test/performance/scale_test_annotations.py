@@ -7,10 +7,10 @@ random.seed(time.time())
 """
 To run this script sign into cellxgene in the desired environment and grab the returned cookie, update the cookie
 variable below with your cookie and run the following command to see results in the terminal:
-locust -f server/test/performance/scale_test_annotations.py --headless -u 30 -r 10 --host https://api.cellxgene.dev.single-cell.czi.technology/cellxgene/e/ --run-time 5m 2>&1 | tee locust_dev_stats.txt
+locust -f local_server/test/performance/scale_test_annotations.py --headless -u 30 -r 10 --host https://api.cellxgene.dev.single-cell.czi.technology/cellxgene/e/ --run-time 5m 2>&1 | tee locust_dev_stats.txt
 
 Or if you want to use the locust gui run:
-locust -f server/test/performance/scale_test_annotations.py -u 30 -r 10 --host https://api.cellxgene.dev.single-cell.czi.technology/cellxgene/e/
+locust -f local_server/test/performance/scale_test_annotations.py -u 30 -r 10 --host https://api.cellxgene.dev.single-cell.czi.technology/cellxgene/e/
 
 If you want to test staging you'll need to substitute staging for dev in the host url
 To test prod you'll need to replace dev.single-cell.czi.technology with cziscience.com

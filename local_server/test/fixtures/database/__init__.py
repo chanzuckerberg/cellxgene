@@ -4,9 +4,9 @@ import random
 
 from sqlalchemy import func
 
-from server.db.cellxgene_orm import CellxGeneUser, CellxGeneDataset, Annotation, Base
-from server.db.create_db import create_db
-from server.db.db_utils import DbUtils
+from local_server.db.cellxgene_orm import CellxGeneUser, CellxGeneDataset, Annotation, Base
+from local_server.db.create_db import create_db
+from local_server.db.db_utils import DbUtils
 
 
 class TestDatabase:

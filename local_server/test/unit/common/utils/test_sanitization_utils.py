@@ -1,6 +1,6 @@
 import unittest
 
-from server.common.utils.sanitization_utils import sanitize_values_in_list, sanitize_keys_in_dictionary
+from local_server.common.utils.sanitization_utils import sanitize_values_in_list, sanitize_keys_in_dictionary
 
 
 class TestSanitizationUtils(unittest.TestCase):

@@ -9,8 +9,8 @@ from flask import Flask, jsonify, make_response, request, redirect
 from multiprocessing import Process
 
 import jose
-from server.common.config.app_config import AppConfig
-from server.test import FIXTURES_ROOT, test_server
+from local_server.common.config.app_config import AppConfig
+from local_server.test import FIXTURES_ROOT, test_server
 
 # This tests the oauth authentication type.
 # This test starts a cellxgene server and a mock oauth server.

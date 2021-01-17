@@ -2,7 +2,7 @@ from os import path
 
 import click
 
-from server.converters.h5ad_data_file import H5ADDataFile
+from local_server.converters.h5ad_data_file import H5ADDataFile
 
 
 @click.command(

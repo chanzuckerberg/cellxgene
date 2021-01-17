@@ -4,11 +4,11 @@ import unittest
 
 import yaml
 
-from server.default_config import default_config
-from server.common.config.app_config import AppConfig
-from server.test.unit.common.config import ConfigTests
-from server.common.errors import ConfigurationError
-from server.test import FIXTURES_ROOT
+from local_server.default_config import default_config
+from local_server.common.config.app_config import AppConfig
+from local_server.test.unit.common.config import ConfigTests
+from local_server.common.errors import ConfigurationError
+from local_server.test import FIXTURES_ROOT
 
 
 class AppConfigTest(ConfigTests):

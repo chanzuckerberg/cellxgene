@@ -17,8 +17,8 @@ cwd := $(shell pwd)
 build: clean
 	mkdir artifact.dir; \
 	(cd ../.. ; \
-	  git ls-files server/ | cpio -pdm $(cwd)/artifact.dir ; ); \
-	$(call copy_client_assets,../../client/build,artifact.dir/server) ; \
+	  git ls-files local_server/ | cpio -pdm $(cwd)/artifact.dir ; ); \
+	$(call copy_client_assets,../../client/build,artifact.dir/local_server) ; \
 	set -e ; \
 	cp app.py artifact.dir/application.py; \
 	cp ../requirements.txt artifact.dir; \
@@ -37,22 +37,22 @@ build: clean
 	     cp customize/requirements.txt artifact.dir;  \
 	  fi ; \
 	  if [ -d customize/deploy ] ; then \
-		 mkdir -p artifact.dir/server/common/web/static/cellxgene; \
-		 cp -r customize/deploy artifact.dir/server/common/web/static/cellxgene;  \
+		 mkdir -p artifact.dir/local_server/common/web/static/cellxgene; \
+		 cp -r customize/deploy artifact.dir/local_server/common/web/static/cellxgene;  \
 	  fi; \
 	  if [ -d customize/inline_scripts ] ; then \
-	      cp -r customize/inline_scripts/* artifact.dir/server/common/web/templates;  \
+	      cp -r customize/inline_scripts/* artifact.dir/local_server/common/web/templates;  \
 	  fi; \
 	  if [ -d customize/ebextensions ] ; then \
 	      cp -r customize/ebextensions/* artifact.dir/.ebextensions;  \
 	  fi; \
 	fi; \
 	if [ -d customize/plugins ] ; then \
-	  cp -r customize/plugins artifact.dir/server/;  \
+	  cp -r customize/plugins artifact.dir/local_server/;  \
 	fi; \
 	(cd artifact.dir; \
-	  cp -r server/common/web/static static; \
-	  zip -r ../artifact.zip . --exclude server/test/\* server/eb/\* ; ); \
+	  cp -r local_server/common/web/static static; \
+	  zip -r ../artifact.zip . --exclude local_server/test/\* local_server/eb/\* ; ); \
 	if ! grep artifact.zip .elasticbeanstalk/config.yml ; then \
 	    mkdir -p .elasticbeanstalk ; cat config_deploy.yaml >> .elasticbeanstalk/config.yml ; fi
 

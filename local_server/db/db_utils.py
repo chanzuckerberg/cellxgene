@@ -4,7 +4,7 @@ import uuid
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from server.db.cellxgene_orm import Base, CellxGeneDataset, CellxGeneUser
+from local_server.db.cellxgene_orm import Base, CellxGeneDataset, CellxGeneUser
 
 
 class DbUtils:

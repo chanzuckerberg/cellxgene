@@ -3,7 +3,7 @@ Drops and recreates all tables for local testing according to cellxgene_orm.py
 """
 from sqlalchemy import create_engine
 
-from server.db.cellxgene_orm import Base
+from local_server.db.cellxgene_orm import Base
 
 
 def create_db(database_uri: str = "postgresql://postgres:test_pw@localhost:5432"):

@@ -6,17 +6,17 @@ import anndata
 import numpy as np
 import tiledb
 
-from server.common.colors import convert_anndata_category_colors_to_cxg_category_colors
-from server.common.corpora import corpora_get_props_from_anndata
-from server.common.errors import ColorFormatException
-from server.common.utils.cxg_constants import CxgConstants
-from server.common.utils.cxg_generation_utils import (
+from local_server.common.colors import convert_anndata_category_colors_to_cxg_category_colors
+from local_server.common.corpora import corpora_get_props_from_anndata
+from local_server.common.errors import ColorFormatException
+from local_server.common.utils.cxg_constants import CxgConstants
+from local_server.common.utils.cxg_generation_utils import (
     convert_dictionary_to_cxg_group,
     convert_dataframe_to_cxg_array,
     convert_ndarray_to_cxg_dense_array,
     convert_matrix_to_cxg_array,
 )
-from server.common.utils.matrix_utils import is_matrix_sparse, get_column_shift_encode_for_matrix
+from local_server.common.utils.matrix_utils import is_matrix_sparse, get_column_shift_encode_for_matrix
 
 
 class H5ADDataFile:

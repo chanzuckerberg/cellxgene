@@ -8,7 +8,7 @@ import numpy
 import pandas as pd
 import scanpy as sc
 
-from server.converters.schema import remix
+from local_server.converters.schema import remix
 
 PROJECT_ROOT = os.popen("git rev-parse --show-toplevel").read().strip()
 
@@ -16,10 +16,10 @@ PROJECT_ROOT = os.popen("git rev-parse --show-toplevel").read().strip()
 class TestApplySchema(unittest.TestCase):
 
     def setUp(self):
-        self.source_h5ad_path = f"{PROJECT_ROOT}/server/test/fixtures/pbmc3k-CSC-gz.h5ad"
-        self.output_h5ad_path = f"{PROJECT_ROOT}/server/test/fixtures/test_remix.h5ad"
-        self.config_path = f"{PROJECT_ROOT}/server/test/fixtures/test_config.yaml"
-        self.bad_config_path = f"{PROJECT_ROOT}/server/test/fixtures/test_bad_config.yaml"
+        self.source_h5ad_path = f"{PROJECT_ROOT}/local_server/test/fixtures/pbmc3k-CSC-gz.h5ad"
+        self.output_h5ad_path = f"{PROJECT_ROOT}/local_server/test/fixtures/test_remix.h5ad"
+        self.config_path = f"{PROJECT_ROOT}/local_server/test/fixtures/test_config.yaml"
+        self.bad_config_path = f"{PROJECT_ROOT}/local_server/test/fixtures/test_bad_config.yaml"
 
     def tearDown(self):
         try:
@@ -27,7 +27,7 @@ class TestApplySchema(unittest.TestCase):
         except OSError:
             pass
 
-    @unittest.mock.patch("server.converters.schema.ontology.get_ontology_label")
+    @unittest.mock.patch("local_server.converters.schema.ontology.get_ontology_label")
     def test_apply_schema(self, mock_get_ontology_label):
         mock_get_ontology_label.return_value = "test label"
         remix.apply_schema(self.source_h5ad_path, self.config_path, self.output_h5ad_path)
@@ -42,7 +42,7 @@ class TestApplySchema(unittest.TestCase):
 
         self.assertIn("version", new_adata.uns_keys())
 
-    @unittest.mock.patch("server.converters.schema.ontology.get_ontology_label")
+    @unittest.mock.patch("local_server.converters.schema.ontology.get_ontology_label")
     def test_apply_bad_schema(self, mock_get_ontology_label):
         mock_get_ontology_label.return_value = "test label"
         remix.apply_schema(self.source_h5ad_path, self.bad_config_path, self.output_h5ad_path)
@@ -77,7 +77,7 @@ class TestFieldParsing(unittest.TestCase):
         self.assertEqual(("UBERON:1234", ""), remix.split_suffix("UBERON:1234"))
         self.assertEqual(("UBERON:1234 (something)", ""), remix.split_suffix("UBERON:1234 (something)"))
 
-    @unittest.mock.patch("server.converters.schema.ontology.get_ontology_label")
+    @unittest.mock.patch("local_server.converters.schema.ontology.get_ontology_label")
     def test_get_curie_and_label(self, mock_get_ontology_label):
         mock_get_ontology_label.return_value = "test label"
         self.assertEqual(
@@ -123,7 +123,7 @@ class TestManipulateAnndata(unittest.TestCase):
             json.dumps([{"name": "contributor1"}, {"name": "contributor2"}])
         )
 
-    @unittest.mock.patch("server.converters.schema.ontology.get_ontology_label")
+    @unittest.mock.patch("local_server.converters.schema.ontology.get_ontology_label")
     def test_remix_uns(self, mock_get_ontology_label):
         mock_get_ontology_label.return_value = "Pan troglodytes"
         uns_config = {
@@ -154,7 +154,7 @@ class TestManipulateAnndata(unittest.TestCase):
         self.assertEqual(self.adata.uns['contributors'],
                          json.dumps([{"name": "scientist", "email": "scientist@science.com"}]))
 
-    @unittest.mock.patch("server.converters.schema.ontology.get_ontology_label")
+    @unittest.mock.patch("local_server.converters.schema.ontology.get_ontology_label")
     def test_remix_obs(self, mock_get_ontology_label):
         mock_get_ontology_label.return_value = "lung (in a monkey)"
         obs_config = {
@@ -189,10 +189,10 @@ class TestManipulateAnndata(unittest.TestCase):
 class TestFixupGeneSymbols(unittest.TestCase):
 
     def setUp(self):
-        self.seurat_path = f"{PROJECT_ROOT}/server/test/fixtures/schema_test_data/seurat_tutorial.h5ad"
-        self.seurat_merged_path = f"{PROJECT_ROOT}/server/test/fixtures/schema_test_data/seurat_tutorial_merged.h5ad"
-        self.sctransform_path = f"{PROJECT_ROOT}/server/test/fixtures/schema_test_data/sctransform.h5ad"
-        self.sctransform_merged_path = f"{PROJECT_ROOT}/server/test/fixtures/schema_test_data/sctransform_merged.h5ad"
+        self.seurat_path = f"{PROJECT_ROOT}/local_server/test/fixtures/schema_test_data/seurat_tutorial.h5ad"
+        self.seurat_merged_path = f"{PROJECT_ROOT}/local_server/test/fixtures/schema_test_data/seurat_tutorial_merged.h5ad"
+        self.sctransform_path = f"{PROJECT_ROOT}/local_server/test/fixtures/schema_test_data/sctransform.h5ad"
+        self.sctransform_merged_path = f"{PROJECT_ROOT}/local_server/test/fixtures/schema_test_data/sctransform_merged.h5ad"
 
         # There's lots of MALAT1, but it doesn't collide with any other names,
         # so it shouldn't change during merging.
@@ -203,7 +203,7 @@ class TestFixupGeneSymbols(unittest.TestCase):
         if not os.path.isfile(self.seurat_path):
             return unittest.skip(
                 "Skipping gene symbol conversion tests because test h5ads are not present. To create them, "
-                "run server/test/fixtures/schema_test_data/generate_test_data.sh"
+                "run local_server/test/fixtures/schema_test_data/generate_test_data.sh"
             )
 
         original_adata = sc.read_h5ad(self.seurat_path)
@@ -232,7 +232,7 @@ class TestFixupGeneSymbols(unittest.TestCase):
         if not os.path.isfile(self.sctransform_path):
             return unittest.skip(
                 "Skipping gene symbol conversion tests because test h5ads are not present. To create them, "
-                "run server/test/fixtures/schema_test_data/generate_test_data.sh"
+                "run local_server/test/fixtures/schema_test_data/generate_test_data.sh"
             )
 
         original_adata = sc.read_h5ad(self.sctransform_path)

@@ -4,10 +4,10 @@ import tempfile
 import time
 import unittest
 
-from server.common.config.app_config import AppConfig
-from server.common.errors import DatasetAccessError
-from server.data_common.matrix_loader import MatrixDataCacheManager
-from server.test import FIXTURES_ROOT
+from local_server.common.config.app_config import AppConfig
+from local_server.common.errors import DatasetAccessError
+from local_server.data_common.matrix_loader import MatrixDataCacheManager
+from local_server.test import FIXTURES_ROOT
 
 
 class MatrixCacheTest(unittest.TestCase):

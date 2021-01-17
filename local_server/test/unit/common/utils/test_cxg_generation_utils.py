@@ -8,7 +8,7 @@ import numpy as np
 import tiledb
 from pandas import Series, DataFrame
 
-from server.common.utils.cxg_generation_utils import (
+from local_server.common.utils.cxg_generation_utils import (
     convert_dictionary_to_cxg_group,
     convert_dataframe_to_cxg_array,
     convert_ndarray_to_cxg_dense_array,
@@ -20,7 +20,7 @@ PROJECT_ROOT = popen("git rev-parse --show-toplevel").read().strip()
 
 class TestCxgGenerationUtils(unittest.TestCase):
     def setUp(self):
-        self.testing_cxg_temp_directory = f"{PROJECT_ROOT}/server/test/fixtures/{uuid4()}"
+        self.testing_cxg_temp_directory = f"{PROJECT_ROOT}/local_server/test/fixtures/{uuid4()}"
         mkdir(self.testing_cxg_temp_directory)
 
     def tearDown(self):

@@ -1,9 +1,9 @@
 from enum import Enum
 import threading
 import time
-from server.data_common.rwlock import RWLock
-from server.common.errors import DatasetAccessError
-from server.common.data_locator import DataLocator
+from local_server.data_common.rwlock import RWLock
+from local_server.common.errors import DatasetAccessError
+from local_server.common.data_locator import DataLocator
 from contextlib import contextmanager
 from http import HTTPStatus
 
@@ -234,11 +234,11 @@ class MatrixDataLoader(object):
             raise DatasetAccessError("Dataset does not have an allowed type.")
 
         if self.matrix_data_type == MatrixDataType.H5AD:
-            from server.data_anndata.anndata_adaptor import AnndataAdaptor
+            from local_server.data_anndata.anndata_adaptor import AnndataAdaptor
 
             self.matrix_type = AnndataAdaptor
         elif self.matrix_data_type == MatrixDataType.CXG:
-            from server.data_cxg.cxg_adaptor import CxgAdaptor
+            from local_server.data_cxg.cxg_adaptor import CxgAdaptor
 
             self.matrix_type = CxgAdaptor
 

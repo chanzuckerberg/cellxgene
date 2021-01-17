@@ -8,15 +8,15 @@ from pandas.core.dtypes.dtypes import CategoricalDtype
 from scipy import sparse
 from server_timing import Timing as ServerTiming
 
-import server.compute.diffexp_generic as diffexp_generic
-from server.common.colors import convert_anndata_category_colors_to_cxg_category_colors
-from server.common.constants import Axis, MAX_LAYOUTS
-from server.common.corpora import corpora_get_props_from_anndata
-from server.common.errors import PrepareError, DatasetAccessError, FilterError
-from server.common.utils.type_conversion_utils import get_schema_type_hint_of_array
-from server.compute.scanpy import scanpy_umap
-from server.data_common.data_adaptor import DataAdaptor
-from server.data_common.fbs.matrix import encode_matrix_fbs
+import local_server.compute.diffexp_generic as diffexp_generic
+from local_server.common.colors import convert_anndata_category_colors_to_cxg_category_colors
+from local_server.common.constants import Axis, MAX_LAYOUTS
+from local_server.common.corpora import corpora_get_props_from_anndata
+from local_server.common.errors import PrepareError, DatasetAccessError, FilterError
+from local_server.common.utils.type_conversion_utils import get_schema_type_hint_of_array
+from local_server.compute.scanpy import scanpy_umap
+from local_server.data_common.data_adaptor import DataAdaptor
+from local_server.data_common.fbs.matrix import encode_matrix_fbs
 
 anndata_version = version.parse(str(anndata.__version__)).release
 

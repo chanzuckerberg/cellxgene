@@ -1,8 +1,8 @@
 from http import HTTPStatus
 from flask import make_response, jsonify
 
-from server import __version__ as cellxgene_version
-from server.common.data_locator import DataLocator
+from local_server import __version__ as cellxgene_version
+from local_server.common.data_locator import DataLocator
 
 
 def _is_accessible(path, config):

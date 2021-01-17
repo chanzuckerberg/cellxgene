@@ -8,8 +8,8 @@ https://github.com/chanzuckerberg/corpora-data-portal/blob/main/backend/schema/c
 import collections
 import json
 
-from server.cli.upgrade import validate_version_str
-from server.common.utils.corpora_constants import CorporaConstants
+from local_server.cli.upgrade import validate_version_str
+from local_server.common.utils.corpora_constants import CorporaConstants
 
 
 def corpora_get_versions_from_anndata(adata):
