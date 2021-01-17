@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from server.common.utils.matrix_utils import is_matrix_sparse, get_column_shift_encode_for_matrix
+from local_server.common.utils.matrix_utils import is_matrix_sparse, get_column_shift_encode_for_matrix
 
 
 class TestMatrixUtils(unittest.TestCase):

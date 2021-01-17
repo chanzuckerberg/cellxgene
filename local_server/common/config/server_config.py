@@ -4,14 +4,14 @@ import warnings
 from os.path import basename
 from urllib.parse import urlparse, quote_plus
 
-from server.auth.auth import AuthTypeFactory
-from server.common.config.base_config import BaseConfig
-from server.common.config import DEFAULT_SERVER_PORT, BIG_FILE_SIZE_THRESHOLD
-from server.common.errors import ConfigurationError, DatasetAccessError
-from server.common.data_locator import discover_s3_region_name
-from server.common.utils.utils import is_port_available, find_available_port, custom_format_warning
-from server.compute import diffexp_cxg as diffexp_tiledb
-from server.data_common.matrix_loader import MatrixDataCacheManager, MatrixDataLoader, MatrixDataType
+from local_server.auth.auth import AuthTypeFactory
+from local_server.common.config.base_config import BaseConfig
+from local_server.common.config import DEFAULT_SERVER_PORT, BIG_FILE_SIZE_THRESHOLD
+from local_server.common.errors import ConfigurationError, DatasetAccessError
+from local_server.common.data_locator import discover_s3_region_name
+from local_server.common.utils.utils import is_port_available, find_available_port, custom_format_warning
+from local_server.compute import diffexp_cxg as diffexp_tiledb
+from local_server.data_common.matrix_loader import MatrixDataCacheManager, MatrixDataLoader, MatrixDataType
 
 
 class ServerConfig(BaseConfig):
@@ -346,7 +346,7 @@ class ServerConfig(BaseConfig):
             if type(self.data_locator__s3__region_name) == str:
                 self.adaptor__cxg_adaptor__tiledb_ctx[regionkey] = self.data_locator__s3__region_name
 
-        from server.data_cxg.cxg_adaptor import CxgAdaptor
+        from local_server.data_cxg.cxg_adaptor import CxgAdaptor
 
         CxgAdaptor.set_tiledb_context(self.adaptor__cxg_adaptor__tiledb_ctx)
 

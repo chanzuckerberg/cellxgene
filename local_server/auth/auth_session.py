@@ -1,4 +1,4 @@
-from server.auth.auth import AuthTypeBase, AuthTypeFactory
+from local_server.auth.auth import AuthTypeBase, AuthTypeFactory
 from flask import session
 from uuid import uuid4
 

@@ -5,14 +5,14 @@ import pandas as pd
 from flatbuffers import Builder
 from scipy import sparse
 
-import server.data_common.fbs.NetEncoding.Column as Column
-import server.data_common.fbs.NetEncoding.Float32Array as Float32Array
-import server.data_common.fbs.NetEncoding.Float64Array as Float64Array
-import server.data_common.fbs.NetEncoding.Int32Array as Int32Array
-import server.data_common.fbs.NetEncoding.JSONEncodedArray as JSONEncodedArray
-import server.data_common.fbs.NetEncoding.Matrix as Matrix
-import server.data_common.fbs.NetEncoding.TypedArray as TypedArray
-import server.data_common.fbs.NetEncoding.Uint32Array as Uint32Array
+import local_server.data_common.fbs.NetEncoding.Column as Column
+import local_server.data_common.fbs.NetEncoding.Float32Array as Float32Array
+import local_server.data_common.fbs.NetEncoding.Float64Array as Float64Array
+import local_server.data_common.fbs.NetEncoding.Int32Array as Int32Array
+import local_server.data_common.fbs.NetEncoding.JSONEncodedArray as JSONEncodedArray
+import local_server.data_common.fbs.NetEncoding.Matrix as Matrix
+import local_server.data_common.fbs.NetEncoding.TypedArray as TypedArray
+import local_server.data_common.fbs.NetEncoding.Uint32Array as Uint32Array
 
 
 # Serialization helper

@@ -1,6 +1,6 @@
 import re
 
-from server.common.errors import ColorFormatException
+from local_server.common.errors import ColorFormatException
 
 HEX_COLOR_FORMAT = re.compile("^#[a-fA-F0-9]{6,6}$")
 

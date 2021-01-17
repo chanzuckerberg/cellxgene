@@ -1,4 +1,4 @@
-from server.auth.auth import AuthTypeClientBase, AuthTypeFactory
+from local_server.auth.auth import AuthTypeClientBase, AuthTypeFactory
 from flask import session, request, redirect, current_app
 
 

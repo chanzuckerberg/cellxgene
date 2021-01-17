@@ -2,11 +2,11 @@
 Code to decode, for testing purposes, the flatbuffer encoded blobs.
 
 This code will need to be updated if fbs/matrix.fbs changes. For more information, see fbs/matrix.fbs and
-server/data_common/fbs/
+local_server/data_common/fbs/
 """
 
-import server.data_common.fbs.NetEncoding.Matrix as Matrix
-from server.data_common.fbs.matrix import deserialize_typed_array
+import local_server.data_common.fbs.NetEncoding.Matrix as Matrix
+from local_server.data_common.fbs.matrix import deserialize_typed_array
 
 
 def decode_matrix_FBS(buf):

@@ -4,12 +4,12 @@ import random
 import time
 import numpy as np
 
-import server.compute.diffexp_cxg as diffexp_cxg
-import server.compute.diffexp_generic as diffexp_generic
+import local_server.compute.diffexp_cxg as diffexp_cxg
+import local_server.compute.diffexp_generic as diffexp_generic
 
-from server.common.config.app_config import AppConfig
-from server.data_common.matrix_loader import MatrixDataLoader
-from server.data_cxg.cxg_adaptor import CxgAdaptor
+from local_server.common.config.app_config import AppConfig
+from local_server.data_common.matrix_loader import MatrixDataLoader
+from local_server.data_cxg.cxg_adaptor import CxgAdaptor
 
 
 def main():

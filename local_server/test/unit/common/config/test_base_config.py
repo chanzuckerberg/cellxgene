@@ -1,9 +1,9 @@
 import unittest
 
-from server.common.config.app_config import AppConfig
-from server.test import FIXTURES_ROOT
-from server.test.unit.common.config import ConfigTests
-from server.common.errors import ConfigurationError
+from local_server.common.config.app_config import AppConfig
+from local_server.test import FIXTURES_ROOT
+from local_server.test.unit.common.config import ConfigTests
+from local_server.common.errors import ConfigurationError
 
 
 class BaseConfigTest(ConfigTests):

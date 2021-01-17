@@ -2,7 +2,7 @@ import unittest
 
 import pandas as pd
 
-from server.cli.prepare import make_index_unique
+from local_server.cli.prepare import make_index_unique
 
 
 class CLIPrepareTests(unittest.TestCase):

@@ -1,4 +1,4 @@
-from server.auth.auth import AuthTypeBase, AuthTypeFactory
+from local_server.auth.auth import AuthTypeBase, AuthTypeFactory
 
 
 class AuthTypeNone(AuthTypeBase):

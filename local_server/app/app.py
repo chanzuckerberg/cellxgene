@@ -20,14 +20,14 @@ from flask import (
 from flask_restful import Api, Resource
 from server_timing import Timing as ServerTiming
 
-import server.common.rest as common_rest
-from server.common.data_locator import DataLocator
-from server.common.errors import DatasetAccessError, RequestException
-from server.common.health import health_check
-from server.common.utils.utils import path_join, Float32JSONEncoder
-from server.data_common.matrix_loader import MatrixDataLoader
+import local_server.common.rest as common_rest
+from local_server.common.data_locator import DataLocator
+from local_server.common.errors import DatasetAccessError, RequestException
+from local_server.common.health import health_check
+from local_server.common.utils.utils import path_join, Float32JSONEncoder
+from local_server.data_common.matrix_loader import MatrixDataLoader
 
-webbp = Blueprint("webapp", "server.common.web", template_folder="templates")
+webbp = Blueprint("webapp", "local_server.common.web", template_folder="templates")
 
 ONE_WEEK = 7 * 24 * 60 * 60
 

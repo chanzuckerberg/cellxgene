@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 from scipy import sparse
 
-import server.test.unit.decode_fbs as decode_fbs
-from server.data_common.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
+import local_server.test.unit.decode_fbs as decode_fbs
+from local_server.data_common.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
 
 
 class FbsTests(unittest.TestCase):

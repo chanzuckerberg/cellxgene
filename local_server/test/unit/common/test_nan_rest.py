@@ -1,9 +1,9 @@
 from http import HTTPStatus
 import unittest
 import math
-from server.test import start_test_server, stop_test_server
+from local_server.test import start_test_server, stop_test_server
 
-import server.test.unit.decode_fbs as decode_fbs
+import local_server.test.unit.decode_fbs as decode_fbs
 
 import requests
 

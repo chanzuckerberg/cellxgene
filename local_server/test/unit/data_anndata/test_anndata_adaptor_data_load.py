@@ -1,10 +1,10 @@
 import unittest
 import json
 
-from server.data_anndata.anndata_adaptor import AnndataAdaptor
-from server.common.data_locator import DataLocator
-from server.common.config.app_config import AppConfig
-from server.test import PROJECT_ROOT
+from local_server.data_anndata.anndata_adaptor import AnndataAdaptor
+from local_server.common.data_locator import DataLocator
+from local_server.common.config.app_config import AppConfig
+from local_server.test import PROJECT_ROOT
 
 
 class DataLoadAdaptorTest(unittest.TestCase):

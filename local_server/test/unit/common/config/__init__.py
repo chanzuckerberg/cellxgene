@@ -5,7 +5,7 @@ import random
 from unittest import mock
 import yaml
 
-from server.test import FIXTURES_ROOT
+from local_server.test import FIXTURES_ROOT
 
 
 def mockenv(**envvars):

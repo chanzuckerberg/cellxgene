@@ -7,12 +7,12 @@ from http import HTTPStatus
 import anndata
 import requests
 
-from server.common.corpora import (
+from local_server.common.corpora import (
     corpora_get_versions_from_anndata,
     corpora_is_version_supported,
     corpora_get_props_from_anndata,
 )
-from server.test import PROJECT_ROOT, start_test_server, stop_test_server
+from local_server.test import PROJECT_ROOT, start_test_server, stop_test_server
 
 VERSION = "v0.2"
 

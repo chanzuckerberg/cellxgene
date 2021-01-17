@@ -1,7 +1,7 @@
 import unittest
-from server.db.cellxgene_orm import CellxGeneUser, CellxGeneDataset, Annotation
-from server.db.db_utils import DbUtils
-from server.test.fixtures.database import TestDatabase
+from local_server.db.cellxgene_orm import CellxGeneUser, CellxGeneDataset, Annotation
+from local_server.db.db_utils import DbUtils
+from local_server.test.fixtures.database import TestDatabase
 
 
 class DatabaseTest(unittest.TestCase):

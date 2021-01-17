@@ -2,8 +2,8 @@ import unittest
 import tempfile
 import requests
 import subprocess
-from server.test import PROJECT_ROOT, FIXTURES_ROOT
-from server.common.config.app_config import AppConfig
+from local_server.test import PROJECT_ROOT, FIXTURES_ROOT
+from local_server.common.config.app_config import AppConfig
 from contextlib import contextmanager
 import time
 import os
@@ -32,7 +32,7 @@ def run_eb_app(tempdirname):
 class Elastic_Beanstalk_Test(unittest.TestCase):
     def test_run(self):
 
-        tempdir = tempfile.TemporaryDirectory(dir=f"{PROJECT_ROOT}/server")
+        tempdir = tempfile.TemporaryDirectory(dir=f"{PROJECT_ROOT}/local_server")
         tempdirname = tempdir.name
 
         config = AppConfig()
@@ -42,7 +42,7 @@ class Elastic_Beanstalk_Test(unittest.TestCase):
         config.complete_config()
         config.write_config(f"{tempdirname}/config.yaml")
 
-        subprocess.check_call(f"git ls-files . | cpio -pdm {tempdirname}", cwd=f"{PROJECT_ROOT}/server/eb", shell=True)
+        subprocess.check_call(f"git ls-files . | cpio -pdm {tempdirname}", cwd=f"{PROJECT_ROOT}/local_server/eb", shell=True)
         subprocess.check_call(["make", "build"], cwd=tempdirname)
 
         with run_eb_app(tempdirname) as server:
@@ -53,7 +53,7 @@ class Elastic_Beanstalk_Test(unittest.TestCase):
             assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
 
     def test_config(self):
-        check_config_script = os.path.join(PROJECT_ROOT, "server", "eb", "check_config.py")
+        check_config_script = os.path.join(PROJECT_ROOT, "local_server", "eb", "check_config.py")
         with tempfile.TemporaryDirectory() as tempdir:
             configfile = os.path.join(tempdir, "config.yaml")
             app_config = AppConfig()

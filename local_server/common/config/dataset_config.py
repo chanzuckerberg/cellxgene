@@ -1,13 +1,13 @@
 import os
 from os.path import splitext, isdir
 
-from server.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
-from server.common.annotations.local_file_csv import AnnotationsLocalFile
-from server.common.config.base_config import BaseConfig
-from server.common.errors import ConfigurationError, OntologyLoadFailure
-from server.compute.scanpy import get_scanpy_module
-from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
-from server.db.db_utils import DbUtils
+from local_server.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
+from local_server.common.annotations.local_file_csv import AnnotationsLocalFile
+from local_server.common.config.base_config import BaseConfig
+from local_server.common.errors import ConfigurationError, OntologyLoadFailure
+from local_server.compute.scanpy import get_scanpy_module
+from local_server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
+from local_server.db.db_utils import DbUtils
 
 
 class DatasetConfig(BaseConfig):

@@ -1,7 +1,7 @@
 import copy
 
 from flatten_dict import flatten
-from server.common.errors import ConfigurationError
+from local_server.common.errors import ConfigurationError
 
 
 class BaseConfig(object):

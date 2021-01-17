@@ -2,7 +2,7 @@ import sys
 import argparse
 import yaml
 
-from server.common.config.app_config import AppConfig
+from local_server.common.config.app_config import AppConfig
 
 
 def main():

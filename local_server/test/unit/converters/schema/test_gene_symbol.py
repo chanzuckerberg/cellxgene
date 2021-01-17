@@ -3,8 +3,8 @@ import unittest
 
 import pandas as pd
 
-from server.test import FIXTURES_ROOT
-from server.converters.schema import gene_symbol
+from local_server.test import FIXTURES_ROOT
+from local_server.converters.schema import gene_symbol
 
 
 class TestHGNCSymbolChecker(unittest.TestCase):

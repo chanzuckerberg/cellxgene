@@ -1,6 +1,6 @@
 import click
 
-from server.converters.schema import remix, validate
+from local_server.converters.schema import remix, validate
 
 
 @click.group(
