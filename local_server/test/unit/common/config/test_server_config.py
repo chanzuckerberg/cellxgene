@@ -53,7 +53,7 @@ class TestServerConfig(ConfigTests):
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
         mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.server_config.complete_config(self.context)
-        self.assertEqual(mock_check_attrs.call_count, 40)
+        self.assertEqual(mock_check_attrs.call_count, 37)
 
     def test_handle_app__throws_error_if_port_doesnt_exist(self):
         config = self.get_config(port=99999999)
@@ -277,21 +277,6 @@ class TestServerConfig(ConfigTests):
 
             response = session.get(f"{server}/health")
             assert response.json()["status"] == "pass"
-
-    @patch("local_server.common.config.server_config.diffexp_tiledb.set_config")
-    def test_handle_diffexp(self, mock_tiledb_config):
-        custom_config_file = self.custom_app_config(
-            dataroot=f"{FIXTURES_ROOT}",
-            cpu_multiplier=3,
-            diffexp_max_workers=1,
-            target_workunit=4,
-            config_file_name=self.config_file_name,
-        )
-        config = AppConfig()
-        config.update_from_config_file(custom_config_file)
-        config.server_config.handle_diffexp()
-        # called with the min of diffexp_max_workers and cpus*cpu_multiplier
-        mock_tiledb_config.assert_called_once_with(1, 4)
 
     @patch("local_server.data_cxg.cxg_adaptor.CxgAdaptor.set_tiledb_context")
     def test_handle_adaptor(self, mock_tiledb_context):

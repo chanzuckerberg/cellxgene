@@ -146,36 +146,6 @@ class EndPoints(object):
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
 
-    def test_diff_exp(self):
-        endpoint = "diffexp/obs"
-        url = f"{self.URL_BASE}{endpoint}"
-        params = {
-            "mode": "topN",
-            "set1": {"filter": {"obs": {"annotation_value": [{"name": "louvain", "values": ["NK cells"]}]}}},
-            "set2": {"filter": {"obs": {"annotation_value": [{"name": "louvain", "values": ["CD8 T cells"]}]}}},
-            "count": 7,
-        }
-        result = self.session.post(url, json=params)
-        self.assertEqual(result.status_code, HTTPStatus.OK)
-        self.assertEqual(result.headers["Content-Type"], "application/json")
-        result_data = result.json()
-        self.assertEqual(len(result_data), 7)
-
-    def test_diff_exp_indices(self):
-        endpoint = "diffexp/obs"
-        url = f"{self.URL_BASE}{endpoint}"
-        params = {
-            "mode": "topN",
-            "count": 10,
-            "set1": {"filter": {"obs": {"index": [[0, 500]]}}},
-            "set2": {"filter": {"obs": {"index": [[500, 1000]]}}},
-        }
-        result = self.session.post(url, json=params)
-        self.assertEqual(result.status_code, HTTPStatus.OK)
-        self.assertEqual(result.headers["Content-Type"], "application/json")
-        result_data = result.json()
-        self.assertEqual(len(result_data), 10)
-
     def test_get_annotations_var_fbs(self):
         endpoint = "annotations/var"
         url = f"{self.URL_BASE}{endpoint}"
@@ -403,6 +373,36 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
     @property
     def annotations_enabled(self):
         return False
+
+    def test_diff_exp(self):
+        endpoint = "diffexp/obs"
+        url = f"{self.URL_BASE}{endpoint}"
+        params = {
+            "mode": "topN",
+            "set1": {"filter": {"obs": {"annotation_value": [{"name": "louvain", "values": ["NK cells"]}]}}},
+            "set2": {"filter": {"obs": {"annotation_value": [{"name": "louvain", "values": ["CD8 T cells"]}]}}},
+            "count": 7,
+        }
+        result = self.session.post(url, json=params)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
+        result_data = result.json()
+        self.assertEqual(len(result_data), 7)
+
+    def test_diff_exp_indices(self):
+        endpoint = "diffexp/obs"
+        url = f"{self.URL_BASE}{endpoint}"
+        params = {
+            "mode": "topN",
+            "count": 10,
+            "set1": {"filter": {"obs": {"index": [[0, 500]]}}},
+            "set2": {"filter": {"obs": {"index": [[500, 1000]]}}},
+        }
+        result = self.session.post(url, json=params)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
+        result_data = result.json()
+        self.assertEqual(len(result_data), 10)
 
 
 class EndPointsCxg(unittest.TestCase, EndPoints):
