@@ -13,7 +13,6 @@ from local_server.test import (
     data_with_tmp_annotations,
     make_fbs,
     PROJECT_ROOT,
-    FIXTURES_ROOT,
     start_test_server,
     stop_test_server,
 )
@@ -405,20 +404,6 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
         self.assertEqual(len(result_data), 10)
 
 
-class EndPointsCxg(unittest.TestCase, EndPoints):
-    """Test Case for endpoints"""
-
-    ANNOTATIONS_ENABLED = False
-
-    @classmethod
-    def setUpClass(cls):
-        cls._setupClass(cls, [f"{FIXTURES_ROOT}/pbmc3k.cxg", "--disable-annotations"])
-
-    @classmethod
-    def tearDownClass(cls):
-        stop_test_server(cls.ps)
-
-
 class EndPointsAnndataAnnotations(unittest.TestCase, EndPointsAnnotations):
     """Test Case for endpoints"""
 
@@ -429,22 +414,6 @@ class EndPointsAnndataAnnotations(unittest.TestCase, EndPointsAnnotations):
         cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_annotations(
             MatrixDataType.H5AD, annotations_fixture=True
         )
-        cls._setupClass(cls, ["--annotations-file", cls.annotations.output_file, cls.data.get_location()])
-
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp_dir)
-        stop_test_server(cls.ps)
-
-
-class EndPointsCxgAnnotations(unittest.TestCase, EndPointsAnnotations):
-    """Test Case for endpoints"""
-
-    ANNOTATIONS_ENABLED = True
-
-    @classmethod
-    def setUpClass(cls):
-        cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_annotations(MatrixDataType.CXG, annotations_fixture=True)
         cls._setupClass(cls, ["--annotations-file", cls.annotations.output_file, cls.data.get_location()])
 
     @classmethod

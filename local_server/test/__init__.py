@@ -30,7 +30,6 @@ def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
         shutil.copyfile(f"{PROJECT_ROOT}/local_server/test/fixtures/pbmc3k-annotations.csv", annotations_file)
     fname = {
         MatrixDataType.H5AD: f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
-        MatrixDataType.CXG: "test/fixtures/pbmc3k.cxg",
     }[ext]
     data_locator = DataLocator(fname)
     config = AppConfig()

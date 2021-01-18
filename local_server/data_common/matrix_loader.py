@@ -210,7 +210,6 @@ class MatrixDataCacheManager(object):
 
 class MatrixDataType(Enum):
     H5AD = "h5ad"
-    CXG = "cxg"
     UNKNOWN = "unknown"
 
 
@@ -237,16 +236,10 @@ class MatrixDataLoader(object):
             from local_server.data_anndata.anndata_adaptor import AnndataAdaptor
 
             self.matrix_type = AnndataAdaptor
-        elif self.matrix_data_type == MatrixDataType.CXG:
-            from local_server.data_cxg.cxg_adaptor import CxgAdaptor
-
-            self.matrix_type = CxgAdaptor
 
     def __matrix_data_type(self):
         if self.location.path.endswith(".h5ad"):
             return MatrixDataType.H5AD
-        elif ".cxg" in self.location.path:
-            return MatrixDataType.CXG
         else:
             return MatrixDataType.UNKNOWN
 
@@ -275,7 +268,7 @@ class MatrixDataLoader(object):
 
     def pre_load_validation(self):
         if self.matrix_data_type == MatrixDataType.UNKNOWN:
-            raise DatasetAccessError("Dataset does not have a recognized type: .h5ad or .cxg")
+            raise DatasetAccessError("Dataset does not have a recognized type: .h5ad")
         self.matrix_type.pre_load_validation(self.location)
 
     def file_size(self):

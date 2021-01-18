@@ -108,14 +108,6 @@ server:
       region_name: true
 
   adaptor:
-    cxg_adaptor:
-      # The key/values under tiledb_ctx will be used to initialize the tiledb Context.
-      # If 'vfs.s3.region' is not set, then it will automatically use the setting from
-      # data_locator / s3 / region_name.
-      tiledb_ctx:
-        sm.tile_cache_size:  8589934592
-        sm.num_reader_threads:  32
-
     anndata_adaptor:
       backed: false
 

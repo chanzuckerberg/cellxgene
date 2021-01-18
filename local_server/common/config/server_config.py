@@ -19,7 +19,6 @@ class ServerConfig(BaseConfig):
     def __init__(self, app_config, default_config):
         dictval_cases = [
             ("app", "csp_directives"),
-            ("adaptor", "cxg_adaptor", "tiledb_ctx"),
             ("multi_dataset", "dataroot"),
         ]
         super().__init__(app_config, default_config, dictval_cases)
@@ -57,7 +56,6 @@ class ServerConfig(BaseConfig):
 
             self.data_locator__s3__region_name = default_config["data_locator"]["s3"]["region_name"]
 
-            self.adaptor__cxg_adaptor__tiledb_ctx = default_config["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
             self.adaptor__anndata_adaptor__backed = default_config["adaptor"]["anndata_adaptor"]["backed"]
 
             self.limits__diffexp_cellcount_max = default_config["limits"]["diffexp_cellcount_max"]
@@ -285,18 +283,6 @@ class ServerConfig(BaseConfig):
             )
 
     def handle_adaptor(self):
-        # cxg
-        self.validate_correct_type_of_configuration_attribute("adaptor__cxg_adaptor__tiledb_ctx", dict)
-        regionkey = "vfs.s3.region"
-        if regionkey not in self.adaptor__cxg_adaptor__tiledb_ctx:
-            if type(self.data_locator__s3__region_name) == str:
-                self.adaptor__cxg_adaptor__tiledb_ctx[regionkey] = self.data_locator__s3__region_name
-
-        from local_server.data_cxg.cxg_adaptor import CxgAdaptor
-
-        CxgAdaptor.set_tiledb_context(self.adaptor__cxg_adaptor__tiledb_ctx)
-
-        # anndata
         self.validate_correct_type_of_configuration_attribute("adaptor__anndata_adaptor__backed", bool)
 
     def handle_limits(self):

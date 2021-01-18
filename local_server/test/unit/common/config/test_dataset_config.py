@@ -184,15 +184,15 @@ class TestDatasetConfig(ConfigTests):
             assert data_config["config"]["parameters"]["disable-diffexp"] is False
             assert data_config["config"]["parameters"]["max-category-items"] == 101
 
-            response = session.get(f"{server}/set2/pbmc3k.cxg/api/v0.2/config")
+            response = session.get(f"{server}/set2/pbmc3k-CSC-gz.h5ad/api/v0.2/config")
             data_config = response.json()
-            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
+            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k-CSC-gz"
             assert data_config["config"]["parameters"]["annotations"] is True
             assert data_config["config"]["parameters"]["max-category-items"] == 102
 
-            response = session.get(f"{server}/set3/pbmc3k.cxg/api/v0.2/config")
+            response = session.get(f"{server}/set3/pbmc3k-CSC-gz.h5ad/api/v0.2/config")
             data_config = response.json()
-            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
+            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k-CSC-gz"
             assert data_config["config"]["parameters"]["annotations"] is True
             assert data_config["config"]["parameters"]["disable-diffexp"] is False
             assert data_config["config"]["parameters"]["max-category-items"] == 100

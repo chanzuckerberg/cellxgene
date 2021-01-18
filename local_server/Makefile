@@ -9,7 +9,7 @@ clean:
 .PHONY: unit-test
 unit-test: create-test-db
 	PYTHONWARNINGS=ignore:ResourceWarning coverage run \
-		--source=app,cli,common,compute,converters,data_anndata,data_common,data_cxg \
+		--source=app,cli,common,compute,converters,data_anndata,data_common \
 		--omit=.coverage,data_common/fbs/NetEncoding,venv \
 		-m unittest discover \
 		--start-directory test/ \
@@ -22,7 +22,7 @@ unit-test: create-test-db
 .PHONY: test-db
 test-db: create-test-db
 	PYTHONWARNINGS=ignore:ResourceWarning coverage run \
-		--source=app,cli,common,compute,converters,data_anndata,data_common,data_cxg \
+		--source=app,cli,common,compute,converters,data_anndata,data_common \
 		--omit=.coverage,data_common/fbs/NetEncoding,venv \
 		-m unittest discover \
 		--start-directory test/test_database \
