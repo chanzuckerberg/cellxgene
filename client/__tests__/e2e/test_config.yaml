@@ -24,10 +24,6 @@ server:
     type: test
 
 dataset:
-  app:
-    about_legal_tos: null
-    about_legal_privacy: null
-
   presentation:
     max_categories: 1000
     custom_colors: true

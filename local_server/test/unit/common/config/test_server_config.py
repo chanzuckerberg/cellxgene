@@ -227,16 +227,16 @@ class TestServerConfig(ConfigTests):
         )
 
         # Change this default to test if the dataroot overrides below work.
-        self.config.update_default_dataset_config(app__about_legal_tos="tos_default.html")
+        self.config.update_default_dataset_config(presentation__max_categories=100)
 
         # specialize the configs for set1
         self.config.add_dataroot_config(
-            "s1", user_annotations__enable=False, diffexp__enable=True, app__about_legal_tos="tos_set1.html"
+            "s1", user_annotations__enable=False, diffexp__enable=True, presentation__max_categories=101
         )
 
         # specialize the configs for set2
         self.config.add_dataroot_config(
-            "s2", user_annotations__enable=True, diffexp__enable=False, app__about_legal_tos="tos_set2.html"
+            "s2", user_annotations__enable=True, diffexp__enable=False, presentation__max_categories=102
         )
 
         # no specializations for set3 (they get the default dataset config)
@@ -250,20 +250,20 @@ class TestServerConfig(ConfigTests):
             assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
             assert data_config["config"]["parameters"]["annotations"] is False
             assert data_config["config"]["parameters"]["disable-diffexp"] is False
-            assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set1.html"
+            assert data_config["config"]["parameters"]["max-category-items"] == 101
 
             response = session.get(f"{server}/set2/pbmc3k.cxg/api/v0.2/config")
             data_config = response.json()
             assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
             assert data_config["config"]["parameters"]["annotations"] is True
-            assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set2.html"
+            assert data_config["config"]["parameters"]["max-category-items"] == 102
 
             response = session.get(f"{server}/set3/pbmc3k.cxg/api/v0.2/config")
             data_config = response.json()
             assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
             assert data_config["config"]["parameters"]["annotations"] is True
             assert data_config["config"]["parameters"]["disable-diffexp"] is False
-            assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_default.html"
+            assert data_config["config"]["parameters"]["max-category-items"] == 100
 
             response = session.get(f"{server}/health")
             assert response.json()["status"] == "pass"

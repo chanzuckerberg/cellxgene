@@ -17,8 +17,6 @@ class DatasetConfig(BaseConfig):
         try:
             self.app__scripts = default_config["app"]["scripts"]
             self.app__inline_scripts = default_config["app"]["inline_scripts"]
-            self.app__about_legal_tos = default_config["app"]["about_legal_tos"]
-            self.app__about_legal_privacy = default_config["app"]["about_legal_privacy"]
             self.app__authentication_enable = default_config["app"]["authentication_enable"]
 
             self.presentation__max_categories = default_config["presentation"]["max_categories"]
@@ -58,8 +56,6 @@ class DatasetConfig(BaseConfig):
     def handle_app(self):
         self.validate_correct_type_of_configuration_attribute("app__scripts", list)
         self.validate_correct_type_of_configuration_attribute("app__inline_scripts", list)
-        self.validate_correct_type_of_configuration_attribute("app__about_legal_tos", (type(None), str))
-        self.validate_correct_type_of_configuration_attribute("app__about_legal_privacy", (type(None), str))
         self.validate_correct_type_of_configuration_attribute("app__authentication_enable", bool)
 
         # scripts can be string (filename) or dict (attributes). Convert string to dict.

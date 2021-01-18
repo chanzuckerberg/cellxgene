@@ -4,9 +4,6 @@ dataset:
     scripts: {scripts} #list of strs (filenames) or dicts containing keys
     inline_scripts: {inline_scripts} #list of strs (filenames)
 
-    about_legal_tos: {about_legal_tos}
-    about_legal_privacy: {about_legal_privacy}
-
     authentication_enable: {authentication_enable}
 
   presentation:
