@@ -91,7 +91,7 @@ class TestExternalConfig(ConfigTests):
     @patch("local_server.common.config.external_config.get_secret_key")
     def test_aws_secrets_manager(self, mock_get_secret_key):
         mock_get_secret_key.return_value = {
-            "db_uri": "mock_db_uri",
+            "flask_secret_key": "mock_flask_secret_key",
         }
         configfile = self.custom_external_config(
             aws_secrets_manager_region="us-west-2",
@@ -99,12 +99,7 @@ class TestExternalConfig(ConfigTests):
                 dict(
                     name="my_secret",
                     values=[
-                        dict(key="flask_secret_key", path=["server", "app", "flask_secret_key"], required=False),
-                        dict(
-                            key="db_uri",
-                            path=["dataset", "user_annotations", "hosted_tiledb_array", "db_uri"],
-                            required=True,
-                        ),
+                        dict(key="flask_secret_key", path=["server", "app", "flask_secret_key"], required=True),
                     ],
                 )
             ],
@@ -114,13 +109,10 @@ class TestExternalConfig(ConfigTests):
         app_config = AppConfig()
         app_config.update_from_config_file(configfile)
         app_config.server_config.single_dataset__datapath = f"{FIXTURES_ROOT}/pbmc3k.cxg"
-        app_config.server_config.app__flask_secret_key = "original"
-        app_config.server_config.single_dataset__datapath = f"{FIXTURES_ROOT}/pbmc3k.cxg"
 
         app_config.complete_config()
 
-        self.assertEqual(app_config.server_config.app__flask_secret_key, "original")
-        self.assertEqual(app_config.default_dataset_config.user_annotations__hosted_tiledb_array__db_uri, "mock_db_uri")
+        self.assertEqual(app_config.server_config.app__flask_secret_key, "mock_flask_secret_key")
 
     @patch("local_server.common.config.external_config.get_secret_key")
     def test_aws_secrets_manager_error(self, mock_get_secret_key):

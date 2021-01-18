@@ -162,19 +162,19 @@ class AppConfigTest(ConfigTests):
 
         # test simple value in default dataset
         config.update_single_config_from_path_and_value(
-            ["dataset", "user_annotations", "hosted_tiledb_array", "db_uri"], "mydburi",
+            ["dataset", "user_annotations", "ontology", "obo_location"], "dummy_location",
         )
-        self.assertEqual(config.default_dataset_config.user_annotations__hosted_tiledb_array__db_uri, "mydburi")
-        self.assertEqual(config.dataroot_config["s1"].user_annotations__hosted_tiledb_array__db_uri, "mydburi")
-        self.assertEqual(config.dataroot_config["s2"].user_annotations__hosted_tiledb_array__db_uri, "mydburi")
+        self.assertEqual(config.default_dataset_config.user_annotations__ontology__obo_location, "dummy_location")
+        self.assertEqual(config.dataroot_config["s1"].user_annotations__ontology__obo_location, "dummy_location")
+        self.assertEqual(config.dataroot_config["s2"].user_annotations__ontology__obo_location, "dummy_location")
 
         # test simple value in specific dataset
         config.update_single_config_from_path_and_value(
-            ["per_dataset_config", "s1", "user_annotations", "hosted_tiledb_array", "db_uri"], "s1dburi"
+            ["per_dataset_config", "s1", "user_annotations", "ontology", "obo_location"], "s1dummy"
         )
-        self.assertEqual(config.default_dataset_config.user_annotations__hosted_tiledb_array__db_uri, "mydburi")
-        self.assertEqual(config.dataroot_config["s1"].user_annotations__hosted_tiledb_array__db_uri, "s1dburi")
-        self.assertEqual(config.dataroot_config["s2"].user_annotations__hosted_tiledb_array__db_uri, "mydburi")
+        self.assertEqual(config.default_dataset_config.user_annotations__ontology__obo_location, "dummy_location")
+        self.assertEqual(config.dataroot_config["s1"].user_annotations__ontology__obo_location, "s1dummy")
+        self.assertEqual(config.dataroot_config["s2"].user_annotations__ontology__obo_location, "dummy_location")
 
         # error checking
         bad_paths = [

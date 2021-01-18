@@ -1,13 +1,11 @@
 import os
 from os.path import splitext, isdir
 
-from local_server.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
 from local_server.common.annotations.local_file_csv import AnnotationsLocalFile
 from local_server.common.config.base_config import BaseConfig
 from local_server.common.errors import ConfigurationError, OntologyLoadFailure
 from local_server.compute.scanpy import get_scanpy_module
 from local_server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
-from local_server.db.db_utils import DbUtils
 
 
 class DatasetConfig(BaseConfig):
@@ -36,12 +34,6 @@ class DatasetConfig(BaseConfig):
             self.user_annotations__ontology__obo_location = default_config["user_annotations"]["ontology"][
                 "obo_location"
             ]
-            self.user_annotations__hosted_tiledb_array__db_uri = default_config["user_annotations"][
-                "hosted_tiledb_array"
-            ]["db_uri"]
-            self.user_annotations__hosted_tiledb_array__hosted_file_directory = default_config["user_annotations"][
-                "hosted_tiledb_array"
-            ]["hosted_file_directory"]
 
             self.embeddings__names = default_config["embeddings"]["names"]
             self.embeddings__enable_reembedding = default_config["embeddings"]["enable_reembedding"]
@@ -102,12 +94,6 @@ class DatasetConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__ontology__obo_location", (type(None), str)
         )
-        self.validate_correct_type_of_configuration_attribute(
-            "user_annotations__hosted_tiledb_array__db_uri", (type(None), str)
-        )
-        self.validate_correct_type_of_configuration_attribute(
-            "user_annotations__hosted_tiledb_array__hosted_file_directory", (type(None), str)
-        )
         if self.user_annotations__enable:
             server_config = self.app_config.server_config
             if not self.app__authentication_enable:
@@ -118,10 +104,8 @@ class DatasetConfig(BaseConfig):
 
             if self.user_annotations__type == "local_file_csv":
                 self.handle_local_file_csv_annotations()
-            elif self.user_annotations__type == "hosted_tiledb_array":
-                self.handle_hosted_tiledb_annotations()
             else:
-                raise ConfigurationError('The only annotation type support is "local_file_csv" or "hosted_tiledb_array')
+                raise ConfigurationError('The only annotation type support is "local_file_csv"')
             if self.user_annotations__ontology__enable or self.user_annotations__ontology__obo_location:
                 try:
                     self.user_annotations.load_ontology(self.user_annotations__ontology__obo_location)
@@ -158,32 +142,14 @@ class DatasetConfig(BaseConfig):
             ) as data_adaptor:
                 data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
 
-    def handle_hosted_tiledb_annotations(self):
-        self.validate_correct_type_of_configuration_attribute("user_annotations__hosted_tiledb_array__db_uri", str)
-        self.validate_correct_type_of_configuration_attribute(
-            "user_annotations__hosted_tiledb_array__hosted_file_directory", str
-        )
-        self.user_annotations = AnnotationsHostedTileDB(
-            directory_path=self.user_annotations__hosted_tiledb_array__hosted_file_directory,
-            db=DbUtils(self.user_annotations__hosted_tiledb_array__db_uri),
-        )
-
     def check_annotation_config_vars_not_set(self, context):
         if self.user_annotations__type is not None:
             dirname = self.user_annotations__local_file_csv__directory
             filename = self.user_annotations__local_file_csv__file
-            db_uri = self.user_annotations__hosted_tiledb_array__db_uri
-            hosted_file_dirname = self.user_annotations__hosted_tiledb_array__hosted_file_directory
             if filename is not None:
                 context["messagefn"]("Warning: --annotations-file ignored as annotations are disabled.")
             if dirname is not None:
                 context["messagefn"]("Warning: --annotations-dir ignored as annotations are disabled.")
-            if db_uri is not None:
-                context["messagefn"]("Warning: db_uri ignored as annotations are disabled.")
-            if hosted_file_dirname is not None:
-                context["messagefn"](
-                    "Warning: hosted_file_directory for hosted_tiledb_array ignored as annotations are disabled."
-                )
 
         if self.user_annotations__ontology__enable:
             context["messagefn"]("Warning: --experimental-annotations-ontology ignored as annotations are disabled.")
