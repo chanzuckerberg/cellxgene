@@ -32,7 +32,6 @@ class ServerConfig(BaseConfig):
             self.app__open_browser = default_config["app"]["open_browser"]
             self.app__force_https = default_config["app"]["force_https"]
             self.app__flask_secret_key = default_config["app"]["flask_secret_key"]
-            self.app__generate_cache_control_headers = default_config["app"]["generate_cache_control_headers"]
             self.app__server_timing_headers = default_config["app"]["server_timing_headers"]
             self.app__csp_directives = default_config["app"]["csp_directives"]
             self.app__api_base_url = default_config["app"]["api_base_url"]
@@ -93,7 +92,6 @@ class ServerConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute("app__open_browser", bool)
         self.validate_correct_type_of_configuration_attribute("app__force_https", bool)
         self.validate_correct_type_of_configuration_attribute("app__flask_secret_key", str)
-        self.validate_correct_type_of_configuration_attribute("app__generate_cache_control_headers", bool)
         self.validate_correct_type_of_configuration_attribute("app__server_timing_headers", bool)
         self.validate_correct_type_of_configuration_attribute("app__csp_directives", (type(None), dict))
         self.validate_correct_type_of_configuration_attribute("app__api_base_url", (type(None), str))
