@@ -36,13 +36,13 @@ class TestExternalConfig(ConfigTests):
         )
 
         env = os.environ
-        env["DATAPATH"] = f"{FIXTURES_ROOT}/pbmc3k.cxg"
+        env["DATAPATH"] = f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad"
         env["DIFFEXP"] = "False"
         with test_server(command_line_args=["-c", configfile], env=env) as server:
             session = requests.Session()
             response = session.get(f"{server}/api/v0.2/config")
             data_config = response.json()
-            self.assertEqual(data_config["config"]["displayNames"]["dataset"], "pbmc3k")
+            self.assertEqual(data_config["config"]["displayNames"]["dataset"], "pbmc3k-CSC-gz")
             self.assertTrue(data_config["config"]["parameters"]["disable-diffexp"])
 
         env["DATAPATH"] = f"{FIXTURES_ROOT}/a95c59b4-7f5d-4b80-ad53-a694834ca18b.h5ad"
@@ -108,7 +108,7 @@ class TestExternalConfig(ConfigTests):
 
         app_config = AppConfig()
         app_config.update_from_config_file(configfile)
-        app_config.server_config.single_dataset__datapath = f"{FIXTURES_ROOT}/pbmc3k.cxg"
+        app_config.server_config.single_dataset__datapath = f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad"
 
         app_config.complete_config()
 

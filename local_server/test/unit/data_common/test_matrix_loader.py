@@ -15,19 +15,19 @@ class MatrixCacheTest(unittest.TestCase):
         pass
 
     def make_temporay_datasets(self, dirname, num):
-        source = f"{FIXTURES_ROOT}/pbmc3k.cxg"
+        source = f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad"
         for i in range(num):
-            target = os.path.join(dirname, str(i) + ".cxg")
-            shutil.copytree(source, target)
+            target = os.path.join(dirname, str(i) + ".h5ad")
+            shutil.copyfile(source, target)
 
     def use_dataset(self, matrix_cache, dirname, app_config, dataset_index):
-        with matrix_cache.data_adaptor(None, os.path.join(dirname, str(dataset_index) + ".cxg"), app_config) as adaptor:
+        with matrix_cache.data_adaptor(None, os.path.join(dirname, str(dataset_index) + ".h5ad"), app_config) as adaptor:
             pass
         return adaptor
 
     def use_dataset_with_error(self, matrix_cache, dirname, app_config, dataset_index):
         try:
-            with matrix_cache.data_adaptor(None, os.path.join(dirname, str(dataset_index) + ".cxg"), app_config):
+            with matrix_cache.data_adaptor(None, os.path.join(dirname, str(dataset_index) + ".h5ad"), app_config):
                 raise DatasetAccessError("something bad happened")
         except DatasetAccessError:
             # the MatrixDataCacheManager rethrows the exception, so catch and ignore
@@ -37,8 +37,8 @@ class MatrixCacheTest(unittest.TestCase):
         datasets = matrix_cache.datasets
         result = {}
         for k, v in datasets.items():
-            # filter out the dirname and the .cxg from the name
-            newk = int(k[1][len(dirname) + 1 : -4])
+            # filter out the dirname and the .h5ad from the name
+            newk = int(k[1][len(dirname) + 1 : -5])
             result[newk] = v
 
         return result

@@ -53,7 +53,7 @@ class TestServerConfig(ConfigTests):
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
         mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.server_config.complete_config(self.context)
-        self.assertEqual(mock_check_attrs.call_count, 30)
+        self.assertEqual(mock_check_attrs.call_count, 29)
 
     def test_handle_app__throws_error_if_port_doesnt_exist(self):
         config = self.get_config(port=99999999)
@@ -182,7 +182,7 @@ class TestServerConfig(ConfigTests):
 
     def test_config_for_single_dataset(self):
         file_name = self.custom_app_config(
-            config_file_name="single_dataset.yml", dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k.cxg"
+            config_file_name="single_dataset.yml", dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad"
         )
         config = AppConfig()
         config.update_from_config_file(file_name)
@@ -192,7 +192,7 @@ class TestServerConfig(ConfigTests):
         file_name = self.custom_app_config(
             config_file_name="single_dataset_with_about.yml",
             about="www.cziscience.com",
-            dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k.cxg",
+            dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad",
         )
         config = AppConfig()
         config.update_from_config_file(file_name)
@@ -252,15 +252,15 @@ class TestServerConfig(ConfigTests):
             assert data_config["config"]["parameters"]["disable-diffexp"] is False
             assert data_config["config"]["parameters"]["max-category-items"] == 101
 
-            response = session.get(f"{server}/set2/pbmc3k.cxg/api/v0.2/config")
+            response = session.get(f"{server}/set2/pbmc3k-CSC-gz.h5ad/api/v0.2/config")
             data_config = response.json()
-            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
+            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k-CSC-gz"
             assert data_config["config"]["parameters"]["annotations"] is True
             assert data_config["config"]["parameters"]["max-category-items"] == 102
 
-            response = session.get(f"{server}/set3/pbmc3k.cxg/api/v0.2/config")
+            response = session.get(f"{server}/set3/pbmc3k-CSC-gz.h5ad/api/v0.2/config")
             data_config = response.json()
-            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
+            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k-CSC-gz"
             assert data_config["config"]["parameters"]["annotations"] is True
             assert data_config["config"]["parameters"]["disable-diffexp"] is False
             assert data_config["config"]["parameters"]["max-category-items"] == 100
@@ -269,21 +269,9 @@ class TestServerConfig(ConfigTests):
             assert response.json()["status"] == "pass"
 
             # access a dataset (no slash)
-            response = session.get(f"{server}/set2/pbmc3k.cxg")
+            response = session.get(f"{server}/set2/pbmc3k-CSC-gz.h5ad")
             self.assertEqual(response.status_code, 200)
 
             # access a dataset (with slash)
-            response = session.get(f"{server}/set2/pbmc3k.cxg/")
+            response = session.get(f"{server}/set2/pbmc3k-CSC-gz.h5ad/")
             self.assertEqual(response.status_code, 200)
-
-    @patch("local_server.data_cxg.cxg_adaptor.CxgAdaptor.set_tiledb_context")
-    def test_handle_adaptor(self, mock_tiledb_context):
-        custom_config = self.custom_app_config(
-            dataroot=f"{FIXTURES_ROOT}", cxg_tile_cache_size=10, cxg_num_reader_threads=2
-        )
-        config = AppConfig()
-        config.update_from_config_file(custom_config)
-        config.server_config.handle_adaptor()
-        mock_tiledb_context.assert_called_once_with(
-            {"sm.tile_cache_size": 10, "sm.num_reader_threads": 2, "vfs.s3.region": "us-east-1"}
-        )

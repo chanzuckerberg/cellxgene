@@ -20,8 +20,8 @@ class AuthTest(unittest.TestCase):
 
         with test_server(app_config=app_config) as server:
             session = requests.Session()
-            config = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/config").json()
-            userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
+            config = session.get(f"{server}/d/pbmc3k-CSC-gz.h5ad/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/d/pbmc3k-CSC-gz.h5ad/api/v0.2/userinfo").json()
             self.assertNotIn("authentication", config["config"])
             self.assertIsNone(userinfo)
 
@@ -34,8 +34,8 @@ class AuthTest(unittest.TestCase):
 
         with test_server(app_config=app_config) as server:
             session = requests.Session()
-            config = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/config").json()
-            userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
+            config = session.get(f"{server}/d/pbmc3k-CSC-gz.h5ad/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/d/pbmc3k-CSC-gz.h5ad/api/v0.2/userinfo").json()
 
             self.assertFalse(config["config"]["authentication"]["requires_client_login"])
             self.assertTrue(userinfo["userinfo"]["is_authenticated"])
@@ -62,8 +62,8 @@ class AuthTest(unittest.TestCase):
             session = requests.Session()
 
             # auth datasets
-            config = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config").json()
-            userinfo = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/userinfo").json()
+            config = session.get(f"{server}/auth/pbmc3k-CSC-gz.h5ad/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/auth/pbmc3k-CSC-gz.h5ad/api/v0.2/userinfo").json()
 
             self.assertFalse(userinfo["userinfo"]["is_authenticated"])
             self.assertIsNone(userinfo["userinfo"]["username"])
@@ -73,16 +73,16 @@ class AuthTest(unittest.TestCase):
             login_uri = config["config"]["authentication"]["login"]
             logout_uri = config["config"]["authentication"]["logout"]
 
-            self.assertEqual(login_uri, "/login?dataset=auth/pbmc3k.cxg")
-            self.assertEqual(logout_uri, "/logout?dataset=auth/pbmc3k.cxg")
+            self.assertEqual(login_uri, "/login?dataset=auth/pbmc3k-CSC-gz.h5ad")
+            self.assertEqual(logout_uri, "/logout?dataset=auth/pbmc3k-CSC-gz.h5ad")
 
             r = session.get(f"{server}/{login_uri}")
             # check that the login redirect worked
             self.assertEqual(r.history[0].status_code, 302)
-            self.assertEqual(r.url, f"{server}/auth/pbmc3k.cxg")
+            self.assertEqual(r.url, f"{server}/auth/pbmc3k-CSC-gz.h5ad")
 
-            config = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config").json()
-            userinfo = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/userinfo").json()
+            config = session.get(f"{server}/auth/pbmc3k-CSC-gz.h5ad/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/auth/pbmc3k-CSC-gz.h5ad/api/v0.2/userinfo").json()
             self.assertTrue(userinfo["userinfo"]["is_authenticated"])
             self.assertEqual(userinfo["userinfo"]["username"], "test_account")
             self.assertEqual(userinfo["userinfo"]["picture"], None)
@@ -91,22 +91,22 @@ class AuthTest(unittest.TestCase):
             r = session.get(f"{server}/{logout_uri}")
             # check that the logout redirect worked
             self.assertEqual(r.history[0].status_code, 302)
-            self.assertEqual(r.url, f"{server}/auth/pbmc3k.cxg")
-            config = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config").json()
-            userinfo = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/userinfo").json()
+            self.assertEqual(r.url, f"{server}/auth/pbmc3k-CSC-gz.h5ad")
+            config = session.get(f"{server}/auth/pbmc3k-CSC-gz.h5ad/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/auth/pbmc3k-CSC-gz.h5ad/api/v0.2/userinfo").json()
             self.assertFalse(userinfo["userinfo"]["is_authenticated"])
             self.assertIsNone(userinfo["userinfo"]["username"])
             self.assertTrue(config["config"]["parameters"]["annotations"])
 
             # no-auth datasets
-            config = session.get(f"{server}/no-auth/pbmc3k.cxg/api/v0.2/config").json()
-            userinfo = session.get(f"{server}/no-auth/pbmc3k.cxg/api/v0.2/userinfo").json()
+            config = session.get(f"{server}/no-auth/pbmc3k-CSC-gz.h5ad/api/v0.2/config").json()
+            userinfo = session.get(f"{server}/no-auth/pbmc3k-CSC-gz.h5ad/api/v0.2/userinfo").json()
             self.assertIsNone(userinfo)
             self.assertFalse(config["config"]["parameters"]["annotations"])
 
             # login with a picture
             session.get(f"{server}/{login_uri}&picture=myimage.png")
-            userinfo = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/userinfo").json()
+            userinfo = session.get(f"{server}/auth/pbmc3k-CSC-gz.h5ad/api/v0.2/userinfo").json()
             self.assertTrue(userinfo["userinfo"]["is_authenticated"])
             self.assertEqual(userinfo["userinfo"]["picture"], "myimage.png")
 
@@ -114,7 +114,7 @@ class AuthTest(unittest.TestCase):
         app_config = AppConfig()
         app_config.update_server_config(app__flask_secret_key="secret")
         app_config.update_server_config(
-            authentication__type="test", single_dataset__datapath=f"{self.dataset_dataroot}/pbmc3k.cxg"
+            authentication__type="test", single_dataset__datapath=f"{self.dataset_dataroot}/pbmc3k-CSC-gz.h5ad"
         )
 
         app_config.complete_config()

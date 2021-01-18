@@ -34,11 +34,6 @@ f"""server:
       region_name: {data_locater_region_name}
 
   adaptor:
-    cxg_adaptor:
-      tiledb_ctx:
-        sm.tile_cache_size:  {cxg_tile_cache_size}
-        sm.num_reader_threads:  {cxg_num_reader_threads}
-
     anndata_adaptor:
       backed: {anndata_backed}
 
