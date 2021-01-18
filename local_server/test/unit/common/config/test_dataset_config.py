@@ -5,7 +5,6 @@ import requests
 import unittest
 from unittest.mock import patch
 
-from local_server.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
 from local_server.common.annotations.local_file_csv import AnnotationsLocalFile
 from local_server.common.config.app_config import AppConfig
 from local_server.common.config.base_config import BaseConfig
@@ -50,7 +49,7 @@ class TestDatasetConfig(ConfigTests):
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
         mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.dataset_config.complete_config(self.context)
-        self.assertEqual(mock_check_attrs.call_count, 21)
+        self.assertEqual(mock_check_attrs.call_count, 19)
 
     def test_app_sets_script_vars(self):
         config = self.get_config(scripts=["path/to/script"])
@@ -85,34 +84,13 @@ class TestDatasetConfig(ConfigTests):
         with self.assertRaises(ConfigurationError):
             config.server_config.complete_config(self.context)
 
-    def test_handle_user_annotations__adds_warning_message_if_annotation_vars_set_when_annotations_disabled(self):
-        config = self.get_config(
-            enable_users_annotations="false", authentication_enable="false", db_uri="shouldnt/be/set"
-        )
-        config.default_dataset_config.handle_user_annotations(self.context)
-
-        self.assertEqual(self.context["messages"], ["Warning: db_uri ignored as annotations are disabled."])
-
-    @patch("local_server.common.config.dataset_config.DbUtils")
-    def test_handle_user_annotations__instantiates_user_annotations_class_correctly(self, mock_db_utils):
-        mock_db_utils.return_value = "123"
+    def test_handle_user_annotations__instantiates_user_annotations_class_correctly(self):
         config = self.get_config(
             enable_users_annotations="true", authentication_enable="true", annotation_type="local_file_csv"
         )
         config.server_config.complete_config(self.context)
         config.default_dataset_config.handle_user_annotations(self.context)
         self.assertIsInstance(config.default_dataset_config.user_annotations, AnnotationsLocalFile)
-
-        config = self.get_config(
-            enable_users_annotations="true",
-            authentication_enable="true",
-            annotation_type="hosted_tiledb_array",
-            db_uri="gotta/set/this",
-            hosted_file_directory="and/this",
-        )
-        config.server_config.complete_config(self.context)
-        config.default_dataset_config.handle_user_annotations(self.context)
-        self.assertIsInstance(config.default_dataset_config.user_annotations, AnnotationsHostedTileDB)
 
         config = self.get_config(
             enable_users_annotations="true", authentication_enable="true", annotation_type="NOT_REAL"
@@ -239,10 +217,10 @@ class TestDatasetConfig(ConfigTests):
                 dataset:
                     user_annotations:
                         enable: false
-                        type: hosted_tiledb_array
-                        hosted_tiledb_array:
-                            db_uri: fake_db_uri
-                            hosted_file_directory: fake_dir
+                        type: local_file_csv
+                        local_file_csv:
+                            file: fake_file
+                            directory: fake_dir
 
                 per_dataset_config:
                     test:
@@ -257,8 +235,8 @@ class TestDatasetConfig(ConfigTests):
             test_config = app_config.dataroot_config["test"]
 
             # test config from default
-            self.assertEqual(test_config.user_annotations__type, "hosted_tiledb_array")
-            self.assertEqual(test_config.user_annotations__hosted_tiledb_array__db_uri, "fake_db_uri")
+            self.assertEqual(test_config.user_annotations__type, "local_file_csv")
+            self.assertEqual(test_config.user_annotations__local_file_csv__file, "fake_file")
 
             # test config from specialization
             self.assertTrue(test_config.user_annotations__enable)

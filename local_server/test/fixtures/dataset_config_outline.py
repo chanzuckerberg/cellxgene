@@ -16,9 +16,6 @@ dataset:
   user_annotations:
     enable: {enable_users_annotations}
     type: {annotation_type}
-    hosted_tiledb_array:
-      db_uri: {db_uri}
-      hosted_file_directory: {hosted_file_directory}
     local_file_csv:
       directory: {local_file_csv_directory}
       file: {local_file_csv_file}

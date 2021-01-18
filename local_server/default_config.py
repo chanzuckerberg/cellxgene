@@ -145,9 +145,6 @@ dataset:
   user_annotations:
     enable: true
     type: local_file_csv
-    hosted_tiledb_array:
-        db_uri: null
-        hosted_file_directory: null
     local_file_csv:
       directory: null
       file: null
@@ -201,7 +198,7 @@ external:
   #        path: [server, app, flask_secret_key]
   #        required: true
   #      - key: db_uri
-  #        path: [dataset, user_annotations, hosted_tiledb_array, db_uri]
+  #        path: [dataset, user_annotations, db_uri]
   #        required: true
   #    - name:  my_auth_secret
   #      values:
