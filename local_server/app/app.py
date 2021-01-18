@@ -32,44 +32,7 @@ webbp = Blueprint("webapp", "local_server.common.web", template_folder="template
 ONE_WEEK = 7 * 24 * 60 * 60
 
 
-def _cache_control(always, **cache_kwargs):
-    """
-    Used to easily manage cache control headers on responses.
-    See Werkzeug for attributes that can be set, eg, no_cache, private, max_age, etc.
-    https://werkzeug.palletsprojects.com/en/1.0.x/datastructures/#werkzeug.datastructures.ResponseCacheControl
-    """
-
-    def inner_cache_control(f):
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            response = make_response(f(*args, **kwargs))
-            if not always and not current_app.app_config.server_config.app__generate_cache_control_headers:
-                return response
-            if response.status_code >= 400:
-                return response
-            for k, v in cache_kwargs.items():
-                setattr(response.cache_control, k, v)
-            return response
-
-        return wrapper
-
-    return inner_cache_control
-
-
-def cache_control(**cache_kwargs):
-    """ config driven """
-    return _cache_control(False, **cache_kwargs)
-
-
-def cache_control_always(**cache_kwargs):
-    """ always generate headers, regardless of the config """
-    return _cache_control(True, **cache_kwargs)
-
-
-# tell the client not to cache the index.html page so that changes to the app work on redeployment
-# note that the bulk of the data needed by the client (datasets) will still be cached
 @webbp.route("/", methods=["GET"])
-@cache_control_always(public=True, max_age=0, no_store=True, no_cache=True, must_revalidate=True)
 def dataset_index(url_dataroot=None, dataset=None):
     app_config = current_app.app_config
     server_config = app_config.server_config
@@ -224,7 +187,6 @@ def dataroot_index():
 
 
 class HealthAPI(Resource):
-    @cache_control(no_store=True)
     def get(self):
         config = current_app.app_config
         return health_check(config)
@@ -240,79 +202,67 @@ class DatasetResource(Resource):
 
 class SchemaAPI(DatasetResource):
     # TODO @mdunitz separate dataset schema and user schema
-    @cache_control(no_store=True)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.schema_get(data_adaptor)
 
 
 class ConfigAPI(DatasetResource):
-    @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.config_get(current_app.app_config, data_adaptor)
 
 
 class UserInfoAPI(DatasetResource):
-    @cache_control_always(no_store=True)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.userinfo_get(current_app.app_config, data_adaptor)
 
 
 class AnnotationsObsAPI(DatasetResource):
-    @cache_control(public=True, no_store=True)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.annotations_obs_get(request, data_adaptor)
 
     @requires_authentication
-    @cache_control(no_store=True)
     @rest_get_data_adaptor
     def put(self, data_adaptor):
         return common_rest.annotations_obs_put(request, data_adaptor)
 
 
 class AnnotationsVarAPI(DatasetResource):
-    @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.annotations_var_get(request, data_adaptor)
 
 
 class DataVarAPI(DatasetResource):
-    @cache_control(no_store=True)
     @rest_get_data_adaptor
     def put(self, data_adaptor):
         return common_rest.data_var_put(request, data_adaptor)
 
-    @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.data_var_get(request, data_adaptor)
 
 
 class ColorsAPI(DatasetResource):
-    @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.colors_get(data_adaptor)
 
 
 class DiffExpObsAPI(DatasetResource):
-    @cache_control(no_store=True)
     @rest_get_data_adaptor
     def post(self, data_adaptor):
         return common_rest.diffexp_obs_post(request, data_adaptor)
 
 
 class LayoutObsAPI(DatasetResource):
-    @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.layout_obs_get(request, data_adaptor)
 
-    @cache_control(no_store=True)
     @rest_get_data_adaptor
     def put(self, data_adaptor):
         return common_rest.layout_obs_put(request, data_adaptor)

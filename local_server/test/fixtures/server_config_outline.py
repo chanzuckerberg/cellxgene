@@ -7,7 +7,6 @@ f"""server:
     open_browser: {open_browser}
     force_https: {force_https}
     flask_secret_key: {flask_secret_key}
-    generate_cache_control_headers: {generate_cache_control_headers}
     server_timing_headers: {server_timing_headers}
     csp_directives: {csp_directives}
     api_base_url: {api_base_url}
