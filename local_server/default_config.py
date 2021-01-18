@@ -132,9 +132,6 @@ dataset:
     # Inline scripts are a list of file names, where the contents of the file will be injected into the index.
     inline_scripts: []
 
-    about_legal_tos: null
-    about_legal_privacy: null
-
     # allow authentication support
     authentication_enable: true
 
