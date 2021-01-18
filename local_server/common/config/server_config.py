@@ -19,8 +19,6 @@ class ServerConfig(BaseConfig):
     def __init__(self, app_config, default_config):
         dictval_cases = [
             ("app", "csp_directives"),
-            ("authentication", "params_oauth", "cookie"),
-            ("authentication", "params_oauth", "jwt_decode_options"),
             ("adaptor", "cxg_adaptor", "tiledb_ctx"),
             ("multi_dataset", "dataroot"),
         ]
@@ -41,20 +39,6 @@ class ServerConfig(BaseConfig):
             self.app__web_base_url = default_config["app"]["web_base_url"]
 
             self.authentication__type = default_config["authentication"]["type"]
-            self.authentication__params_oauth__oauth_api_base_url = default_config["authentication"]["params_oauth"][
-                "oauth_api_base_url"
-            ]
-            self.authentication__params_oauth__client_id = default_config["authentication"]["params_oauth"]["client_id"]
-            self.authentication__params_oauth__client_secret = default_config["authentication"]["params_oauth"][
-                "client_secret"
-            ]
-            self.authentication__params_oauth__jwt_decode_options = default_config["authentication"]["params_oauth"][
-                "jwt_decode_options"
-            ]
-            self.authentication__params_oauth__session_cookie = default_config["authentication"]["params_oauth"][
-                "session_cookie"
-            ]
-            self.authentication__params_oauth__cookie = default_config["authentication"]["params_oauth"]["cookie"]
 
             self.multi_dataset__dataroot = default_config["multi_dataset"]["dataroot"]
             self.multi_dataset__index = default_config["multi_dataset"]["index"]
@@ -162,25 +146,6 @@ class ServerConfig(BaseConfig):
 
     def handle_authentication(self):
         self.validate_correct_type_of_configuration_attribute("authentication__type", (type(None), str))
-
-        # oauth
-        ptypes = str if self.authentication__type == "oauth" else (type(None), str)
-        self.validate_correct_type_of_configuration_attribute(
-            "authentication__params_oauth__oauth_api_base_url", ptypes
-        )
-        self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__client_id", ptypes)
-        self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__client_secret", ptypes)
-        self.validate_correct_type_of_configuration_attribute(
-            "authentication__params_oauth__jwt_decode_options", (type(None), dict)
-        )
-        self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__session_cookie", bool)
-
-        if self.authentication__params_oauth__session_cookie:
-            self.validate_correct_type_of_configuration_attribute(
-                "authentication__params_oauth__cookie", (type(None), dict)
-            )
-        else:
-            self.validate_correct_type_of_configuration_attribute("authentication__params_oauth__cookie", dict)
 
         self.auth = AuthTypeFactory.create(self.authentication__type, self)
         if self.auth is None:

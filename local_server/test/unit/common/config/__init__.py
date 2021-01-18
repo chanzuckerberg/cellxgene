@@ -38,12 +38,6 @@ class ConfigTests(unittest.TestCase):
         api_base_url="null",
         web_base_url="null",
         auth_type="session",
-        oauth_api_base_url="null",
-        client_id="null",
-        client_secret="null",
-        jwt_decode_options="null",
-        session_cookie="true",
-        cookie="null",
         dataroot="null",
         index="false",
         allowed_matrix_types=[],
@@ -86,12 +80,6 @@ class ConfigTests(unittest.TestCase):
         api_base_url="null",
         web_base_url="null",
         auth_type="session",
-        oauth_api_base_url="null",
-        client_id="null",
-        client_secret="null",
-        jwt_decode_options="null",
-        session_cookie="true",
-        cookie="null",
         dataroot="null",
         index="false",
         allowed_matrix_types=[],
@@ -149,12 +137,6 @@ class ConfigTests(unittest.TestCase):
             api_base_url=api_base_url,
             web_base_url=web_base_url,
             auth_type=auth_type,
-            oauth_api_base_url=oauth_api_base_url,
-            client_id=client_id,
-            client_secret=client_secret,
-            jwt_decode_options=jwt_decode_options,
-            session_cookie=session_cookie,
-            cookie=cookie,
             dataroot=dataroot,
             index=index,
             allowed_matrix_types=allowed_matrix_types,
@@ -255,11 +237,6 @@ class ConfigTests(unittest.TestCase):
         if environment is None:
             environment = [
                 dict(name="CXG_SECRET_KEY", path=["server", "app", "flask_secret_key"], required=False),
-                dict(
-                    name="CXG_OAUTH_CLIENT_SECRET",
-                    path=["server", "authentication", "params_oauth", "client_secret"],
-                    required=False,
-                ),
             ]
         external_config = {
             "external": {

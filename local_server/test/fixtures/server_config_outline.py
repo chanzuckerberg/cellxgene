@@ -14,13 +14,6 @@ f"""server:
     web_base_url: {web_base_url}
   authentication:
     type: {auth_type}
-    params_oauth:
-      oauth_api_base_url: {oauth_api_base_url}
-      client_id: {client_id}
-      client_secret: {client_secret}
-      jwt_decode_options: {jwt_decode_options}
-      session_cookie:  {session_cookie}
-      cookie:  {cookie}
 
   multi_dataset:
     dataroot: {dataroot}
