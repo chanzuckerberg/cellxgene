@@ -205,16 +205,16 @@ class AppConfigTest(ConfigTests):
         # the path leads to a dict config param, set the config parameter to the new value
         config = AppConfig()
         config.update_single_config_from_path_and_value(
-            ["server", "app", "csp_directives"], dict(key="mykey1", max_age=100)
+            ["server", "multi_dataset", "dataroot"], dict(key="mykey1", max_age=100)
         )
-        self.assertEqual(config.server_config.app__csp_directives, dict(key="mykey1", max_age=100))
+        self.assertEqual(config.server_config.multi_dataset__dataroot, dict(key="mykey1", max_age=100))
 
         # the path leads to an entry within a dict config param, the value is simple
         config = AppConfig()
-        config.server_config.app__csp_directives = dict(key="mykey1", max_age=100)
+        config.server_config.multi_dataset__dataroot = dict(key="mykey1", max_age=100)
         config.update_single_config_from_path_and_value(
-            ["server", "app", "csp_directives", "test_field"], True,
+            ["server", "multi_dataset", "dataroot", "test_field"], True,
         )
         self.assertEqual(
-            config.server_config.app__csp_directives, dict(key="mykey1", max_age=100, test_field=True)
+            config.server_config.multi_dataset__dataroot, dict(key="mykey1", max_age=100, test_field=True)
         )

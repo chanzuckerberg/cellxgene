@@ -2,9 +2,6 @@ import datetime
 import logging
 from functools import wraps
 from http import HTTPStatus
-from urllib.parse import urlparse
-import hashlib
-import os
 
 from flask import (
     Flask,
@@ -18,7 +15,6 @@ from flask import (
     send_from_directory,
 )
 from flask_restful import Api, Resource
-from server_timing import Timing as ServerTiming
 
 import local_server.common.rest as common_rest
 from local_server.common.data_locator import DataLocator
@@ -269,7 +265,7 @@ class LayoutObsAPI(DatasetResource):
 
 
 def get_api_base_resources(bp_base):
-    """Add resources that are accessed from the api_base_url"""
+    """Add resources that are accessed from the api url"""
     api = Api(bp_base)
 
     # Diagnostics routes
@@ -301,25 +297,6 @@ def get_api_dataroot_resources(bp_dataroot, url_dataroot=None):
     return api
 
 
-def handle_api_base_url(app, app_config):
-    """If an api_base_url is provided, then an inline script is generated to
-    handle the new API prefix"""
-    api_base_url = app_config.server_config.get_api_base_url()
-    if not api_base_url:
-        return
-
-    sha256 = hashlib.sha256(api_base_url.encode()).hexdigest()
-    script_name = f"api_base_url-{sha256}.js"
-    script_path = os.path.join(app.root_path, "../common/web/templates", script_name)
-    with open(script_path, "w") as fout:
-        fout.write("window.CELLXGENE.API.prefix = `" + api_base_url + "${location.pathname}api/`;\n")
-
-    dataset_configs = [app_config.default_dataset_config] + list(app_config.dataroot_config.values())
-    for dataset_config in dataset_configs:
-        inline_scripts = dataset_config.app__inline_scripts
-        inline_scripts.append(script_name)
-
-
 class Server:
     @staticmethod
     def _before_adding_routes(app, app_config):
@@ -328,12 +305,9 @@ class Server:
 
     def __init__(self, app_config):
         self.app = Flask(__name__, static_folder=None)
-        handle_api_base_url(self.app, app_config)
         self._before_adding_routes(self.app, app_config)
         self.app.json_encoder = Float32JSONEncoder
         server_config = app_config.server_config
-        if server_config.app__server_timing_headers:
-            ServerTiming(self.app, force_debug=True)
 
         # enable session data
         self.app.permanent_session_lifetime = datetime.timedelta(days=50 * 365)
@@ -345,11 +319,7 @@ class Server:
         self.app.register_blueprint(webbp)
 
         api_version = "/api/v0.2"
-        api_base_url = server_config.get_api_base_url()
         api_path = "/"
-        if api_base_url:
-            parse = urlparse(api_base_url)
-            api_path = parse.path
 
         bp_base = Blueprint("bp_base", __name__, url_prefix=api_path)
         base_resources = get_api_base_resources(bp_base)

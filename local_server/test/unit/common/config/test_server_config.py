@@ -4,7 +4,6 @@ from unittest import mock
 from unittest.mock import patch
 
 from local_server.common.config.base_config import BaseConfig
-from local_server.common.utils.utils import find_available_port
 from local_server.test import PROJECT_ROOT, FIXTURES_ROOT
 
 import requests
@@ -53,7 +52,7 @@ class TestServerConfig(ConfigTests):
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
         mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.server_config.complete_config(self.context)
-        self.assertEqual(mock_check_attrs.call_count, 29)
+        self.assertEqual(mock_check_attrs.call_count, 25)
 
     def test_handle_app__throws_error_if_port_doesnt_exist(self):
         config = self.get_config(port=99999999)
@@ -117,10 +116,6 @@ class TestServerConfig(ConfigTests):
         config.external_config.handle_environment(self.context)
         self.assertEqual(config.server_config.app__flask_secret_key, "KEY_FROM_ENV")
 
-    def test_handle_app__sets_web_base_url(self):
-        config = self.get_config(web_base_url="anything.com")
-        self.assertEqual(config.server_config.app__web_base_url, "anything.com")
-
     def test_handle_data_source__errors_when_passed_zero_or_two_dataroots(self):
         file_name = self.custom_app_config(
             dataroot=f"{FIXTURES_ROOT}",
@@ -137,48 +132,6 @@ class TestServerConfig(ConfigTests):
         config.update_from_config_file(file_name)
         with self.assertRaises(ConfigurationError):
             config.server_config.handle_data_source()
-
-    def test_get_api_base_url_works(self):
-
-        # test the api_base_url feature, and that it can contain a path
-        config = AppConfig()
-        backend_port = find_available_port("localhost", 10000)
-        config.update_server_config(
-            app__flask_secret_key="secret",
-            app__api_base_url=f"http://localhost:{backend_port}/additional/path",
-            multi_dataset__dataroot=f"{PROJECT_ROOT}/example-dataset",
-        )
-
-        config.complete_config()
-
-        with test_server(["-p", str(backend_port)], app_config=config) as server:
-            session = requests.Session()
-            self.assertEqual(server, f"http://localhost:{backend_port}")
-            response = session.get(f"{server}/additional/path/d/pbmc3k.h5ad/api/v0.2/config")
-            self.assertEqual(response.status_code, 200)
-            data_config = response.json()
-            self.assertEqual(data_config["config"]["displayNames"]["dataset"], "pbmc3k")
-
-            # test the health check at the correct url
-            response = session.get(f"{server}/additional/path/health")
-            assert response.json()["status"] == "pass"
-
-    def test_get_web_base_url_works(self):
-        config = self.get_config(web_base_url="www.thisisawebsite.com")
-        web_base_url = config.server_config.get_web_base_url()
-        self.assertEqual(web_base_url, "www.thisisawebsite.com")
-
-        config = self.get_config(web_base_url="local", port=12)
-        web_base_url = config.server_config.get_web_base_url()
-        self.assertEqual(web_base_url, "http://localhost:12")
-
-        config = self.get_config(web_base_url="www.thisisawebsite.com/")
-        web_base_url = config.server_config.get_web_base_url()
-        self.assertEqual(web_base_url, "www.thisisawebsite.com")
-
-        config = self.get_config(api_base_url="www.api_base.com/")
-        web_base_url = config.server_config.get_web_base_url()
-        self.assertEqual(web_base_url, "www.api_base.com")
 
     def test_config_for_single_dataset(self):
         file_name = self.custom_app_config(
