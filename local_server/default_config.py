@@ -10,17 +10,6 @@ server:
     open_browser: false
     force_https: false
     flask_secret_key: null
-    server_timing_headers: false
-    csp_directives: null
-
-    # By default, cellxgene will serve api requests from the same base url as the webpage.
-    # In general api_base_url and web_base_url will not need to be set.
-    # When to use these parameters:
-    #  1. The cellxgene deploymnent is in an environment where the webpage and api have
-    #     different base urls.  In this case both api_base_url and web_base_url must be set.
-    #     It is up to the server admin to ensure that the networking is setup correctly for this environment.
-    api_base_url: null
-    web_base_url: null
 
   authentication:
     # The authentication types may be "none" or "session"

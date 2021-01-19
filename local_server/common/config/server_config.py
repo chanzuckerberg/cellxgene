@@ -18,7 +18,6 @@ class ServerConfig(BaseConfig):
 
     def __init__(self, app_config, default_config):
         dictval_cases = [
-            ("app", "csp_directives"),
             ("multi_dataset", "dataroot"),
         ]
         super().__init__(app_config, default_config, dictval_cases)
@@ -31,10 +30,6 @@ class ServerConfig(BaseConfig):
             self.app__open_browser = default_config["app"]["open_browser"]
             self.app__force_https = default_config["app"]["force_https"]
             self.app__flask_secret_key = default_config["app"]["flask_secret_key"]
-            self.app__server_timing_headers = default_config["app"]["server_timing_headers"]
-            self.app__csp_directives = default_config["app"]["csp_directives"]
-            self.app__api_base_url = default_config["app"]["api_base_url"]
-            self.app__web_base_url = default_config["app"]["web_base_url"]
 
             self.authentication__type = default_config["authentication"]["type"]
 
@@ -90,10 +85,6 @@ class ServerConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute("app__open_browser", bool)
         self.validate_correct_type_of_configuration_attribute("app__force_https", bool)
         self.validate_correct_type_of_configuration_attribute("app__flask_secret_key", str)
-        self.validate_correct_type_of_configuration_attribute("app__server_timing_headers", bool)
-        self.validate_correct_type_of_configuration_attribute("app__csp_directives", (type(None), dict))
-        self.validate_correct_type_of_configuration_attribute("app__api_base_url", (type(None), str))
-        self.validate_correct_type_of_configuration_attribute("app__web_base_url", (type(None), str))
 
         if self.app__port:
             try:
@@ -124,21 +115,6 @@ class ServerConfig(BaseConfig):
 
         if not self.app__verbose:
             sys.tracebacklimit = 0
-
-        # CSP Directives are a dict of string: list(string) or string: string
-        if self.app__csp_directives is not None:
-            for k, v in self.app__csp_directives.items():
-                if not isinstance(k, str):
-                    raise ConfigurationError("CSP directive names must be a string.")
-                if isinstance(v, list):
-                    for policy in v:
-                        if not isinstance(policy, str):
-                            raise ConfigurationError("CSP directive value must be a string or list of strings.")
-                elif not isinstance(v, str):
-                    raise ConfigurationError("CSP directive value must be a string or list of strings.")
-
-        if self.app__web_base_url is None:
-            self.app__web_base_url = self.app__api_base_url
 
     def handle_authentication(self):
         self.validate_correct_type_of_configuration_attribute("authentication__type", (type(None), str))
@@ -294,19 +270,3 @@ class ServerConfig(BaseConfig):
         if limit_value is None:  # disabled
             return False
         return value > limit_value
-
-    def get_api_base_url(self):
-        if self.app__api_base_url == "local":
-            return f"http://{self.app__host}:{self.app__port}"
-        if self.app__api_base_url and self.app__api_base_url.endswith("/"):
-            return self.app__api_base_url[:-1]
-        return self.app__api_base_url
-
-    def get_web_base_url(self):
-        if self.app__web_base_url == "local":
-            return f"http://{self.app__host}:{self.app__port}"
-        if self.app__web_base_url is None:
-            return self.get_api_base_url()
-        if self.app__web_base_url.endswith("/"):
-            return self.app__web_base_url[:-1]
-        return self.app__web_base_url
