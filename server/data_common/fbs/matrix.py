@@ -1,18 +1,13 @@
-import json
-
 import numpy as np
 import pandas as pd
 from flatbuffers import Builder
 from scipy import sparse
 
 import server.data_common.fbs.NetEncoding.Column as Column
-import server.data_common.fbs.NetEncoding.Float32Array as Float32Array
-import server.data_common.fbs.NetEncoding.Float64Array as Float64Array
-import server.data_common.fbs.NetEncoding.Int32Array as Int32Array
-import server.data_common.fbs.NetEncoding.JSONEncodedArray as JSONEncodedArray
 import server.data_common.fbs.NetEncoding.Matrix as Matrix
 import server.data_common.fbs.NetEncoding.TypedArray as TypedArray
-import server.data_common.fbs.NetEncoding.Uint32Array as Uint32Array
+
+from server.data_common.fbs.fbs_core import deserialize_typed_array
 
 
 # Serialization helper
@@ -176,31 +171,6 @@ def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
 
     builder.Finish(matrix)
     return builder.Output()
-
-
-def deserialize_typed_array(tarr):
-    type_map = {
-        TypedArray.TypedArray.NONE: None,
-        TypedArray.TypedArray.Uint32Array: Uint32Array.Uint32Array,
-        TypedArray.TypedArray.Int32Array: Int32Array.Int32Array,
-        TypedArray.TypedArray.Float32Array: Float32Array.Float32Array,
-        TypedArray.TypedArray.Float64Array: Float64Array.Float64Array,
-        TypedArray.TypedArray.JSONEncodedArray: JSONEncodedArray.JSONEncodedArray,
-    }
-    (u_type, u) = tarr
-    if u_type is TypedArray.TypedArray.NONE:
-        return None
-
-    TarType = type_map.get(u_type, None)
-    if TarType is None:
-        raise TypeError(f"FBS contains unknown data type: {u_type}")
-
-    arr = TarType()
-    arr.Init(u.Bytes, u.Pos)
-    narr = arr.DataAsNumpy()
-    if u_type == TypedArray.TypedArray.JSONEncodedArray:
-        narr = json.loads(narr.tostring().decode("utf-8"))
-    return narr
 
 
 def decode_matrix_fbs(fbs):
