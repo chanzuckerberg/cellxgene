@@ -1,31 +1,26 @@
 /* rc slider https://www.npmjs.com/package/rc-slider */
 
 import React from "react";
-import _ from "lodash";
 import { connect } from "react-redux";
 import { Button } from "@blueprintjs/core";
 import GeneSet from "./geneSet";
 
-import testGeneSets from "./test_data";
 import CreateGenesetDialogue from "./menus/createGenesetDialogue";
 
 @connect((state) => {
   return {
-    userDefinedGenes: state.controls.userDefinedGenes,
     differential: state.differential,
-    genesets: state.genesets,
+    genesets: state.genesets.genesets,
   };
 })
 class GeneExpression extends React.Component {
-  renderTestGeneSets = () => {
+  renderGeneSets = () => {
     const sets = [];
+    const { genesets } = this.props;
 
-    _.forEach(testGeneSets, (setGenes, setName) => {
-      sets.push(
-        <GeneSet key={setName} setGenes={setGenes} setName={setName} />
-      );
-    });
-
+    for (const [name, genes] of genesets) {
+      sets.push(<GeneSet key={name} setGenes={[...genes]} setName={name} />);
+    }
     return sets;
   };
 
@@ -75,7 +70,7 @@ class GeneExpression extends React.Component {
           <CreateGenesetDialogue />
         </div>
         <div>{this.renderDiffexpGeneSets()}</div>
-        <div>{this.renderTestGeneSets()}</div>
+        <div>{this.renderGeneSets()}</div>
       </div>
     );
   }

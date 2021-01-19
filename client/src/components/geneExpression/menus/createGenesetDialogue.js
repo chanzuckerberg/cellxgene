@@ -10,7 +10,7 @@ import LabelInput from "../../categorical/labelInput";
   schema: state.annoMatrix?.schema,
   ontology: state.ontology,
   obsCrossfilter: state.obsCrossfilter,
-  genesets: state.genesets,
+  genesetsUI: state.genesetsUI,
 }))
 class CreateGenesetDialogue extends React.PureComponent {
   constructor(props) {
@@ -60,12 +60,12 @@ class CreateGenesetDialogue extends React.PureComponent {
 
   render() {
     const { genesetName } = this.state;
-    const { metadataField, genesets } = this.props;
+    const { metadataField, genesetsUI } = this.props;
 
     return (
       <>
         <AnnoDialog
-          isActive={genesets.createGenesetModeActive}
+          isActive={genesetsUI.createGenesetModeActive}
           inputProps={{ "data-testid": `${metadataField}:create-label-dialog` }}
           primaryButtonProps={{
             "data-testid": `${metadataField}:submit-label`,
