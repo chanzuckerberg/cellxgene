@@ -420,8 +420,14 @@ class Server:
                 self.app.register_blueprint(dataroot_resources.blueprint)
 
                 self.app.add_url_rule(
-                    f"/{url_dataroot}/<dataset>/",
+                    f"/{url_dataroot}/<dataset>",
                     f"dataset_index_{url_dataroot}",
+                    lambda dataset, url_dataroot=url_dataroot: dataset_index(url_dataroot, dataset),
+                    methods=["GET"],
+                )
+                self.app.add_url_rule(
+                    f"/{url_dataroot}/<dataset>/",
+                    f"dataset_index_{url_dataroot}/",
                     lambda dataset, url_dataroot=url_dataroot: dataset_index(url_dataroot, dataset),
                     methods=["GET"],
                 )
