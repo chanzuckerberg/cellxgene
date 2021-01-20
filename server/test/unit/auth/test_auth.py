@@ -79,7 +79,7 @@ class AuthTest(unittest.TestCase):
             r = session.get(f"{server}/{login_uri}")
             # check that the login redirect worked
             self.assertEqual(r.history[0].status_code, 302)
-            self.assertEqual(r.url, f"{server}/auth/pbmc3k.cxg/")
+            self.assertEqual(r.url, f"{server}/auth/pbmc3k.cxg")
 
             config = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config").json()
             userinfo = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/userinfo").json()
@@ -91,7 +91,7 @@ class AuthTest(unittest.TestCase):
             r = session.get(f"{server}/{logout_uri}")
             # check that the logout redirect worked
             self.assertEqual(r.history[0].status_code, 302)
-            self.assertEqual(r.url, f"{server}/auth/pbmc3k.cxg/")
+            self.assertEqual(r.url, f"{server}/auth/pbmc3k.cxg")
             config = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config").json()
             userinfo = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/userinfo").json()
             self.assertFalse(userinfo["userinfo"]["is_authenticated"])
