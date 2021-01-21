@@ -4,6 +4,7 @@ import re
 import threading
 from datetime import datetime
 from hashlib import blake2b
+import csv
 
 import pandas as pd
 from flask import session, has_request_context, current_app
@@ -16,14 +17,16 @@ from server.common.errors import AnnotationsError
 class AnnotationsLocalFile(Annotations):
     CXG_ANNO_COLLECTION = "cxg_anno_collection"
 
-    def __init__(self, output_dir, output_file):
+    def __init__(self, output_dir, label_output_file, genesets_output_file):
         super().__init__()
         self.output_dir = output_dir
-        self.output_file = output_file
-        # lock used to protect label file write ops
+        self.label_output_file = label_output_file
+        self.genesets_output_file = genesets_output_file
+        # lock used to protect label and geneset file write ops
         self.label_lock = threading.RLock()
+        self.genesets_lock = threading.RLock()
 
-        # cache the most recent annotations
+        # cache the most recent annotations. We don't cache genesets as they are small
         self.last_fname = None
         self.last_labels = None
 
@@ -51,7 +54,7 @@ class AnnotationsLocalFile(Annotations):
             if not current_app.auth.is_user_authenticated():
                 return pd.DataFrame()
 
-        fname = self._get_filename(data_adaptor)
+        fname = self._get_celllabels_filename(data_adaptor)
         with self.label_lock:
             if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
                 # returned the cached labels if possible, otherwise read them from the file
@@ -81,7 +84,7 @@ class AnnotationsLocalFile(Annotations):
                 f"which was last modified on {lastmodstr}\n"
             )
 
-            fname = self._get_filename(data_adaptor)
+            fname = self._get_celllabels_filename(data_adaptor)
             self._backup(fname)
             if not df.empty:
                 with open(fname, "w", newline="") as f:
@@ -94,6 +97,62 @@ class AnnotationsLocalFile(Annotations):
             # update the cache
             self.last_fname = fname
             self.last_labels = df
+
+    def read_genesets(self, data_adaptor):
+        if has_request_context():
+            if not current_app.auth.is_user_authenticated():
+                return {}
+
+        fname = self._get_genesets_filename(data_adaptor)
+        gs = []
+        with self.genesets_lock:
+            if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
+                with open(fname, newline="") as f:
+                    sample = f.read(1024)
+                    f.seek(0)
+                    sniffer = csv.Sniffer()
+                    dialect = sniffer.sniff(sample)
+                    dialect.skipinitialspace = True
+                    reader = csv.reader(f, dialect)
+                    haveReadHeader = False
+
+                    for row in reader:
+                        if len(row) == 0:
+                            continue
+                        # if row starts with '#' it is a comment
+                        if row[0].startswith("#"):
+                            continue
+                        # if this is the first non-comment row, assume it is a header
+                        if not haveReadHeader:
+                            haveReadHeader = True
+                            continue
+                        gs.append([row[0], row[1:]])
+
+        return gs
+
+    def write_genesets(self, genesets, data_adaptor):
+        with self.genesets_lock:
+            lastmod = data_adaptor.get_last_mod_time()
+            lastmodstr = "'unknown'" if lastmod is None else lastmod.isoformat(timespec="seconds")
+            header = (
+                f"# Geneset generated on {datetime.now().isoformat(timespec='seconds')} "
+                f"using cellxgene version {cellxgene_version}\n"
+                f"# Input data file was {data_adaptor.get_location()}, "
+                f"which was last modified on {lastmodstr}\n"
+            )
+
+            fname = self._get_genesets_filename(data_adaptor)
+            self._backup(fname)
+            if len(genesets) > 0:
+                gsRows = [[gs[0]] + gs[1] for gs in genesets]
+                with open(fname, "w", newline="") as f:
+                    if header is not None:
+                        f.write(header)
+                    writer = csv.writer(f)
+                    writer.writerow(["name", "genes..."])  # CSV column header row
+                    writer.writerows(gsRows)
+            else:
+                open(fname, "w").close()
 
     def _get_userdata_idhash(self, data_adaptor):
         """
@@ -109,16 +168,26 @@ class AnnotationsLocalFile(Annotations):
         if self.output_dir:
             return self.output_dir
 
-        if self.output_file:
+        if self.label_output_file:
             return os.path.dirname(self.path.abspath(self.output_dir))
 
         return os.getcwd()
 
-    def _get_filename(self, data_adaptor):
+    def _get_celllabels_filename(self, data_adaptor):
         """ return the current annotation file name """
-        if self.output_file:
-            return self.output_file
+        if self.label_output_file:
+            return self.label_output_file
 
+        return self._get_filename(data_adaptor, "celllabels")
+
+    def _get_genesets_filename(self, data_adaptor):
+        """ return the current annotation file name """
+        if self.genesets_output_file:
+            return self.genesets_output_file
+
+        return self._get_filename(data_adaptor, "genesets")
+
+    def _get_filename(self, data_adaptor, anno_name):
         # we need to generate a file name, which we can only do if we have a UID and collection name
         if session is None:
             raise AnnotationsError("unable to determine file name for annotations")
@@ -131,7 +200,7 @@ class AnnotationsLocalFile(Annotations):
             raise AnnotationsError("unable to determine file name for annotations")
 
         idhash = self._get_userdata_idhash(data_adaptor)
-        return os.path.join(self._get_output_dir(), f"{collection}-{idhash}.csv")
+        return os.path.join(self._get_output_dir(), f"{collection}-{anno_name}-{idhash}.csv")
 
     def _backup(self, fname, max_backups=9):
         """
@@ -179,9 +248,9 @@ class AnnotationsLocalFile(Annotations):
         else:
             params["annotations_cell_ontology_enabled"] = False
 
-        if self.output_file is not None:
-            # user has hard-wired the name of the annotation data collection
-            fname = os.path.basename(self.output_file)
+        if self.label_output_file is not None:
+            # user has hard-wired the name of the annotation cell label data collection
+            fname = os.path.basename(self.label_output_file)
             collection_fname = os.path.splitext(fname)[0]
             params["annotations-data-collection-is-read-only"] = True
             params["annotations-data-collection-name"] = collection_fname

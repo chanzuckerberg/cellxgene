@@ -52,6 +52,16 @@ async function userInfoFetch(dispatch) {
   });
 }
 
+async function genesetsFetch(dispatch) {
+  return fetchJson("genesets").then((response) => {
+    const genesets = response?.genesets ?? {};
+    dispatch({
+      type: "geneset: initial load",
+      init: genesets,
+    });
+  })
+}
+
 function prefetchEmbeddings(annoMatrix) {
   /*
   prefetch requests for all embeddings
@@ -74,6 +84,7 @@ const doInitialDataLoad = () =>
         schemaFetch(dispatch),
         userColorsFetchAndLoad(dispatch),
         userInfoFetch(dispatch),
+        genesetsFetch(dispatch),
       ]);
 
       const baseDataUrl = `${globals.API.prefix}${globals.API.version}`;

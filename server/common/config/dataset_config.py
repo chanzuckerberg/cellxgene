@@ -42,6 +42,10 @@ class DatasetConfig(BaseConfig):
             self.user_annotations__hosted_tiledb_array__hosted_file_directory = default_config["user_annotations"][
                 "hosted_tiledb_array"
             ]["hosted_file_directory"]
+            self.user_annotations__genesets__readonly = default_config["user_annotations"]["genesets"]["readonly"]
+            self.user_annotations__local_file_csv__genesets_file = default_config["user_annotations"]["local_file_csv"][
+                "genesets_file"
+            ]
 
             self.embeddings__names = default_config["embeddings"]["names"]
             self.embeddings__enable_reembedding = default_config["embeddings"]["enable_reembedding"]
@@ -98,6 +102,9 @@ class DatasetConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__local_file_csv__file", (type(None), str)
         )
+        self.validate_correct_type_of_configuration_attribute(
+            "user_annotations__local_file_csv__genesets_file", (type(None), str)
+        )
         self.validate_correct_type_of_configuration_attribute("user_annotations__ontology__enable", bool)
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__ontology__obo_location", (type(None), str)
@@ -108,6 +115,8 @@ class DatasetConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__hosted_tiledb_array__hosted_file_directory", (type(None), str)
         )
+        self.validate_correct_type_of_configuration_attribute("user_annotations__genesets__readonly", bool)
+
         if self.user_annotations__enable:
             server_config = self.app_config.server_config
             if not self.app__authentication_enable:
@@ -132,14 +141,22 @@ class DatasetConfig(BaseConfig):
 
     def handle_local_file_csv_annotations(self):
         dirname = self.user_annotations__local_file_csv__directory
-        filename = self.user_annotations__local_file_csv__file
-        if filename is not None and dirname is not None:
+        annotation_filename = self.user_annotations__local_file_csv__file
+        if annotation_filename is not None and dirname is not None:
             raise ConfigurationError("'annotations-file' and 'annotations-dir' may not be used together.")
+        genesets_filename = self.user_annotations__local_file_csv__genesets_file
+        if genesets_filename is not None and dirname is not None:
+            raise ConfigurationError("'genesets-file' and 'annotations-dir' may not be used together.")
 
-        if filename is not None:
-            lf_name, lf_ext = splitext(filename)
+        if annotation_filename is not None:
+            lf_name, lf_ext = splitext(annotation_filename)
             if lf_ext and lf_ext != ".csv":
-                raise ConfigurationError(f"annotation file type must be .csv: {filename}")
+                raise ConfigurationError(f"annotation file type must be .csv: {annotation_filename}")
+
+        if genesets_filename is not None:
+            lf_name, lf_ext = splitext(genesets_filename)
+            if lf_ext and lf_ext != ".csv":
+                raise ConfigurationError(f"genesets file type must be .csv: {genesets_filename}")
 
         if dirname is not None and not isdir(dirname):
             try:
@@ -147,16 +164,23 @@ class DatasetConfig(BaseConfig):
             except OSError:
                 raise ConfigurationError("Unable to create directory specified by --annotations-dir")
 
-        self.user_annotations = AnnotationsLocalFile(dirname, filename)
+        self.user_annotations = AnnotationsLocalFile(dirname, annotation_filename, genesets_filename)
 
         # if the user has specified a fixed label file, go ahead and validate it
         # so that we can remove errors early in the process.
         server_config = self.app_config.server_config
-        if server_config.single_dataset__datapath and self.user_annotations__local_file_csv__file:
-            with server_config.matrix_data_cache_manager.data_adaptor(
-                self.tag, server_config.single_dataset__datapath, self.app_config
-            ) as data_adaptor:
-                data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
+        if server_config.single_dataset__datapath:
+            if self.user_annotations__local_file_csv__file:
+                with server_config.matrix_data_cache_manager.data_adaptor(
+                    self.tag, server_config.single_dataset__datapath, self.app_config
+                ) as data_adaptor:
+                    data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
+
+            if self.user_annotations__local_file_csv__genesets_file:
+                with server_config.matrix_data_cache_manager.data_adaptor(
+                    self.tag, server_config.single_dataset__datapath, self.app_config
+                ) as data_adaptor:
+                    data_adaptor.check_new_genesets(self.user_annotations.read_genesets(data_adaptor))
 
     def handle_hosted_tiledb_annotations(self):
         self.validate_correct_type_of_configuration_attribute("user_annotations__hosted_tiledb_array__db_uri", str)
