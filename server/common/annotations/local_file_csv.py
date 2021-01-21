@@ -108,14 +108,12 @@ class AnnotationsLocalFile(Annotations):
         with self.genesets_lock:
             if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
                 with open(fname, newline="") as f:
-                    sample = f.read(1024)
-                    f.seek(0)
-                    sniffer = csv.Sniffer()
-                    dialect = sniffer.sniff(sample)
-                    dialect.skipinitialspace = True
-                    reader = csv.reader(f, dialect)
-                    haveReadHeader = False
+                    class myDialect(csv.excel):
+                        skipinitialspace = True
 
+                    reader = csv.reader(f, dialect=myDialect())
+
+                    haveReadHeader = False
                     for row in reader:
                         if len(row) == 0:
                             continue
