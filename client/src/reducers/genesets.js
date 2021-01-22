@@ -9,6 +9,7 @@
  */
 const GeneSets = (
   state = {
+    initialized: false,
     genesets: new Map(),
   },
   action
@@ -23,7 +24,7 @@ const GeneSets = (
      */
     case "geneset: initial load": {
       const { init } = action;
-      const genesets = new Map(state.genesets);
+      const genesets = new Map();
       for (const gs of init) {
         const genes = new Set();
         for (const gene of gs[1]) {
@@ -33,6 +34,7 @@ const GeneSets = (
       }
       return {
         genesets,
+        initialized: true,
       };
     }
 
@@ -51,6 +53,7 @@ const GeneSets = (
       const genesets = new Map(state.genesets); // clone
       genesets.set(name, new Set(genes || []));
       return {
+        ...state,
         genesets,
       };
     }
@@ -69,6 +72,7 @@ const GeneSets = (
       const genesets = new Map(state.genesets); // clone
       genesets.delete(name);
       return {
+        ...state,
         genesets,
       };
     }
@@ -92,6 +96,7 @@ const GeneSets = (
       }
       genesets.set(name, newGenes);
       return {
+        ...state,
         genesets,
       };
     }
@@ -115,6 +120,7 @@ const GeneSets = (
       }
       genesets.set(name, newGenes);
       return {
+        ...state,
         genesets,
       };
     }
