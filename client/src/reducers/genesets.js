@@ -45,7 +45,7 @@ const GeneSets = (
      */
     case "geneset: create": {
       const { name, genes } = action;
-      if (state.genesets.has(name) !== undefined)
+      if (state.genesets.has(name))
         throw new Error("geneset: create -- name already defined.");
 
       const genesets = new Map(state.genesets); // clone
