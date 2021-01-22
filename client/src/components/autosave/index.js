@@ -5,11 +5,18 @@ import FilenameDialog from "./filenameDialog";
 
 @connect((state) => ({
   annotations: state.annotations,
-  saveInProgress: state.autosave?.saveInProgress ?? false,
+  obsAnnotationSaveInProgress:
+    state.autosave?.obsAnnotationSaveInProgress ?? false,
+  genesetSaveInProgress: state.autosave?.genesetSaveInProgress ?? false,
   error: state.autosave?.error,
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
+  writableGenesetsEnabled: !(
+    state.config?.parameters?.annotations_genesets_readonly ?? true
+  ),
   annoMatrix: state.annoMatrix,
+  genesets: state.genesets,
   lastSavedAnnoMatrix: state.autosave?.lastSavedAnnoMatrix,
+  lastSavedGenesets: state.autosave?.lastSavedGenesets,
 }))
 class Autosave extends React.Component {
   constructor(props) {
@@ -38,17 +45,39 @@ class Autosave extends React.Component {
   }
 
   tick = () => {
-    const { dispatch, saveInProgress } = this.props;
-    if (this.needToSave() && !saveInProgress) {
+    const {
+      dispatch,
+      obsAnnotationSaveInProgress,
+      genesetSaveInProgress,
+    } = this.props;
+    if (!obsAnnotationSaveInProgress && this.needToSaveObsAnnotations()) {
       dispatch(actions.saveObsAnnotationsAction());
+    }
+    if (!genesetSaveInProgress && this.needToSaveGenesets()) {
+      dispatch(actions.saveGenesetsAction());
     }
   };
 
-  needToSave = () => {
-    /* return true if we need to save, false if we don't */
+  saveInProgress() {
+    const { obsAnnotationSaveInProgress, genesetSaveInProgress } = this.props;
+    return obsAnnotationSaveInProgress || genesetSaveInProgress;
+  }
+
+  needToSaveObsAnnotations = () => {
+    /* return true if we need to save obs cell labels, false if we don't */
     const { annoMatrix, lastSavedAnnoMatrix } = this.props;
     return actions.needToSaveObsAnnotations(annoMatrix, lastSavedAnnoMatrix);
   };
+
+  needToSaveGenesets = () => {
+    /* return true if we need to save gene ses, false if we do not */
+    const { genesets, lastSavedGenesets } = this.props;
+    return genesets.initialized && genesets !== lastSavedGenesets;
+  };
+
+  needToSave() {
+    return this.needToSaveGenesets() || this.needToSaveObsAnnotations();
+  }
 
   statusMessage() {
     const { error } = this.props;
@@ -59,11 +88,7 @@ class Autosave extends React.Component {
   }
 
   render() {
-    const {
-      writableCategoriesEnabled,
-      saveInProgress,
-      lastSavedAnnoMatrix,
-    } = this.props;
+    const { writableCategoriesEnabled, lastSavedAnnoMatrix } = this.props;
     const initialDataLoadComplete = lastSavedAnnoMatrix;
 
     if (!writableCategoriesEnabled) return null;
@@ -74,7 +99,7 @@ class Autosave extends React.Component {
         data-testclass={
           !initialDataLoadComplete
             ? "autosave-init"
-            : this.needToSave() || saveInProgress
+            : this.saveInProgress() || this.needToSave()
             ? "autosave-incomplete"
             : "autosave-complete"
         }

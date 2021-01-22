@@ -387,3 +387,82 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
     });
   }
 };
+
+export const saveGenesetsAction = () => async (dispatch, getState) => {
+  const state = getState();
+  const { config, genesets, annotations } = state;
+
+  // bail if gene sets not available, or in readonly mode.
+  const genesetsAreAvailable =
+    config?.parameters?.["annotations_genesets"] ?? false;
+  const genesetsReadonly =
+    config?.parameters?.["annotations_genesets_readonly"] ?? true;
+  if (!genesetsAreAvailable || genesetsReadonly) {
+    // our non-save was completed!
+    dispatch({
+      type: "autosave: genesets complete",
+      lastSavedGenesets: genesets,
+    });
+  }
+
+  /*
+   JSON data structure is an array of arrays, where the first
+   element is gene set name, remainder are the genes.  Eg,
+
+    {
+      "genesets": [
+        [ "gs1", ["TNFRSF4","SUMO3","BRWD1"]],
+        [ "gs2", ["DSCR3", "BRWD1", "BACE2", "SIK1", "C21orf33", "ICOSLG", "SUMO3"]]
+      ]
+    }
+
+  Order of gene sets and genes is significant
+  */
+  const gsArr = [];
+  for (const [gsName, gsGenes] of genesets.genesets) {
+    gsArr.push([gsName, Array.from(gsGenes)]);
+  }
+
+  try {
+    const { dataCollectionNameIsReadOnly, dataCollectionName } = annotations;
+    const queryString =
+      !dataCollectionNameIsReadOnly && !!dataCollectionName
+        ? `?annotation-collection-name=${encodeURIComponent(
+            dataCollectionName
+          )}`
+        : "";
+
+    const res = await fetch(
+      `${globals.API.prefix}${globals.API.version}genesets${queryString}`,
+      {
+        method: "PUT",
+        headers: new Headers({
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({
+          genesets: gsArr,
+        }),
+        credentials: "include",
+      }
+    );
+    if (res.ok) {
+      dispatch({
+        type: "autosave: genesets complete",
+        lastSavedGenesets: genesets,
+      });
+    } else {
+      dispatch({
+        type: "autosave: genesets error",
+        message: `HTTP error ${res.status} - ${res.statusText}`,
+        res,
+      });
+    }
+  } catch (error) {
+    dispatch({
+      type: "autosave: genesets error",
+      message: error.toString(),
+      error,
+    });
+  }
+};
