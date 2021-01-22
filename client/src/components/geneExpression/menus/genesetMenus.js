@@ -13,19 +13,24 @@ import {
 
 import * as globals from "../../../globals";
 import actions from "../../../actions";
+import AddGeneToGenesetDialogue from "./addGeneToGenesetDialogue";
 
-@connect(() => ({}))
+@connect((state) => {
+  return {
+    genesetsUI: state.genesetsUI,
+  };
+})
 class GenesetMenus extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {};
   }
 
-  activateAddNewLabelMode = () => {
+  activateAddGeneToGenesetMode = () => {
     const { dispatch, geneset } = this.props;
     dispatch({
       type: "geneset: activate add new genes mode",
-      data: geneset,
+      geneset,
     });
   };
 
@@ -60,11 +65,12 @@ class GenesetMenus extends React.PureComponent {
                 data-testclass="handleAddNewLabelToCategory"
                 data-testid={`${geneset}:add-new-label-to-category`}
                 icon={<Icon icon="plus" iconSize={10} />}
-                onClick={this.activateAddNewLabelMode}
+                onClick={this.activateAddGeneToGenesetMode}
                 small
                 minimal
               />
             </Tooltip>
+            <AddGeneToGenesetDialogue geneset={geneset} />
             <Popover
               interactionKind={PopoverInteractionKind.HOVER}
               boundary="window"

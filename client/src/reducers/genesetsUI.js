@@ -5,7 +5,7 @@ const GeneSetsUI = (
   state = {
     createGenesetModeActive: false,
     isEditingGenesetName: false,
-    genesetAddingNewGenes: null,
+    isAddingGenesToGeneset: null,
   },
   action
 ) => {
@@ -20,6 +20,18 @@ const GeneSetsUI = (
       return {
         ...state,
         createGenesetModeActive: false,
+      };
+    }
+    case "geneset: activate add new genes mode": {
+      return {
+        ...state,
+        isAddingGenesToGeneset: action.geneset,
+      };
+    }
+    case "geneset: disable add new genes mode": {
+      return {
+        ...state,
+        isAddingGenesToGeneset: null,
       };
     }
     default:

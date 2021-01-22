@@ -35,8 +35,6 @@ class GeneExpression extends React.Component {
       });
     }
 
-    console.log(differential.diffExp);
-
     return differential.diffExp ? (
       <GeneSet
         key="Temp DiffExp Set"
