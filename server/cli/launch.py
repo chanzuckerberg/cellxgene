@@ -36,7 +36,7 @@ def annotation_args(func):
     )
     @click.option(
         "--annotations-dir",
-        "--data-dir",
+        "--user-generated-data-dir",
         default=DEFAULT_CONFIG.default_dataset_config.user_annotations__local_file_csv__directory,
         show_default=False,
         multiple=False,
@@ -70,7 +70,7 @@ def annotation_args(func):
         show_default=True,
         multiple=False,
         metavar="<path>",
-        help="CSV file to initialize editing of gene sets; will be altered in-place. Incompatible with --data-dir.",
+        help="CSV file to initialize editing of gene sets; will be altered in-place. Incompatible with --user-generated-data-dir.",
     )
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
