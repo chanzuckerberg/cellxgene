@@ -6,8 +6,8 @@ const ErrorLoading = ({ displayName, error, zebra }) => {
   return (
     <div
       style={{
-        padding: globals.leftSidebarSectionPadding,
         backgroundColor: zebra ? globals.lightestGrey : "white",
+        fontStyle: "italic",
       }}
     >
       <span>{`Failure loading ${displayName}`}</span>

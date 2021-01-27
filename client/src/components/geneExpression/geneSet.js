@@ -121,6 +121,7 @@ class GeneSet extends React.Component {
             onKeyPress={/* todo_genesets */ () => {}}
             style={{
               cursor: "pointer",
+              userSelect: "none",
             }}
             onClick={this.onGenesetMenuClick}
           >

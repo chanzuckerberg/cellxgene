@@ -12,7 +12,6 @@ import {
 } from "@blueprintjs/core";
 
 import * as globals from "../../../globals";
-import actions from "../../../actions";
 import AddGeneToGenesetDialogue from "./addGeneToGenesetDialogue";
 
 @connect((state) => {
@@ -45,7 +44,7 @@ class GenesetMenus extends React.PureComponent {
 
   handleDeleteCategory = () => {
     const { dispatch, geneset } = this.props;
-    dispatch(actions.genesetDeleteAction(geneset));
+    dispatch({ type: "geneset: delete", name: geneset });
   };
 
   render() {

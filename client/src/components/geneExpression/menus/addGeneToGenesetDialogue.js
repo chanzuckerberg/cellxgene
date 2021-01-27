@@ -10,7 +10,7 @@ class AddGeneToGenesetDialogue extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      //   genesToAdd: [],
+      genesToAdd: "",
     };
   }
 
@@ -21,8 +21,28 @@ class AddGeneToGenesetDialogue extends React.PureComponent {
     });
   };
 
+  handleAddGeneToGeneSet = (e) => {
+    const { geneset, dispatch } = this.props;
+    const { genesToAdd } = this.state;
+    dispatch({
+      type: "geneset: add genes",
+      name: geneset,
+      genes: genesToAdd.split(","),
+    });
+    dispatch({
+      type: "geneset: disable add new genes mode",
+    });
+    if (e) e.preventDefault();
+  };
+
+  handleChange = (e) => {
+    console.log(e);
+    this.setState({ genesToAdd: e });
+  };
+
   render() {
     const { geneset, genesetsUI } = this.props;
+    const { genesToAdd } = this.state;
 
     return (
       <>
@@ -32,19 +52,15 @@ class AddGeneToGenesetDialogue extends React.PureComponent {
           primaryButtonProps={{
             "data-testid": `${geneset}:submit-label`,
           }}
-          title="Add gene to geneset"
+          title="Add genes to geneset"
           instruction={`Add gene to ${geneset}`}
           cancelTooltipContent="Close this dialog without adding genes to geneset."
-          primaryButtonText="Add Gene(s)"
-          text="todo"
-          validationError={() => {
-            /* todo genesets this.labelNameError(genesetName) */
-            return false;
-          }}
+          primaryButtonText="Add genes"
+          text={genesToAdd}
+          validationError={false}
           annoInput={
             <LabelInput
               onChange={this.handleChange}
-              onSelect={this.handleSelect}
               inputProps={{
                 "data-testid": "add-genes",
                 leftIcon: "manually-entered-data",

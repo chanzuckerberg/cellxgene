@@ -35,7 +35,10 @@ class CreateGenesetDialogue extends React.PureComponent {
     const { dispatch } = this.props;
     const { genesetName } = this.state;
 
-    dispatch({ type: "geneset: create", genesetName });
+    dispatch({ type: "geneset: create", name: genesetName });
+    dispatch({
+      type: "geneset: disable create geneset mode",
+    });
     e.preventDefault();
   };
 
@@ -44,12 +47,8 @@ class CreateGenesetDialogue extends React.PureComponent {
     return false;
   };
 
-  handleChange = () => {
-    return () => {};
-  };
-
-  handleSelect = () => {
-    return () => {};
+  handleChange = (e) => {
+    this.setState({ genesetName: e });
   };
 
   instruction = () => {
@@ -76,24 +75,20 @@ class CreateGenesetDialogue extends React.PureComponent {
           primaryButtonText="Create geneset"
           handleSecondaryButtonSubmit={this.addLabelAndAssignCells}
           text={genesetName}
-          validationError={() => {
-            /* todo genesets this.labelNameError(genesetName) */
-            return false;
-          }}
+          validationError={false}
           annoInput={
             <LabelInput
               onChange={this.handleChange}
-              onSelect={this.handleSelect}
               inputProps={{
                 "data-testid": "add-genes",
                 leftIcon: "manually-entered-data",
                 intent: "none",
                 autoFocus: true,
               }}
-              newLabelMessage="New category"
+              newLabelMessage="New geneset"
             />
           }
-          handleSubmit={this.handleAddNewLabelToCategory}
+          handleSubmit={this.createGeneset}
           handleCancel={this.disableCreateGenesetMode}
         />
       </>
