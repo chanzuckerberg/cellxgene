@@ -24,7 +24,7 @@ class RightSidebar extends React.Component {
           padding: globals.leftSidebarSectionPadding,
         }}
       >
-        <div
+        {/* <div
           style={{
             border: "1px dotted #738694",
             background: "#F5F8FA",
@@ -37,7 +37,7 @@ class RightSidebar extends React.Component {
           }}
         >
           upload geneset csv
-        </div>
+        </div> */}
         <GeneExpression />
       </div>
     );
