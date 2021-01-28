@@ -110,6 +110,7 @@ const GeneSets = (
      */
     case "geneset: del genes": {
       const { name, genes } = action;
+
       if (!state.genesets.has(name))
         throw new Error("geneset: add genes -- name does not exist.");
 

@@ -36,7 +36,6 @@ class AddGeneToGenesetDialogue extends React.PureComponent {
   };
 
   handleChange = (e) => {
-    console.log(e);
     this.setState({ genesToAdd: e });
   };
 

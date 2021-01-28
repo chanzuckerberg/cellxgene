@@ -58,6 +58,16 @@ class Gene extends React.Component {
     });
   };
 
+  handleDeleteGeneFromSet = () => {
+    const { dispatch, gene, geneset } = this.props;
+
+    dispatch({
+      type: "geneset: del genes",
+      name: geneset,
+      genes: [gene],
+    });
+  };
+
   render() {
     const {
       gene,
@@ -70,7 +80,7 @@ class Gene extends React.Component {
       <div>
         <div
           style={{
-            marginLeft: 15,
+            marginLeft: 5,
             marginRight: 0,
             marginTop: 2,
             display: "flex",
@@ -117,6 +127,15 @@ class Gene extends React.Component {
             ) : null}
           </span>
           <span>
+            <AnchorButton
+              minimal
+              small
+              data-testid={`delete-from-geneset-${gene}`}
+              onClick={this.handleDeleteGeneFromSet}
+              intent="danger"
+              style={{ fontWeight: 700, marginRight: 2 }}
+              icon={<Icon icon="trash" iconSize={10} />}
+            />
             <AnchorButton
               minimal
               small
@@ -171,15 +190,3 @@ class Gene extends React.Component {
 }
 
 export default Gene;
-
-// {geneIsExpanded ? (
-//   <FaChevronDown
-//     data-testclass="gene-expand-is-expanded"
-//     style={{ fontSize: 10, marginRight: 5 }}
-//   />
-// ) : (
-//   <FaChevronRight
-//     data-testclass="gene-expand-is-not-expanded"
-//     style={{ fontSize: 10, marginRight: 5 }}
-//   />
-// )}
