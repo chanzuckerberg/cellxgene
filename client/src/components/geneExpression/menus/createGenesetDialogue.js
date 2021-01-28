@@ -1,3 +1,4 @@
+import _ from "lodash";
 import React from "react";
 import { connect } from "react-redux";
 import AnnoDialog from "../../categorical/annoDialog";
@@ -24,6 +25,7 @@ class CreateGenesetDialogue extends React.PureComponent {
     const { dispatch } = this.props;
     this.setState({
       genesetName: "",
+      genesToPopulateGeneset: "",
     });
     dispatch({
       type: "geneset: disable create geneset mode",
@@ -33,9 +35,13 @@ class CreateGenesetDialogue extends React.PureComponent {
 
   createGeneset = (e) => {
     const { dispatch } = this.props;
-    const { genesetName } = this.state;
+    const { genesetName, genesToPopulateGeneset } = this.state;
 
-    dispatch({ type: "geneset: create", name: genesetName });
+    dispatch({
+      type: "geneset: create",
+      name: genesetName,
+      genes: _.pull(_.uniq(genesToPopulateGeneset.split(/[ ,]+/)), "") || null,
+    });
     dispatch({
       type: "geneset: disable create geneset mode",
     });
@@ -49,6 +55,10 @@ class CreateGenesetDialogue extends React.PureComponent {
 
   handleChange = (e) => {
     this.setState({ genesetName: e });
+  };
+
+  handleGenesetInputChange = (e) => {
+    this.setState({ genesToPopulateGeneset: e });
   };
 
   instruction = () => {
@@ -80,12 +90,24 @@ class CreateGenesetDialogue extends React.PureComponent {
             <LabelInput
               onChange={this.handleChange}
               inputProps={{
-                "data-testid": "add-genes",
+                "data-testid": "create-geneset-modal",
                 leftIcon: "manually-entered-data",
                 intent: "none",
                 autoFocus: true,
               }}
               newLabelMessage="New geneset"
+            />
+          }
+          secondaryInstructions="Optionally add a list of comma separated genes to populate the geneset"
+          secondaryInput={
+            <LabelInput
+              onChange={this.handleGenesetInputChange}
+              inputProps={{
+                "data-testid": "add-genes",
+                intent: "none",
+                autoFocus: false,
+              }}
+              newLabelMessage="populate geneset with genes"
             />
           }
           handleSubmit={this.createGeneset}

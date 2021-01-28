@@ -1,4 +1,5 @@
 import React from "react";
+import _ from "lodash";
 import { connect } from "react-redux";
 import AnnoDialog from "../../categorical/annoDialog";
 import LabelInput from "../../categorical/labelInput";
@@ -27,7 +28,7 @@ class AddGeneToGenesetDialogue extends React.PureComponent {
     dispatch({
       type: "geneset: add genes",
       name: geneset,
-      genes: genesToAdd.split(","),
+      genes: _.pull(_.uniq(genesToAdd.split(/[ ,]+/)), ""),
     });
     dispatch({
       type: "geneset: disable add new genes mode",

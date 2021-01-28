@@ -39,6 +39,7 @@ class GeneExpression extends React.Component {
       <GeneSet
         key="Temp DiffExp Set"
         setGenes={setGenes}
+        isDiffexp
         setName="Temp DiffExp Set"
       />
     ) : null;

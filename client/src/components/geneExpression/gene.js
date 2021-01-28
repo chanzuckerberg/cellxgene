@@ -74,6 +74,7 @@ class Gene extends React.Component {
       isColorAccessor,
       isScatterplotXXaccessor,
       isScatterplotYYaccessor,
+      isDiffexp,
     } = this.props;
     const { geneIsExpanded } = this.state;
     return (
@@ -127,15 +128,17 @@ class Gene extends React.Component {
             ) : null}
           </span>
           <span>
-            <AnchorButton
-              minimal
-              small
-              data-testid={`delete-from-geneset-${gene}`}
-              onClick={this.handleDeleteGeneFromSet}
-              intent="danger"
-              style={{ fontWeight: 700, marginRight: 2 }}
-              icon={<Icon icon="trash" iconSize={10} />}
-            />
+            {!isDiffexp ? (
+              <AnchorButton
+                minimal
+                small
+                data-testid={`delete-from-geneset-${gene}`}
+                onClick={this.handleDeleteGeneFromSet}
+                intent="danger"
+                style={{ fontWeight: 700, marginRight: 2 }}
+                icon={<Icon icon="trash" iconSize={10} />}
+              />
+            ) : null}
             <AnchorButton
               minimal
               small

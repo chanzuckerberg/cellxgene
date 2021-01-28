@@ -102,7 +102,7 @@ class GeneSet extends React.Component {
   };
 
   render() {
-    const { setName, setGenes } = this.props;
+    const { setName, setGenes, isDiffexp } = this.props;
     const { isOpen, toggleSummaryHisto } = this.state;
     return (
       <div style={{ marginBottom: 3 }}>
@@ -181,7 +181,14 @@ class GeneSet extends React.Component {
 
         {isOpen && !toggleSummaryHisto
           ? _.map(setGenes, (gene) => {
-              return <Gene key={gene} gene={gene} geneset={setName} />;
+              return (
+                <Gene
+                  key={gene}
+                  gene={gene}
+                  geneset={setName}
+                  isDiffexp={isDiffexp}
+                />
+              );
             })
           : null}
       </div>
