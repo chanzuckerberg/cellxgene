@@ -25,15 +25,10 @@ class DataAdaptor(metaclass=ABCMeta):
         # config is the application configuration
         self.app_config = app_config
         self.server_config = self.app_config.server_config
-        self.dataset_config = dataset_config or app_config.default_dataset_config
+        self.dataset_config = dataset_config or app_config.dataset_config
 
         # parameters set by this data adaptor based on the data.
         self.parameters = {}
-        self.uri_path = None
-
-    def set_uri_path(self, path):
-        # uri path to the dataset, e.g. /d/<datasetname>
-        self.uri_path = path
 
     @staticmethod
     @abstractmethod

@@ -1,5 +1,5 @@
 from local_server.auth.auth import AuthTypeClientBase, AuthTypeFactory
-from flask import session, request, redirect, current_app
+from flask import session, request, redirect
 
 
 class AuthTypeTest(AuthTypeClientBase):
@@ -63,17 +63,11 @@ class AuthTypeTest(AuthTypeClientBase):
 
     def get_login_url(self, data_adaptor):
         """Return the url for the login route"""
-        if current_app.app_config.is_multi_dataset():
-            return f"/login?dataset={data_adaptor.uri_path}"
-        else:
-            return "/login"
+        return "/login"
 
     def get_logout_url(self, data_adaptor):
         """Return the url for the logout route"""
-        if current_app.app_config.is_multi_dataset():
-            return f"/logout?dataset={data_adaptor.uri_path}"
-        else:
-            return "/logout"
+        return "/logout"
 
 
 AuthTypeFactory.register("test", AuthTypeTest)
