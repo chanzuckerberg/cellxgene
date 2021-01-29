@@ -17,71 +17,8 @@ server:
     # session:  A session based userid is automatically generated. (no params needed)
     type: session
 
-  multi_dataset:
-    # If dataroot is set, then cellxgene may serve multiple datasets.  This parameter is not
-    # compatible with single_dataset/datapath.
-    # dataroot may be a string, representing the path to a directory or S3 prefix.  In this
-    # case the datasets in that location are accessed from <server>/d/<datasetname>.
-    # example:
-    #     dataroot:  /path/to/datasets/
-    # or
-    #     dataroot:  s3://bucket/prefix/
-    #
-    # As an alternative, dataroot can be a dictionary, where a dataset key is associated with a base_url
-    # and a dataroot.
-    # example:
-    #     dataroot:
-    #         d1:
-    #            base_url: set1
-    #            dataroot: /path/to/set1_datasets/
-    #         d2:
-    #            base_url: set2/subdir
-    #            dataroot: /path/to/set2_datasets/
-    #
-    # In this case, datasets can be accessed from <server>/set1/<datasetname> or
-    # <server>/set2/subdir/<datasetname>.  It is possible to have different dataset configurations
-    # for datasets accessed through different dataroots.  For example, in one dataroot, the
-    # user annotations could be enabled, and in another dataroot they could be disabled.
-    # To specify dataroot configurations, add a new top level dictionary to the config named
-    # per_dataset_config. Within per_dataset_config create a dictionary for each dataroot to specialize
-    # ("d1" or "d2" from the example).  Each of these dictionaries has the exact same form as the "dataset"
-    # dictionary (see below).
-    # When this approach is used, the values for each configuration option are checked in
-    # this order: per_dataset_config/<key>, dataset, then the default values.
-    #
-    # example:
-    #
-    # per_dataset_config:
-    #    d1:
-    #       user_annotations:
-    #           enable:  false
-    #    d2:
-    #       user_annotations:
-    #           enable:  true
-
-    dataroot: null
-
-    # The index page when in multi-dataset mode:
-    #   false or null:  this returns a 404 code
-    #   true:  loads a test index page, which links to the datasets that are available in the dataroot
-    #   string/URL:  redirect to this URL:  flask.redirect(config.multi_dataset__index)
-    index: false
-
-    # A list of allowed matrix types.  If an empty list, then all matrix types are allowed
-    allowed_matrix_types: []
-
-    matrix_cache:
-      # The maximum number of datasets that may be opened at one time.  The least recently used dataset
-      # is evicted from the cache first.
-      max_datasets: 5
-
-      # A matrix is automatically removed from the cache after timelimit_s number of seconds.
-      # If timelimit_s is set to None, then there is no time limit.
-      timelimit_s: 30
-
   single_dataset:
-    # If datapath is set, then cellxgene with serve a single dataset located at datapath.  This parameter is not
-    # compatible with multi_dataset/dataroot.
+    # If datapath is set, then cellxgene with serve a single dataset located at datapath.
     datapath: null
     obs_names: null
     var_names: null

@@ -47,7 +47,7 @@ class DataLocatorAdaptorTest(unittest.TestCase):
             single_dataset__obs_names=None, single_dataset__var_names=None,
         )
         config.update_server_config(app__flask_secret_key="secret")
-        config.update_default_dataset_config(
+        config.update_dataset_config(
             embeddings__names=["umap"], presentation__max_categories=100, diffexp__lfc_cutoff=0.01,
         )
         return config

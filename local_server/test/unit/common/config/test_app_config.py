@@ -8,7 +8,7 @@ from local_server.default_config import default_config
 from local_server.common.config.app_config import AppConfig
 from local_server.test.unit.common.config import ConfigTests
 from local_server.common.errors import ConfigurationError
-from local_server.test import FIXTURES_ROOT
+from local_server.test import FIXTURES_ROOT, H5AD_FIXTURE
 
 
 class AppConfigTest(ConfigTests):
@@ -16,7 +16,7 @@ class AppConfigTest(ConfigTests):
         self.config_file_name = f"{unittest.TestCase.id(self).split('.')[-1]}.yml"
         self.config = AppConfig()
         self.config.update_server_config(app__flask_secret_key="secret")
-        self.config.update_server_config(multi_dataset__dataroot=FIXTURES_ROOT)
+        self.config.update_server_config(single_dataset__datapath=H5AD_FIXTURE)
         self.server_config = self.config.server_config
         self.config.complete_config()
 
@@ -30,7 +30,7 @@ class AppConfigTest(ConfigTests):
 
     def get_config(self, **kwargs):
         file_name = self.custom_app_config(
-            dataroot=f"{FIXTURES_ROOT}", config_file_name=self.config_file_name, **kwargs
+            dataset_datapath=H5AD_FIXTURE, config_file_name=self.config_file_name, **kwargs
         )
         config = AppConfig()
         config.update_from_config_file(file_name)
@@ -51,19 +51,19 @@ class AppConfigTest(ConfigTests):
         self.assertDictEqual(server_config, expected_server_config)
         self.assertDictEqual(dataset_config, expected_dataset_config)
 
-    def test_get_dataset_config_returns_default_dataset_config_for_single_datasets(self):
+    def test_get_dataset_config_returns_dataset_config_for_single_datasets(self):
         datapath = f"{FIXTURES_ROOT}/1e4dfec4-c0b2-46ad-a04e-ff3ffb3c0a8f.h5ad"
         file_name = self.custom_app_config(dataset_datapath=datapath, config_file_name=self.config_file_name)
         config = AppConfig()
         config.update_from_config_file(file_name)
 
-        self.assertEqual(config.get_dataset_config(""), config.default_dataset_config)
+        self.assertEqual(config.get_dataset_config(), config.dataset_config)
 
     def test_update_server_config_updates_server_config_and_config_status(self):
         config = self.get_config()
         config.complete_config()
         config.check_config()
-        config.update_server_config(multi_dataset__dataroot=FIXTURES_ROOT)
+        config.update_server_config(single_dataset__datapath=H5AD_FIXTURE)
         with self.assertRaises(ConfigurationError):
             config.server_config.check_config()
 
@@ -80,50 +80,24 @@ class AppConfigTest(ConfigTests):
 
     def test_update_app_config(self):
         config = AppConfig()
-        config.update_server_config(app__verbose=True, multi_dataset__dataroot="datadir")
+        config.update_server_config(app__verbose=True, single_dataset__datapath="datapath")
         vars = config.server_config.changes_from_default()
-        self.assertCountEqual(vars, [("app__verbose", True, False), ("multi_dataset__dataroot", "datadir", None)])
+        self.assertCountEqual(vars, [("app__verbose", True, False), ("single_dataset__datapath", "datapath", None)])
 
         config = AppConfig()
-        config.update_default_dataset_config(app__scripts=(), app__inline_scripts=())
+        config.update_dataset_config(app__scripts=(), app__inline_scripts=())
         vars = config.server_config.changes_from_default()
         self.assertCountEqual(vars, [])
 
         config = AppConfig()
-        config.update_default_dataset_config(app__scripts=[], app__inline_scripts=[])
-        vars = config.default_dataset_config.changes_from_default()
+        config.update_dataset_config(app__scripts=[], app__inline_scripts=[])
+        vars = config.dataset_config.changes_from_default()
         self.assertCountEqual(vars, [])
 
         config = AppConfig()
-        config.update_default_dataset_config(app__scripts=("a", "b"), app__inline_scripts=["c", "d"])
-        vars = config.default_dataset_config.changes_from_default()
+        config.update_dataset_config(app__scripts=("a", "b"), app__inline_scripts=["c", "d"])
+        vars = config.dataset_config.changes_from_default()
         self.assertCountEqual(vars, [("app__scripts", ["a", "b"], []), ("app__inline_scripts", ["c", "d"], [])])
-
-    def test_configfile_no_dataset_section(self):
-        # test a config file without a dataset section
-
-        with tempfile.TemporaryDirectory() as tempdir:
-            configfile = os.path.join(tempdir, "config.yaml")
-            with open(configfile, "w") as fconfig:
-                config = """
-                server:
-                    app:
-                        flask_secret_key: secret
-                    multi_dataset:
-                        dataroot: test_dataroot
-
-                """
-                fconfig.write(config)
-
-            app_config = AppConfig()
-            app_config.update_from_config_file(configfile)
-            server_changes = app_config.server_config.changes_from_default()
-            dataset_changes = app_config.default_dataset_config.changes_from_default()
-            self.assertEqual(
-                server_changes,
-                [("app__flask_secret_key", "secret", None), ("multi_dataset__dataroot", "test_dataroot", None)],
-            )
-            self.assertEqual(dataset_changes, [])
 
     def test_configfile_no_server_section(self):
         # test a config file without a dataset section
@@ -141,7 +115,7 @@ class AppConfigTest(ConfigTests):
             app_config = AppConfig()
             app_config.update_from_config_file(configfile)
             server_changes = app_config.server_config.changes_from_default()
-            dataset_changes = app_config.default_dataset_config.changes_from_default()
+            dataset_changes = app_config.dataset_config.changes_from_default()
             self.assertEqual(server_changes, [])
             self.assertEqual(dataset_changes, [("user_annotations__enable", False, True)])
 
@@ -149,12 +123,7 @@ class AppConfigTest(ConfigTests):
         """Update a simple config parameter"""
 
         config = AppConfig()
-        config.server_config.multi_dataset__dataroot = dict(
-            s1=dict(dataroot="my_dataroot_s1", base_url="my_baseurl_s1"),
-            s2=dict(dataroot="my_dataroot_s2", base_url="my_baseurl_s2"),
-        )
-        config.add_dataroot_config("s1")
-        config.add_dataroot_config("s2")
+        config.server_config.single_dataset__datapath = "my/data/path"
 
         # test simple value in server
         config.update_single_config_from_path_and_value(["server", "app", "flask_secret_key"], "mysecret")
@@ -164,17 +133,7 @@ class AppConfigTest(ConfigTests):
         config.update_single_config_from_path_and_value(
             ["dataset", "user_annotations", "ontology", "obo_location"], "dummy_location",
         )
-        self.assertEqual(config.default_dataset_config.user_annotations__ontology__obo_location, "dummy_location")
-        self.assertEqual(config.dataroot_config["s1"].user_annotations__ontology__obo_location, "dummy_location")
-        self.assertEqual(config.dataroot_config["s2"].user_annotations__ontology__obo_location, "dummy_location")
-
-        # test simple value in specific dataset
-        config.update_single_config_from_path_and_value(
-            ["per_dataset_config", "s1", "user_annotations", "ontology", "obo_location"], "s1dummy"
-        )
-        self.assertEqual(config.default_dataset_config.user_annotations__ontology__obo_location, "dummy_location")
-        self.assertEqual(config.dataroot_config["s1"].user_annotations__ontology__obo_location, "s1dummy")
-        self.assertEqual(config.dataroot_config["s2"].user_annotations__ontology__obo_location, "dummy_location")
+        self.assertEqual(config.dataset_config.user_annotations__ontology__obo_location, "dummy_location")
 
         # error checking
         bad_paths = [
@@ -182,14 +141,8 @@ class AppConfigTest(ConfigTests):
                 ["dataset", "does", "not", "exist"],
                 "unknown config parameter at path: '['dataset', 'does', 'not', 'exist']'",
             ),
-            (["does", "not", "exist"], "path must start with 'server', 'dataset', or 'per_dataset_config'"),
-            ([], "path must start with 'server', 'dataset', or 'per_dataset_config'"),
-            (["per_dataset_config"], "missing dataroot when using per_dataset_config: got '['per_dataset_config']'"),
-            (
-                ["per_dataset_config", "unknown"],
-                "unknown dataroot when using per_dataset_config: got '['per_dataset_config', 'unknown']',"
-                " dataroots specified in config are ['s1', 's2']",
-            ),
+            (["does", "not", "exist"], "path must start with 'server', or 'dataset'"),
+            ([], "path must start with 'server', or 'dataset'"),
             ([1, 2, 3], "path must be a list of strings, got '[1, 2, 3]'"),
             ("string", "path must be a list of strings, got 'string'"),
         ]
@@ -198,23 +151,3 @@ class AppConfigTest(ConfigTests):
                 config.update_single_config_from_path_and_value(bad_path, "value")
 
             self.assertEqual(config_error.exception.message, error_message)
-
-    def test_dict_update_single_config_from_path_and_value(self):
-        """Update a config parameter that has a value of dict"""
-
-        # the path leads to a dict config param, set the config parameter to the new value
-        config = AppConfig()
-        config.update_single_config_from_path_and_value(
-            ["server", "multi_dataset", "dataroot"], dict(key="mykey1", max_age=100)
-        )
-        self.assertEqual(config.server_config.multi_dataset__dataroot, dict(key="mykey1", max_age=100))
-
-        # the path leads to an entry within a dict config param, the value is simple
-        config = AppConfig()
-        config.server_config.multi_dataset__dataroot = dict(key="mykey1", max_age=100)
-        config.update_single_config_from_path_and_value(
-            ["server", "multi_dataset", "dataroot", "test_field"], True,
-        )
-        self.assertEqual(
-            config.server_config.multi_dataset__dataroot, dict(key="mykey1", max_age=100, test_field=True)
-        )

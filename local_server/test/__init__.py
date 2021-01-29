@@ -21,6 +21,7 @@ from local_server.data_common.matrix_loader import MatrixDataLoader, MatrixDataT
 
 PROJECT_ROOT = popen("git rev-parse --show-toplevel").read().strip()
 FIXTURES_ROOT = PROJECT_ROOT + "/local_server/test/fixtures"
+H5AD_FIXTURE = FIXTURES_ROOT + "/pbmc3k-CSC-gz.h5ad"
 
 
 def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
@@ -39,7 +40,7 @@ def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
         single_dataset__var_names=None,
         single_dataset__datapath=data_locator.path,
     )
-    config.update_default_dataset_config(
+    config.update_dataset_config(
         embeddings__names=["umap"], presentation__max_categories=100, diffexp__lfc_cutoff=0.01,
     )
 
@@ -78,11 +79,11 @@ def app_config(data_locator, backed=False, extra_server_config={}, extra_dataset
         limits__diffexp_cellcount_max=None,
         limits__column_request_max=None,
     )
-    config.update_default_dataset_config(
+    config.update_dataset_config(
         embeddings__names=["umap", "tsne", "pca"], presentation__max_categories=100, diffexp__lfc_cutoff=0.01
     )
     config.update_server_config(**extra_server_config)
-    config.update_default_dataset_config(**extra_dataset_config)
+    config.update_dataset_config(**extra_dataset_config)
     config.complete_config()
     return config
 

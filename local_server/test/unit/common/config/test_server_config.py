@@ -4,13 +4,10 @@ from unittest import mock
 from unittest.mock import patch
 
 from local_server.common.config.base_config import BaseConfig
-from local_server.test import PROJECT_ROOT, FIXTURES_ROOT
-
-import requests
+from local_server.test import H5AD_FIXTURE
 
 from local_server.common.config.app_config import AppConfig
 from local_server.common.errors import ConfigurationError
-from local_server.test import test_server
 from local_server.test.unit.common.config import ConfigTests
 
 
@@ -23,7 +20,7 @@ class TestServerConfig(ConfigTests):
         self.config_file_name = f"{unittest.TestCase.id(self).split('.')[-1]}.yml"
         self.config = AppConfig()
         self.config.update_server_config(app__flask_secret_key="secret")
-        self.config.update_server_config(multi_dataset__dataroot=FIXTURES_ROOT)
+        self.config.update_server_config(single_dataset__datapath=H5AD_FIXTURE)
         self.server_config = self.config.server_config
         self.config.complete_config()
 
@@ -37,7 +34,7 @@ class TestServerConfig(ConfigTests):
 
     def get_config(self, **kwargs):
         file_name = self.custom_app_config(
-            dataroot=f"{FIXTURES_ROOT}", config_file_name=self.config_file_name, **kwargs
+            dataset_datapath=f"{H5AD_FIXTURE}", config_file_name=self.config_file_name, **kwargs
         )
         config = AppConfig()
         config.update_from_config_file(file_name)
@@ -52,7 +49,7 @@ class TestServerConfig(ConfigTests):
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
         mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.server_config.complete_config(self.context)
-        self.assertEqual(mock_check_attrs.call_count, 25)
+        self.assertEqual(mock_check_attrs.call_count, 19)
 
     def test_handle_app__throws_error_if_port_doesnt_exist(self):
         config = self.get_config(port=99999999)
@@ -68,33 +65,14 @@ class TestServerConfig(ConfigTests):
         config = self.get_config()
         self.assertEqual(config.server_config.data_locator__s3__region_name, "us-east-1")
         # incorrectly formatted
-        dataroot = {
-            "d1": {"base_url": "set1", "dataroot": "/path/to/set1_datasets/"},
-            "d2": {"base_url": "set2/subdir", "dataroot": "s3://shouldnt/work"},
-        }
+        datapath = "s3://shouldnt/work"
         file_name = self.custom_app_config(
-            dataroot=dataroot, config_file_name=self.config_file_name, data_locater_region_name="true"
+            dataset_datapath=datapath, config_file_name=self.config_file_name, data_locater_region_name="true"
         )
         config = AppConfig()
         config.update_from_config_file(file_name)
         with self.assertRaises(ConfigurationError):
             config.server_config.handle_data_locator()
-
-    @patch("local_server.common.config.server_config.discover_s3_region_name")
-    def test_handle_data_locator_can_read_from_dataroot(self, mock_discover_region_name):
-        mock_discover_region_name.return_value = "us-west-2"
-        dataroot = {
-            "d1": {"base_url": "set1", "dataroot": "/path/to/set1_datasets/"},
-            "d2": {"base_url": "set2/subdir", "dataroot": "s3://hosted-cellxgene-dev"},
-        }
-        file_name = self.custom_app_config(
-            dataroot=dataroot, config_file_name=self.config_file_name, data_locater_region_name="true"
-        )
-        config = AppConfig()
-        config.update_from_config_file(file_name)
-        config.server_config.handle_data_locator()
-        self.assertEqual(config.server_config.data_locator__s3__region_name, "us-west-2")
-        mock_discover_region_name.assert_called_once_with("s3://hosted-cellxgene-dev")
 
     def test_handle_app___can_use_envar_port(self):
         config = self.get_config(port=24)
@@ -116,26 +94,9 @@ class TestServerConfig(ConfigTests):
         config.external_config.handle_environment(self.context)
         self.assertEqual(config.server_config.app__flask_secret_key, "KEY_FROM_ENV")
 
-    def test_handle_data_source__errors_when_passed_zero_or_two_dataroots(self):
-        file_name = self.custom_app_config(
-            dataroot=f"{FIXTURES_ROOT}",
-            config_file_name="two_data_roots.yml",
-            dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad",
-        )
-        config = AppConfig()
-        config.update_from_config_file(file_name)
-        with self.assertRaises(ConfigurationError):
-            config.server_config.handle_data_source()
-
-        file_name = self.custom_app_config(config_file_name="zero_roots.yml")
-        config = AppConfig()
-        config.update_from_config_file(file_name)
-        with self.assertRaises(ConfigurationError):
-            config.server_config.handle_data_source()
-
     def test_config_for_single_dataset(self):
         file_name = self.custom_app_config(
-            config_file_name="single_dataset.yml", dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad"
+            config_file_name="single_dataset.yml", dataset_datapath=f"{H5AD_FIXTURE}"
         )
         config = AppConfig()
         config.update_from_config_file(file_name)
@@ -145,78 +106,9 @@ class TestServerConfig(ConfigTests):
         file_name = self.custom_app_config(
             config_file_name="single_dataset_with_about.yml",
             about="www.cziscience.com",
-            dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad",
+            dataset_datapath=f"{H5AD_FIXTURE}",
         )
         config = AppConfig()
         config.update_from_config_file(file_name)
         with self.assertRaises(ConfigurationError):
             config.server_config.handle_single_dataset(self.context)
-
-    def test_multi_dataset_raises_error_for_illegal_routes(self):
-        # test for illegal url_dataroots
-        for illegal in ("../b", "!$*", "\\n", "", "(bad)"):
-            self.config.update_server_config(
-                multi_dataset__dataroot={"tag": {"base_url": illegal, "dataroot": f"{PROJECT_ROOT}/example-dataset"}}
-            )
-            with self.assertRaises(ConfigurationError):
-                self.config.complete_config()
-
-    def test_multidataset_works_for_legal_routes(self):
-        # test for legal url_dataroots
-        for legal in ("d", "this.is-okay_", "a/b"):
-            self.config.update_server_config(
-                multi_dataset__dataroot={"tag": {"base_url": legal, "dataroot": f"{PROJECT_ROOT}/example-dataset"}}
-            )
-            self.config.complete_config()
-
-    def test_mulitdatasets_work_e2e(self):
-        # test that multi dataroots work end to end
-        self.config.update_server_config(
-            multi_dataset__dataroot=dict(
-                s1=dict(dataroot=f"{PROJECT_ROOT}/example-dataset", base_url="set1/1/2"),
-                s2=dict(dataroot=f"{FIXTURES_ROOT}", base_url="set2"),
-                s3=dict(dataroot=f"{FIXTURES_ROOT}", base_url="set3"),
-            )
-        )
-
-        # Change this default to test if the dataroot overrides below work.
-        self.config.update_default_dataset_config(presentation__max_categories=100)
-
-        # specialize the configs for set1
-        self.config.add_dataroot_config(
-            "s1", user_annotations__enable=False, diffexp__enable=True, presentation__max_categories=101
-        )
-
-        # specialize the configs for set2
-        self.config.add_dataroot_config(
-            "s2", user_annotations__enable=True, diffexp__enable=False, presentation__max_categories=102
-        )
-
-        # no specializations for set3 (they get the default dataset config)
-        self.config.complete_config()
-
-        with test_server(app_config=self.config) as server:
-            session = requests.Session()
-
-            response = session.get(f"{server}/set1/1/2/pbmc3k.h5ad/api/v0.2/config")
-            data_config = response.json()
-            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
-            assert data_config["config"]["parameters"]["annotations"] is False
-            assert data_config["config"]["parameters"]["disable-diffexp"] is False
-            assert data_config["config"]["parameters"]["max-category-items"] == 101
-
-            response = session.get(f"{server}/set2/pbmc3k-CSC-gz.h5ad/api/v0.2/config")
-            data_config = response.json()
-            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k-CSC-gz"
-            assert data_config["config"]["parameters"]["annotations"] is True
-            assert data_config["config"]["parameters"]["max-category-items"] == 102
-
-            response = session.get(f"{server}/set3/pbmc3k-CSC-gz.h5ad/api/v0.2/config")
-            data_config = response.json()
-            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k-CSC-gz"
-            assert data_config["config"]["parameters"]["annotations"] is True
-            assert data_config["config"]["parameters"]["disable-diffexp"] is False
-            assert data_config["config"]["parameters"]["max-category-items"] == 100
-
-            response = session.get(f"{server}/health")
-            assert response.json()["status"] == "pass"

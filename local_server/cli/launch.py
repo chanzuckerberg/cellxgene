@@ -21,13 +21,13 @@ def annotation_args(func):
     @click.option(
         "--disable-annotations",
         is_flag=True,
-        default=not DEFAULT_CONFIG.default_dataset_config.user_annotations__enable,
+        default=not DEFAULT_CONFIG.dataset_config.user_annotations__enable,
         show_default=True,
         help="Disable user annotation of data.",
     )
     @click.option(
         "--annotations-file",
-        default=DEFAULT_CONFIG.default_dataset_config.user_annotations__local_file_csv__file,
+        default=DEFAULT_CONFIG.dataset_config.user_annotations__local_file_csv__file,
         show_default=True,
         multiple=False,
         metavar="<path>",
@@ -36,7 +36,7 @@ def annotation_args(func):
     )
     @click.option(
         "--annotations-dir",
-        default=DEFAULT_CONFIG.default_dataset_config.user_annotations__local_file_csv__directory,
+        default=DEFAULT_CONFIG.dataset_config.user_annotations__local_file_csv__directory,
         show_default=False,
         multiple=False,
         metavar="<directory path>",
@@ -46,13 +46,13 @@ def annotation_args(func):
     @click.option(
         "--experimental-annotations-ontology",
         is_flag=True,
-        default=DEFAULT_CONFIG.default_dataset_config.user_annotations__ontology__enable,
+        default=DEFAULT_CONFIG.dataset_config.user_annotations__ontology__enable,
         show_default=True,
         help="When creating annotations, optionally autocomplete names from ontology terms.",
     )
     @click.option(
         "--experimental-annotations-ontology-obo",
-        default=DEFAULT_CONFIG.default_dataset_config.user_annotations__ontology__obo_location,
+        default=DEFAULT_CONFIG.dataset_config.user_annotations__ontology__obo_location,
         show_default=True,
         metavar="<path or url>",
         help="Location of OBO file defining cell annotation autosuggest terms.",
@@ -67,7 +67,7 @@ def annotation_args(func):
 def config_args(func):
     @click.option(
         "--max-category-items",
-        default=DEFAULT_CONFIG.default_dataset_config.presentation__max_categories,
+        default=DEFAULT_CONFIG.dataset_config.presentation__max_categories,
         metavar="<integer>",
         show_default=True,
         help="Will not display categories with more distinct values than specified.",
@@ -82,7 +82,7 @@ def config_args(func):
     @click.option(
         "--diffexp-lfc-cutoff",
         "-de",
-        default=DEFAULT_CONFIG.default_dataset_config.diffexp__lfc_cutoff,
+        default=DEFAULT_CONFIG.dataset_config.diffexp__lfc_cutoff,
         show_default=True,
         metavar="<float>",
         help="Minimum log fold change threshold for differential expression.",
@@ -90,14 +90,14 @@ def config_args(func):
     @click.option(
         "--disable-diffexp",
         is_flag=True,
-        default=not DEFAULT_CONFIG.default_dataset_config.diffexp__enable,
+        default=not DEFAULT_CONFIG.dataset_config.diffexp__enable,
         show_default=False,
         help="Disable on-demand differential expression.",
     )
     @click.option(
         "--embedding",
         "-e",
-        default=DEFAULT_CONFIG.default_dataset_config.embeddings__names,
+        default=DEFAULT_CONFIG.dataset_config.embeddings__names,
         multiple=True,
         show_default=False,
         metavar="<text>",
@@ -106,7 +106,7 @@ def config_args(func):
     @click.option(
         "--experimental-enable-reembedding",
         is_flag=True,
-        default=DEFAULT_CONFIG.default_dataset_config.embeddings__enable_reembedding,
+        default=DEFAULT_CONFIG.dataset_config.embeddings__enable_reembedding,
         show_default=False,
         hidden=True,
         help="Enable experimental on-demand re-embedding using UMAP. WARNING: may be very slow.",
@@ -198,7 +198,7 @@ def server_args(func):
     @click.option(
         "--scripts",
         "-s",
-        default=DEFAULT_CONFIG.default_dataset_config.app__scripts,
+        default=DEFAULT_CONFIG.dataset_config.app__scripts,
         multiple=True,
         metavar="<text>",
         help="Additional script files to include in HTML page. If not specified, "
@@ -217,14 +217,6 @@ def launch_args(func):
     @config_args
     @dataset_args
     @server_args
-    @click.option(
-        "--dataroot",
-        default=DEFAULT_CONFIG.server_config.multi_dataset__dataroot,
-        metavar="<data directory>",
-        help="Enable cellxgene to serve multiple files. Supply path (local directory or URL)"
-        " to folder containing H5AD and/or CXG datasets.",
-        hidden=True,
-    )  # TODO, unhide when dataroot is supported)
     @click.argument("datapath", required=False, metavar="<path to data file>")
     @click.option(
         "--open",
@@ -307,7 +299,6 @@ class CliLaunchServer(Server):
 @launch_args
 def launch(
     datapath,
-    dataroot,
     verbose,
     debug,
     open_browser,
@@ -347,11 +338,6 @@ def launch(
 
     > cellxgene launch <url>"""
 
-    # TODO Examples to provide when "--dataroot" is unhidden
-    # > cellxgene launch --dataroot example-dataset/
-    #
-    # > cellxgene launch --dataroot <url>
-
     if dump_default_config:
         print(default_config)
         sys.exit(0)
@@ -381,10 +367,9 @@ def launch(
             single_dataset__about=about,
             single_dataset__obs_names=obs_names,
             single_dataset__var_names=var_names,
-            multi_dataset__dataroot=dataroot,
             adaptor__anndata_adaptor__backed=backed,
         )
-        cli_config.update_default_dataset_config(
+        cli_config.update_dataset_config(
             app__scripts=scripts,
             user_annotations__enable=not disable_annotations,
             user_annotations__local_file_csv__file=annotations_file,
@@ -403,9 +388,9 @@ def launch(
         changes = {key: val for key, val, _ in diff}
         app_config.update_server_config(**changes)
 
-        diff = cli_config.default_dataset_config.changes_from_default()
+        diff = cli_config.dataset_config.changes_from_default()
         changes = {key: val for key, val, _ in diff}
-        app_config.update_default_dataset_config(**changes)
+        app_config.update_dataset_config(**changes)
 
         # process the configuration
         #  any errors will be thrown as an exception.

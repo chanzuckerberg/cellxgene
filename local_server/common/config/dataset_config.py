@@ -181,12 +181,11 @@ class DatasetConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute("diffexp__top_n", int)
 
         server_config = self.app_config.server_config
-        if server_config.single_dataset__datapath:
-            with server_config.matrix_data_cache_manager.data_adaptor(
-                self.tag, server_config.single_dataset__datapath, self.app_config
-            ) as data_adaptor:
-                if self.diffexp__enable and data_adaptor.parameters.get("diffexp_may_be_slow", False):
-                    context["messagefn"](
-                        "CAUTION: due to the size of your dataset, "
-                        "running differential expression may take longer or fail."
-                    )
+        with server_config.matrix_data_cache_manager.data_adaptor(
+            self.tag, server_config.single_dataset__datapath, self.app_config
+        ) as data_adaptor:
+            if self.diffexp__enable and data_adaptor.parameters.get("diffexp_may_be_slow", False):
+                context["messagefn"](
+                    "CAUTION: due to the size of your dataset, "
+                    "running differential expression may take longer or fail."
+                )

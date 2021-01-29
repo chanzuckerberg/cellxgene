@@ -173,7 +173,7 @@ class MatrixDataCacheManager(object):
             if delete_adaptor:
                 delete_adaptor.delete()
             if data_adaptor is None:
-                dataset_config = app_config.get_dataset_config(url_dataroot)
+                dataset_config = app_config.get_dataset_config()
                 data_adaptor = cache_item.acquire_and_open(app_config, dataset_config)
             yield data_adaptor
         except DatasetAccessError:
@@ -244,27 +244,7 @@ class MatrixDataLoader(object):
             return MatrixDataType.UNKNOWN
 
     def __matrix_data_type_allowed(self, app_config):
-        if self.matrix_data_type == MatrixDataType.UNKNOWN:
-            return False
-
-        if not app_config:
-            return True
-        if not app_config.is_multi_dataset():
-            return True
-        if len(app_config.server_config.multi_dataset__allowed_matrix_types) == 0:
-            return True
-
-        for val in app_config.server_config.multi_dataset__allowed_matrix_types:
-            try:
-                if self.matrix_data_type == MatrixDataType(val):
-                    return True
-            except ValueError:
-                # Check case where multi_dataset_allowed_matrix_type does not have a
-                # valid MatrixDataType value.  TODO:  Add a feature to check
-                # the AppConfig for errors on startup
-                return False
-
-        return False
+        return self.matrix_data_type != MatrixDataType.UNKNOWN
 
     def pre_load_validation(self):
         if self.matrix_data_type == MatrixDataType.UNKNOWN:

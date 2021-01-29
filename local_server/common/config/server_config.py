@@ -2,7 +2,7 @@ import os
 import sys
 import warnings
 from os.path import basename
-from urllib.parse import urlparse, quote_plus
+from urllib.parse import urlparse
 
 from local_server.auth.auth import AuthTypeFactory
 from local_server.common.config.base_config import BaseConfig
@@ -10,17 +10,14 @@ from local_server.common.config import DEFAULT_SERVER_PORT, BIG_FILE_SIZE_THRESH
 from local_server.common.errors import ConfigurationError, DatasetAccessError
 from local_server.common.data_locator import discover_s3_region_name
 from local_server.common.utils.utils import is_port_available, find_available_port, custom_format_warning
-from local_server.data_common.matrix_loader import MatrixDataCacheManager, MatrixDataLoader, MatrixDataType
+from local_server.data_common.matrix_loader import MatrixDataCacheManager, MatrixDataLoader
 
 
 class ServerConfig(BaseConfig):
     """Manages the config attribute associated with the server."""
 
     def __init__(self, app_config, default_config):
-        dictval_cases = [
-            ("multi_dataset", "dataroot"),
-        ]
-        super().__init__(app_config, default_config, dictval_cases)
+        super().__init__(app_config, default_config)
 
         try:
             self.app__verbose = default_config["app"]["verbose"]
@@ -32,16 +29,6 @@ class ServerConfig(BaseConfig):
             self.app__flask_secret_key = default_config["app"]["flask_secret_key"]
 
             self.authentication__type = default_config["authentication"]["type"]
-
-            self.multi_dataset__dataroot = default_config["multi_dataset"]["dataroot"]
-            self.multi_dataset__index = default_config["multi_dataset"]["index"]
-            self.multi_dataset__allowed_matrix_types = default_config["multi_dataset"]["allowed_matrix_types"]
-            self.multi_dataset__matrix_cache__max_datasets = default_config["multi_dataset"]["matrix_cache"][
-                "max_datasets"
-            ]
-            self.multi_dataset__matrix_cache__timelimit_s = default_config["multi_dataset"]["matrix_cache"][
-                "timelimit_s"
-            ]
 
             self.single_dataset__datapath = default_config["single_dataset"]["datapath"]
             self.single_dataset__obs_names = default_config["single_dataset"]["obs_names"]
@@ -72,7 +59,6 @@ class ServerConfig(BaseConfig):
         self.handle_data_locator()
         self.handle_adaptor()  # may depend on data_locator
         self.handle_single_dataset(context)  # may depend on adaptor
-        self.handle_multi_dataset()  # may depend on adaptor
         self.handle_limits()
 
         self.check_config()
@@ -126,16 +112,8 @@ class ServerConfig(BaseConfig):
     def handle_data_locator(self):
         self.validate_correct_type_of_configuration_attribute("data_locator__s3__region_name", (type(None), bool, str))
         if self.data_locator__s3__region_name is True:
-            path = self.single_dataset__datapath or self.multi_dataset__dataroot
+            path = self.single_dataset__datapath
 
-            if type(path) == dict:
-                # if multi_dataset__dataroot is a dict, then use the first key
-                # that is in s3.   NOTE:  it is not supported to have dataroots
-                # in different regions.
-                paths = [val.get("dataroot") for val in path.values()]
-                for path in paths:
-                    if path.startswith("s3://"):
-                        break
             if path.startswith("s3://"):
                 region_name = discover_s3_region_name(path)
                 if region_name is None:
@@ -145,15 +123,7 @@ class ServerConfig(BaseConfig):
             self.data_locator__s3__region_name = region_name
 
     def handle_data_source(self):
-        self.validate_correct_type_of_configuration_attribute("single_dataset__datapath", (str, type(None)))
-        self.validate_correct_type_of_configuration_attribute("multi_dataset__dataroot", (type(None), dict, str))
-
-        if self.single_dataset__datapath and self.multi_dataset__dataroot:
-            raise ConfigurationError(
-                "You must supply either a datapath (for single datasets) or a dataroot (for multidatasets). Not both"
-            )
-        if self.single_dataset__datapath is None and self.multi_dataset__dataroot is None:
-            raise ConfigurationError("You must specify a datapath for a single dataset or a dataroot for multidatasets")
+        self.validate_correct_type_of_configuration_attribute("single_dataset__datapath", str)
 
     def handle_single_dataset(self, context):
         self.validate_correct_type_of_configuration_attribute("single_dataset__datapath", (str, type(None)))
@@ -161,9 +131,6 @@ class ServerConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute("single_dataset__about", (str, type(None)))
         self.validate_correct_type_of_configuration_attribute("single_dataset__obs_names", (str, type(None)))
         self.validate_correct_type_of_configuration_attribute("single_dataset__var_names", (str, type(None)))
-
-        if self.single_dataset__datapath is None:
-            return
 
         # create the matrix data cache manager:
         if self.matrix_data_cache_manager is None:
@@ -199,64 +166,6 @@ class ServerConfig(BaseConfig):
                 raise ConfigurationError(
                     "Must provide an absolute URL for --about. (Example format: http://example.com)"
                 )
-
-    def handle_multi_dataset(self):
-        self.validate_correct_type_of_configuration_attribute("multi_dataset__dataroot", (type(None), dict, str))
-        self.validate_correct_type_of_configuration_attribute("multi_dataset__index", (type(None), bool, str))
-        self.validate_correct_type_of_configuration_attribute("multi_dataset__allowed_matrix_types", list)
-        self.validate_correct_type_of_configuration_attribute("multi_dataset__matrix_cache__max_datasets", int)
-        self.validate_correct_type_of_configuration_attribute(
-            "multi_dataset__matrix_cache__timelimit_s", (type(None), int, float)
-        )
-
-        if self.multi_dataset__dataroot is None:
-            return
-
-        if type(self.multi_dataset__dataroot) == str:
-            default_dict = dict(base_url="d", dataroot=self.multi_dataset__dataroot)
-            self.multi_dataset__dataroot = dict(d=default_dict)
-
-        for tag, dataroot_dict in self.multi_dataset__dataroot.items():
-            if "base_url" not in dataroot_dict:
-                raise ConfigurationError(f"error in multi_dataset__dataroot: missing base_url for tag {tag}")
-            if "dataroot" not in dataroot_dict:
-                raise ConfigurationError(f"error in multi_dataset__dataroot: missing dataroot, for tag {tag}")
-
-            base_url = dataroot_dict["base_url"]
-
-            # sanity check for well formed base urls
-            bad = False
-            if type(base_url) != str:
-                bad = True
-            elif os.path.normpath(base_url) != base_url:
-                bad = True
-            else:
-                base_url_parts = base_url.split("/")
-                if [quote_plus(part) for part in base_url_parts] != base_url_parts:
-                    bad = True
-                if ".." in base_url_parts:
-                    bad = True
-            if bad:
-                raise ConfigurationError(f"error in multi_dataset__dataroot base_url {base_url} for tag {tag}")
-
-        # verify all the base_urls are unique
-        base_urls = [d["base_url"] for d in self.multi_dataset__dataroot.values()]
-        if len(base_urls) > len(set(base_urls)):
-            raise ConfigurationError("error in multi_dataset__dataroot:  base_urls must be unique")
-
-        # error checking
-        for mtype in self.multi_dataset__allowed_matrix_types:
-            try:
-                MatrixDataType(mtype)
-            except ValueError:
-                raise ConfigurationError(f'Invalid matrix type in "allowed_matrix_types": {mtype}')
-
-        # create the matrix data cache manager:
-        if self.matrix_data_cache_manager is None:
-            self.matrix_data_cache_manager = MatrixDataCacheManager(
-                max_cached=self.multi_dataset__matrix_cache__max_datasets,
-                timelimit_s=self.multi_dataset__matrix_cache__timelimit_s,
-            )
 
     def handle_adaptor(self):
         self.validate_correct_type_of_configuration_attribute("adaptor__anndata_adaptor__backed", bool)
