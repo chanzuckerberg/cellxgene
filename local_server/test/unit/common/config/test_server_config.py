@@ -101,7 +101,6 @@ class TestServerConfig(ConfigTests):
         config = AppConfig()
         config.update_from_config_file(file_name)
         config.server_config.handle_single_dataset(self.context)
-        self.assertIsNotNone(config.server_config.matrix_data_cache_manager)
 
         file_name = self.custom_app_config(
             config_file_name="single_dataset_with_about.yml",

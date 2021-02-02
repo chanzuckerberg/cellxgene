@@ -10,7 +10,7 @@ from local_server.common.config import DEFAULT_SERVER_PORT, BIG_FILE_SIZE_THRESH
 from local_server.common.errors import ConfigurationError, DatasetAccessError
 from local_server.common.data_locator import discover_s3_region_name
 from local_server.common.utils.utils import is_port_available, find_available_port, custom_format_warning
-from local_server.data_common.matrix_loader import MatrixDataCacheManager, MatrixDataLoader
+from local_server.data_common.matrix_loader import MatrixDataLoader
 
 
 class ServerConfig(BaseConfig):
@@ -46,8 +46,7 @@ class ServerConfig(BaseConfig):
         except KeyError as e:
             raise ConfigurationError(f"Unexpected config: {str(e)}")
 
-        # The matrix data cache manager is created during the complete_config and stored here.
-        self.matrix_data_cache_manager = None
+        self.data_adaptor = None
 
         # The authentication object
         self.auth = None
@@ -131,10 +130,6 @@ class ServerConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute("single_dataset__about", (str, type(None)))
         self.validate_correct_type_of_configuration_attribute("single_dataset__obs_names", (str, type(None)))
         self.validate_correct_type_of_configuration_attribute("single_dataset__var_names", (str, type(None)))
-
-        # create the matrix data cache manager:
-        if self.matrix_data_cache_manager is None:
-            self.matrix_data_cache_manager = MatrixDataCacheManager(max_cached=1, timelimit_s=None)
 
         # preload this data set
         matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath, app_config=self.app_config)

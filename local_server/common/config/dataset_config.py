@@ -5,7 +5,7 @@ from local_server.common.annotations.local_file_csv import AnnotationsLocalFile
 from local_server.common.config.base_config import BaseConfig
 from local_server.common.errors import ConfigurationError, OntologyLoadFailure
 from local_server.compute.scanpy import get_scanpy_module
-from local_server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
+from local_server.data_common.matrix_loader import MatrixDataLoader
 
 
 class DatasetConfig(BaseConfig):
@@ -52,6 +52,16 @@ class DatasetConfig(BaseConfig):
         self.handle_user_annotations(context)
         self.handle_embeddings()
         self.handle_diffexp(context)
+
+    def get_data_adaptor(self):
+        server_config = self.app_config.server_config
+        if not server_config.data_adaptor:
+            matrix_data_loader = MatrixDataLoader(
+                server_config.single_dataset__datapath, app_config=self.app_config
+            )
+            server_config.data_adaptor = matrix_data_loader.open(self.app_config)
+
+        return server_config.data_adaptor
 
     def handle_app(self):
         self.validate_correct_type_of_configuration_attribute("app__scripts", list)
@@ -133,10 +143,8 @@ class DatasetConfig(BaseConfig):
         # so that we can remove errors early in the process.
         server_config = self.app_config.server_config
         if server_config.single_dataset__datapath and self.user_annotations__local_file_csv__file:
-            with server_config.matrix_data_cache_manager.data_adaptor(
-                self.tag, server_config.single_dataset__datapath, self.app_config
-            ) as data_adaptor:
-                data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
+            data_adaptor = self.get_data_adaptor()
+            data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
 
     def check_annotation_config_vars_not_set(self, context):
         if self.user_annotations__type is not None:
@@ -161,11 +169,6 @@ class DatasetConfig(BaseConfig):
         server_config = self.app_config.server_config
         if self.embeddings__enable_reembedding:
             if server_config.single_dataset__datapath:
-                matrix_data_loader = MatrixDataLoader(
-                    server_config.single_dataset__datapath, app_config=self.app_config
-                )
-                if matrix_data_loader.matrix_data_type != MatrixDataType.H5AD:
-                    raise ConfigurationError("enable-reembedding is only supported with H5AD files.")
                 if server_config.adaptor__anndata_adaptor__backed:
                     raise ConfigurationError("enable-reembedding is not supported when run in --backed mode.")
 
@@ -180,12 +183,9 @@ class DatasetConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute("diffexp__lfc_cutoff", float)
         self.validate_correct_type_of_configuration_attribute("diffexp__top_n", int)
 
-        server_config = self.app_config.server_config
-        with server_config.matrix_data_cache_manager.data_adaptor(
-            self.tag, server_config.single_dataset__datapath, self.app_config
-        ) as data_adaptor:
-            if self.diffexp__enable and data_adaptor.parameters.get("diffexp_may_be_slow", False):
-                context["messagefn"](
-                    "CAUTION: due to the size of your dataset, "
-                    "running differential expression may take longer or fail."
-                )
+        data_adaptor = self.get_data_adaptor()
+        if self.diffexp__enable and data_adaptor.parameters.get("diffexp_may_be_slow", False):
+            context["messagefn"](
+                "CAUTION: due to the size of your dataset, "
+                "running differential expression may take longer or fail."
+            )
