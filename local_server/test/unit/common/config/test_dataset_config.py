@@ -46,6 +46,7 @@ class TestDatasetConfig(ConfigTests):
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
         mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.dataset_config.complete_config(self.context)
+        self.assertIsNotNone(self.config.server_config.data_adaptor)
         self.assertEqual(mock_check_attrs.call_count, 17)
 
     def test_app_sets_script_vars(self):

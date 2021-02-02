@@ -25,8 +25,6 @@ webbp = Blueprint("webapp", "local_server.common.web", template_folder="template
 @webbp.route("/", methods=["GET"])
 def dataset_index():
     app_config = current_app.app_config
-    server_config = app_config.server_config
-    location = server_config.single_dataset__datapath
 
     dataset_config = app_config.get_dataset_config()
     scripts = dataset_config.app__scripts
@@ -47,17 +45,6 @@ def handle_request_exception(error):
     return common_rest.abort_and_log(error.status_code, error.message, loglevel=logging.INFO, include_exc_info=True)
 
 
-def get_data_adaptor():
-    config = current_app.app_config
-    server_config = config.server_config
-    dataset_key = None
-
-    datapath = server_config.single_dataset__datapath
-
-    cache_manager = current_app.matrix_data_cache_manager
-    return cache_manager.data_adaptor(dataset_key, datapath, config)
-
-
 def requires_authentication(func):
     @wraps(func)
     def wrapped_function(self, *args, **kwargs):
@@ -74,8 +61,7 @@ def rest_get_data_adaptor(func):
     @wraps(func)
     def wrapped_function(self):
         try:
-            with get_data_adaptor() as data_adaptor:
-                return func(self, data_adaptor)
+            return func(self, current_app.data_adaptor)
         except DatasetAccessError as e:
             return common_rest.abort_and_log(
                 e.status_code, f"Invalid dataset: {e.message}", loglevel=logging.INFO, include_exc_info=True
@@ -229,7 +215,7 @@ class Server:
             methods=["GET"],
         )
 
-        self.app.matrix_data_cache_manager = server_config.matrix_data_cache_manager
+        self.app.data_adaptor = server_config.data_adaptor
         self.app.app_config = app_config
 
         auth = server_config.auth
