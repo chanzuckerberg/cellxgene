@@ -14,7 +14,7 @@ export default function drawPointsRegl(regl) {
     uniform float nPoints;
     uniform float minViewportDimension;
 
-    varying vec4 fragColor;
+    varying lowp vec4 fragColor;
 
     const float zBottom = 0.99;
     const float zMiddle = 0.;
@@ -27,23 +27,23 @@ export default function drawPointsRegl(regl) {
     ${glPointSize}
 
     void main() {
-      bool isNaN, isSelected, isHighlight;
-      getFlags(flag, isNaN, isSelected, isHighlight);
+      bool isBackground, isSelected, isHighlight;
+      getFlags(flag, isBackground, isSelected, isHighlight);
 
       float size = pointSize(nPoints, minViewportDimension, isSelected, isHighlight);
       gl_PointSize = size * pow(distance, 0.5);
 
-      float z = isNaN ? zBottom : (isHighlight ? zTop : zMiddle);
+      float z = isBackground ? zBottom : (isHighlight ? zTop : zMiddle);
       vec3 xy = projView * vec3(position, 1.);
       gl_Position = vec4(xy.xy, z, 1.);
 
-      float alpha = isNaN ? 0.9 : 1.0;
+      float alpha = isBackground ? 0.9 : 1.0;
       fragColor = vec4(color, alpha);
     }`,
 
     frag: `
     precision mediump float;
-    varying vec4 fragColor;
+    varying lowp vec4 fragColor;
     void main() {
       if (length(gl_PointCoord.xy - 0.5) > 0.5) {
         discard;
@@ -67,5 +67,15 @@ export default function drawPointsRegl(regl) {
     count: regl.prop("count"),
 
     primitive: "points",
+
+    blend: {
+      enable: true,
+      func: {
+        srcRGB: "src alpha",
+        srcAlpha: 1,
+        dstRGB: 0,
+        dstAlpha: "one minus dst alpha",
+      },
+    },
   });
 }

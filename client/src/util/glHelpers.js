@@ -8,18 +8,24 @@ PointFlags:
 
   We want a bitmask-like flag structure, but due to webgl limitations
   must emulate it with floats.
+
+  Supported flags are:
+
+    selected: the point is currently selected
+    highlight: the point is currently highlighted
+    background: the point is background information
 */
 
 // for JS
 export const flagSelected = 1;
-export const flagNaN = 2;
+export const flagBackground = 2;
 export const flagHighlight = 4;
 
 // for GLSL
 export const glPointFlags = `
 
   const float flagSelected = 1.;
-  const float flagNaN = 2.;
+  const float flagBackground = 2.;
   const float flagHighlight = 4.;
 
   bool isLowBitSet(float f) {
@@ -32,12 +38,12 @@ export const glPointFlags = `
   }
 
   void getFlags(in float flag,
-                out bool isNaN,
+                out bool isBackground,
                 out bool isSelected,
                 out bool isHighlight) {
     isSelected = isLowBitSet(flag);
     flag = shiftRightOne(flag);
-    isNaN = isLowBitSet(flag);
+    isBackground = isLowBitSet(flag);
     flag = shiftRightOne(flag);
     isHighlight = isLowBitSet(flag);
   }
