@@ -74,7 +74,7 @@ export default function drawPointsRegl(regl) {
         srcRGB: "src alpha",
         srcAlpha: 1,
         dstRGB: 0,
-        dstAlpha: "one minus dst alpha",
+        dstAlpha: "zero",
       },
     },
   });
