@@ -99,7 +99,7 @@ class TestTypeConversionUtils(unittest.TestCase):
 
     def test__get_dtype_of_array__supported_dtypes_return_as_expected(self):
         types = [np.float32, np.int32, np.bool_, str]
-        expected_dtypes = [np.float32, np.int32, np.uint8, np.unicode]
+        expected_dtypes = [np.float32, np.int32, np.uint8, str]
 
         for test_type_index in range(len(types)):
             with self.subTest(
@@ -110,7 +110,7 @@ class TestTypeConversionUtils(unittest.TestCase):
 
     def test__get_dtype_of_array__categories_return_as_expected(self):
         array = Series(data=["a", "b", "c"], dtype="category")
-        expected_dtype = np.unicode
+        expected_dtype = str
 
         actual_dtype = get_dtype_of_array(array)
 
@@ -179,7 +179,7 @@ class TestTypeConversionUtils(unittest.TestCase):
         category_array = Series(data=["a", "b", "b"], dtype="category")
         dataframe = DataFrame({"float_array": float_array, "category_array": category_array})
 
-        expected_data_types_dict = {"float_array": np.float32, "category_array": np.unicode}
+        expected_data_types_dict = {"float_array": np.float32, "category_array": str}
         expected_schema_type_hints_dict = {
             "float_array": {"type": "float32"},
             "category_array": {"type": "categorical", "categories": ["a", "b"]},

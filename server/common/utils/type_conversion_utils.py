@@ -44,7 +44,7 @@ def get_dtype_from_dtype(dtype, array_values=None):
     if dtype_name == "bool":
         return np.uint8
     if dtype_name == "object" and dtype_kind == "O":
-        return np.unicode
+        return str
     if dtype_name == "category":
         return get_dtype_from_dtype(dtype.categories.dtype, array_values)
 
