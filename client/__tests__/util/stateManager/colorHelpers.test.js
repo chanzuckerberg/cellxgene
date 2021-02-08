@@ -3,7 +3,6 @@
 /*
 test color helpers
 */
-import * as d3 from "d3";
 import {
   createColorTable,
   loadUserColorConfig,
@@ -195,3 +194,5 @@ function randHexColor() {
 function randRGBColor() {
   return `#${randHexColor()}${randHexColor()}${randHexColor()}`;
 }
+
+/* eslint-enable no-bitwise -- unsigned right shift better than Math.round */
