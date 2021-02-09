@@ -126,6 +126,40 @@ const GeneSets = (
       };
     }
 
+    /**
+     * Rename the gene set, preserving its order in the geneset collection.
+     *
+     * {
+     *    type: "geneset: rename",
+     *    name: string, // gene set current (previous) name
+     *    newName: string, // the new gene set name
+     * }
+     */
+    case "geneset: rename": {
+      const { name, newName } = action;
+      if (!state.genesets.has(name))
+        throw new Error("geneset: rename -- name does not exist.");
+      if (
+        typeof newName !== "string" ||
+        !newName.length ||
+        state.genesets.has(newName)
+      )
+        throw new Error(
+          "geneset: rename -- new name must be unique, non-null string."
+        );
+
+      // clone the map, preserving current insert order, but mapping name->newName.
+      const genesets = new Map();
+      for (const [gsName, gsGenes] of state.genesets) {
+        if (gsName === name) genesets.set(newName, gsGenes);
+        else genesets.set(gsName, gsGenes);
+      }
+      return {
+        ...state,
+        genesets,
+      };
+    }
+
     default:
       return state;
   }
