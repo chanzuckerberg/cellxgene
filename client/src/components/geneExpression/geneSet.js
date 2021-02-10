@@ -125,17 +125,6 @@ class GeneSet extends React.Component {
             }}
             onClick={this.onGenesetMenuClick}
           >
-            {isOpen ? (
-              <FaChevronDown
-                data-testclass="geneset-expand-is-expanded"
-                style={{ fontSize: 10, marginRight: 5 }}
-              />
-            ) : (
-              <FaChevronRight
-                data-testclass="geneset-expand-is-not-expanded"
-                style={{ fontSize: 10, marginRight: 5 }}
-              />
-            )}
             <Truncate>
               <span
                 style={{
@@ -148,6 +137,17 @@ class GeneSet extends React.Component {
                 {setName}
               </span>
             </Truncate>
+            {isOpen ? (
+              <FaChevronDown
+                data-testclass="geneset-expand-is-expanded"
+                style={{ fontSize: 10, marginRight: 5 }}
+              />
+            ) : (
+              <FaChevronRight
+                data-testclass="geneset-expand-is-not-expanded"
+                style={{ fontSize: 10, marginRight: 5 }}
+              />
+            )}
           </span>
           <div>
             <GenesetMenus genesetsEditable geneset={setName} />
@@ -169,7 +169,7 @@ class GeneSet extends React.Component {
               <Switch
                 style={{ fontStyle: "italic" }}
                 checked={toggleSummaryHisto}
-                label="Show mean expression for genes in set"
+                label="Show mean expression across entire set"
                 alignIndicator="left"
                 innerLabel="off"
                 innerLabelChecked="on"
