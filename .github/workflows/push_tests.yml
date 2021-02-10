@@ -36,7 +36,7 @@ jobs:
           npm install
       - name: Format with black and lint with flake8
         run: |
-          make lint-server
+          make lint-servers
       - name: Lint src with eslint
         working-directory: ./client
         run: |

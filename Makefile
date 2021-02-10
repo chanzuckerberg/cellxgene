@@ -94,7 +94,7 @@ test-db:
 
 # FORMATTING CODE
 
-.PHOHY: fmt
+.PHONY: fmt
 fmt: fmt-client fmt-py
 
 .PHONY: fmt-client
