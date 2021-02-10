@@ -89,7 +89,7 @@ class AnnoMenuCategory extends React.PureComponent {
                     text={editText}
                   />
                   <MenuItem
-                    icon="delete"
+                    icon="trash"
                     intent="danger"
                     data-testclass="handleDeleteCategory"
                     data-testid={`${metadataField}:delete-category`}

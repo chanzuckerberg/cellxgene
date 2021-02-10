@@ -84,12 +84,12 @@ class GenesetMenus extends React.PureComponent {
                     text="Edit gene set name"
                   />
                   <MenuItem
-                    icon="delete"
+                    icon="trash"
                     intent="danger"
                     data-testclass="handleDeleteCategory"
                     data-testid={`${geneset}:delete-category`}
                     onClick={this.handleDeleteCategory}
-                    text="Delete this geneset (destructive, will remove set and collection of genes)"
+                    text="Delete this gene set (destructive, will remove set and collection of genes)"
                   />
                 </Menu>
               }
@@ -103,6 +103,12 @@ class GenesetMenus extends React.PureComponent {
                 minimal
               />
             </Popover>
+            <Button
+              style={{ marginLeft: 0 }}
+              data-testclass="colorby-entire-geneset"
+              data-testid={`${geneset}:colorby-entire-geneset`}
+              icon={<Icon icon="tint" iconSize={16} />}
+            />
           </>
         ) : null}
       </>

@@ -80,9 +80,9 @@ class CreateGenesetDialogue extends React.PureComponent {
             "data-testid": `${metadataField}:submit-label`,
           }}
           title="Create new gene set"
-          instruction="Give your geneset a name" /* todo genesets this.instruction(genesetName) */
+          instruction="Give your gene set a name" /* todo genesets this.instruction(genesetName) */
           cancelTooltipContent="Close this dialog without creating a gene set."
-          primaryButtonText="Create geneset"
+          primaryButtonText="Create gene set"
           handleSecondaryButtonSubmit={this.addLabelAndAssignCells}
           text={genesetName}
           validationError={false}
@@ -95,10 +95,10 @@ class CreateGenesetDialogue extends React.PureComponent {
                 intent: "none",
                 autoFocus: true,
               }}
-              newLabelMessage="New geneset"
+              newLabelMessage="New gene set"
             />
           }
-          secondaryInstructions="Optionally add a list of comma separated genes to populate the geneset"
+          secondaryInstructions="Optionally add a list of comma separated genes to populate the gene set"
           secondaryInput={
             <LabelInput
               onChange={this.handleGenesetInputChange}

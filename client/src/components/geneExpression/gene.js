@@ -134,7 +134,7 @@ class Gene extends React.Component {
                 small
                 data-testid={`delete-from-geneset-${gene}`}
                 onClick={this.handleDeleteGeneFromSet}
-                intent="danger"
+                intent="none"
                 style={{ fontWeight: 700, marginRight: 2 }}
                 icon={<Icon icon="trash" iconSize={10} />}
               />

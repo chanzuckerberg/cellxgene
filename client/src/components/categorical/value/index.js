@@ -731,7 +731,7 @@ class CategoryValue extends React.Component {
                       ) : null}
                       {displayString !== globals.unassignedCategoryLabel ? (
                         <MenuItem
-                          icon="delete"
+                          icon="trash"
                           intent="danger"
                           data-testclass="handleDeleteValue"
                           data-testid={`${metadataField}:${displayString}:delete-label`}
