@@ -40,7 +40,9 @@ class CreateGenesetDialogue extends React.PureComponent {
     dispatch({
       type: "geneset: create",
       name: genesetName,
-      genes: _.pull(_.uniq(genesToPopulateGeneset.split(/[ ,]+/)), "") || null,
+      genes: genesToPopulateGeneset
+        ? _.pull(_.uniq(genesToPopulateGeneset.split(/[ ,]+/)), "")
+        : null,
     });
     dispatch({
       type: "geneset: disable create geneset mode",
