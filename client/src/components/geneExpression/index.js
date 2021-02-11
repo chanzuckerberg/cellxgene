@@ -6,6 +6,7 @@ import { Button } from "@blueprintjs/core";
 import GeneSet from "./geneSet";
 
 import CreateGenesetDialogue from "./menus/createGenesetDialogue";
+import EditGenesetNameDialogue from "./menus/editGenesetNameDialogue";
 
 @connect((state) => {
   return {
@@ -67,6 +68,7 @@ class GeneExpression extends React.Component {
             </div>
           ) : null}
           <CreateGenesetDialogue />
+          <EditGenesetNameDialogue />
         </div>
         <div>{this.renderDiffexpGeneSets()}</div>
         <div>{this.renderGeneSets()}</div>

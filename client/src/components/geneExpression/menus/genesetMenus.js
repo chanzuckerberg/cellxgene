@@ -37,7 +37,7 @@ class GenesetMenus extends React.PureComponent {
     const { dispatch, geneset } = this.props;
 
     dispatch({
-      type: "geneset: activate geneset edit mode",
+      type: "geneset: activate rename geneset mode",
       data: geneset,
     });
   };

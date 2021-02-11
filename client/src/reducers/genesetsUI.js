@@ -28,6 +28,19 @@ const GeneSetsUI = (
         isAddingGenesToGeneset: action.geneset,
       };
     }
+    case "geneset: activate rename geneset mode": {
+      console.log("reducer", action);
+      return {
+        ...state,
+        isEditingGenesetName: action.data,
+      };
+    }
+    case "geneset: disable rename geneset mode": {
+      return {
+        ...state,
+        isEditingGenesetName: null,
+      };
+    }
     case "geneset: disable add new genes mode": {
       return {
         ...state,
