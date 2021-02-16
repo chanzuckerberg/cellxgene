@@ -41,7 +41,7 @@ def corpora_is_version_supported(corpora_schema_version, corpora_encoding_versio
         corpora_schema_version
         and corpora_encoding_version
         and corpora_schema_version.startswith("1.")
-        and corpora_encoding_version.startswith("0.1.")
+        and corpora_encoding_version.startswith("0.2.")
     )
 
 
