@@ -240,7 +240,7 @@ class DatasetResource(Resource):
 
 class SchemaAPI(DatasetResource):
     # TODO @mdunitz separate dataset schema and user schema
-    @cache_control(no_store=True)
+    @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.schema_get(data_adaptor)
