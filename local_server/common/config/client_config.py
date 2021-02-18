@@ -49,8 +49,6 @@ def get_client_config(app_config, data_adaptor):
         "annotations_cell_ontology_terms": None,
         "custom_colors": dataset_config.presentation__custom_colors,
         "diffexp-may-be-slow": False,
-        "about_legal_tos": None,
-        "about_legal_privacy": None,
     }
 
     # corpora dataset_props
