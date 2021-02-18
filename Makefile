@@ -3,13 +3,14 @@ include common.mk
 BUILDDIR := build
 CLIENTBUILD := $(BUILDDIR)/client
 SERVERBUILD := $(BUILDDIR)/server
+LOCALSERVERBUILD := $(BUILDDIR)/local_server
 CLEANFILES :=  $(BUILDDIR)/ client/build build dist cellxgene.egg-info
 
 PART ?= patch
 
 # CLEANING
 .PHONY: clean
-clean: clean-lite clean-server clean-client
+clean: clean-lite clean-local-server clean-server clean-client
 
 # cleaning the client's node_modules is the longest one, so we avoid that if possible
 .PHONY: clean-lite
@@ -17,7 +18,7 @@ clean-lite:
 	rm -rf $(CLEANFILES)
 
 clean-%:
-	cd $(*) && $(MAKE) clean
+	cd $(subst -,_,$*) && $(MAKE) clean
 
 
 # BUILDING PACKAGE
@@ -26,17 +27,34 @@ clean-%:
 build-client:
 	cd client && $(MAKE) ci build
 
+.PHONY: build-local
+build-local: clean build-client
+	git ls-files local_server/ | grep -v 'local_server/test/' | cpio -pdm $(BUILDDIR)
+	cp -r client/build/  $(CLIENTBUILD)
+	$(call copy_client_assets,$(CLIENTBUILD),$(LOCALSERVERBUILD))
+	cp MANIFEST.in README.md setup.cfg setup.py $(BUILDDIR)
+
 .PHONY: build
 build: clean build-client
 	git ls-files server/ | grep -v 'server/test/' | cpio -pdm $(BUILDDIR)
 	cp -r client/build/  $(CLIENTBUILD)
 	$(call copy_client_assets,$(CLIENTBUILD),$(SERVERBUILD))
-	cp MANIFEST.in README.md setup.cfg setup.py $(BUILDDIR)
+	cp MANIFEST_hosted.in README.md setup.cfg setup_hosted.py $(BUILDDIR)
+	mv $(BUILDDIR)/setup_hosted.py $(BUILDDIR)/setup.py
+	mv $(BUILDDIR)/MANIFEST_hosted.in $(BUILDDIR)/MANIFEST.in
 
 # If you are actively developing in the server folder use this, dirties the source tree
+.PHONY: build-for-server-dev-local
+build-for-server-dev-local: clean-local-server build-client
+	$(call copy_client_assets,client/build,local_server)
+
 .PHONY: build-for-server-dev
 build-for-server-dev: clean-server build-client
 	$(call copy_client_assets,client/build,server)
+
+.PHONY: copy-client-assets-local
+copy-client-assets-local:
+	$(call copy_client_assets,client/build,local_server)
 
 .PHONY: copy-client-assets
 copy-client-assets:
@@ -46,11 +64,17 @@ copy-client-assets:
 .PHONY: test
 test: unit-test smoke-test
 
+.PHONY: test-local
+test-local: unit-test-local smoke-test
+
+.PHONY: unit-test-local
+unit-test-local: unit-test-local-server unit-test-client
+
 .PHONY: unit-test
 unit-test: unit-test-server unit-test-client
 
 unit-test-%:
-	cd $(*) && $(MAKE) unit-test
+	cd $(subst -,_,$*) && $(MAKE) unit-test
 
 .PHONY: smoke-test
 smoke-test:
@@ -60,14 +84,17 @@ smoke-test:
 smoke-test-annotations:
 	cd client && $(MAKE) smoke-test-annotations
 
+.PHONY: test-db-local
+test-db-local:
+	cd local_server && $(MAKE) test-db
+
 .PHONY: test-db
 test-db:
 	cd server && $(MAKE) test-db
 
-
 # FORMATTING CODE
 
-.PHOHY: fmt
+.PHONY: fmt
 fmt: fmt-client fmt-py
 
 .PHONY: fmt-client
@@ -79,18 +106,29 @@ fmt-py:
 	black .
 
 .PHONY: lint
-lint: lint-server lint-client
+lint: lint-servers lint-client
+
+.PHONY: lint-servers
+lint-servers: lint-local-server lint-server
+
+.PHONY: lint-local-server
+lint-local-server: fmt-py
+	flake8 local_server --per-file-ignores='local_server/test/fixtures/dataset_config_outline.py:F821 local_server/test/fixtures/server_config_outline.py:F821 local_server/test/performance/scale_test_annotations.py:E501'
 
 .PHONY: lint-server
 lint-server: fmt-py
 	flake8 server --per-file-ignores='server/test/fixtures/dataset_config_outline.py:F821 server/test/fixtures/server_config_outline.py:F821 server/test/performance/scale_test_annotations.py:E501'
-
 
 .PHONY: lint-client
 lint-client:
 	cd client && $(MAKE) lint
 
 # CREATING DISTRIBUTION RELEASE
+
+.PHONY: pydist-local
+pydist-local: build-local
+	cd $(BUILDDIR); python setup.py sdist -d ../dist
+	@echo "done"
 
 .PHONY: pydist
 pydist: build
@@ -137,16 +175,19 @@ release-directly-to-prod: dev-env pydist twine-prod
 	@echo "    make install-release"
 
 .PHONY: dev-env
-dev-env: dev-env-client dev-env-server
+dev-env: dev-env-client dev-env-local-server
 
 .PHONY: dev-env-client
 dev-env-client:
 	cd client && $(MAKE) ci
 
+.PHONY: dev-env-local-server
+dev-env-local-server:
+	pip install -r local_server/requirements-dev.txt
+
 .PHONY: dev-env-server
 dev-env-server:
 	pip install -r server/requirements-dev.txt
-
 # Set PART=[major, minor, patch] as param to make bump.
 # This will create a release candidate. (i.e. 0.16.1 -> 0.16.2-rc.0 for a patch bump)
 .PHONY: bump-version

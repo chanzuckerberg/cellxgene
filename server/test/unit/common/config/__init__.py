@@ -38,6 +38,7 @@ class ConfigTests(unittest.TestCase):
         api_base_url="null",
         web_base_url="null",
         auth_type="session",
+        insecure_test_environment="false",
         oauth_api_base_url="null",
         client_id="null",
         client_secret="null",
