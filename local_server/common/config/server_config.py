@@ -29,6 +29,9 @@ class ServerConfig(BaseConfig):
             self.app__flask_secret_key = default_config["app"]["flask_secret_key"]
 
             self.authentication__type = default_config["authentication"]["type"]
+            self.authentication__insecure_test_environment = default_config["authentication"][
+                "insecure_test_environment"
+            ]
 
             self.single_dataset__datapath = default_config["single_dataset"]["datapath"]
             self.single_dataset__obs_names = default_config["single_dataset"]["obs_names"]
@@ -103,6 +106,10 @@ class ServerConfig(BaseConfig):
 
     def handle_authentication(self):
         self.validate_correct_type_of_configuration_attribute("authentication__type", (type(None), str))
+        self.validate_correct_type_of_configuration_attribute("authentication__insecure_test_environment", bool)
+
+        if self.authentication__type == "test" and not self.authentication__insecure_test_environment:
+            raise ConfigurationError("Test auth can only be used in an insecure test environment")
 
         self.auth = AuthTypeFactory.create(self.authentication__type, self)
         if self.auth is None:

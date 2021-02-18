@@ -34,6 +34,7 @@ server:
     # session:  A session based userid is automatically generated. (no params needed)
     # oauth: oauth2 is used for authentication;  parameters are defined in params_oauth.
     type: session
+    insecure_test_environment: false
 
     params_oauth:
        # url to the oauth server

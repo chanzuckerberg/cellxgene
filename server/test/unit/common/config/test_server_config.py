@@ -53,7 +53,7 @@ class TestServerConfig(ConfigTests):
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
         mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.server_config.complete_config(self.context)
-        self.assertEqual(mock_check_attrs.call_count, 40)
+        self.assertEqual(mock_check_attrs.call_count, 41)
 
     def test_handle_app__throws_error_if_port_doesnt_exist(self):
         config = self.get_config(port=99999999)
@@ -312,3 +312,12 @@ class TestServerConfig(ConfigTests):
         mock_tiledb_context.assert_called_once_with(
             {"sm.tile_cache_size": 10, "sm.num_reader_threads": 2, "vfs.s3.region": "us-east-1"}
         )
+
+    def test_test_auth_only_in_insecure(self):
+
+        config = self.get_config(auth_type="test")
+        with self.assertRaises(ConfigurationError):
+            config.complete_config()
+
+        config.update_server_config(authentication__insecure_test_environment=True)
+        config.complete_config()

@@ -33,6 +33,7 @@ class ConfigTests(unittest.TestCase):
         force_https="false",
         flask_secret_key="secret",
         auth_type="session",
+        insecure_test_environment="false",
         index="false",
         allowed_matrix_types=[],
         max_cached_datasets=5,

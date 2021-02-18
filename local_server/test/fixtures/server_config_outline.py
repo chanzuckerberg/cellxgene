@@ -9,6 +9,7 @@ f"""server:
     flask_secret_key: {flask_secret_key}
   authentication:
     type: {auth_type}
+    insecure_test_environment: {insecure_test_environment}
 
   single_dataset:
     datapath: {dataset_datapath}

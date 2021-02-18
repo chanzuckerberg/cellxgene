@@ -42,6 +42,9 @@ class ServerConfig(BaseConfig):
             self.app__web_base_url = default_config["app"]["web_base_url"]
 
             self.authentication__type = default_config["authentication"]["type"]
+            self.authentication__insecure_test_environment = default_config["authentication"][
+                "insecure_test_environment"
+            ]
             self.authentication__params_oauth__oauth_api_base_url = default_config["authentication"]["params_oauth"][
                 "oauth_api_base_url"
             ]
@@ -168,6 +171,10 @@ class ServerConfig(BaseConfig):
 
     def handle_authentication(self):
         self.validate_correct_type_of_configuration_attribute("authentication__type", (type(None), str))
+        self.validate_correct_type_of_configuration_attribute("authentication__insecure_test_environment", bool)
+
+        if self.authentication__type == "test" and not self.authentication__insecure_test_environment:
+            raise ConfigurationError("Test auth can only be used in an insecure test environment")
 
         # oauth
         ptypes = str if self.authentication__type == "oauth" else (type(None), str)

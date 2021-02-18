@@ -44,7 +44,11 @@ class AuthTest(unittest.TestCase):
     def test_auth_test_single(self):
         app_config = AppConfig()
         app_config.update_server_config(app__flask_secret_key="secret")
-        app_config.update_server_config(authentication__type="test", single_dataset__datapath=self.dataset_datapath)
+        app_config.update_server_config(
+            authentication__type="test",
+            single_dataset__datapath=self.dataset_datapath,
+            authentication__insecure_test_environment=True,
+        )
 
         app_config.complete_config()
 

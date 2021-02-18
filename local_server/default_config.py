@@ -16,6 +16,7 @@ server:
     # none:  No authentication support, features like user_annotations must not be enabled.
     # session:  A session based userid is automatically generated. (no params needed)
     type: session
+    insecure_test_environment: false
 
   single_dataset:
     # If datapath is set, then cellxgene with serve a single dataset located at datapath.
