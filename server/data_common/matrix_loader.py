@@ -224,7 +224,7 @@ class MatrixDataLoader(object):
 
         # matrix_data_type is an enum value of type MatrixDataType
         self.matrix_data_type = matrix_data_type
-        # matrix_type is a DataAdaptor type, which corresonds to the matrix_data_type
+        # matrix_type is a DataAdaptor type, which corresponds to the matrix_data_type
         self.matrix_type = None
 
         if matrix_data_type is None:
@@ -233,11 +233,7 @@ class MatrixDataLoader(object):
         if not self.__matrix_data_type_allowed(app_config):
             raise DatasetAccessError("Dataset does not have an allowed type.")
 
-        if self.matrix_data_type == MatrixDataType.H5AD:
-            from server.data_anndata.anndata_adaptor import AnndataAdaptor
-
-            self.matrix_type = AnndataAdaptor
-        elif self.matrix_data_type == MatrixDataType.CXG:
+        if self.matrix_data_type == MatrixDataType.CXG:
             from server.data_cxg.cxg_adaptor import CxgAdaptor
 
             self.matrix_type = CxgAdaptor
@@ -251,14 +247,14 @@ class MatrixDataLoader(object):
             return MatrixDataType.UNKNOWN
 
     def __matrix_data_type_allowed(self, app_config):
-        if self.matrix_data_type == MatrixDataType.UNKNOWN:
+        if self.matrix_data_type == MatrixDataType.UNKNOWN or self.matrix_data_type == MatrixDataType.H5AD:
             return False
 
         if not app_config:
             return True
         if not app_config.is_multi_dataset():
             return True
-        if len(app_config.server_config.multi_dataset__allowed_matrix_types) == 0:
+        if not len(app_config.server_config.multi_dataset__allowed_matrix_types):
             return True
 
         for val in app_config.server_config.multi_dataset__allowed_matrix_types:
