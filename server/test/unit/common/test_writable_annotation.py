@@ -114,7 +114,7 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
             self.assertEqual(pandas_df.shape, (self.n_rows, 2))
             self.assertEqual(set(pandas_df.columns), {"cat_A", "cat_B"})
 
-            self.assertTrue(self.data.original_obs_index.equals(pandas_df.index))
+            self.assertTrue(self.data.get_obs_index().equals(pandas_df.index))
 
             self.assertTrue(np.all(pandas_df["cat_A"] == ["label_A"] * self.n_rows))
             self.assertTrue(np.all(pandas_df["cat_B"] == ["label_B"] * self.n_rows))
@@ -196,7 +196,7 @@ class WritableAnnotationTest(unittest.TestCase):
         df = pd.read_csv(self.annotations.output_file, index_col=0, header=0, comment="#")
         self.assertEqual(df.shape, (n_rows, 2))
         self.assertEqual(set(df.columns), {"cat_A", "cat_B"})
-        self.assertTrue(self.data.original_obs_index.equals(df.index))
+        self.assertTrue(self.data.get_obs_index().equals(df.index))
         self.assertTrue(np.all(df["cat_A"] == ["label_A"] * n_rows))
         self.assertTrue(np.all(df["cat_B"] == ["label_B"] * n_rows))
 
