@@ -45,13 +45,13 @@ class TestExternalConfig(ConfigTests):
             self.assertEqual(data_config["config"]["displayNames"]["dataset"], "pbmc3k")
             self.assertTrue(data_config["config"]["parameters"]["disable-diffexp"])
 
-        env["DATAPATH"] = f"{FIXTURES_ROOT}/a95c59b4-7f5d-4b80-ad53-a694834ca18b.h5ad"
+        env["DATAPATH"] = f"{FIXTURES_ROOT}/pbmc3k.cxg"
         env["DIFFEXP"] = "True"
         with test_server(command_line_args=["-c", configfile], env=env) as server:
             session = requests.Session()
             response = session.get(f"{server}/api/v0.2/config")
             data_config = response.json()
-            self.assertEqual(data_config["config"]["displayNames"]["dataset"], "a95c59b4-7f5d-4b80-ad53-a694834ca18b")
+            self.assertEqual(data_config["config"]["displayNames"]["dataset"], "pbmc3k")
             self.assertFalse(data_config["config"]["parameters"]["disable-diffexp"])
 
     def test_environment_variable_errors(self):

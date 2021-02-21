@@ -130,8 +130,8 @@ class CorporaRESTAPITest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.tmp_dir = tempfile.TemporaryDirectory()
-        src = f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad"
-        dst = f"{cls.tmp_dir.name}/pbmc3k.h5ad"
+        src = f"{PROJECT_ROOT}/example-dataset/pbmc3k.cxg"
+        dst = f"{cls.tmp_dir.name}/pbmc3k.cxg"
         shutil.copyfile(src, dst)
         cls.setCorporaFields(dst)
         cls.ps, cls.server = start_test_server([dst])

@@ -230,7 +230,6 @@ class TestServerConfig(ConfigTests):
         # test that multi dataroots work end to end
         self.config.update_server_config(
             multi_dataset__dataroot=dict(
-                s1=dict(dataroot=f"{PROJECT_ROOT}/example-dataset", base_url="set1/1/2"),
                 s2=dict(dataroot=f"{FIXTURES_ROOT}", base_url="set2"),
                 s3=dict(dataroot=f"{FIXTURES_ROOT}", base_url="set3"),
             )
@@ -238,11 +237,6 @@ class TestServerConfig(ConfigTests):
 
         # Change this default to test if the dataroot overrides below work.
         self.config.update_default_dataset_config(app__about_legal_tos="tos_default.html")
-
-        # specialize the configs for set1
-        self.config.add_dataroot_config(
-            "s1", user_annotations__enable=False, diffexp__enable=True, app__about_legal_tos="tos_set1.html"
-        )
 
         # specialize the configs for set2
         self.config.add_dataroot_config(
@@ -254,13 +248,6 @@ class TestServerConfig(ConfigTests):
 
         with test_server(app_config=self.config) as server:
             session = requests.Session()
-
-            response = session.get(f"{server}/set1/1/2/pbmc3k.cxg/api/v0.2/config")
-            data_config = response.json()
-            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
-            assert data_config["config"]["parameters"]["annotations"] is False
-            assert data_config["config"]["parameters"]["disable-diffexp"] is False
-            assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set1.html"
 
             response = session.get(f"{server}/set2/pbmc3k.cxg/api/v0.2/config")
             data_config = response.json()
