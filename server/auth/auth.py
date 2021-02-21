@@ -58,7 +58,7 @@ class AuthTypeClientBase(AuthTypeBase):
         return True
 
     @abstractmethod
-    def add_url_rules(self, selfapp):
+    def add_url_rules(self, app):
         """Add url rules to the app (like /login, /logout, etc)"""
         pass
 
