@@ -450,15 +450,6 @@ class Server:
                 methods=["GET"],
             )
 
-        # Register swagger documentation
-        swaggerui_blueprint = get_swaggerui_blueprint(
-            "/api/docs",
-            "/static/swagger.yaml",
-            config={
-                'app_name': "cellxgene"
-            })
-        self.app.register_blueprint(swaggerui_blueprint)
-
         self.app.matrix_data_cache_manager = server_config.matrix_data_cache_manager
         self.app.app_config = app_config
 
