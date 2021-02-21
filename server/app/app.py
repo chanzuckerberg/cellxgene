@@ -18,6 +18,7 @@ from flask import (
     send_from_directory,
 )
 from flask_restful import Api, Resource
+from flask_swagger_ui import get_swaggerui_blueprint
 from server_timing import Timing as ServerTiming
 
 import server.common.rest as common_rest
@@ -448,6 +449,15 @@ class Server:
                 view_func=lambda filename: send_from_directory("../common/web/static", filename),
                 methods=["GET"],
             )
+
+        # Register swagger documentation
+        swaggerui_blueprint = get_swaggerui_blueprint(
+            "/api/docs",  # Swagger UI static files will be mapped to '{SWAGGER_URL}/dist/'
+            f"../../cellxgene-api.yml",
+            config={  # Swagger UI config overrides
+                'app_name': "Test application"
+            })
+        self.app.register_blueprint(swaggerui_blueprint)
 
         self.app.matrix_data_cache_manager = server_config.matrix_data_cache_manager
         self.app.app_config = app_config

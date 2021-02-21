@@ -5,7 +5,7 @@ from server.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
 from server.common.annotations.local_file_csv import AnnotationsLocalFile
 from server.common.config.base_config import BaseConfig
 from server.common.errors import ConfigurationError, OntologyLoadFailure
-from server.compute.scanpy import get_scanpy_module
+from scripts.compute.scanpy import get_scanpy_module
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
 from server.db.db_utils import DbUtils
 
