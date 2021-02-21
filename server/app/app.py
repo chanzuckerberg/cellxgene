@@ -452,10 +452,10 @@ class Server:
 
         # Register swagger documentation
         swaggerui_blueprint = get_swaggerui_blueprint(
-            "/api/docs",  # Swagger UI static files will be mapped to '{SWAGGER_URL}/dist/'
-            f"../../cellxgene-api.yml",
-            config={  # Swagger UI config overrides
-                'app_name': "Test application"
+            "/api/docs",
+            "/static/swagger.yaml",
+            config={
+                'app_name': "cellxgene"
             })
         self.app.register_blueprint(swaggerui_blueprint)
 

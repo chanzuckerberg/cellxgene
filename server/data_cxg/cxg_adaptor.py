@@ -8,7 +8,7 @@ import pandas as pd
 import tiledb
 from server_timing import Timing as ServerTiming
 
-import scripts.compute.diffexp_cxg as diffexp_cxg
+import server.compute.diffexp_cxg as diffexp_cxg
 from server.common.constants import Axis
 from server.common.errors import DatasetAccessError, ConfigurationError
 from server.common.immutable_kvcache import ImmutableKVCache
