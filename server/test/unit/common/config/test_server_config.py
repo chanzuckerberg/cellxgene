@@ -135,7 +135,7 @@ class TestServerConfig(ConfigTests):
         file_name = self.custom_app_config(
             dataroot=f"{FIXTURES_ROOT}",
             config_file_name="two_data_roots.yml",
-            dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad",
+            dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k.cxg",
         )
         config = AppConfig()
         config.update_from_config_file(file_name)
@@ -164,7 +164,7 @@ class TestServerConfig(ConfigTests):
         with test_server(["-p", str(backend_port)], app_config=config) as server:
             session = requests.Session()
             self.assertEqual(server, f"http://localhost:{backend_port}")
-            response = session.get(f"{server}/additional/path/d/pbmc3k.h5ad/api/v0.2/config")
+            response = session.get(f"{server}/additional/path/d/pbmc3k.cxg/api/v0.2/config")
             self.assertEqual(response.status_code, 200)
             data_config = response.json()
             self.assertEqual(data_config["config"]["displayNames"]["dataset"], "pbmc3k")
@@ -255,7 +255,7 @@ class TestServerConfig(ConfigTests):
         with test_server(app_config=self.config) as server:
             session = requests.Session()
 
-            response = session.get(f"{server}/set1/1/2/pbmc3k.h5ad/api/v0.2/config")
+            response = session.get(f"{server}/set1/1/2/pbmc3k.cxg/api/v0.2/config")
             data_config = response.json()
             assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
             assert data_config["config"]["parameters"]["annotations"] is False
