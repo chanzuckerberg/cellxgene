@@ -9,7 +9,7 @@ import server.compute.diffexp_generic as diffexp_generic
 from server.converters.h5ad_data_file import H5ADDataFile
 from server.data_common.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
 from server.data_common.matrix_loader import MatrixDataLoader
-from server.test import PROJECT_ROOT, app_config, FIXTURES_ROOT
+from server.test import app_config, FIXTURES_ROOT
 from server.test.performance.create_test_matrix import create_test_h5ad
 
 
