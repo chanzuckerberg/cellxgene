@@ -12,7 +12,7 @@ from server.common.corpora import (
     corpora_is_version_supported,
     corpora_get_props_from_anndata,
 )
-from server.test import PROJECT_ROOT, start_test_server, stop_test_server
+from server.test import FIXTURES_ROOT, PROJECT_ROOT, start_test_server, stop_test_server
 
 VERSION = "v0.2"
 
@@ -109,31 +109,16 @@ class CorporaRESTAPITest(unittest.TestCase):
 
     @classmethod
     def setCorporaFields(cls, path):
-        adata = anndata.read_h5ad(path)
-        corpora_props = {
-            "version": {"corpora_schema_version": "1.0.0", "corpora_encoding_version": "0.1.0"},
-            "title": "PBMC3K",
-            "contributors": json.dumps([{"name": "name"}]),
-            "layer_descriptions": {"X": "raw counts"},
-            "organism": "human",
-            "organism_ontology_term_id": "unknown",
-            "project_name": "test project",
-            "project_description": "test description",
-            "project_links": json.dumps(
-                [{"link_name": "test link", "link_type": "SUMMARY", "link_url": "https://a.u.r.l/"}]
-            ),
-            "default_embedding": "X_tsne",
-        }
-        adata.uns.update(corpora_props)
-        adata.write(path)
+        # TODO: Implement this for CXG
+        pass
 
     @classmethod
     def setUpClass(cls):
         cls.tmp_dir = tempfile.TemporaryDirectory()
-        src = f"{PROJECT_ROOT}/example-dataset/pbmc3k.cxg"
+        src = f"{FIXTURES_ROOT}/pbmc3k.cxg"
         dst = f"{cls.tmp_dir.name}/pbmc3k.cxg"
         shutil.copyfile(src, dst)
-        cls.setCorporaFields(dst)
+        # TODO: write Corpora fields to the CXG file.
         cls.ps, cls.server = start_test_server([dst])
 
     @classmethod
