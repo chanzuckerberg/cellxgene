@@ -13,6 +13,7 @@ from flask import (
     send_from_directory,
 )
 from flask_restful import Api, Resource
+from flask_swagger_ui import get_swaggerui_blueprint
 
 import local_server.common.rest as common_rest
 from local_server.common.errors import DatasetAccessError, RequestException
@@ -214,6 +215,15 @@ class Server:
             view_func=lambda filename: send_from_directory("../common/web/static", filename),
             methods=["GET"],
         )
+
+        # Register swagger documentation
+        swaggerui_blueprint = get_swaggerui_blueprint(
+            "/api/docs",
+            "/static/swagger.yaml",
+            config={
+                'app_name': "cellxgene"
+            })
+        self.app.register_blueprint(swaggerui_blueprint)
 
         self.app.data_adaptor = server_config.data_adaptor
         self.app.app_config = app_config

@@ -1,0 +1,474 @@
+openapi: 3.0.0
+info:
+  version: "1.0.0"
+  title: cellxgene Explorer API
+  description: API Specification for cellxgene Explorer
+
+servers:
+  - description: Production environment
+    url: https://api.cellxgene.cziscience.com/cellxgene/e/{dataset_name}/api/v0.2/
+  - description: Development environment
+    url: https://api.cellxgene.dev.single-cell.czi.technology/cellxgene/e/{dataset_name}/api/v0.2/
+  - description: Staging environment
+    url: https://api.cellxgene.staging.single-cell.czi.technology/cellxgene/e/{dataset_name}/api/v0.2/
+
+paths:
+  /schema:
+    get:
+      summary: Returns emperical metadata about the dataset like the dataset size, its annotations (including user annotations), and embeddings.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/dataset_schema"
+        "400":
+          $ref: "#/components/responses/400"
+
+  /config:
+    get:
+      summary: Configuration information to assist in front-end adaptation to underlying engine, available functionality, interactive time limits, etc.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/config"
+
+  /userinfo:
+    get:
+      summary: If a user has authenticated into the application, then returns metadata about the user back to the client.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/userinfo"
+
+  /annotations/obs:
+    get:
+      summary: Returns a flatbuffer containing all of the annotations values for the inputted annotation names along the obs column of the dataset.
+      parameters:
+        - in: query
+          name: annotation-name
+          description: The name of the annotation to fetch for the obs column. This must conform to one of the columns referenced from the schema/ API.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: object
+                description: A compressed dataframe containing a matrix where each row contains the observation id and its value for each of the inputted annotations.
+
+    put:
+      summary: If user annotations is turned on as a feature, saves the given annotation values for the dataset, user, and annotation column.
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: object
+              description: A flatbuffer-encoded matrix containing the names of the new annotations as well as the values in a 2D matrix where each row contains the index of the observation and the annotation(s) values.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /annotations/var:
+    get:
+      summary: Returns a flatbuffer containing all of the annotations values for the inputted annotation names along the var column of the dataset. This API is typically used to fetch categorical metadata about the variables of a dataset.
+      parameters:
+        - in: query
+          name: annotation-name
+          description: The name of an annotation along the var access of a dataset, conforming to one of the columns referenced in the schema/ API for var.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: object
+                description: A compressed dataframe containing a matrix where each row contains the var id and its value for each of the inputted annotations.
+
+  /data/var:
+    get:
+      summary: TODO
+      responses:
+        "200":
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: object
+                description: TODO
+
+  /colors:
+    get:
+      summary: If configured and specified, returns a list of custom colors for the obs categories for the dataset.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cxg_category_colors:
+                    type: object
+                    description: A dictionary where each key is the category name and the value is another dictionary where the key is the label name under the cateogory and the value is the designated hex color code.
+
+  /diffexp/obs:
+    post:
+      summary: TODO
+      responses:
+        "200":
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: object
+
+  /layout/obs:
+    get:
+      summary: TODO
+      parameters:
+        - in: query
+          name: layout-name
+          description: The name of one embedding that is available for the dataset. This name should conform to one that is returned by the schema/ API.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                description: A compressed dataframe using flatbuffers where the inputted layout-name is used to name the columns layout-name_0 and layout-name_1. Values are between 0 and 1.
+                $ref: "#/components/schemas/embedding_info"
+
+    put:
+      summary: TODO
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: object
+              description: TODO
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+
+components:
+  schemas:
+    columns_info:
+      description: Metadata information about each of the columns on any axis of a dataset's matrix.
+      type: object
+      required:
+        - columns
+      properties:
+        columns:
+          type: array
+          items:
+            type: object
+            required:
+              - name
+              - type
+              - writable
+            properties:
+              name:
+                type: string
+              type:
+                type: string
+              writeable:
+                type: string
+              categories:
+                type: string
+
+    embedding_info:
+      description: Metadata about an embedding for the dataset.
+      type: object
+      required:
+        - dims
+        - name
+        - type
+      properties:
+        dims:
+          type: array
+          items:
+            type: string
+        name:
+          type: string
+        type:
+          type: string
+
+    dataset_schema:
+      description: Normalized metadata about a dataset.
+      type: object
+      required:
+        - annotations
+        - dataframe
+        - layout
+      properties:
+        annotations:
+          type: object
+          required:
+            - obs
+            - var
+          properties:
+            obs:
+              $ref: "#/components/schemas/columns_info"
+            var:
+              $ref: "#/components/schemas/columns_info"
+        dataframe:
+          type: object
+          required:
+            - nObs
+            - nVar
+            - type
+          properties:
+            nObs:
+              type: integer
+            nVar:
+              type: integer
+            type:
+              type: string
+        layout:
+          type: object
+          required:
+            - obs
+          properties:
+            obs:
+              type: array
+              items:
+                $ref: "#/components/schemas/embedding_info"
+
+    config:
+      type: object
+      description: Information for the frontend on endpoint availability, compute limits, and human readable metadata about the dataset being displayed.
+      required:
+        - corpora_props
+        - displayNames
+        - library_versions
+        - limits
+        - links
+        - parameters
+      properties:
+        corpora_props:
+          description: Metadata information about dataset that adheres to the cellxgene official schema.
+          type: object
+          required:
+            - version
+            - title
+            - layer_descriptions
+            - organism
+            - organism_ontology_term_id
+          properties:
+            contributors:
+              type: array
+              items:
+                type: object
+                required:
+                  - email
+                  - institution
+                  - name
+                properties:
+                  email:
+                    type: string
+                  institution:
+                    type: string
+                  name:
+                    type: string
+            layer_descriptions:
+              description: A dictionary object where the key is the name of the layer and the value is the key to be accessed from the anndata layer.
+              type: array
+              items:
+                type: object
+            organism:
+              type: string
+            organism_ontology_term_id:
+              type: string
+            project_description:
+              type: string
+            project_links:
+              type: array
+              items:
+                type: object
+                required:
+                  - link_name
+                  - link_type
+                  - link_url
+                properties:
+                  link_name:
+                    type: string
+                  link_type:
+                    type: string
+                  link_url:
+                    type: string
+            project_name:
+              type: string
+            publication_doi:
+              type: string
+            title:
+              type: string
+            version:
+              type: object
+              required:
+                - corpora_encoding_version
+                - corpora_schema_version
+              properties:
+                corpora_encoding_version:
+                  type: string
+                corpora_schema_version:
+                  type: string
+        displayNames:
+          type: object
+          required:
+            - engine
+            - dataset
+          properties:
+            engine:
+              type: string
+            dataset:
+              type: string
+        library_versions:
+          required:
+            - cellxgene
+          properties:
+            anndata:
+              type: string
+            tiledb:
+              type: string
+            cellxgene:
+              type: string
+        limits:
+          type: object
+          required:
+            - column_request_max
+            - diffexp_cellcount_max
+          properties:
+            column_request_max:
+              type: integer
+            diffexp_cellcount_max:
+              type: integer
+        links:
+          type: object
+          required:
+            - about-dataset
+          properties:
+            about-dataset:
+              type: string
+        parameters:
+          type: object
+          required:
+            - about_legal_privacy
+            - about_legal_tos
+            - annotations
+            - annotations_cell_ontology_enabled
+            - annotations_cell_ontology_obopath
+            - annotations_cell_ontology_terms
+            - annotations_dir
+            - annotations_file
+            - backed
+            - custom_colors
+            - diffexp-may-be-slow
+            - diffexp_lfc_cutoff
+            - disable-diffexp
+            - enable-reembedding
+            - layout
+            - max-category-items
+            - obs_names
+            - var_names
+          properties:
+            about_legal_privacy:
+              type: string
+            about_legal_tos:
+              type: string
+            annotations:
+              type: boolean
+            annotations_cell_ontology_enabled:
+              type: boolean
+            annotations_cell_ontology_obopath:
+              type: object
+            annotations_cell_ontology_terms:
+              type: object
+            annotations_dir:
+              type: object
+            annotations_file:
+              type: object
+            backed:
+              type: boolean
+            custom_colors:
+              type: boolean
+            diffexp-may-be-slow:
+              type: boolean
+            diffexp_lfc_cutoff:
+              type: number
+            disable-diffexp:
+              type: boolean
+            enable-reembedding:
+              type: boolean
+            layout:
+              type: array
+              items:
+                type: object
+            max-category-items:
+              type: integer
+            obs_names:
+              type: object
+            var_names:
+              type: object
+
+    userinfo:
+      type: object
+      required:
+        - is_authenticated
+        - username
+        - user_id
+        - email
+        - picture
+      properties:
+        is_authentication:
+          type: boolean
+        username:
+          type: object
+        user_id:
+          type: object
+        email:
+          type: object
+        picture:
+          type: object
+
+    problem:
+      type: object
+      description: Error message container for HTTP APIs.
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+
+  responses:
+    400:
+      description: Bad request.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
