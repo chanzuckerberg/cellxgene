@@ -83,10 +83,10 @@ class CreateGenesetDialogue extends React.PureComponent {
           primaryButtonProps={{
             "data-testid": `${metadataField}:submit-geneset`,
           }}
-          title="Edit gene set name"
+          title="Create gene set"
           instruction="Type a new name for your gene set" /* todo genesets this.instruction(genesetName) */
           cancelTooltipContent="Close this dialog without editing the gene set."
-          primaryButtonText="Edit gene set same"
+          primaryButtonText="Create gene set same"
           text={genesetName}
           validationError={false}
           annoInput={
@@ -98,7 +98,7 @@ class CreateGenesetDialogue extends React.PureComponent {
                 intent: "none",
                 autoFocus: true,
               }}
-              newLabelMessage="Edit gene set name"
+              newLabelMessage="Create gene set name"
             />
           }
           secondaryInstructions="Optionally add a list of comma separated genes to populate the gene set"
