@@ -13,7 +13,6 @@ from flask import (
     send_from_directory,
 )
 from flask_restful import Api, Resource
-from flask_swagger_ui import get_swaggerui_blueprint
 
 import local_server.common.rest as common_rest
 from local_server.common.errors import DatasetAccessError, RequestException

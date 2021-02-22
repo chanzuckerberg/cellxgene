@@ -18,7 +18,6 @@ from flask import (
     send_from_directory,
 )
 from flask_restful import Api, Resource
-from flask_swagger_ui import get_swaggerui_blueprint
 from server_timing import Timing as ServerTiming
 
 import server.common.rest as common_rest

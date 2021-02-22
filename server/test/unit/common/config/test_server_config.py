@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from server.common.config.base_config import BaseConfig
 from server.common.utils.utils import find_available_port
-from server.test import PROJECT_ROOT, FIXTURES_ROOT
+from server.test import FIXTURES_ROOT
 
 import requests
 
@@ -156,7 +156,7 @@ class TestServerConfig(ConfigTests):
         config.update_server_config(
             app__flask_secret_key="secret",
             app__api_base_url=f"http://localhost:{backend_port}/additional/path",
-            multi_dataset__dataroot=f"{PROJECT_ROOT}/example-dataset",
+            multi_dataset__dataroot=f"{FIXTURES_ROOT}",
         )
 
         config.complete_config()
@@ -213,7 +213,7 @@ class TestServerConfig(ConfigTests):
         # test for illegal url_dataroots
         for illegal in ("../b", "!$*", "\\n", "", "(bad)"):
             self.config.update_server_config(
-                multi_dataset__dataroot={"tag": {"base_url": illegal, "dataroot": f"{PROJECT_ROOT}/example-dataset"}}
+                multi_dataset__dataroot={"tag": {"base_url": illegal, "dataroot": f"{FIXTURES_ROOT}"}}
             )
             with self.assertRaises(ConfigurationError):
                 self.config.complete_config()
@@ -222,7 +222,7 @@ class TestServerConfig(ConfigTests):
         # test for legal url_dataroots
         for legal in ("d", "this.is-okay_", "a/b"):
             self.config.update_server_config(
-                multi_dataset__dataroot={"tag": {"base_url": legal, "dataroot": f"{PROJECT_ROOT}/example-dataset"}}
+                multi_dataset__dataroot={"tag": {"base_url": legal, "dataroot": f"{FIXTURES_ROOT}"}}
             )
             self.config.complete_config()
 
