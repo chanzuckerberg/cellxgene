@@ -3,6 +3,8 @@ import time
 import unittest
 import zlib
 from http import HTTPStatus
+import tempfile
+from os import path
 
 import pandas as pd
 import requests
@@ -13,6 +15,7 @@ from local_server.test import (
     data_with_tmp_annotations,
     make_fbs,
     PROJECT_ROOT,
+    FIXTURES_ROOT,
     start_test_server,
     stop_test_server,
 )
@@ -26,6 +29,7 @@ BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
 
 class EndPoints(object):
     ANNOTATIONS_ENABLED = True
+    GENESETS_READONLY = False
 
     def test_initialize(self):
         endpoint = "schema"
@@ -49,6 +53,7 @@ class EndPoints(object):
         result_data = result.json()
         self.assertIn("library_versions", result_data["config"])
         self.assertEqual(result_data["config"]["displayNames"]["dataset"], "pbmc3k")
+        self.assertIsNotNone(result_data["config"]["parameters"])
 
     def test_get_layout_fbs(self):
         endpoint = "layout/obs"
@@ -286,6 +291,26 @@ class EndPoints(object):
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
 
+    def test_genesets_config(self):
+        result = self.session.get(f"{self.URL_BASE}config")
+        config_data = result.json()
+        params = config_data["config"]["parameters"]
+        annotations_genesets = params["annotations_genesets"]
+        annotations_genesets_readonly = params["annotations_genesets_readonly"]
+        annotations_genesets_summary_methods = params["annotations_genesets_summary_methods"]
+        self.assertTrue(annotations_genesets)
+        self.assertEqual(annotations_genesets_readonly, self.GENESETS_READONLY)
+        self.assertEqual(annotations_genesets_summary_methods, ["mean"])
+
+    def test_get_genesets(self):
+        endpoint = "genesets"
+        url = f"{self.URL_BASE}{endpoint}"
+        result = self.session.get(url, headers={"Accept": "application/json"})
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
+        result_data = result.json()
+        self.assertIsNotNone(result_data["genesets"])
+
     def _setupClass(child_class, command_line):
         child_class.ps, child_class.server = start_test_server(command_line)
         child_class.URL_BASE = f"{child_class.server}/api/v0.2/"
@@ -304,7 +329,8 @@ class EndPointsAnnotations(EndPoints):
 
     def test_get_user_annotations_existing_obs_keys_fbs(self):
         self._test_get_user_annotations_obs_keys_fbs(
-            "cluster-test", {"unassigned", "one", "two", "three", "four", "five", "six", "seven"},
+            "cluster-test",
+            {"unassigned", "one", "two", "three", "four", "five", "six", "seven"},
         )
 
     def test_put_user_annotations_obs_fbs(self):
@@ -353,6 +379,7 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
     """Test Case for endpoints"""
 
     ANNOTATIONS_ENABLED = False
+    GENESETS_READONLY = True
 
     @classmethod
     def setUpClass(cls):
@@ -361,6 +388,7 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
             [
                 f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
                 "--disable-annotations",
+                "--disable-genesets-save",
                 "--experimental-enable-reembedding",
             ],
         )
@@ -408,6 +436,7 @@ class EndPointsAnndataAnnotations(unittest.TestCase, EndPointsAnnotations):
     """Test Case for endpoints"""
 
     ANNOTATIONS_ENABLED = True
+    GENESETS_READONLY = False
 
     @classmethod
     def setUpClass(cls):
@@ -420,3 +449,69 @@ class EndPointsAnndataAnnotations(unittest.TestCase, EndPointsAnnotations):
     def tearDownClass(cls):
         shutil.rmtree(cls.tmp_dir)
         stop_test_server(cls.ps)
+
+
+class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
+    ANNOTATIONS_ENABLED = False
+    GENESETS_READONLY = False
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp_dir = tempfile.mkdtemp()
+        genesets_file = path.join(cls.tmp_dir, "test_genesets.csv")
+        shutil.copyfile(f"{FIXTURES_ROOT}/pbmc3k-genesets.csv", genesets_file)
+        cls._setupClass(
+            cls,
+            [
+                f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
+                "--disable-annotations",
+                "--genesets-file",
+                genesets_file,
+            ],
+        )
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp_dir)
+        stop_test_server(cls.ps)
+
+    def test_get_genesets_json(self):
+        endpoint = "genesets"
+        url = f"{self.URL_BASE}{endpoint}"
+        result = self.session.get(url, headers={"Accept": "application/json"})
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
+        result_data = result.json()
+        self.assertIsNotNone(result_data["genesets"])
+        self.assertIsNotNone(result_data["tid"])
+
+        self.assertEqual(
+            result_data,
+            {
+                "genesets": [
+                    {
+                        "genes": [
+                            {"gene_description": "a gene_description", "gene_symbol": "F5"},
+                            {"gene_description": "", "gene_symbol": "SUMO3"},
+                            {"gene_description": "", "gene_symbol": "SRM"},
+                        ],
+                        "geneset_description": "a description",
+                        "geneset_name": "first geneset name",
+                    },
+                    {
+                        "genes": [
+                            {"gene_description": "", "gene_symbol": "RER1"},
+                            {"gene_description": "", "gene_symbol": "SIK1"},
+                        ],
+                        "geneset_description": "",
+                        "geneset_name": "second geneset",
+                    },
+                    {"genes": [], "geneset_description": "", "geneset_name": "third geneset"},
+                ],
+                "tid": 0,
+            },
+        )
+
+    # TODO: GET genesets_summary
+    # TODO: PUT genesets
+    # TODO: tid tests

@@ -61,7 +61,7 @@ def annotation_args(func):
     @click.option(
         "--disable-genesets-save",
         is_flag=True,
-        default=not DEFAULT_CONFIG.dataset_config.user_annotations__genesets__readonly,
+        default=DEFAULT_CONFIG.dataset_config.user_annotations__genesets__readonly,
         show_default=False,
         help="Disable saving gene sets. If disabled, users will be able to make changes to gene sets but all "
         "changes will be lost on browser refresh.",

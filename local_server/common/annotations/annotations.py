@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 import fastobo
 import fsspec
 
-from local_server.common.errors import OntologyLoadFailure
+from local_server.common.errors import OntologyLoadFailure, DisabledFeatureError
 from local_server.common.utils.type_conversion_utils import get_schema_type_hint_of_array
 
 
@@ -14,8 +14,23 @@ class Annotations(metaclass=ABCMeta):
     See http://www.obofoundry.org/ontology/cl.html """
     DefaultOnotology = "http://purl.obolibrary.org/obo/cl.obo"
 
-    def __init__(self):
+    def __init__(self, config={}):
         self.ontology_data = None
+        self.config = config
+
+    def user_annotations_enabled(self):
+        return self.config.get("user-annotations", False)
+
+    def genesets_save_enabled(self):
+        return self.config.get("genesets-save", False)
+
+    def check_user_annotations_enabled(self):
+        if not self.user_annotations_enabled():
+            raise DisabledFeatureError("User annotations are disabled.")
+
+    def check_genesets_save_enabled(self):
+        if not self.genesets_save_enabled():
+            raise DisabledFeatureError("User genesets save is disabled.")
 
     def load_ontology(self, path):
         """Load and parse ontologies - currently support OBO files only."""

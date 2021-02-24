@@ -317,7 +317,7 @@ class DataAdaptor(metaclass=ABCMeta):
                 if gene_symbol in gene_symbol_already_seen:
                     # duplicate check
                     messagefn(
-                        f"Warning: a duplicate of gene {gene} was found in geneset {geneset_name}, "
+                        f"Warning: a duplicate of gene {gene_symbol} was found in geneset {geneset_name}, "
                         "and will be ignored."
                     )
                     continue
@@ -329,6 +329,7 @@ class DataAdaptor(metaclass=ABCMeta):
                     )
                     continue
 
+                gene_symbol_already_seen.add(gene_symbol)
                 new_genes.append(gene)
 
             geneset["genes"] = new_genes

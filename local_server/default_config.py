@@ -69,7 +69,7 @@ dataset:
       enable: false
       obo_location: null
     genesets:
-      readonly: true        # genesets CRUD enabled/disabled
+      readonly: false      # genesets CRUD enabled/disabled
 
   embeddings:
     names : []

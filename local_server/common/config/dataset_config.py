@@ -60,9 +60,7 @@ class DatasetConfig(BaseConfig):
     def get_data_adaptor(self):
         server_config = self.app_config.server_config
         if not server_config.data_adaptor:
-            matrix_data_loader = MatrixDataLoader(
-                server_config.single_dataset__datapath, app_config=self.app_config
-            )
+            matrix_data_loader = MatrixDataLoader(server_config.single_dataset__datapath, app_config=self.app_config)
             server_config.data_adaptor = matrix_data_loader.open(self.app_config)
 
         return server_config.data_adaptor
@@ -109,7 +107,7 @@ class DatasetConfig(BaseConfig):
         )
         self.validate_correct_type_of_configuration_attribute("user_annotations__genesets__readonly", bool)
 
-        if self.user_annotations__enable:
+        if self.user_annotations__enable or not self.user_annotations__genesets__readonly:
             server_config = self.app_config.server_config
             if not self.app__authentication_enable:
                 raise ConfigurationError("user annotations requires authentication to be enabled")
@@ -117,26 +115,31 @@ class DatasetConfig(BaseConfig):
                 auth_type = server_config.authentication__type
                 raise ConfigurationError(f"authentication method {auth_type} is not compatible with user annotations")
 
-            if self.user_annotations__type == "local_file_csv":
-                self.handle_local_file_csv_annotations(context)
-            else:
-                raise ConfigurationError('The only annotation type support is "local_file_csv"')
+        # Must always have an annotations instance to support genesets. User annotation (cell labels) are optional
+        # as are writable gene sets
+        if self.user_annotations__type == "local_file_csv":
+            self.handle_local_file_csv_annotations(context)
+        else:
+            raise ConfigurationError('The only annotation type support is "local_file_csv"')
+
+        if self.user_annotations__enable:
             if self.user_annotations__ontology__enable or self.user_annotations__ontology__obo_location:
                 try:
                     self.user_annotations.load_ontology(self.user_annotations__ontology__obo_location)
                 except OntologyLoadFailure as e:
                     raise ConfigurationError("Unable to load ontology terms\n" + str(e))
-        else:
-            self.check_annotation_config_vars_not_set(context)
+
+        self.check_annotation_config_vars_not_set(context)
 
     def handle_local_file_csv_annotations(self, context):
         dirname = self.user_annotations__local_file_csv__directory
         filename = self.user_annotations__local_file_csv__file
-        if filename is not None and dirname is not None:
-            raise ConfigurationError("'annotations-file' and 'annotations-dir' may not be used together.")
         genesets_filename = self.user_annotations__local_file_csv__genesets_file
-        if genesets_filename is not None and dirname is not None:
-            raise ConfigurationError("'genesets-file' and 'annotations-dir' may not be used together.")
+
+        if dirname is not None and (filename is not None or genesets_filename is not None):
+            raise ConfigurationError(
+                "'user-generated-data-dir' may not be used with annotations-file' or 'genesets-file'."
+            )
 
         if filename is not None:
             lf_name, lf_ext = splitext(filename)
@@ -152,9 +155,13 @@ class DatasetConfig(BaseConfig):
             try:
                 os.mkdir(dirname)
             except OSError:
-                raise ConfigurationError("Unable to create directory specified by --annotations-dir")
+                raise ConfigurationError("Unable to create directory specified by --user-generated-data-dir")
 
-        self.user_annotations = AnnotationsLocalFile(dirname, filename, genesets_filename)
+        anno_config = {
+            "user-annotations": self.user_annotations__enable,
+            "genesets-save": not self.user_annotations__genesets__readonly,
+        }
+        self.user_annotations = AnnotationsLocalFile(anno_config, dirname, filename, genesets_filename)
 
         # if the user has specified a fixed label file, go ahead and validate it
         # so that we can remove errors early in the process.
@@ -173,17 +180,19 @@ class DatasetConfig(BaseConfig):
         if self.user_annotations__type is not None:
             dirname = self.user_annotations__local_file_csv__directory
             filename = self.user_annotations__local_file_csv__file
-            if filename is not None:
-                context["messagefn"]("Warning: --annotations-file ignored as annotations are disabled.")
-            if dirname is not None:
-                context["messagefn"]("Warning: --annotations-dir ignored as annotations are disabled.")
-
-        if self.user_annotations__ontology__enable:
-            context["messagefn"]("Warning: --experimental-annotations-ontology ignored as annotations are disabled.")
-        if self.user_annotations__ontology__obo_location is not None:
-            context["messagefn"](
-                "Warning: --experimental-annotations-ontology-obo ignored as annotations are disabled."
-            )
+            if not self.user_annotations__enable:
+                if filename is not None:
+                    context["messagefn"]("Warning: --annotations-file ignored as annotations are disabled.")
+                if self.user_annotations__ontology__enable:
+                    context["messagefn"](
+                        "Warning: --experimental-annotations-ontology ignored as annotations are disabled."
+                    )
+                if self.user_annotations__ontology__obo_location is not None:
+                    context["messagefn"](
+                        "Warning: --experimental-annotations-ontology-obo ignored as annotations are disabled."
+                    )
+                if dirname is not None:
+                    context["messagefn"]("Warning: --user-generated-data-dir ignored as annotations are disabled.")
 
     def handle_embeddings(self):
         self.validate_correct_type_of_configuration_attribute("embeddings__names", list)
@@ -209,6 +218,5 @@ class DatasetConfig(BaseConfig):
         data_adaptor = self.get_data_adaptor()
         if self.diffexp__enable and data_adaptor.parameters.get("diffexp_may_be_slow", False):
             context["messagefn"](
-                "CAUTION: due to the size of your dataset, "
-                "running differential expression may take longer or fail."
+                "CAUTION: due to the size of your dataset, " "running differential expression may take longer or fail."
             )

@@ -45,7 +45,7 @@ def _query_parameter_to_filter(args):
 
     Query param filters look like:  <axis>:name=value, where value
     may be one of:
-        - a range, min,max, where either may be an open range by using an asterisc, eg, 10,*
+        - a range, min,max, where either may be an open range by using an asterisk, eg, 10,*
         - a value
     Eg,
         ...?tissue=lung&obs:tissue=heart&obs:num_reads=1000,*
@@ -107,7 +107,7 @@ def schema_get_helper(data_adaptor):
 
     # add label obs annotations as needed
     annotations = data_adaptor.dataset_config.user_annotations
-    if annotations is not None:
+    if annotations.user_annotations_enabled():
         label_schema = annotations.get_schema(data_adaptor)
         schema["annotations"]["obs"]["columns"].extend(label_schema)
 
@@ -141,7 +141,7 @@ def annotations_obs_get(request, data_adaptor):
     try:
         labels = None
         annotations = data_adaptor.dataset_config.user_annotations
-        if annotations:
+        if annotations.user_annotations_enabled():
             labels = annotations.read_labels(data_adaptor)
         fbs = data_adaptor.annotation_to_fbs_matrix(Axis.OBS, fields, labels)
         return make_response(fbs, HTTPStatus.OK, {"Content-Type": "application/octet-stream"})
@@ -152,7 +152,7 @@ def annotations_obs_get(request, data_adaptor):
 def annotations_put_fbs_helper(data_adaptor, fbs):
     """helper function to write annotations from fbs"""
     annotations = data_adaptor.dataset_config.user_annotations
-    if annotations is None:
+    if not annotations.user_annotations_enabled():
         raise DisabledFeatureError("Writable annotations are not enabled")
 
     new_label_df = decode_matrix_fbs(fbs)
@@ -167,7 +167,7 @@ def inflate(data):
 
 def annotations_obs_put(request, data_adaptor):
     annotations = data_adaptor.dataset_config.user_annotations
-    if annotations is None:
+    if not annotations.user_annotations_enabled():
         return abort(HTTPStatus.NOT_IMPLEMENTED)
 
     anno_collection = request.args.get("annotation-collection-name", default=None)
@@ -337,11 +337,7 @@ def genesets_get(request, data_adaptor):
         annotations = data_adaptor.dataset_config.user_annotations
         (genesets, tid) = data_adaptor.check_new_genesets(annotations.read_genesets(data_adaptor))
 
-        if preferred_mimetype == "application/json":
-            return make_response(
-                jsonify({"genesets": annotations.genesets_to_response(genesets), "tid": tid}), HTTPStatus.OK
-            )
-        else:
+        if preferred_mimetype == "text/csv":
             return make_response(
                 annotations.genesets_to_csv(genesets),
                 HTTPStatus.OK,
@@ -350,13 +346,17 @@ def genesets_get(request, data_adaptor):
                     "Content-Disposition": "attachment; filename=genesets.csv",
                 },
             )
+        else:
+            return make_response(
+                jsonify({"genesets": annotations.genesets_to_response(genesets), "tid": tid}), HTTPStatus.OK
+            )
     except (ValueError, KeyError, AnnotationsError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
 
 
 def genesets_put(request, data_adaptor):
     annotations = data_adaptor.dataset_config.user_annotations
-    if annotations is None:
+    if not annotations.genesets_save_enabled():
         return abort(HTTPStatus.NOT_IMPLEMENTED)
 
     if data_adaptor.dataset_config.user_annotations__genesets__readonly:
