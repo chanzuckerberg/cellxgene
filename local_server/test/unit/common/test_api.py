@@ -414,7 +414,7 @@ class EndPointsAnndataAnnotations(unittest.TestCase, EndPointsAnnotations):
         cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_annotations(
             MatrixDataType.H5AD, annotations_fixture=True
         )
-        cls._setupClass(cls, ["--annotations-file", cls.annotations.output_file, cls.data.get_location()])
+        cls._setupClass(cls, ["--annotations-file", cls.annotations.label_output_file, cls.data.get_location()])
 
     @classmethod
     def tearDownClass(cls):

@@ -46,7 +46,7 @@ def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
 
     config.complete_config()
     data = MatrixDataLoader(data_locator.abspath()).open(config)
-    annotations = AnnotationsLocalFile(None, annotations_file)
+    annotations = AnnotationsLocalFile(None, annotations_file, None)
     return data, tmp_dir, annotations
 
 
