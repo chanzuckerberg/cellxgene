@@ -261,6 +261,80 @@ class DataAdaptor(metaclass=ABCMeta):
 
         return labels_df
 
+    def check_new_genesets(self, args, context=None):
+        """
+        Check validity of gene sets, return if correct, else raise error.
+        May also modify the gene set for conditions that should be resolved,
+        but which do not warrant a hard error.
+
+        Rules:
+        0. all geneset names must be unique.
+        1. All geneset names must be legal, meaning:
+            * no leading or trailing white space
+            * no multi-space runs
+            * character set matches: /^(\w|[ .()-])+$/
+           Generates hard error.
+        2. Gene symbols must be part of the current var_index.  If symbol not in var_index,
+           will generate a warning and the symbol removed.
+        3. Duplicate gene symbols are silently de-duped.
+        """
+        import re
+
+        (genesets, tid) = args
+        messagefn = context["messagefn"] if context else (lambda x: None)
+
+        # 0. check for uniqueness of geneset names
+        geneset_names = [gs["geneset_name"] for gs in genesets.values()]
+        if len(set(geneset_names)) != len(geneset_names):
+            raise KeyError("All geneset names must be unique.")
+
+        # 1. check gene set character set and format
+        legal_name = re.compile(r"^(\w|[ .()-])+$")
+        for name in geneset_names:
+            if len(name) == 0:
+                raise KeyError("Geneset names must not be zero length string.")
+            if name[0] in " \t\n\r" or name[-1] in " \t\n\r" or not legal_name.match(name) or "  " in name:
+                messagefn(
+                    f"Error: "
+                    "Geneset name {name} is not valid. Only alphanumeric and limited special characters (-_.) "
+                    "and space are allowed. Leading, trailing, and multiple spaces within a name are not allowed."
+                )
+                raise KeyError(
+                    "Geneset name is not valid, only alphanumeric and limited special characters (-_.) "
+                    "and space are allowed. Leading, trailing, and multiple spaces within a name are not allowed."
+                )
+
+        # 2. & 3. check for duplicate gene symbols, and those not present in the dataset. They will
+        # generate a warning and be removed.
+        var_names = set(self.query_var_array(self.parameters.get("var_names")))
+        for geneset in genesets.values():
+            geneset_name = geneset["geneset_name"]
+            genes = geneset["genes"]
+            gene_symbol_already_seen = set()
+            new_genes = []
+            for gene in genes:
+                gene_symbol = gene["gene_symbol"]
+                if gene_symbol in gene_symbol_already_seen:
+                    # duplicate check
+                    messagefn(
+                        f"Warning: a duplicate of gene {gene} was found in geneset {geneset_name}, "
+                        "and will be ignored."
+                    )
+                    continue
+
+                if gene_symbol not in var_names:
+                    messagefn(
+                        f"Warning: {gene_symbol}, used in geneset {geneset_name}, "
+                        "was not found in the dataset and will be ignored."
+                    )
+                    continue
+
+                new_genes.append(gene)
+
+            geneset["genes"] = new_genes
+
+        return (genesets, tid)
+
     def data_frame_to_fbs_matrix(self, filter, axis):
         """
         Retrieves data 'X' and returns in a flatbuffer Matrix.
@@ -333,7 +407,7 @@ class DataAdaptor(metaclass=ABCMeta):
     @staticmethod
     def normalize_embedding(embedding):
         """Normalize embedding layout to meet client assumptions.
-           Embedding is an ndarray, shape (n_obs, n)., where n is normally 2
+        Embedding is an ndarray, shape (n_obs, n)., where n is normally 2
         """
 
         # scale isotropically

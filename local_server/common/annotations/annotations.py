@@ -8,7 +8,7 @@ from local_server.common.utils.type_conversion_utils import get_schema_type_hint
 
 
 class Annotations(metaclass=ABCMeta):
-    """ baseclass for annotations, including ontologies"""
+    """ baseclass for annotations, including ontologies and genesets"""
 
     """ our default ontology is the PURL for the Cell Ontology.
     See http://www.obofoundry.org/ontology/cl.html """
@@ -65,6 +65,65 @@ class Annotations(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def read_genesets(self, data_adaptor):
+        """Return the genesets from persistent storage """
+        pass
+
+    @abstractmethod
+    def write_genesets(self, gs, data_adaptor):
+        """Write the genesets (gs) to a persistent storage such that it can later be read"""
+        pass
+
+    @abstractmethod
     def update_parameters(self, parameters, data_adaptor):
         """Update configuration parameters that describe information about the annotations feature"""
         pass
+
+    Genesets_Header = [
+        "geneset_name",
+        "geneset_description",
+        "gene_symbol",
+        "gene_description",
+    ]
+
+    @staticmethod
+    def genesets_to_csv(genesets):
+        """
+        Convert the genesets format (returned by read_geneset) into
+        the simple Tidy CSV.
+        """
+        from io import StringIO
+        import csv
+
+        with StringIO() as sio:
+            writer = csv.writer(sio)
+            writer.writerow(Annotations.Genesets_Header)
+            for geneset in genesets.values():
+                # genes may be empty, treat as special case
+                genes = geneset["genes"]
+                if not genes:
+                    writer.writerow([geneset["geneset_name"], geneset["geneset_description"], "", ""])
+                else:
+                    writer.writerows(
+                        [
+                            [
+                                geneset["geneset_name"],
+                                geneset["geneset_description"],
+                                gene["gene_symbol"],
+                                gene["gene_description"],
+                            ]
+                            for gene in genes
+                        ]
+                    )
+            return sio.getvalue()
+
+    @staticmethod
+    def genesets_to_response(genesets):
+        """
+        Convert the genesets format (returned by read_geneset) into
+        the dict expected by the JSON REST response object
+        """
+        return [
+            {"geneset_name": gs["geneset_name"], "geneset_description": gs["geneset_description"], "genes": gs["genes"]}
+            for gs in genesets.values()
+        ]
