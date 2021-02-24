@@ -84,10 +84,6 @@ smoke-test:
 smoke-test-annotations:
 	cd client && $(MAKE) smoke-test-annotations
 
-.PHONY: test-db-local
-test-db-local:
-	cd local_server && $(MAKE) test-db
-
 .PHONY: test-db
 test-db:
 	cd server && $(MAKE) test-db
