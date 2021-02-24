@@ -85,7 +85,7 @@ class CreateGenesetDialogue extends React.PureComponent {
           }}
           title="Create gene set"
           instruction="Type a new name for your gene set" /* todo genesets this.instruction(genesetName) */
-          cancelTooltipContent="Close this dialog without editing the gene set."
+          cancelTooltipContent="Close this dialog without creating the gene set."
           primaryButtonText="Create gene set same"
           text={genesetName}
           validationError={false}
