@@ -34,7 +34,10 @@ def data_with_tmp_tiledb_annotations(ext: MatrixDataType):
     data_locator = DataLocator(fname)
     config = AppConfig()
     config.update_server_config(
-        app__flask_secret_key="secret", multi_dataset__dataroot=data_locator.path, authentication__type="test",
+        app__flask_secret_key="secret",
+        multi_dataset__dataroot=data_locator.path,
+        authentication__type="test",
+        authentication__insecure_test_environment=True,
     )
     config.update_default_dataset_config(
         embeddings__names=["umap"],
