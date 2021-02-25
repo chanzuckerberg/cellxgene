@@ -507,11 +507,178 @@ class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
                         "geneset_name": "second geneset",
                     },
                     {"genes": [], "geneset_description": "", "geneset_name": "third geneset"},
+                    {"genes": [], "geneset_description": "fourth description", "geneset_name": "fourth_geneset"},
+                    {"genes": [], "geneset_description": "", "geneset_name": "fifth_dataset"},
                 ],
                 "tid": 0,
             },
         )
 
-    # TODO: GET genesets_summary
-    # TODO: PUT genesets
-    # TODO: tid tests
+    def test_get_genesets_csv(self):
+        endpoint = "genesets"
+        url = f"{self.URL_BASE}{endpoint}"
+        result = self.session.get(url, headers={"Accept": "text/csv"})
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "text/csv")
+        self.assertEqual(
+            result.text,
+            """geneset_name,geneset_description,gene_symbol,gene_description\r
+first geneset name,a description,F5,a gene_description\r
+first geneset name,a description,SUMO3,\r
+first geneset name,a description,SRM,\r
+second geneset,,RER1,\r
+second geneset,,SIK1,\r
+third geneset,,,\r
+fourth_geneset,fourth description,,\r
+fifth_dataset,,,\r
+""",
+        )
+
+    def test_put_genesets(self):
+        endpoint = "genesets"
+        url = f"{self.URL_BASE}{endpoint}"
+
+        # assume we start with TID 0
+        result = self.session.get(url, headers={"Accept": "application/json"})
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.json()["tid"], 0)
+
+        test1 = {"tid": 3, "genesets": []}
+        result = self.session.put(url, json=test1)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        result = self.session.get(url, headers={"Accept": "application/json"})
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.json(), test1)
+
+        # stale TID
+        result = self.session.put(url, json=test1)
+        self.assertEqual(result.status_code, HTTPStatus.NOT_FOUND)
+
+        test2 = {"tid": 4, "genesets": [{"geneset_name": "foobar", "genes": []}]}
+        test2_response = {"tid": 4, "genesets": [{"geneset_name": "foobar", "geneset_description": "", "genes": []}]}
+        result = self.session.put(url, json=test2)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        result = self.session.get(url, headers={"Accept": "application/json"})
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.json(), test2_response)
+
+        test3 = {
+            "tid": 5,
+            "genesets": [
+                {
+                    "geneset_name": "foobar",
+                    "geneset_description": "",
+                    "genes": [
+                        {
+                            "gene_symbol": "F5",
+                            "gene_description": "",
+                        }
+                    ],
+                }
+            ],
+        }
+        result = self.session.put(url, json=test3)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        result = self.session.get(url, headers={"Accept": "application/json"})
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.json(), test3)
+
+    def test_put_genesets_malformed(self):
+        """ test malformed submissions that we expect the backend to catch/tolerate """
+        endpoint = "genesets"
+        url = f"{self.URL_BASE}{endpoint}"
+
+        result = self.session.get(url, headers={"Accept": "application/json"})
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        original_data = result.json()
+        tid = original_data["tid"]
+
+        def test_case(test, expected_code, original_data):
+            """ check for expected error AND that no change was made to the original state """
+            result = self.session.put(url, json=test)
+            self.assertEqual(result.status_code, expected_code)
+            result = self.session.get(url, headers={"Accept": "application/json"})
+            self.assertEqual(result.status_code, HTTPStatus.OK)
+            self.assertEqual(result.json(), original_data)
+
+        # missing or malformed genesets
+        test_case(
+            {"tid": tid + 1},
+            HTTPStatus.BAD_REQUEST,
+            original_data,
+        )
+        test_case(
+            {"tid": tid + 1, "genesets": 99},
+            HTTPStatus.BAD_REQUEST,
+            original_data,
+        )
+
+        # illegal geneset_name
+        test_case(
+            {"tid": tid + 1, "genesets": [{"geneset_name": "&quot;", "genes": []}]},
+            HTTPStatus.BAD_REQUEST,
+            original_data,
+        )
+
+        # duplicate geneset_name
+        test_case(
+            {
+                "tid": tid + 1,
+                "genesets": [
+                    {"geneset_name": "foo", "genes": []},
+                    {"geneset_name": "foo", "genes": []},
+                ],
+            },
+            HTTPStatus.BAD_REQUEST,
+            original_data,
+        )
+
+        # missing geneset_name
+        test_case(
+            {"tid": tid + 1, "genesets": [{"genes": []}]},
+            HTTPStatus.BAD_REQUEST,
+            original_data,
+        )
+
+        # non-numeric TID
+        test_case(
+            {"tid": [], "genesets": [{"geneset_name": "foo", "genes": []}]},
+            HTTPStatus.BAD_REQUEST,
+            original_data,
+        )
+        test_case(
+            {"tid": None, "genesets": [{"geneset_name": "foo", "genes": []}]},
+            HTTPStatus.BAD_REQUEST,
+            original_data,
+        )
+        test_case(
+            {"tid": "not a number", "genesets": [{"geneset_name": "foo", "genes": []}]},
+            HTTPStatus.BAD_REQUEST,
+            original_data,
+        )
+
+        # duplicate gene_symbol
+        test_case(
+            {
+                "tid": "not a number",
+                "genesets": [{"geneset_name": "foo", "genes": [{"gene_symbol": "SIK1"}, {"gene_symbol": "SIK1"}]}],
+            },
+            HTTPStatus.BAD_REQUEST,
+            original_data,
+        )
+
+        # gene_symbol is not a string
+        test_case(
+            {
+                "tid": "not a number",
+                "genesets": [{"geneset_name": "foo", "genes": [{"gene_symbol": 99}]}],
+            },
+            HTTPStatus.BAD_REQUEST,
+            original_data,
+        )
+
+    """
+    TODO once we have some code to support it:
+    1. GET genesets_summary
+    2. genesets_summary obeys tid
+    """

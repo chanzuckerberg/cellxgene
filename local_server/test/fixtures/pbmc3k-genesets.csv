@@ -8,3 +8,5 @@ first geneset name,, SRM,
 second geneset,,RER1
 second geneset,,SIK1
 third geneset,,NO_SUCH_GENE
+fourth_geneset,fourth description,,gene intentionally missing
+fifth_dataset,,,

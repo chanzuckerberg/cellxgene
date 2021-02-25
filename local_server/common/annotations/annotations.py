@@ -110,22 +110,25 @@ class Annotations(metaclass=ABCMeta):
         from io import StringIO
         import csv
 
+        if type(genesets) == dict:
+            genesets = genesets.values()
+
         with StringIO() as sio:
-            writer = csv.writer(sio)
+            writer = csv.writer(sio, dialect='excel')
             writer.writerow(Annotations.Genesets_Header)
-            for geneset in genesets.values():
-                # genes may be empty, treat as special case
+            for geneset in genesets:
+                # genes may be empty, in which case we skip the geneset entirely
                 genes = geneset["genes"]
                 if not genes:
-                    writer.writerow([geneset["geneset_name"], geneset["geneset_description"], "", ""])
+                    writer.writerow([geneset["geneset_name"], geneset.get("geneset_description", ""), "", ""])
                 else:
                     writer.writerows(
                         [
                             [
                                 geneset["geneset_name"],
-                                geneset["geneset_description"],
+                                geneset.get("geneset_description", ""),
                                 gene["gene_symbol"],
-                                gene["gene_description"],
+                                gene.get("gene_description", ""),
                             ]
                             for gene in genes
                         ]

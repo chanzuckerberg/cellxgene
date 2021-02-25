@@ -172,7 +172,7 @@ class DatasetConfig(BaseConfig):
                 data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
             if self.user_annotations__local_file_csv__genesets_file:
                 try:
-                    data_adaptor.check_new_genesets(self.user_annotations.read_genesets(data_adaptor), context)
+                    data_adaptor.check_new_genesets(self.user_annotations.read_genesets(data_adaptor, context), context)
                 except (ValueError, AnnotationsError, KeyError) as e:
                     raise ConfigurationError(f"Unable to read genesets CSV file: {str(e)}") from e
 

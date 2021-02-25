@@ -18,6 +18,7 @@ from local_server.common.errors import (
     DatasetAccessError,
     ColorFormatException,
     AnnotationsError,
+    ObsoleteRequest,
 )
 
 import json
@@ -367,10 +368,15 @@ def genesets_put(request, data_adaptor):
 
     args = request.get_json()
     try:
-        genesets = args["genesets"]
+        genesets = args.get("genesets", None)
         tid = args.get("tid", None)
-        gs = data_adaptor.check_new_genesets(genesets)
+        if genesets is None:
+            abort(HTTPStatus.BAD_REQUEST)
+
+        (gs, _) = data_adaptor.check_new_genesets((genesets, tid))
         annotations.write_genesets(gs, tid, data_adaptor)
         return make_response(jsonify({"status": "OK"}), HTTPStatus.OK)
     except (ValueError, DisabledFeatureError, KeyError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
+    except (ObsoleteRequest, TypeError) as e:
+        return abort(HTTPStatus.NOT_FOUND, description=str(e))

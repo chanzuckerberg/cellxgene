@@ -11,7 +11,7 @@ from flask import session, has_request_context, current_app
 
 from local_server import __version__ as cellxgene_version
 from local_server.common.annotations.annotations import Annotations
-from local_server.common.errors import AnnotationsError
+from local_server.common.errors import AnnotationsError, ObsoleteRequest
 
 
 class AnnotationsLocalFile(Annotations):
@@ -105,7 +105,7 @@ class AnnotationsLocalFile(Annotations):
             self.last_fname = fname
             self.last_labels = df
 
-    def read_genesets(self, data_adaptor):
+    def read_genesets(self, data_adaptor, context=None):
         if has_request_context():
             if not current_app.auth.is_user_authenticated():
                 return ([], None)
@@ -117,23 +117,44 @@ class AnnotationsLocalFile(Annotations):
             tid = self.last_geneset_tid  # inside the critical section
             if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
                 with open(fname, newline="") as f:
-                    genesets = read_geneset_tidycsv(f)
+                    genesets = read_geneset_tidycsv(f, context)
 
         return (genesets, tid)
 
     def write_genesets(self, genesets, tid, data_adaptor):
         self.check_genesets_save_enabled()  # raises
 
-        # not yet implemented
+        if type(tid) != int or tid < 0:
+            raise ValueError("tid must be a positive integer")
 
-        pass
+        with self.genesets_lock:
+            # skip if the request is stale
+            if tid is not None:
+                if tid <= self.last_geneset_tid:
+                    raise ObsoleteRequest("TID is stale.")
+                self.last_geneset_tid = tid
+
+            lastmod = data_adaptor.get_last_mod_time()
+            lastmodstr = "'unknown'" if lastmod is None else lastmod.isoformat(timespec="seconds")
+            header = (
+                f"# Geneset generated on {datetime.now().isoformat(timespec='seconds')} "
+                f"using cellxgene version {cellxgene_version}\n"
+                f"# Input data file was {data_adaptor.get_location()}, "
+                f"which was last modified on {lastmodstr}\n"
+            )
+
+            fname = self._get_genesets_filename(data_adaptor)
+            self._backup(fname)
+            with open(fname, "w", newline="") as f:
+                f.write(header)
+                f.write(self.genesets_to_csv(genesets))
 
     def _get_userdata_idhash(self, data_adaptor):
         """
         Return a short hash that weakly identifies the user and dataset.
         Used to create safe annotations output file names.
         """
-        uid = current_app.auth.get_user_id() or ''
+        uid = current_app.auth.get_user_id() or ""
         id = (uid + data_adaptor.get_location()).encode()
         idhash = base64.b32encode(blake2b(id, digest_size=5).digest()).decode("utf-8")
         return idhash
@@ -242,7 +263,7 @@ class AnnotationsLocalFile(Annotations):
         parameters.update(params)
 
 
-def read_geneset_tidycsv(f):
+def read_geneset_tidycsv(f, context=None):
     """
     Read & parse the Tidy CSV format, applying validation checks for mandatory
     values, and de-duping rules.
@@ -281,6 +302,8 @@ def read_geneset_tidycsv(f):
             yield next(it, "")
         yield tuple(it)
 
+    messagefn = context["messagefn"] if context else (lambda x: None)
+
     reader = csv.reader(f, dialect=myDialect())
     genesets = {}
     haveReadHeader = False
@@ -301,8 +324,11 @@ def read_geneset_tidycsv(f):
             continue
 
         geneset_name, geneset_description, gene_symbol, gene_description, _ = just(5, row)
-        if not (geneset_name and gene_symbol):
+        if not geneset_name:
             raise AnnotationsError(f"Geneset CSV missing required geneset or gene name on line {lineno}")
+        if (not gene_symbol) and gene_description:
+            messagefn(f"Warning: Missing gene name in geneset name {geneset_name} on line {lineno}.")
+
         if geneset_name in genesets:
             gs = genesets[geneset_name]
         else:
@@ -314,12 +340,13 @@ def read_geneset_tidycsv(f):
         # Use first geneset_description with a value
         if not gs["geneset_description"] and geneset_description:
             gs["geneset_description"] = geneset_description
-        # add the gene
-        gs["genes"].append(
-            {
-                "gene_symbol": gene_symbol,
-                "gene_description": gene_description,
-            }
-        )
+        # add the gene if the gene_symbol is defined
+        if gene_symbol:
+            gs["genes"].append(
+                {
+                    "gene_symbol": gene_symbol,
+                    "gene_description": gene_description,
+                }
+            )
 
     return genesets

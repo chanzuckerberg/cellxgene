@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from os.path import basename, splitext
+import re
 
 import numpy as np
 import pandas as pd
@@ -282,13 +283,13 @@ class DataAdaptor(metaclass=ABCMeta):
            will generate a warning and the symbol removed.
         3. Duplicate gene symbols are silently de-duped.
         """
-        import re
-
         (genesets, tid) = args
         messagefn = context["messagefn"] if context else (lambda x: None)
 
         # accept genesets args as either the internal (dict) or REST (list) format,
         # as they are identical except for the dict being keyed by geneset_name.
+        if type(genesets) not in (dict, list):
+            raise ValueError("Genesets must be either dict or list.")
         genesets = genesets if type(genesets) == list else genesets.values()
 
         # 0. check for uniqueness of geneset names
@@ -299,8 +300,8 @@ class DataAdaptor(metaclass=ABCMeta):
         # 1. check gene set character set and format
         legal_name = re.compile(r"^(\w|[ .()-])+$")
         for name in geneset_names:
-            if len(name) == 0:
-                raise KeyError("Geneset names must not be zero length string.")
+            if type(name) != str or len(name) == 0:
+                raise KeyError("Geneset names must be non-null string.")
             if name[0] in " \t\n\r" or name[-1] in " \t\n\r" or not legal_name.match(name) or "  " in name:
                 messagefn(
                     f"Error: "
@@ -316,12 +317,18 @@ class DataAdaptor(metaclass=ABCMeta):
         # generate a warning and be removed.
         var_names = set(self.query_var_array(self.parameters.get("var_names")))
         for geneset in genesets:
+            if type(geneset) != dict:
+                raise ValueError("Each geneset must be a dict.")
             geneset_name = geneset["geneset_name"]
             genes = geneset["genes"]
+            if type(genes) != list:
+                raise ValueError("Geneset genes field must be a list")
             gene_symbol_already_seen = set()
             new_genes = []
             for gene in genes:
                 gene_symbol = gene["gene_symbol"]
+                if type(gene_symbol) != str or len(gene_symbol) == 0:
+                    raise ValueError("Gene symbol must be non-null string.")
                 if gene_symbol in gene_symbol_already_seen:
                     # duplicate check
                     messagefn(
