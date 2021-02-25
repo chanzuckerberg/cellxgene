@@ -267,6 +267,10 @@ class DataAdaptor(metaclass=ABCMeta):
         May also modify the gene set for conditions that should be resolved,
         but which do not warrant a hard error.
 
+        Argument 'args' must be a tuple containing (genesets, tid).  Genesets
+        may be either the REST OTA format (list of dicts) or the internal format
+        (dict of dicts, keyed by the geneset name).
+
         Rules:
         0. all geneset names must be unique.
         1. All geneset names must be legal, meaning:
@@ -283,8 +287,12 @@ class DataAdaptor(metaclass=ABCMeta):
         (genesets, tid) = args
         messagefn = context["messagefn"] if context else (lambda x: None)
 
+        # accept genesets args as either the internal (dict) or REST (list) format,
+        # as they are identical except for the dict being keyed by geneset_name.
+        genesets = genesets if type(genesets) == list else genesets.values()
+
         # 0. check for uniqueness of geneset names
-        geneset_names = [gs["geneset_name"] for gs in genesets.values()]
+        geneset_names = [gs["geneset_name"] for gs in genesets]
         if len(set(geneset_names)) != len(geneset_names):
             raise KeyError("All geneset names must be unique.")
 
@@ -307,7 +315,7 @@ class DataAdaptor(metaclass=ABCMeta):
         # 2. & 3. check for duplicate gene symbols, and those not present in the dataset. They will
         # generate a warning and be removed.
         var_names = set(self.query_var_array(self.parameters.get("var_names")))
-        for geneset in genesets.values():
+        for geneset in genesets:
             geneset_name = geneset["geneset_name"]
             genes = geneset["genes"]
             gene_symbol_already_seen = set()
@@ -334,7 +342,7 @@ class DataAdaptor(metaclass=ABCMeta):
 
             geneset["genes"] = new_genes
 
-        return (genesets, tid)
+        return args
 
     def data_frame_to_fbs_matrix(self, filter, axis):
         """

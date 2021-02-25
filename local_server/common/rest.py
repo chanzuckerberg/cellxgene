@@ -359,11 +359,7 @@ def genesets_put(request, data_adaptor):
     if not annotations.genesets_save_enabled():
         return abort(HTTPStatus.NOT_IMPLEMENTED)
 
-    if data_adaptor.dataset_config.user_annotations__genesets__readonly:
-        return abort(HTTPStatus.NOT_IMPLEMENTED)
-
     anno_collection = request.args.get("annotation-collection-name", default=None)
-
     if anno_collection is not None:
         if not annotations.is_safe_collection_name(anno_collection):
             return abort(HTTPStatus.BAD_REQUEST, "Bad annotation collection name")

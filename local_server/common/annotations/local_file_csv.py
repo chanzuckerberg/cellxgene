@@ -260,12 +260,13 @@ def read_geneset_tidycsv(f):
             <string, a gene set name>: {
                 "geneset_name": <string, a gene set name>,
                 "geneset_description": <a string or None>,
-                "genes": {
-                    <string, a gene symbol or name>: {
+                "genes": [
+                    {
                         "gene_symbol": <string, a gene symbol or name>,
                         "gene_description": <a string or None>
-                    }
-                }
+                    },
+                    ...
+                ]
             },
             ...
         }

@@ -104,7 +104,7 @@ class Annotations(metaclass=ABCMeta):
     @staticmethod
     def genesets_to_csv(genesets):
         """
-        Convert the genesets format (returned by read_geneset) into
+        Convert the internal genesets format (returned by read_geneset) into
         the simple Tidy CSV.
         """
         from io import StringIO
@@ -135,10 +135,7 @@ class Annotations(metaclass=ABCMeta):
     @staticmethod
     def genesets_to_response(genesets):
         """
-        Convert the genesets format (returned by read_geneset) into
-        the dict expected by the JSON REST response object
+        Convert the internal genesets format (returned by read_geneset) into
+        the dict expected by the JSON REST API
         """
-        return [
-            {"geneset_name": gs["geneset_name"], "geneset_description": gs["geneset_description"], "genes": gs["genes"]}
-            for gs in genesets.values()
-        ]
+        return list(genesets.values())
