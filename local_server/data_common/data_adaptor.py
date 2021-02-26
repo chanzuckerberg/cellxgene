@@ -277,7 +277,7 @@ class DataAdaptor(metaclass=ABCMeta):
         1. All geneset names must be legal, meaning:
             * no leading or trailing white space
             * no multi-space runs
-            * character set matches: /^(\w|[ .()-])+$/
+            * character set matches: [A-Z][a-z][0-9][ .()-]
            Generates hard error.
         2. Gene symbols must be part of the current var_index.  If symbol not in var_index,
            will generate a warning and the symbol removed.
@@ -304,8 +304,8 @@ class DataAdaptor(metaclass=ABCMeta):
                 raise KeyError("Geneset names must be non-null string.")
             if name[0] in " \t\n\r" or name[-1] in " \t\n\r" or not legal_name.match(name) or "  " in name:
                 messagefn(
-                    f"Error: "
-                    "Geneset name {name} is not valid. Only alphanumeric and limited special characters (-_.) "
+                    "Error: "
+                    f"Geneset name {name} is not valid. Only alphanumeric and limited special characters (-_.) "
                     "and space are allowed. Leading, trailing, and multiple spaces within a name are not allowed."
                 )
                 raise KeyError(
