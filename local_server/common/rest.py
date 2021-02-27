@@ -17,6 +17,8 @@ from local_server.common.errors import (
     ExceedsLimitError,
     DatasetAccessError,
     ColorFormatException,
+    AnnotationsError,
+    ObsoleteRequest,
 )
 
 import json
@@ -44,7 +46,7 @@ def _query_parameter_to_filter(args):
 
     Query param filters look like:  <axis>:name=value, where value
     may be one of:
-        - a range, min,max, where either may be an open range by using an asterisc, eg, 10,*
+        - a range, min,max, where either may be an open range by using an asterisk, eg, 10,*
         - a value
     Eg,
         ...?tissue=lung&obs:tissue=heart&obs:num_reads=1000,*
@@ -106,7 +108,7 @@ def schema_get_helper(data_adaptor):
 
     # add label obs annotations as needed
     annotations = data_adaptor.dataset_config.user_annotations
-    if annotations is not None:
+    if annotations.user_annotations_enabled():
         label_schema = annotations.get_schema(data_adaptor)
         schema["annotations"]["obs"]["columns"].extend(label_schema)
 
@@ -140,7 +142,7 @@ def annotations_obs_get(request, data_adaptor):
     try:
         labels = None
         annotations = data_adaptor.dataset_config.user_annotations
-        if annotations:
+        if annotations.user_annotations_enabled():
             labels = annotations.read_labels(data_adaptor)
         fbs = data_adaptor.annotation_to_fbs_matrix(Axis.OBS, fields, labels)
         return make_response(fbs, HTTPStatus.OK, {"Content-Type": "application/octet-stream"})
@@ -151,7 +153,7 @@ def annotations_obs_get(request, data_adaptor):
 def annotations_put_fbs_helper(data_adaptor, fbs):
     """helper function to write annotations from fbs"""
     annotations = data_adaptor.dataset_config.user_annotations
-    if annotations is None:
+    if not annotations.user_annotations_enabled():
         raise DisabledFeatureError("Writable annotations are not enabled")
 
     new_label_df = decode_matrix_fbs(fbs)
@@ -166,7 +168,7 @@ def inflate(data):
 
 def annotations_obs_put(request, data_adaptor):
     annotations = data_adaptor.dataset_config.user_annotations
-    if annotations is None:
+    if not annotations.user_annotations_enabled():
         return abort(HTTPStatus.NOT_IMPLEMENTED)
 
     anno_collection = request.args.get("annotation-collection-name", default=None)
@@ -196,9 +198,6 @@ def annotations_var_get(request, data_adaptor):
 
     try:
         labels = None
-        annotations = data_adaptor.dataset_config.user_annotations
-        if annotations is not None:
-            labels = annotations.read_labels(data_adaptor)
         return make_response(
             data_adaptor.annotation_to_fbs_matrix(Axis.VAR, fields, labels),
             HTTPStatus.OK,
@@ -328,3 +327,56 @@ def layout_obs_put(request, data_adaptor):
         return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
     except (ValueError, DisabledFeatureError, FilterError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
+
+
+def genesets_get(request, data_adaptor):
+    preferred_mimetype = request.accept_mimetypes.best_match(["application/json", "text/csv"])
+    if preferred_mimetype not in ("application/json", "text/csv"):
+        return abort(HTTPStatus.NOT_ACCEPTABLE)
+
+    try:
+        annotations = data_adaptor.dataset_config.user_annotations
+        (genesets, tid) = data_adaptor.check_new_genesets(annotations.read_genesets(data_adaptor))
+
+        if preferred_mimetype == "text/csv":
+            return make_response(
+                annotations.genesets_to_csv(genesets),
+                HTTPStatus.OK,
+                {
+                    "Content-Type": "text/csv",
+                    "Content-Disposition": "attachment; filename=genesets.csv",
+                },
+            )
+        else:
+            return make_response(
+                jsonify({"genesets": annotations.genesets_to_response(genesets), "tid": tid}), HTTPStatus.OK
+            )
+    except (ValueError, KeyError, AnnotationsError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
+
+
+def genesets_put(request, data_adaptor):
+    annotations = data_adaptor.dataset_config.user_annotations
+    if not annotations.genesets_save_enabled():
+        return abort(HTTPStatus.NOT_IMPLEMENTED)
+
+    anno_collection = request.args.get("annotation-collection-name", default=None)
+    if anno_collection is not None:
+        if not annotations.is_safe_collection_name(anno_collection):
+            return abort(HTTPStatus.BAD_REQUEST, "Bad annotation collection name")
+        annotations.set_collection(anno_collection)
+
+    args = request.get_json()
+    try:
+        genesets = args.get("genesets", None)
+        tid = args.get("tid", None)
+        if genesets is None:
+            abort(HTTPStatus.BAD_REQUEST)
+
+        (gs, _) = data_adaptor.check_new_genesets((genesets, tid))
+        annotations.write_genesets(gs, tid, data_adaptor)
+        return make_response(jsonify({"status": "OK"}), HTTPStatus.OK)
+    except (ValueError, DisabledFeatureError, KeyError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
+    except (ObsoleteRequest, TypeError) as e:
+        return abort(HTTPStatus.NOT_FOUND, description=str(e))

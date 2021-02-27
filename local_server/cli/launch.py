@@ -32,16 +32,17 @@ def annotation_args(func):
         multiple=False,
         metavar="<path>",
         help="CSV file to initialize editing of existing annotations; will be altered in-place. "
-        "Incompatible with --annotations-dir.",
+        "Incompatible with --user-generated-data-dir.",
     )
     @click.option(
+        "--user-generated-data-dir",
         "--annotations-dir",
         default=DEFAULT_CONFIG.dataset_config.user_annotations__local_file_csv__directory,
         show_default=False,
         multiple=False,
         metavar="<directory path>",
         help="Directory of where to save output annotations; filename will be specified in the application. "
-        "Incompatible with --annotations-file.",
+        "Incompatible with --annotations-file and --genesets-file.",
     )
     @click.option(
         "--experimental-annotations-ontology",
@@ -56,6 +57,23 @@ def annotation_args(func):
         show_default=True,
         metavar="<path or url>",
         help="Location of OBO file defining cell annotation autosuggest terms.",
+    )
+    @click.option(
+        "--disable-genesets-save",
+        is_flag=True,
+        default=DEFAULT_CONFIG.dataset_config.user_annotations__genesets__readonly,
+        show_default=False,
+        help="Disable saving gene sets. If disabled, users will be able to make changes to gene sets but all "
+        "changes will be lost on browser refresh.",
+    )
+    @click.option(
+        "--genesets-file",
+        default=DEFAULT_CONFIG.dataset_config.user_annotations__local_file_csv__genesets_file,
+        show_default=True,
+        multiple=False,
+        metavar="<path>",
+        help="CSV file to initialize editing of gene sets; will be altered in-place. Incompatible with "
+        "--user-generated-data-dir.",
     )
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -315,7 +333,9 @@ def launch(
     about,
     disable_annotations,
     annotations_file,
-    annotations_dir,
+    user_generated_data_dir,
+    genesets_file,
+    disable_genesets_save,
     backed,
     disable_diffexp,
     experimental_annotations_ontology,
@@ -373,7 +393,9 @@ def launch(
             app__scripts=scripts,
             user_annotations__enable=not disable_annotations,
             user_annotations__local_file_csv__file=annotations_file,
-            user_annotations__local_file_csv__directory=annotations_dir,
+            user_annotations__local_file_csv__directory=user_generated_data_dir,
+            user_annotations__local_file_csv__genesets_file=genesets_file,
+            user_annotations__genesets__readonly=disable_genesets_save,
             user_annotations__ontology__enable=experimental_annotations_ontology,
             user_annotations__ontology__obo_location=experimental_annotations_ontology_obo,
             presentation__max_categories=max_category_items,

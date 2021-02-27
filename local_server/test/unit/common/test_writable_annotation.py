@@ -45,8 +45,8 @@ class WritableAnnotationTest(unittest.TestCase):
         )
         res = self.annotation_put_fbs(fbs)
         self.assertEqual(res, json.dumps({"status": "OK"}))
-        self.assertTrue(path.exists(self.annotations.output_file))
-        df = pd.read_csv(self.annotations.output_file, index_col=0, header=0, comment="#")
+        self.assertTrue(path.exists(self.annotations.label_output_file))
+        df = pd.read_csv(self.annotations.label_output_file, index_col=0, header=0, comment="#")
         self.assertEqual(df.shape, (n_rows, 2))
         self.assertEqual(set(df.columns), {"cat_A", "cat_B"})
         self.assertTrue(self.data.original_obs_index.equals(df.index))
@@ -62,14 +62,14 @@ class WritableAnnotationTest(unittest.TestCase):
         )
         res = self.annotation_put_fbs(fbs)
         self.assertEqual(res, json.dumps({"status": "OK"}))
-        self.assertTrue(path.exists(self.annotations.output_file))
-        df = pd.read_csv(self.annotations.output_file, index_col=0, header=0, comment="#")
+        self.assertTrue(path.exists(self.annotations.label_output_file))
+        df = pd.read_csv(self.annotations.label_output_file, index_col=0, header=0, comment="#")
         self.assertEqual(set(df.columns), {"cat_A", "cat_C"})
         self.assertTrue(np.all(df["cat_A"] == ["label_A1"] * n_rows))
         self.assertTrue(np.all(df["cat_C"] == ["label_C"] * n_rows))
 
         # rotation
-        name, ext = path.splitext(self.annotations.output_file)
+        name, ext = path.splitext(self.annotations.label_output_file)
         backup_dir = f"{name}-backups"
         self.assertTrue(path.isdir(backup_dir))
         found_files = listdir(backup_dir)
@@ -88,7 +88,7 @@ class WritableAnnotationTest(unittest.TestCase):
             res = self.annotation_put_fbs(fbs)
             self.assertEqual(res, json.dumps({"status": "OK"}))
 
-        name, ext = path.splitext(self.annotations.output_file)
+        name, ext = path.splitext(self.annotations.label_output_file)
         backup_dir = f"{name}-backups"
         self.assertTrue(path.isdir(backup_dir))
         found_files = listdir(backup_dir)

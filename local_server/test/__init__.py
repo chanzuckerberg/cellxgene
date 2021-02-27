@@ -46,7 +46,11 @@ def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
 
     config.complete_config()
     data = MatrixDataLoader(data_locator.abspath()).open(config)
-    annotations = AnnotationsLocalFile(None, annotations_file)
+    anno_config = {
+        "user-annotations": True,
+        "genesets-save": False,
+    }
+    annotations = AnnotationsLocalFile(anno_config, None, annotations_file, None)
     return data, tmp_dir, annotations
 
 
