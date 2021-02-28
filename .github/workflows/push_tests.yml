@@ -36,7 +36,7 @@ jobs:
           npm install
       - name: Format with black and lint with flake8
         run: |
-          make lint-server
+          make lint-servers
       - name: Lint src with eslint
         working-directory: ./client
         run: |
@@ -70,6 +70,36 @@ jobs:
         run: |
           make unit-test
           bash <(curl -s https://codecov.io/bash) -y .codecov.yml -k server -cF backend,python,unitTest
+          cd client && ./node_modules/codecov/bin/codecov --yml=../.codecov.yml --root=../ --gcov-root=../ -C -F frontend,javascript,unitTest
+
+  unit-test-local:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Python cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Node cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Install dependencies
+        run: make pydist-local install-dist dev-env-local-server
+      - name: Unit tests
+        run: |
+          make unit-test-local
+          bash <(curl -s https://codecov.io/bash) -y .codecov.yml -k local_server -cF backend,python,unitTest
           cd client && ./node_modules/codecov/bin/codecov --yml=../.codecov.yml --root=../ --gcov-root=../ -C -F frontend,javascript,unitTest
 
   smoke-tests:
@@ -126,7 +156,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Install dependencies
-        run: make pydist install-dist
+        run: make pydist-local install-dist
       - name: Smoke tests (with annotations feature)
         run: |
           cd client && make smoke-test-annotations

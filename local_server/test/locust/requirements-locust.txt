@@ -1,0 +1,2 @@
+locust
+-r ../../requirements.txt

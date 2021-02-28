@@ -45,6 +45,7 @@ class AuthTest(unittest.TestCase):
         app_config = AppConfig()
         app_config.update_server_config(app__flask_secret_key="secret")
         app_config.update_server_config(authentication__type="test")
+        app_config.update_server_config(authentication__insecure_test_environment=True)
         app_config.update_server_config(
             multi_dataset__dataroot=dict(
                 a1=dict(dataroot=self.dataset_dataroot, base_url="auth"),
@@ -116,6 +117,7 @@ class AuthTest(unittest.TestCase):
         app_config.update_server_config(
             authentication__type="test", single_dataset__datapath=f"{self.dataset_dataroot}/pbmc3k.cxg"
         )
+        app_config.update_server_config(authentication__insecure_test_environment=True)
 
         app_config.complete_config()
 
