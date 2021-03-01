@@ -108,7 +108,7 @@ class AnnotationsLocalFile(Annotations):
     def read_genesets(self, data_adaptor, context=None):
         if has_request_context():
             if not current_app.auth.is_user_authenticated():
-                return ([], None)
+                return ({}, None)
 
         fname = self._get_genesets_filename(data_adaptor)
         genesets = {}
