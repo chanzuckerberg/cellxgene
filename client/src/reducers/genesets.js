@@ -1,5 +1,3 @@
-import { create } from "lodash";
-
 /**
  * Gene set state. Geneset UI state is in a different reducer.
  *
