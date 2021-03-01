@@ -1,5 +1,7 @@
 server:
   app:
+    debug: true
+    verbose: true
     force_https: true
     port: 5005
 
@@ -22,9 +24,12 @@ dataset:
     local_file_csv:
       directory: null
       file: null
+      genesets_file: null
     ontology:
       enable: false
       obo_location: null
+    genesets:
+      readonly: false
 
   embeddings:
     names: []
