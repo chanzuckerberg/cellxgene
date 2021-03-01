@@ -165,7 +165,7 @@ class AnnotationsLocalFile(Annotations):
 
         output_file = self.label_output_file or self.genesets_output_file
         if output_file:
-            return os.path.dirname(self.path.abspath(output_file))
+            return os.path.dirname(os.path.abspath(output_file))
 
         return os.getcwd()
 
