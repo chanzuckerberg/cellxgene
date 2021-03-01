@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - main
+      - dunitz/dependencies
 
 env:
   JEST_ENV: prod
