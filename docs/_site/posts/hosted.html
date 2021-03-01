@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Begin Jekyll SEO tag v2.6.1 -->
+<!-- Begin Jekyll SEO tag v2.7.1 -->
 <title>Hosting cellxgene on the web | cellxgene</title>
 <meta name="generator" content="Jekyll v3.9.0" />
 <meta property="og:title" content="Hosting cellxgene on the web" />
@@ -15,11 +15,13 @@
 <link rel="canonical" href="https://chanzuckerberg.github.io/cellxgene/posts/hosted.html" />
 <meta property="og:url" content="https://chanzuckerberg.github.io/cellxgene/posts/hosted.html" />
 <meta property="og:site_name" content="cellxgene" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Hosting cellxgene on the web" />
 <script type="application/ld+json">
-{"url":"https://chanzuckerberg.github.io/cellxgene/posts/hosted.html","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://chanzuckerberg.github.io/cellxgene/cellxgene-logo.png"}},"headline":"Hosting cellxgene on the web","description":"An interactive explorer for single-cell transcriptomics data","@type":"WebPage","@context":"https://schema.org"}</script>
+{"description":"An interactive explorer for single-cell transcriptomics data","headline":"Hosting cellxgene on the web","url":"https://chanzuckerberg.github.io/cellxgene/posts/hosted.html","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://chanzuckerberg.github.io/cellxgene/cellxgene-logo.png"}},"@type":"WebPage","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
-    <link rel="stylesheet" href="/cellxgene/assets/css/style.css?v=3718e894edc8a8f6e7776946695ab37c5c96ec9f">
+    <link rel="stylesheet" href="/cellxgene/assets/css/style.css?v=9f22172ca70214666e1598e4ecf22e47687f91d3">
     <!--[if lt IE 9]>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
     <![endif]-->
@@ -86,6 +88,10 @@
         
         
         
+        <a href="/cellxgene/posts/extensions" class="btn">Extensions</a><br>
+        
+        
+        
         <a href="/cellxgene/posts/contact" class="btn">Contact & finding help</a><br>
         
         
@@ -147,17 +153,17 @@
 
 <p>You may have to tweak the <code class="language-plaintext highlighter-rouge">Dockerfile</code> like so:</p>
 
-<pre><code class="language-Dockerfile">FROM ubuntu:bionic
+<div class="language-Dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">FROM</span><span class="s"> ubuntu:bionic</span>
 
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
+<span class="k">ENV</span><span class="s"> LC_ALL=C.UTF-8</span>
+<span class="k">ENV</span><span class="s"> LANG=C.UTF-8</span>
 
-RUN apt-get update &amp;&amp; \
-    apt-get install -y build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests &amp;&amp; \
-    pip3 install cellxgene
+<span class="k">RUN </span>apt-get update <span class="o">&amp;&amp;</span> <span class="se">\
+</span>    apt-get <span class="nb">install</span> <span class="nt">-y</span> build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests <span class="o">&amp;&amp;</span> <span class="se">\
+</span>    pip3 <span class="nb">install </span>cellxgene
 
-# ENTRYPOINT ["cellxgene"]  # Heroku doesn't work well with ENTRYPOINT
-</code></pre>
+<span class="c"># ENTRYPOINT ["cellxgene"]  # Heroku doesn't work well with ENTRYPOINT</span>
+</code></pre></div></div>
 
 <p>and provide a <code class="language-plaintext highlighter-rouge">heroku.yml</code> file similar to this:</p>
 
