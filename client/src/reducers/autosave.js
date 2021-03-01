@@ -1,17 +1,26 @@
 const Autosave = (
   state = {
-    saveInProgress: false,
-    error: false,
+    // cell labels
+    obsAnnotationSaveInProgress: false,
     lastSavedAnnoMatrix: null,
+
+    // gene sets
+    genesetSaveInProgress: false,
+    lastSavedGenesets: null,
+
+    // error state
+    error: false,
   },
-  action
+  action,
+  nextSharedState
 ) => {
+  console.log("autosave", action);
   switch (action.type) {
     case "annoMatrix: init complete": {
       return {
         ...state,
         error: false,
-        saveInProgress: false,
+        obsAnnotationSaveInProgress: false,
         lastSavedAnnoMatrix: action.annoMatrix,
       };
     }
@@ -19,7 +28,7 @@ const Autosave = (
     case "writable obs annotations - save started": {
       return {
         ...state,
-        saveInProgress: true,
+        obsAnnotationSaveInProgress: true,
       };
     }
 
@@ -27,7 +36,7 @@ const Autosave = (
       return {
         ...state,
         error: action.message,
-        saveInProgress: false,
+        obsAnnotationSaveInProgress: false,
       };
     }
 
@@ -35,9 +44,42 @@ const Autosave = (
       const { lastSavedAnnoMatrix } = action;
       return {
         ...state,
-        saveInProgress: false,
+        obsAnnotationSaveInProgress: false,
         error: false,
         lastSavedAnnoMatrix,
+      };
+    }
+
+    case "geneset: initial load": {
+      return {
+        ...state,
+        genesetSaveInProgress: false,
+        lastSavedGenesets: nextSharedState.genesets,
+      };
+    }
+
+    case "autosave: genesets started": {
+      return {
+        ...state,
+        genesetSaveInProgress: true,
+      };
+    }
+
+    case "autosave: genesets error": {
+      return {
+        ...state,
+        genesetSaveInProgress: false,
+        error: action.message,
+      };
+    }
+
+    case "autosave: genesets complete": {
+      const { lastSavedGenesets } = action;
+      return {
+        ...state,
+        genesetSaveInProgess: false,
+        error: false,
+        lastSavedGenesets,
       };
     }
 
