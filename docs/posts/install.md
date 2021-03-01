@@ -13,7 +13,7 @@ Cellxgene has two parts:
 
 ## Requirements
 
-You'll need **python 3.6+** and an up-to-date version of **Google Chrome**.
+You'll need **python 3.6+** (Note: At this moment, **python 3.9** is not supported by cellxgene) and an up-to-date version of **Google Chrome**.
 The web UI is tested on OSX and Windows using Chrome, and the python CLI is tested on OSX and Ubuntu (via WSL/Windows).
 It should work on other platforms, but if you run into trouble let us know.
 

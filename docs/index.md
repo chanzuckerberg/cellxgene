@@ -7,7 +7,7 @@ layout: default
 
 Whether you need to visualize one thousand cells or one million, cellxgene helps you gain insight into your single-cell data.
 
-To install cellxgene you need Python 3.6+. We recommend [installing cellxgene into a conda or virtual environment.](posts/install)
+To install cellxgene you need Python 3.6+ (Note: At this moment Python 3.9 is not supported). We recommend [installing cellxgene into a conda or virtual environment.](posts/install)
 
 Install the package.
 ``` bash
