@@ -41,8 +41,13 @@ const GeneSets = (
     case "geneset: initial load": {
       const { data } = action;
 
-      if (typeof data?.tid !== "number" || !data?.genesets)
+      if (
+        !data ||
+        typeof data.tid !== "number" ||
+        !Array.isArray(data.genesets)
+      )
         throw new Error("missing or malformed JSON response");
+
       const lastTid = data.tid;
       const genesetsData = data.genesets;
       const genesets = new Map();

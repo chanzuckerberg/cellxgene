@@ -53,17 +53,22 @@ async function userInfoFetch(dispatch) {
 }
 
 async function genesetsFetch(dispatch, config) {
+  /* request genesets ONLY if the backend supports the feature */
+  const defaultResponse = {
+    genesets: [],
+    tid: 0,
+  };
   if (config?.parameters?.["annotations_genesets"] ?? false) {
     fetchJson("genesets").then((response) => {
       dispatch({
         type: "geneset: initial load",
-        data: response ?? {},
+        data: response ?? defaultResponse,
       });
     });
   } else {
     dispatch({
       type: "geneset: initial load",
-      data: {},
+      data: defaultResponse,
     });
   }
 }

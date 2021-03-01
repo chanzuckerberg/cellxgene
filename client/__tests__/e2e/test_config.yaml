@@ -1,7 +1,5 @@
 server:
   app:
-    debug: true
-    verbose: true
     force_https: true
     port: 5005
 
