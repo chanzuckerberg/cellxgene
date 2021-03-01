@@ -52,6 +52,22 @@ async function userInfoFetch(dispatch) {
   });
 }
 
+async function genesetsFetch(dispatch, config) {
+  if (config?.parameters?.["annotations_genesets"] ?? false) {
+    fetchJson("genesets").then((response) => {
+      dispatch({
+        type: "geneset: initial load",
+        data: response ?? {},
+      });
+    });
+  } else {
+    dispatch({
+      type: "geneset: initial load",
+      data: {},
+    });
+  }
+}
+
 function prefetchEmbeddings(annoMatrix) {
   /*
   prefetch requests for all embeddings
@@ -75,6 +91,8 @@ const doInitialDataLoad = () =>
         userColorsFetchAndLoad(dispatch),
         userInfoFetch(dispatch),
       ]);
+
+      genesetsFetch(dispatch, config);
 
       const baseDataUrl = `${globals.API.prefix}${globals.API.version}`;
       const annoMatrix = new AnnoMatrixLoader(baseDataUrl, schema.schema);
