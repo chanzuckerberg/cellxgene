@@ -7,7 +7,7 @@ from http import HTTPStatus
 import anndata
 import requests
 
-from server.common.corpora import (
+from shared_utils.corpora import (
     corpora_get_versions_from_anndata,
     corpora_is_version_supported,
     corpora_get_props_from_anndata,
