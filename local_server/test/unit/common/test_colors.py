@@ -1,7 +1,7 @@
 import unittest
 
 import anndata
-from local_server.common.colors import convert_color_to_hex_format, convert_anndata_category_colors_to_cxg_category_colors
+from shared_utils.colors import convert_color_to_hex_format, convert_anndata_category_colors_to_cxg_category_colors
 from local_server.common.errors import ColorFormatException
 from local_server.test import PROJECT_ROOT
 from local_server.test.fixtures.fixtures import pbmc3k_colors

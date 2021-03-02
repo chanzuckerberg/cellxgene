@@ -9,7 +9,7 @@ import tiledb
 from server_timing import Timing as ServerTiming
 
 import server.compute.diffexp_cxg as diffexp_cxg
-from server.common.constants import Axis
+from shared_utils.shared_constants import Axis
 from server.common.errors import DatasetAccessError, ConfigurationError
 from server.common.immutable_kvcache import ImmutableKVCache
 from shared_utils.utils.type_conversion_utils import get_schema_type_hint_from_dtype

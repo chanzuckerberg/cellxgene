@@ -8,7 +8,7 @@ from flask import make_response, jsonify, current_app, abort
 from werkzeug.urls import url_unquote
 
 from server.common.config.client_config import get_client_config, get_client_userinfo
-from server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
+from shared_utils.shared_constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
 from server.common.errors import (
     FilterError,
     JSONEncodingValueError,
