@@ -52,6 +52,27 @@ async function userInfoFetch(dispatch) {
   });
 }
 
+async function genesetsFetch(dispatch, config) {
+  /* request genesets ONLY if the backend supports the feature */
+  const defaultResponse = {
+    genesets: [],
+    tid: 0,
+  };
+  if (config?.parameters?.["annotations_genesets"] ?? false) {
+    fetchJson("genesets").then((response) => {
+      dispatch({
+        type: "geneset: initial load",
+        data: response ?? defaultResponse,
+      });
+    });
+  } else {
+    dispatch({
+      type: "geneset: initial load",
+      data: defaultResponse,
+    });
+  }
+}
+
 function prefetchEmbeddings(annoMatrix) {
   /*
   prefetch requests for all embeddings
@@ -75,6 +96,8 @@ const doInitialDataLoad = () =>
         userColorsFetchAndLoad(dispatch),
         userInfoFetch(dispatch),
       ]);
+
+      genesetsFetch(dispatch, config);
 
       const baseDataUrl = `${globals.API.prefix}${globals.API.version}`;
       const annoMatrix = new AnnoMatrixLoader(baseDataUrl, schema.schema);
@@ -242,6 +265,7 @@ export default {
   annotationRenameLabelInCategory: annoActions.annotationRenameLabelInCategory,
   annotationLabelCurrentSelection: annoActions.annotationLabelCurrentSelection,
   saveObsAnnotationsAction: annoActions.saveObsAnnotationsAction,
+  saveGenesetsAction: annoActions.saveGenesetsAction,
   needToSaveObsAnnotations: annoActions.needToSaveObsAnnotations,
   layoutChoiceAction: embActions.layoutChoiceAction,
   setCellSetFromSelection: selnActions.setCellSetFromSelection,

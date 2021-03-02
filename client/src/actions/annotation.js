@@ -387,3 +387,96 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
     });
   }
 };
+
+export const saveGenesetsAction = () => async (dispatch, getState) => {
+  const state = getState();
+
+  // bail if gene sets not available, or in readonly mode.
+  const { config } = state;
+  const genesetsAreAvailable =
+    config?.parameters?.["annotations_genesets"] ?? false;
+  const genesetsReadonly =
+    config?.parameters?.["annotations_genesets_readonly"] ?? true;
+  if (!genesetsAreAvailable || genesetsReadonly) {
+    // our non-save was completed!
+    return dispatch({
+      type: "autosave: genesets complete",
+      lastSavedGenesets: state.genesets,
+    });
+  }
+
+  const { lastTid, genesets: lastGenesets } = state.genesets;
+
+  /* Create the JSON OTA data structure */
+  const tid = (lastTid ?? 0) + 1;
+  const genesets = [];
+  for (const [name, gs] of lastGenesets) {
+    // const genes = Array.from(gs.genes.values());
+    const genes = [];
+    for (const g of gs.genes.values()) {
+      genes.push({
+        gene_symbol: g.geneSymbol,
+        gene_description: g.geneDescription,
+      });
+    }
+    genesets.push({
+      geneset_name: name,
+      geneset_description: gs.genesetDescription,
+      genes,
+    });
+  }
+  const ota = {
+    tid,
+    genesets,
+  };
+
+  /* Save to server */
+  try {
+    const {
+      dataCollectionNameIsReadOnly,
+      dataCollectionName,
+    } = state.annotations;
+    const queryString =
+      !dataCollectionNameIsReadOnly && !!dataCollectionName
+        ? `?annotation-collection-name=${encodeURIComponent(
+            dataCollectionName
+          )}`
+        : "";
+
+    const res = await fetch(
+      `${globals.API.prefix}${globals.API.version}genesets${queryString}`,
+      {
+        method: "PUT",
+        headers: new Headers({
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify(ota),
+        credentials: "include",
+      }
+    );
+    if (!res.ok) {
+      return dispatch({
+        type: "autosave: genesets error",
+        message: `HTTP error ${res.status} - ${res.statusText}`,
+        res,
+      });
+    }
+    return Promise.all([
+      dispatch({
+        type: "autosave: genesets complete",
+        lastSavedGenesets: genesets,
+      }),
+      dispatch({
+        type: "geneset: set tid",
+        tid,
+      }),
+    ]);
+  } catch (error) {
+    return dispatch({
+      type: "autosave: genesets error",
+      message: error.toString(),
+      error,
+    });
+  }
+};
