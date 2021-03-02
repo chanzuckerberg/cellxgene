@@ -411,7 +411,6 @@ export const saveGenesetsAction = () => async (dispatch, getState) => {
   const tid = (lastTid ?? 0) + 1;
   const genesets = [];
   for (const [name, gs] of lastGenesets) {
-    // const genes = Array.from(gs.genes.values());
     const genes = [];
     for (const g of gs.genes.values()) {
       genes.push({
