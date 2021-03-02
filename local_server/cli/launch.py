@@ -42,7 +42,7 @@ def annotation_args(func):
         multiple=False,
         metavar="<directory path>",
         help="Directory of where to save output annotations; filename will be specified in the application. "
-        "Incompatible with --annotations-file and --genesets-file.",
+        "Incompatible with --annotations-file and --gene-sets-file.",
     )
     @click.option(
         "--experimental-annotations-ontology",
@@ -59,16 +59,16 @@ def annotation_args(func):
         help="Location of OBO file defining cell annotation autosuggest terms.",
     )
     @click.option(
-        "--disable-genesets-save",
+        "--disable-gene-sets-save",
         is_flag=True,
-        default=DEFAULT_CONFIG.dataset_config.user_annotations__genesets__readonly,
+        default=DEFAULT_CONFIG.dataset_config.user_annotations__gene_sets__readonly,
         show_default=False,
         help="Disable saving gene sets. If disabled, users will be able to make changes to gene sets but all "
         "changes will be lost on browser refresh.",
     )
     @click.option(
-        "--genesets-file",
-        default=DEFAULT_CONFIG.dataset_config.user_annotations__local_file_csv__genesets_file,
+        "--gene-sets-file",
+        default=DEFAULT_CONFIG.dataset_config.user_annotations__local_file_csv__gene_sets_file,
         show_default=True,
         multiple=False,
         metavar="<path>",
@@ -334,8 +334,8 @@ def launch(
     disable_annotations,
     annotations_file,
     user_generated_data_dir,
-    genesets_file,
-    disable_genesets_save,
+    gene_sets_file,
+    disable_gene_sets_save,
     backed,
     disable_diffexp,
     experimental_annotations_ontology,
@@ -394,8 +394,8 @@ def launch(
             user_annotations__enable=not disable_annotations,
             user_annotations__local_file_csv__file=annotations_file,
             user_annotations__local_file_csv__directory=user_generated_data_dir,
-            user_annotations__local_file_csv__genesets_file=genesets_file,
-            user_annotations__genesets__readonly=disable_genesets_save,
+            user_annotations__local_file_csv__gene_sets_file=gene_sets_file,
+            user_annotations__gene_sets__readonly=disable_gene_sets_save,
             user_annotations__ontology__enable=experimental_annotations_ontology,
             user_annotations__ontology__obo_location=experimental_annotations_ontology_obo,
             presentation__max_categories=max_category_items,

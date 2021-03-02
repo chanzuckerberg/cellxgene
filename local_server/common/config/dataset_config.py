@@ -32,9 +32,9 @@ class DatasetConfig(BaseConfig):
             self.user_annotations__ontology__obo_location = default_config["user_annotations"]["ontology"][
                 "obo_location"
             ]
-            self.user_annotations__genesets__readonly = default_config["user_annotations"]["genesets"]["readonly"]
-            self.user_annotations__local_file_csv__genesets_file = default_config["user_annotations"]["local_file_csv"][
-                "genesets_file"
+            self.user_annotations__gene_sets__readonly = default_config["user_annotations"]["gene_sets"]["readonly"]
+            self.user_annotations__local_file_csv__gene_sets_file = default_config["user_annotations"]["local_file_csv"][
+                "gene_sets_file"
             ]
 
             self.embeddings__names = default_config["embeddings"]["names"]
@@ -99,15 +99,15 @@ class DatasetConfig(BaseConfig):
             "user_annotations__local_file_csv__file", (type(None), str)
         )
         self.validate_correct_type_of_configuration_attribute(
-            "user_annotations__local_file_csv__genesets_file", (type(None), str)
+            "user_annotations__local_file_csv__gene_sets_file", (type(None), str)
         )
         self.validate_correct_type_of_configuration_attribute("user_annotations__ontology__enable", bool)
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__ontology__obo_location", (type(None), str)
         )
-        self.validate_correct_type_of_configuration_attribute("user_annotations__genesets__readonly", bool)
+        self.validate_correct_type_of_configuration_attribute("user_annotations__gene_sets__readonly", bool)
 
-        if self.user_annotations__enable or not self.user_annotations__genesets__readonly:
+        if self.user_annotations__enable or not self.user_annotations__gene_sets__readonly:
             server_config = self.app_config.server_config
             if not self.app__authentication_enable:
                 raise ConfigurationError("user annotations requires authentication to be enabled")
@@ -134,7 +134,7 @@ class DatasetConfig(BaseConfig):
     def handle_local_file_csv_annotations(self, context):
         dirname = self.user_annotations__local_file_csv__directory
         filename = self.user_annotations__local_file_csv__file
-        genesets_filename = self.user_annotations__local_file_csv__genesets_file
+        genesets_filename = self.user_annotations__local_file_csv__gene_sets_file
 
         if dirname is not None and (filename is not None or genesets_filename is not None):
             raise ConfigurationError(
@@ -159,7 +159,7 @@ class DatasetConfig(BaseConfig):
 
         anno_config = {
             "user-annotations": self.user_annotations__enable,
-            "genesets-save": not self.user_annotations__genesets__readonly,
+            "genesets-save": not self.user_annotations__gene_sets__readonly,
         }
         self.user_annotations = AnnotationsLocalFile(anno_config, dirname, filename, genesets_filename)
 
@@ -170,9 +170,9 @@ class DatasetConfig(BaseConfig):
             data_adaptor = self.get_data_adaptor()
             if self.user_annotations__local_file_csv__file:
                 data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
-            if self.user_annotations__local_file_csv__genesets_file:
+            if self.user_annotations__local_file_csv__gene_sets_file:
                 try:
-                    data_adaptor.check_new_genesets(self.user_annotations.read_genesets(data_adaptor, context), context)
+                    data_adaptor.check_new_gene_sets(self.user_annotations.read_gene_sets(data_adaptor, context), context)
                 except (ValueError, AnnotationsError, KeyError) as e:
                     raise ConfigurationError(f"Unable to read genesets CSV file: {str(e)}") from e
 
