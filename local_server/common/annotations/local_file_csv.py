@@ -17,14 +17,14 @@ from local_server.common.errors import AnnotationsError, ObsoleteRequest
 class AnnotationsLocalFile(Annotations):
     CXG_ANNO_COLLECTION = "cxg_anno_collection"
 
-    def __init__(self, config, output_dir, label_output_file, genesets_output_file):
+    def __init__(self, config, output_dir, label_output_file, gene_sets_output_file):
         super().__init__(config)
         self.output_dir = output_dir
         self.label_output_file = label_output_file
-        self.genesets_output_file = genesets_output_file
+        self.gene_sets_output_file = gene_sets_output_file
         # lock used to protect label file write ops
         self.label_lock = threading.RLock()
-        self.genesets_lock = threading.RLock()
+        self.gene_sets_lock = threading.RLock()
 
         # cache the most recent annotations.
         self.last_fname = None
@@ -105,29 +105,29 @@ class AnnotationsLocalFile(Annotations):
             self.last_fname = fname
             self.last_labels = df
 
-    def read_genesets(self, data_adaptor, context=None):
+    def read_gene_sets(self, data_adaptor, context=None):
         if has_request_context():
             if not current_app.auth.is_user_authenticated():
                 return ({}, self.last_geneset_tid)
 
         fname = self._get_genesets_filename(data_adaptor)
-        genesets = {}
+        gene_sets = {}
         tid = None
-        with self.genesets_lock:
+        with self.gene_sets_lock:
             tid = self.last_geneset_tid  # inside the critical section
             if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
                 with open(fname, newline="") as f:
-                    genesets = read_geneset_tidycsv(f, context)
+                    gene_sets = read_gene_set_tidycsv(f, context)
 
-        return (genesets, tid)
+        return (gene_sets, tid)
 
-    def write_genesets(self, genesets, tid, data_adaptor):
-        self.check_genesets_save_enabled()  # raises
+    def write_gene_sets(self, gene_sets, tid, data_adaptor):
+        self.check_gene_sets_save_enabled()  # raises
 
         if type(tid) != int or tid < 0:
             raise ValueError("tid must be a positive integer")
 
-        with self.genesets_lock:
+        with self.gene_sets_lock:
             # skip if the request is stale
             if tid is not None:
                 if tid <= self.last_geneset_tid:
@@ -137,7 +137,7 @@ class AnnotationsLocalFile(Annotations):
             lastmod = data_adaptor.get_last_mod_time()
             lastmodstr = "'unknown'" if lastmod is None else lastmod.isoformat(timespec="seconds")
             header = (
-                f"# Geneset generated on {datetime.now().isoformat(timespec='seconds')} "
+                f"# Gene set generated on {datetime.now().isoformat(timespec='seconds')} "
                 f"using cellxgene version {cellxgene_version}\n"
                 f"# Input data file was {data_adaptor.get_location()}, "
                 f"which was last modified on {lastmodstr}\n"
@@ -147,7 +147,7 @@ class AnnotationsLocalFile(Annotations):
             self._backup(fname)
             with open(fname, "w", newline="") as f:
                 f.write(header)
-                f.write(self.genesets_to_csv(genesets))
+                f.write(self.gene_sets_to_csv(gene_sets))
 
     def _get_userdata_idhash(self, data_adaptor):
         """
@@ -163,7 +163,7 @@ class AnnotationsLocalFile(Annotations):
         if self.output_dir:
             return self.output_dir
 
-        output_file = self.label_output_file or self.genesets_output_file
+        output_file = self.label_output_file or self.gene_sets_output_file
         if output_file:
             return os.path.dirname(os.path.abspath(output_file))
 
@@ -177,9 +177,9 @@ class AnnotationsLocalFile(Annotations):
         return self._get_filename(data_adaptor, "celllabels")
 
     def _get_genesets_filename(self, data_adaptor):
-        """ return the current genesets file name """
-        if self.genesets_output_file:
-            return self.genesets_output_file
+        """ return the current gene sets file name """
+        if self.gene_sets_output_file:
+            return self.gene_sets_output_file
 
         return self._get_filename(data_adaptor, "genesets")
 
@@ -236,7 +236,7 @@ class AnnotationsLocalFile(Annotations):
     def update_parameters(self, parameters, data_adaptor):
         params = {}
         params["annotations"] = self.user_annotations_enabled()
-        params["annotations_genesets_readonly"] = not self.genesets_save_enabled()
+        params["annotations_genesets_readonly"] = not self.gene_sets_save_enabled()
         params["user_annotation_collection_name_enabled"] = True
 
         if self.ontology_data:
@@ -263,7 +263,7 @@ class AnnotationsLocalFile(Annotations):
         parameters.update(params)
 
 
-def read_geneset_tidycsv(f, context=None):
+def read_gene_set_tidycsv(f, context=None):
     """
     Read & parse the Tidy CSV format, applying validation checks for mandatory
     values, and de-duping rules.
@@ -271,9 +271,9 @@ def read_geneset_tidycsv(f, context=None):
     Format is a four-column CSV, with a mandatory header row, and optional "#" prefixed
     comments.  Format:
 
-        geneset_name, geneset_description, gene_symbol, gene_description
+        gene_set_name, gene_set_description, gene_symbol, gene_description
 
-    geneset_name and gene_symbol must be non-null; others are optional.
+    gene_set_name must be non-null; others are optional.
 
     Returns: a dictionary of the shape (values in angle-brackets vary):
 
@@ -305,7 +305,7 @@ def read_geneset_tidycsv(f, context=None):
     messagefn = context["messagefn"] if context else (lambda x: None)
 
     reader = csv.reader(f, dialect=myDialect())
-    genesets = {}
+    gene_sets = {}
     haveReadHeader = False
     lineno = 0
     for row in reader:
@@ -329,10 +329,10 @@ def read_geneset_tidycsv(f, context=None):
         if (not gene_symbol) and gene_description:
             messagefn(f"Warning: Missing gene name in geneset name {geneset_name} on line {lineno}.")
 
-        if geneset_name in genesets:
-            gs = genesets[geneset_name]
+        if geneset_name in gene_sets:
+            gs = gene_sets[geneset_name]
         else:
-            gs = genesets[geneset_name] = {
+            gs = gene_sets[geneset_name] = {
                 "geneset_name": geneset_name,
                 "geneset_description": geneset_description,
                 "genes": [],
@@ -349,4 +349,4 @@ def read_geneset_tidycsv(f, context=None):
                 }
             )
 
-    return genesets
+    return gene_sets

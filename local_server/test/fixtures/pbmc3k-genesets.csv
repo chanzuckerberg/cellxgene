@@ -1,12 +1,12 @@
 # Test fixture
-geneset_name, geneset_description, gene_symbol, gene_description
-first geneset name,,F5, a gene_description
-first geneset name,a description, NO_SUCH_GENE, non-existent gene
-first geneset name,a description, F5, duplicate gene
-first geneset name, a description, SUMO3,
-first geneset name,, SRM,
-second geneset,,RER1
-second geneset,,SIK1
-third geneset,,NO_SUCH_GENE
-fourth_geneset,fourth description,,gene intentionally missing
+gene_set_name, gene_set_description, gene_symbol, gene_description
+first gene set name,,F5, a gene_description
+first gene set name,a description, NO_SUCH_GENE, non-existent gene
+first gene set name,a description, F5, duplicate gene
+first gene set name, a description, SUMO3,
+first gene set name,, SRM,
+second gene set,,RER1
+second gene set,,SIK1
+third gene set,,NO_SUCH_GENE
+fourth_gene_set,fourth description,,gene intentionally missing
 fifth_dataset,,,

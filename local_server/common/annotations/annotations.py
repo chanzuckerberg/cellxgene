@@ -21,15 +21,15 @@ class Annotations(metaclass=ABCMeta):
     def user_annotations_enabled(self):
         return self.config.get("user-annotations", False)
 
-    def genesets_save_enabled(self):
+    def gene_sets_save_enabled(self):
         return self.config.get("genesets-save", False)
 
     def check_user_annotations_enabled(self):
         if not self.user_annotations_enabled():
             raise DisabledFeatureError("User annotations are disabled.")
 
-    def check_genesets_save_enabled(self):
-        if not self.genesets_save_enabled():
+    def check_gene_sets_save_enabled(self):
+        if not self.gene_sets_save_enabled():
             raise DisabledFeatureError("User genesets save is disabled.")
 
     def load_ontology(self, path):
@@ -80,12 +80,12 @@ class Annotations(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def read_genesets(self, data_adaptor):
+    def read_gene_sets(self, data_adaptor):
         """Return the genesets from persistent storage """
         pass
 
     @abstractmethod
-    def write_genesets(self, gs, data_adaptor):
+    def write_gene_sets(self, gs, data_adaptor):
         """Write the genesets (gs) to a persistent storage such that it can later be read"""
         pass
 
@@ -95,16 +95,16 @@ class Annotations(metaclass=ABCMeta):
         pass
 
     Genesets_Header = [
-        "geneset_name",
-        "geneset_description",
+        "gene_set_name",
+        "gene_set_description",
         "gene_symbol",
         "gene_description",
     ]
 
     @staticmethod
-    def genesets_to_csv(genesets):
+    def gene_sets_to_csv(genesets):
         """
-        Convert the internal genesets format (returned by read_geneset) into
+        Convert the internal genesets format (returned by read_gene_set) into
         the simple Tidy CSV.
         """
         from io import StringIO
@@ -136,9 +136,9 @@ class Annotations(metaclass=ABCMeta):
             return sio.getvalue()
 
     @staticmethod
-    def genesets_to_response(genesets):
+    def gene_sets_to_response(genesets):
         """
-        Convert the internal genesets format (returned by read_geneset) into
+        Convert the internal genesets format (returned by read_gene_set) into
         the dict expected by the JSON REST API
         """
         return list(genesets.values())

@@ -64,12 +64,12 @@ dataset:
     local_file_csv:
       directory: null
       file: null            # annotations file name
-      genesets_file: null   # gene sets file name
+      gene_sets_file: null  # gene sets file name
     ontology:
       enable: false
       obo_location: null
-    genesets:
-      readonly: false      # genesets CRUD enabled/disabled
+    gene_sets:
+      readonly: false       # gene sets CRUD enabled/disabled
 
   embeddings:
     names : []

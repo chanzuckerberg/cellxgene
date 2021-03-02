@@ -336,11 +336,11 @@ def genesets_get(request, data_adaptor):
 
     try:
         annotations = data_adaptor.dataset_config.user_annotations
-        (genesets, tid) = data_adaptor.check_new_genesets(annotations.read_genesets(data_adaptor))
+        (genesets, tid) = data_adaptor.check_new_gene_sets(annotations.read_gene_sets(data_adaptor))
 
         if preferred_mimetype == "text/csv":
             return make_response(
-                annotations.genesets_to_csv(genesets),
+                annotations.gene_sets_to_csv(genesets),
                 HTTPStatus.OK,
                 {
                     "Content-Type": "text/csv",
@@ -349,7 +349,7 @@ def genesets_get(request, data_adaptor):
             )
         else:
             return make_response(
-                jsonify({"genesets": annotations.genesets_to_response(genesets), "tid": tid}), HTTPStatus.OK
+                jsonify({"genesets": annotations.gene_sets_to_response(genesets), "tid": tid}), HTTPStatus.OK
             )
     except (ValueError, KeyError, AnnotationsError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
@@ -357,7 +357,7 @@ def genesets_get(request, data_adaptor):
 
 def genesets_put(request, data_adaptor):
     annotations = data_adaptor.dataset_config.user_annotations
-    if not annotations.genesets_save_enabled():
+    if not annotations.gene_sets_save_enabled():
         return abort(HTTPStatus.NOT_IMPLEMENTED)
 
     anno_collection = request.args.get("annotation-collection-name", default=None)
@@ -373,8 +373,8 @@ def genesets_put(request, data_adaptor):
         if genesets is None:
             abort(HTTPStatus.BAD_REQUEST)
 
-        (gs, _) = data_adaptor.check_new_genesets((genesets, tid))
-        annotations.write_genesets(gs, tid, data_adaptor)
+        (gs, _) = data_adaptor.check_new_gene_sets((genesets, tid))
+        annotations.write_gene_sets(gs, tid, data_adaptor)
         return make_response(jsonify({"status": "OK"}), HTTPStatus.OK)
     except (ValueError, DisabledFeatureError, KeyError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)

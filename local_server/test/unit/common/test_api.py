@@ -388,7 +388,7 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
             [
                 f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
                 "--disable-annotations",
-                "--disable-genesets-save",
+                "--disable-gene-sets-save",
                 "--experimental-enable-reembedding",
             ],
         )
@@ -465,7 +465,7 @@ class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
             [
                 f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
                 "--disable-annotations",
-                "--genesets-file",
+                "--gene-sets-file",
                 genesets_file,
             ],
         )
@@ -496,7 +496,7 @@ class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
                             {"gene_description": "", "gene_symbol": "SRM"},
                         ],
                         "geneset_description": "a description",
-                        "geneset_name": "first geneset name",
+                        "geneset_name": "first gene set name",
                     },
                     {
                         "genes": [
@@ -504,10 +504,10 @@ class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
                             {"gene_description": "", "gene_symbol": "SIK1"},
                         ],
                         "geneset_description": "",
-                        "geneset_name": "second geneset",
+                        "geneset_name": "second gene set",
                     },
-                    {"genes": [], "geneset_description": "", "geneset_name": "third geneset"},
-                    {"genes": [], "geneset_description": "fourth description", "geneset_name": "fourth_geneset"},
+                    {"genes": [], "geneset_description": "", "geneset_name": "third gene set"},
+                    {"genes": [], "geneset_description": "fourth description", "geneset_name": "fourth_gene_set"},
                     {"genes": [], "geneset_description": "", "geneset_name": "fifth_dataset"},
                 ],
                 "tid": 0,
@@ -522,14 +522,14 @@ class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
         self.assertEqual(result.headers["Content-Type"], "text/csv")
         self.assertEqual(
             result.text,
-            """geneset_name,geneset_description,gene_symbol,gene_description\r
-first geneset name,a description,F5,a gene_description\r
-first geneset name,a description,SUMO3,\r
-first geneset name,a description,SRM,\r
-second geneset,,RER1,\r
-second geneset,,SIK1,\r
-third geneset,,,\r
-fourth_geneset,fourth description,,\r
+            """gene_set_name,gene_set_description,gene_symbol,gene_description\r
+first gene set name,a description,F5,a gene_description\r
+first gene set name,a description,SUMO3,\r
+first gene set name,a description,SRM,\r
+second gene set,,RER1,\r
+second gene set,,SIK1,\r
+third gene set,,,\r
+fourth_gene_set,fourth description,,\r
 fifth_dataset,,,\r
 """,
         )

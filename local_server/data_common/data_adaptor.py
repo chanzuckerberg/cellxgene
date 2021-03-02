@@ -262,7 +262,7 @@ class DataAdaptor(metaclass=ABCMeta):
 
         return labels_df
 
-    def check_new_genesets(self, args, context=None):
+    def check_new_gene_sets(self, args, context=None):
         """
         Check validity of gene sets, return if correct, else raise error.
         May also modify the gene set for conditions that should be resolved,

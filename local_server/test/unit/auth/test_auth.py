@@ -14,7 +14,7 @@ class AuthTest(unittest.TestCase):
         app_config = AppConfig()
         app_config.update_server_config(app__flask_secret_key="secret")
         app_config.update_server_config(authentication__type=None, single_dataset__datapath=self.dataset_datapath)
-        app_config.update_dataset_config(user_annotations__enable=False, user_annotations__genesets__readonly=True)
+        app_config.update_dataset_config(user_annotations__enable=False, user_annotations__gene_sets__readonly=True)
 
         app_config.complete_config()
 
