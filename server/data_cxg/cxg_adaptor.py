@@ -15,7 +15,7 @@ from server.common.immutable_kvcache import ImmutableKVCache
 from shared_utils.utils.type_conversion_utils import get_schema_type_hint_from_dtype
 from shared_utils.utils.utils import path_join
 from server.data_common.data_adaptor import DataAdaptor
-from server.data_common.fbs.matrix import encode_matrix_fbs
+from shared_utils.fbs.matrix import encode_matrix_fbs
 from server.data_cxg.cxg_util import pack_selector_from_mask
 
 

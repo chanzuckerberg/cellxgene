@@ -5,8 +5,8 @@ This code will need to be updated if fbs/matrix.fbs changes. For more informatio
 server/data_common/fbs/
 """
 
-import server.data_common.fbs.NetEncoding.Matrix as Matrix
-from server.data_common.fbs.matrix import deserialize_typed_array
+import shared_utils.fbs.NetEncoding.Matrix as Matrix
+from shared_utils.fbs.matrix import deserialize_typed_array
 
 
 def decode_matrix_FBS(buf):

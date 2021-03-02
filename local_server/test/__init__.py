@@ -16,7 +16,7 @@ from local_server.common.config.app_config import AppConfig
 from local_server.common.config import DEFAULT_SERVER_PORT
 from local_server.common.data_locator import DataLocator
 from shared_utils.utils.utils import find_available_port
-from local_server.data_common.fbs.matrix import encode_matrix_fbs
+from shared_utils.fbs.matrix import encode_matrix_fbs
 from local_server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
 
 PROJECT_ROOT = popen("git rev-parse --show-toplevel").read().strip()

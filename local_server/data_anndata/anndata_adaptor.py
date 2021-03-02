@@ -16,7 +16,7 @@ from local_server.common.errors import PrepareError, DatasetAccessError, FilterE
 from shared_utils.utils.type_conversion_utils import get_schema_type_hint_of_array
 from shared_utils.compute.scanpy import scanpy_umap
 from local_server.data_common.data_adaptor import DataAdaptor
-from local_server.data_common.fbs.matrix import encode_matrix_fbs
+from shared_utils.fbs.matrix import encode_matrix_fbs
 
 anndata_version = version.parse(str(anndata.__version__)).release
 

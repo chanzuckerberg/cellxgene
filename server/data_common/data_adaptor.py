@@ -9,7 +9,7 @@ from server.common.config.app_config import AppConfig
 from shared_utils.shared_constants import Axis
 from server.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError
 from shared_utils.utils.utils import jsonify_numpy
-from server.data_common.fbs.matrix import encode_matrix_fbs
+from shared_utils.fbs.matrix import encode_matrix_fbs
 
 
 class DataAdaptor(metaclass=ABCMeta):

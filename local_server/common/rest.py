@@ -22,7 +22,7 @@ from local_server.common.errors import (
 )
 
 import json
-from local_server.data_common.fbs.matrix import decode_matrix_fbs
+from shared_utils.fbs.matrix import decode_matrix_fbs
 
 
 def abort_and_log(code, logmsg, loglevel=logging.DEBUG, include_exc_info=False):
