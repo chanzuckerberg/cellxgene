@@ -8,7 +8,7 @@ clean:
 
 # Build the ElasticBeanstalk configuration and deployment bundle,
 # such that deployment can be done with a simple `eb deploy`.
-# Presumes that a top-level `make build-client` has been done to 
+# Presumes that a top-level `make build-client` has been done to
 # create the client static assets.
 
 cwd := $(shell pwd)
@@ -21,6 +21,7 @@ build: clean
 	$(call copy_client_assets,../../client/build,artifact.dir/server) ; \
 	set -e ; \
 	cp app.py artifact.dir/application.py; \
+	cp -r ../../shared_utils artifact.dir; \
 	cp ../requirements.txt artifact.dir; \
 	cp -r .ebextensions artifact.dir; \
 	if [ -d customize ] ; then \

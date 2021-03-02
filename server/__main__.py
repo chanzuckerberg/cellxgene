@@ -6,7 +6,7 @@ if __package__ is None:
     PKG_PATH = Path(__file__).parent
     sys.path.insert(0, str(PKG_PATH.parent))
     import server  # noqa F401
-
+    import shared_utils # noqa F401
     __package__ = PKG_PATH.name
 
 # Main thing

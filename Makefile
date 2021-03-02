@@ -31,6 +31,7 @@ build-client:
 build-local: clean build-client
 	git ls-files local_server/ | grep -v 'local_server/test/' | cpio -pdm $(BUILDDIR)
 	cp -r client/build/  $(CLIENTBUILD)
+	cp -r shared_utils/ $(BUILDDIR)
 	$(call copy_client_assets,$(CLIENTBUILD),$(LOCALSERVERBUILD))
 	cp MANIFEST.in README.md setup.cfg setup.py $(BUILDDIR)
 
@@ -38,6 +39,7 @@ build-local: clean build-client
 build: clean build-client
 	git ls-files server/ | grep -v 'server/test/' | cpio -pdm $(BUILDDIR)
 	cp -r client/build/  $(CLIENTBUILD)
+	cp -r shared_utils/ $(BUILDDIR)
 	$(call copy_client_assets,$(CLIENTBUILD),$(SERVERBUILD))
 	cp MANIFEST_hosted.in README.md setup.cfg setup_hosted.py $(BUILDDIR)
 	mv $(BUILDDIR)/setup_hosted.py $(BUILDDIR)/setup.py
@@ -46,19 +48,19 @@ build: clean build-client
 # If you are actively developing in the server folder use this, dirties the source tree
 .PHONY: build-for-server-dev-local
 build-for-server-dev-local: clean-local-server build-client
-	$(call copy_client_assets,client/build,local_server)
+	$(call copy_client_assets,client/build,local_server,shared_utils)
 
 .PHONY: build-for-server-dev
 build-for-server-dev: clean-server build-client
-	$(call copy_client_assets,client/build,server)
+	$(call copy_client_assets,client/build,server,shared_utils)
 
 .PHONY: copy-client-assets-local
 copy-client-assets-local:
-	$(call copy_client_assets,client/build,local_server)
+	$(call copy_client_assets,client/build,local_server,shared_utils)
 
 .PHONY: copy-client-assets
 copy-client-assets:
-	$(call copy_client_assets,client/build,server)
+	$(call copy_client_assets,client/build,server,shared_utils)
 
 # TESTING
 .PHONY: test
