@@ -4,7 +4,7 @@ from os.path import splitext, isdir
 from local_server.common.annotations.local_file_csv import AnnotationsLocalFile
 from local_server.common.config.base_config import BaseConfig
 from local_server.common.errors import ConfigurationError, OntologyLoadFailure, AnnotationsError
-from local_server.compute.scanpy import get_scanpy_module
+from shared_utils.compute.scanpy import get_scanpy_module
 from local_server.data_common.matrix_loader import MatrixDataLoader
 
 

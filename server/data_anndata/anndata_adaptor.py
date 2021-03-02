@@ -8,13 +8,13 @@ from pandas.core.dtypes.dtypes import CategoricalDtype
 from scipy import sparse
 from server_timing import Timing as ServerTiming
 
-import server.compute.diffexp_generic as diffexp_generic
+import shared_utils.compute.diffexp_generic as diffexp_generic
 from shared_utils.colors import convert_anndata_category_colors_to_cxg_category_colors
 from shared_utils.shared_constants import Axis, MAX_LAYOUTS
 from shared_utils.corpora import corpora_get_props_from_anndata
 from server.common.errors import PrepareError, DatasetAccessError, FilterError
 from shared_utils.utils.type_conversion_utils import get_schema_type_hint_of_array
-from server.compute.scanpy import scanpy_umap
+from shared_utils.compute.scanpy import scanpy_umap
 from server.data_common.data_adaptor import DataAdaptor
 from server.data_common.fbs.matrix import encode_matrix_fbs
 

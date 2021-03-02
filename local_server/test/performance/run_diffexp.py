@@ -4,7 +4,7 @@ import random
 import time
 import numpy as np
 
-import local_server.compute.diffexp_generic as diffexp_generic
+import shared_utils.compute.diffexp_generic as diffexp_generic
 
 from local_server.common.config.app_config import AppConfig
 from local_server.data_common.matrix_loader import MatrixDataLoader

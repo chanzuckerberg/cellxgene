@@ -5,7 +5,7 @@ import time
 import numpy as np
 
 import server.compute.diffexp_cxg as diffexp_cxg
-import server.compute.diffexp_generic as diffexp_generic
+import shared_utils.compute.diffexp_generic as diffexp_generic
 
 from server.common.config.app_config import AppConfig
 from server.data_common.matrix_loader import MatrixDataLoader

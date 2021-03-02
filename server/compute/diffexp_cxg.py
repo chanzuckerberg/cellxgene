@@ -1,6 +1,6 @@
 import concurrent.futures
 import numpy as np
-from server.compute.diffexp_generic import diffexp_ttest_from_mean_var, mean_var_n
+from shared_utils.compute.diffexp_generic import diffexp_ttest_from_mean_var, mean_var_n
 from server.data_cxg.cxg_util import pack_selector_from_indices
 from server.common.errors import ComputeError
 from numba import jit
