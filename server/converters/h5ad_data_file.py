@@ -6,7 +6,7 @@ import anndata
 import numpy as np
 import tiledb
 
-from shared_utils.colors import convert_anndata_category_colors_to_cxg_category_colors
+from server.common.colors import convert_anndata_category_colors_to_cxg_category_colors
 from shared_utils.corpora import corpora_get_props_from_anndata
 from server.common.errors import ColorFormatException
 from server.common.utils.cxg_constants import CxgConstants

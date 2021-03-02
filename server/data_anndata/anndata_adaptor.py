@@ -9,7 +9,7 @@ from scipy import sparse
 from server_timing import Timing as ServerTiming
 
 import shared_utils.compute.diffexp_generic as diffexp_generic
-from shared_utils.colors import convert_anndata_category_colors_to_cxg_category_colors
+from server.common.colors import convert_anndata_category_colors_to_cxg_category_colors
 from shared_utils.shared_constants import Axis, MAX_LAYOUTS
 from shared_utils.corpora import corpora_get_props_from_anndata
 from server.common.errors import PrepareError, DatasetAccessError, FilterError
