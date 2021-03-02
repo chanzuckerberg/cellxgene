@@ -1,5 +1,6 @@
 PROJECT_ROOT := $(shell git rev-parse --show-toplevel)
 PATH := $(PATH):$(PROJECT_ROOT)/scripts
+PATH := $(PATH):$(PROJECT_ROOT)/shared_utils
 
 SHELL := env PATH='$(PATH)' /bin/bash
 

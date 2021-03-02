@@ -3,6 +3,7 @@ include common.mk
 BUILDDIR := build
 CLIENTBUILD := $(BUILDDIR)/client
 SERVERBUILD := $(BUILDDIR)/server
+SHAREDBUILD := $(BUILDDIR)/shared_utils
 LOCALSERVERBUILD := $(BUILDDIR)/local_server
 CLEANFILES :=  $(BUILDDIR)/ client/build build dist cellxgene.egg-info
 
@@ -31,7 +32,7 @@ build-client:
 build-local: clean build-client
 	git ls-files local_server/ | grep -v 'local_server/test/' | cpio -pdm $(BUILDDIR)
 	cp -r client/build/  $(CLIENTBUILD)
-	cp -r shared_utils/ $(BUILDDIR)
+	cp -r shared_utils/ $(SHAREDBUILD)
 	$(call copy_client_assets,$(CLIENTBUILD),$(LOCALSERVERBUILD))
 	cp MANIFEST.in README.md setup.cfg setup.py $(BUILDDIR)
 
@@ -39,7 +40,7 @@ build-local: clean build-client
 build: clean build-client
 	git ls-files server/ | grep -v 'server/test/' | cpio -pdm $(BUILDDIR)
 	cp -r client/build/  $(CLIENTBUILD)
-	cp -r shared_utils/ $(BUILDDIR)
+	cp -r shared_utils/ $(SHAREDBUILD)
 	$(call copy_client_assets,$(CLIENTBUILD),$(SERVERBUILD))
 	cp MANIFEST_hosted.in README.md setup.cfg setup_hosted.py $(BUILDDIR)
 	mv $(BUILDDIR)/setup_hosted.py $(BUILDDIR)/setup.py
