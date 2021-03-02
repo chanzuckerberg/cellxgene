@@ -12,7 +12,7 @@ from local_server.default_config import default_config
 from local_server.app.app import Server
 from local_server.common.config.app_config import AppConfig
 from local_server.common.errors import DatasetAccessError, ConfigurationError
-from local_server.common.utils.utils import sort_options
+from shared_utils.utils.utils import sort_options
 
 DEFAULT_CONFIG = AppConfig()
 

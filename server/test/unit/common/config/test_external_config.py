@@ -6,7 +6,7 @@ import requests
 from server.common.errors import ConfigurationError
 from server.common.config.app_config import AppConfig
 from server.test import test_server, FIXTURES_ROOT
-from server.common.utils.type_conversion_utils import convert_string_to_value
+from shared_utils.utils.type_conversion_utils import convert_string_to_value
 from server.test.unit.common.config import ConfigTests
 
 

@@ -5,7 +5,7 @@ import pandas as pd
 from numpy import ndarray, unique
 from scipy.sparse.csc import csc_matrix
 
-from server.common.utils.utils import sort_options
+from shared_utils.utils.utils import sort_options
 
 
 @sort_options

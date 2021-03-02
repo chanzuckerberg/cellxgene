@@ -4,7 +4,7 @@ from local_server.common.config.base_config import BaseConfig
 from local_server.common.errors import ConfigurationError
 from local_server.common.config import get_secret_key
 from local_server.common.errors import SecretKeyRetrievalError
-from local_server.common.utils.type_conversion_utils import convert_string_to_value
+from shared_utils.utils.type_conversion_utils import convert_string_to_value
 
 
 class ExternalConfig(BaseConfig):

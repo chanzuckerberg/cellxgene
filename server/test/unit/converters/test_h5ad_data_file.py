@@ -9,7 +9,7 @@ import anndata
 import numpy as np
 from pandas import Series, DataFrame
 
-from server.common.utils.corpora_constants import CorporaConstants
+from shared_utils.utils.corpora_constants import CorporaConstants
 from server.converters.h5ad_data_file import H5ADDataFile
 
 PROJECT_ROOT = popen("git rev-parse --show-toplevel").read().strip()

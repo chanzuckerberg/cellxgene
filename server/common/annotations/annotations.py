@@ -4,7 +4,7 @@ import fastobo
 import fsspec
 
 from server.common.errors import OntologyLoadFailure
-from server.common.utils.type_conversion_utils import get_schema_type_hint_of_array
+from shared_utils.utils.type_conversion_utils import get_schema_type_hint_of_array
 
 
 class Annotations(metaclass=ABCMeta):

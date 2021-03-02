@@ -9,7 +9,7 @@ from server.common.config.base_config import BaseConfig
 from server.common.config import DEFAULT_SERVER_PORT, BIG_FILE_SIZE_THRESHOLD
 from server.common.errors import ConfigurationError, DatasetAccessError
 from server.common.data_locator import discover_s3_region_name
-from server.common.utils.utils import is_port_available, find_available_port, custom_format_warning
+from shared_utils.utils.utils import find_available_port, is_port_available, custom_format_warning
 from server.compute import diffexp_cxg as diffexp_tiledb
 from server.data_common.matrix_loader import MatrixDataCacheManager, MatrixDataLoader, MatrixDataType
 

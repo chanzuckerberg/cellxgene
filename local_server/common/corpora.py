@@ -9,7 +9,7 @@ import collections
 import json
 
 from local_server.cli.upgrade import validate_version_str
-from local_server.common.utils.corpora_constants import CorporaConstants
+from shared_utils.utils.corpora_constants import CorporaConstants
 
 
 def corpora_get_versions_from_anndata(adata):

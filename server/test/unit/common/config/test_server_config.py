@@ -4,7 +4,7 @@ from unittest import mock
 from unittest.mock import patch
 
 from server.common.config.base_config import BaseConfig
-from server.common.utils.utils import find_available_port
+from shared_utils.utils.utils import find_available_port
 from server.test import PROJECT_ROOT, FIXTURES_ROOT
 
 import requests

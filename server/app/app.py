@@ -24,7 +24,7 @@ import server.common.rest as common_rest
 from server.common.data_locator import DataLocator
 from server.common.errors import DatasetAccessError, RequestException
 from server.common.health import health_check
-from server.common.utils.utils import path_join, Float32JSONEncoder
+from shared_utils.utils.utils import path_join, Float32JSONEncoder
 from server.data_common.matrix_loader import MatrixDataLoader
 
 webbp = Blueprint("webapp", "server.common.web", template_folder="templates")

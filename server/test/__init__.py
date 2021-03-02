@@ -16,7 +16,7 @@ from server.common.annotations.local_file_csv import AnnotationsLocalFile
 from server.common.config.app_config import AppConfig
 from server.common.config import DEFAULT_SERVER_PORT
 from server.common.data_locator import DataLocator
-from server.common.utils.utils import find_available_port
+from shared_utils.utils.utils import find_available_port
 from server.data_common.fbs.matrix import encode_matrix_fbs
 from server.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
 from server.db.db_utils import DbUtils

@@ -9,7 +9,7 @@ from local_server.common.config.base_config import BaseConfig
 from local_server.common.config import DEFAULT_SERVER_PORT, BIG_FILE_SIZE_THRESHOLD
 from local_server.common.errors import ConfigurationError, DatasetAccessError
 from local_server.common.data_locator import discover_s3_region_name
-from local_server.common.utils.utils import is_port_available, find_available_port, custom_format_warning
+from shared_utils.utils.utils import find_available_port, is_port_available, custom_format_warning
 from local_server.data_common.matrix_loader import MatrixDataLoader
 
 
