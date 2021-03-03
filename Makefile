@@ -11,7 +11,7 @@ PART ?= patch
 
 # CLEANING
 .PHONY: clean
-clean: clean-lite clean-local-server clean-server clean-client
+clean: clean-lite clean-local-server clean-server clean-client clean-shared_utils
 
 # cleaning the client's node_modules is the longest one, so we avoid that if possible
 .PHONY: clean-lite
