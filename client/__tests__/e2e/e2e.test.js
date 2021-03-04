@@ -32,7 +32,6 @@ import {
   runDiffExp,
   selectCategory,
   subset,
-  login,
   logout,
 } from "./cellxgeneActions";
 
@@ -538,17 +537,11 @@ describeIfCalledByMakeFileTarget("auth buttons", () => {
   });
 });
 
-const conditionalDescribe =
-  process.env.TEST_AUTH_INTEGRATION === "true" ? describe : describe.skip;
+const conditionalDescribe = describe.skip;
 
 conditionalDescribe("AuthN Integration", () => {
-  it("logs in", async () => {
-    await login();
-  });
+  it("logs in", async () => {});
 
-  it("logs out", async () => {
-    await login();
-    await logout();
-  });
+  it("logs out", async () => {});
 });
 /* eslint-enable no-await-in-loop -- await in loop is needed to emulate sequential user actions */
