@@ -317,8 +317,8 @@ export async function assertCategoryDoesNotExist(categoryName) {
 }
 
 export async function login() {
-  const email = `cellxgene-smoke-test+${process.env.DEPLOYMENT_STAGE}@chanzuckerberg.com`;
-  const password = "Test1111";
+  const email = ``;
+  const password = "";
 
   await goToPage(appUrlBase);
 
