@@ -29,7 +29,6 @@ const GeneSetsUI = (
       };
     }
     case "geneset: activate rename geneset mode": {
-      console.log("reducer", action);
       return {
         ...state,
         isEditingGenesetName: action.data,
