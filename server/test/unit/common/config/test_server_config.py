@@ -156,7 +156,7 @@ class TestServerConfig(ConfigTests):
         config.update_server_config(
             app__flask_secret_key="secret",
             app__api_base_url=f"http://localhost:{backend_port}/additional/path",
-            multi_dataset__dataroot=f"{PROJECT_ROOT}/example-dataset",
+            multi_dataset__dataroot=f"{FIXTURES_ROOT}",
         )
 
         config.complete_config()
