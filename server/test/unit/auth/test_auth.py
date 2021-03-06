@@ -45,6 +45,7 @@ class AuthTest(unittest.TestCase):
         app_config = AppConfig()
         app_config.update_server_config(app__flask_secret_key="secret")
         app_config.update_server_config(authentication__type="test")
+        app_config.update_server_config(authentication__insecure_test_environment=True)
         app_config.update_server_config(
             multi_dataset__dataroot=dict(
                 a1=dict(dataroot=self.dataset_dataroot, base_url="auth"),
@@ -79,7 +80,7 @@ class AuthTest(unittest.TestCase):
             r = session.get(f"{server}/{login_uri}")
             # check that the login redirect worked
             self.assertEqual(r.history[0].status_code, 302)
-            self.assertEqual(r.url, f"{server}/auth/pbmc3k.cxg/")
+            self.assertEqual(r.url, f"{server}/auth/pbmc3k.cxg")
 
             config = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config").json()
             userinfo = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/userinfo").json()
@@ -91,7 +92,7 @@ class AuthTest(unittest.TestCase):
             r = session.get(f"{server}/{logout_uri}")
             # check that the logout redirect worked
             self.assertEqual(r.history[0].status_code, 302)
-            self.assertEqual(r.url, f"{server}/auth/pbmc3k.cxg/")
+            self.assertEqual(r.url, f"{server}/auth/pbmc3k.cxg")
             config = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/config").json()
             userinfo = session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/userinfo").json()
             self.assertFalse(userinfo["userinfo"]["is_authenticated"])
@@ -116,6 +117,7 @@ class AuthTest(unittest.TestCase):
         app_config.update_server_config(
             authentication__type="test", single_dataset__datapath=f"{self.dataset_dataroot}/pbmc3k.cxg"
         )
+        app_config.update_server_config(authentication__insecure_test_environment=True)
 
         app_config.complete_config()
 

@@ -240,7 +240,7 @@ class DatasetResource(Resource):
 
 class SchemaAPI(DatasetResource):
     # TODO @mdunitz separate dataset schema and user schema
-    @cache_control(no_store=True)
+    @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.schema_get(data_adaptor)
@@ -261,7 +261,7 @@ class UserInfoAPI(DatasetResource):
 
 
 class AnnotationsObsAPI(DatasetResource):
-    @cache_control(public=True, no_store=True)
+    @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.annotations_obs_get(request, data_adaptor)
@@ -434,8 +434,14 @@ class Server:
                 self.app.register_blueprint(dataroot_resources.blueprint)
 
                 self.app.add_url_rule(
-                    f"/{url_dataroot}/<dataset>/",
+                    f"/{url_dataroot}/<dataset>",
                     f"dataset_index_{url_dataroot}",
+                    lambda dataset, url_dataroot=url_dataroot: dataset_index(url_dataroot, dataset),
+                    methods=["GET"],
+                )
+                self.app.add_url_rule(
+                    f"/{url_dataroot}/<dataset>/",
+                    f"dataset_index_{url_dataroot}/",
                     lambda dataset, url_dataroot=url_dataroot: dataset_index(url_dataroot, dataset),
                     methods=["GET"],
                 )

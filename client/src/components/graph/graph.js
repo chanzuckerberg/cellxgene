@@ -22,6 +22,12 @@ import CentroidLabels from "./overlays/centroidLabels";
 import actions from "../../actions";
 import renderThrottle from "../../util/renderThrottle";
 
+import {
+  flagBackground,
+  flagSelected,
+  flagHighlight,
+} from "../../util/glHelpers";
+
 /*
 Simple 2D transforms control all point painting.  There are three:
   * model - convert from underlying per-point coordinate to a layout.
@@ -61,10 +67,6 @@ function createModelTF() {
   mat3.translate(m, m, [-0.5, -0.5]);
   return m;
 }
-
-const flagSelected = 1;
-const flagNaN = 2;
-const flagHighlight = 4;
 
 @connect((state) => ({
   annoMatrix: state.annoMatrix,
@@ -159,8 +161,9 @@ class Graph extends React.Component {
     const flags = new Float32Array(nObs);
     if (colorByData) {
       for (let i = 0, len = flags.length; i < len; i += 1) {
-        if (!Number.isFinite(colorByData[i])) {
-          flags[i] = flagNaN;
+        const val = colorByData[i];
+        if (typeof val === "number" && !Number.isFinite(val)) {
+          flags[i] = flagBackground;
         }
       }
     }

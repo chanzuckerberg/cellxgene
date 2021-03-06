@@ -14,6 +14,7 @@ f"""server:
     web_base_url: {web_base_url}
   authentication:
     type: {auth_type}
+    insecure_test_environment: {insecure_test_environment}
     params_oauth:
       oauth_api_base_url: {oauth_api_base_url}
       client_id: {client_id}

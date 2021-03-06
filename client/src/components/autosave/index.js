@@ -11,7 +11,7 @@ import FilenameDialog from "./filenameDialog";
   error: state.autosave?.error,
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
   writableGenesetsEnabled: !(
-    state.config?.parameters?.annotations_genesets_readonly ?? true
+    state.config?.parameters?.["annotations_genesets_readonly"] ?? true
   ),
   annoMatrix: state.annoMatrix,
   genesets: state.genesets,
@@ -27,11 +27,11 @@ class Autosave extends React.Component {
   }
 
   componentDidMount() {
-    const { writableCategoriesEnabled } = this.props;
+    const { writableCategoriesEnabled, writableGenesetsEnabled } = this.props;
 
     let { timer } = this.state;
     if (timer) clearInterval(timer);
-    if (writableCategoriesEnabled) {
+    if (writableCategoriesEnabled || writableGenesetsEnabled) {
       timer = setInterval(this.tick, 2500);
     } else {
       timer = null;
@@ -58,11 +58,6 @@ class Autosave extends React.Component {
     }
   };
 
-  saveInProgress() {
-    const { obsAnnotationSaveInProgress, genesetSaveInProgress } = this.props;
-    return obsAnnotationSaveInProgress || genesetSaveInProgress;
-  }
-
   needToSaveObsAnnotations = () => {
     /* return true if we need to save obs cell labels, false if we don't */
     const { annoMatrix, lastSavedAnnoMatrix } = this.props;
@@ -79,6 +74,11 @@ class Autosave extends React.Component {
     return this.needToSaveGenesets() || this.needToSaveObsAnnotations();
   }
 
+  saveInProgress() {
+    const { obsAnnotationSaveInProgress, genesetSaveInProgress } = this.props;
+    return obsAnnotationSaveInProgress || genesetSaveInProgress;
+  }
+
   statusMessage() {
     const { error } = this.props;
     if (error) {
@@ -88,10 +88,14 @@ class Autosave extends React.Component {
   }
 
   render() {
-    const { writableCategoriesEnabled, lastSavedAnnoMatrix } = this.props;
+    const {
+      writableCategoriesEnabled,
+      writableGenesetsEnabled,
+      lastSavedAnnoMatrix,
+    } = this.props;
     const initialDataLoadComplete = lastSavedAnnoMatrix;
 
-    if (!writableCategoriesEnabled) return null;
+    if (!writableCategoriesEnabled && !writableGenesetsEnabled) return null;
 
     return (
       <div

@@ -390,41 +390,51 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
 
 export const saveGenesetsAction = () => async (dispatch, getState) => {
   const state = getState();
-  const { config, genesets, annotations } = state;
 
   // bail if gene sets not available, or in readonly mode.
+  const { config } = state;
   const genesetsAreAvailable =
     config?.parameters?.["annotations_genesets"] ?? false;
   const genesetsReadonly =
     config?.parameters?.["annotations_genesets_readonly"] ?? true;
   if (!genesetsAreAvailable || genesetsReadonly) {
     // our non-save was completed!
-    dispatch({
+    return dispatch({
       type: "autosave: genesets complete",
-      lastSavedGenesets: genesets,
+      lastSavedGenesets: state.genesets,
     });
   }
 
-  /*
-   JSON data structure is an array of arrays, where the first
-   element is gene set name, remainder are the genes.  Eg,
+  const { lastTid, genesets: lastGenesets } = state.genesets;
 
-    {
-      "genesets": [
-        [ "gs1", ["TNFRSF4","SUMO3","BRWD1"]],
-        [ "gs2", ["DSCR3", "BRWD1", "BACE2", "SIK1", "C21orf33", "ICOSLG", "SUMO3"]]
-      ]
+  /* Create the JSON OTA data structure */
+  const tid = (lastTid ?? 0) + 1;
+  const genesets = [];
+  for (const [name, gs] of lastGenesets) {
+    const genes = [];
+    for (const g of gs.genes.values()) {
+      genes.push({
+        gene_symbol: g.geneSymbol,
+        gene_description: g.geneDescription,
+      });
     }
-
-  Order of gene sets and genes is significant
-  */
-  const gsArr = [];
-  for (const [gsName, gsGenes] of genesets.genesets) {
-    gsArr.push([gsName, Array.from(gsGenes)]);
+    genesets.push({
+      geneset_name: name,
+      geneset_description: gs.genesetDescription,
+      genes,
+    });
   }
+  const ota = {
+    tid,
+    genesets,
+  };
 
+  /* Save to server */
   try {
-    const { dataCollectionNameIsReadOnly, dataCollectionName } = annotations;
+    const {
+      dataCollectionNameIsReadOnly,
+      dataCollectionName,
+    } = state.annotations;
     const queryString =
       !dataCollectionNameIsReadOnly && !!dataCollectionName
         ? `?annotation-collection-name=${encodeURIComponent(
@@ -440,26 +450,29 @@ export const saveGenesetsAction = () => async (dispatch, getState) => {
           Accept: "application/json",
           "Content-Type": "application/json",
         }),
-        body: JSON.stringify({
-          genesets: gsArr,
-        }),
+        body: JSON.stringify(ota),
         credentials: "include",
       }
     );
-    if (res.ok) {
-      dispatch({
-        type: "autosave: genesets complete",
-        lastSavedGenesets: genesets,
-      });
-    } else {
-      dispatch({
+    if (!res.ok) {
+      return dispatch({
         type: "autosave: genesets error",
         message: `HTTP error ${res.status} - ${res.statusText}`,
         res,
       });
     }
+    return Promise.all([
+      dispatch({
+        type: "autosave: genesets complete",
+        lastSavedGenesets: genesets,
+      }),
+      dispatch({
+        type: "geneset: set tid",
+        tid,
+      }),
+    ]);
   } catch (error) {
-    dispatch({
+    return dispatch({
       type: "autosave: genesets error",
       message: error.toString(),
       error,

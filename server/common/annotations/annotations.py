@@ -33,10 +33,10 @@ class Annotations(metaclass=ABCMeta):
             raise OntologyLoadFailure("Unable to find OBO ontology path") from e
 
         except SyntaxError as e:
-            raise OntologyLoadFailure("Syntax error loading OBO ontology") from e
+            raise OntologyLoadFailure(f"{path}:{e.lineno}:{e.offset} OBO syntax error, unable to read ontology") from e
 
         except Exception as e:
-            raise OntologyLoadFailure("Error loading OBO file") from e
+            raise OntologyLoadFailure(f"{path}:Error loading OBO file") from e
 
     def get_schema(self, data_adaptor):
         schema = []

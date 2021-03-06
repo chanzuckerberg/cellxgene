@@ -53,7 +53,7 @@ class TestServerConfig(ConfigTests):
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
         mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.server_config.complete_config(self.context)
-        self.assertEqual(mock_check_attrs.call_count, 40)
+        self.assertEqual(mock_check_attrs.call_count, 41)
 
     def test_handle_app__throws_error_if_port_doesnt_exist(self):
         config = self.get_config(port=99999999)
@@ -278,6 +278,14 @@ class TestServerConfig(ConfigTests):
             response = session.get(f"{server}/health")
             assert response.json()["status"] == "pass"
 
+            # access a dataset (no slash)
+            response = session.get(f"{server}/set2/pbmc3k.cxg")
+            self.assertEqual(response.status_code, 200)
+
+            # access a dataset (with slash)
+            response = session.get(f"{server}/set2/pbmc3k.cxg/")
+            self.assertEqual(response.status_code, 200)
+
     @patch("server.common.config.server_config.diffexp_tiledb.set_config")
     def test_handle_diffexp(self, mock_tiledb_config):
         custom_config_file = self.custom_app_config(
@@ -304,3 +312,12 @@ class TestServerConfig(ConfigTests):
         mock_tiledb_context.assert_called_once_with(
             {"sm.tile_cache_size": 10, "sm.num_reader_threads": 2, "vfs.s3.region": "us-east-1"}
         )
+
+    def test_test_auth_only_in_insecure(self):
+
+        config = self.get_config(auth_type="test")
+        with self.assertRaises(ConfigurationError):
+            config.complete_config()
+
+        config.update_server_config(authentication__insecure_test_environment=True)
+        config.complete_config()

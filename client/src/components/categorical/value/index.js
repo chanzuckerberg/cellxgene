@@ -174,7 +174,7 @@ class CategoryValue extends React.Component {
     Checks to see if at least one of the following changed:
     * world state
     * the color accessor (what is currently being colored by)
-    * if this catagorical value's selection status has changed
+    * if this categorical value's selection status has changed
     * the crossfilter (ie, global selection state)
 
     If and only if true, update the component
@@ -201,6 +201,13 @@ class CategoryValue extends React.Component {
     const newCount = newCategorySummary.categoryValueCounts[newCategoryIndex];
     const countChanged = count !== newCount;
 
+    // If the user edits an annotation that is currently colored-by, colors may be re-assigned.
+    // This test is conservative - it may cause re-rendering of entire category (all labels)
+    // if any one changes, but only for the currently colored-by category.
+    const colorMightHaveChanged =
+      nextProps.colorAccessor === nextProps.metadataField &&
+      props.categorySummary !== nextProps.categorySummary;
+
     return (
       labelChanged ||
       valueSelectionChange ||
@@ -208,7 +215,8 @@ class CategoryValue extends React.Component {
       annotationsChange ||
       editingLabel ||
       dilationChange ||
-      countChanged
+      countChanged ||
+      colorMightHaveChanged
     );
   };
 
