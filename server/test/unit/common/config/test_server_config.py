@@ -230,7 +230,7 @@ class TestServerConfig(ConfigTests):
         # test that multi dataroots work end to end
         self.config.update_server_config(
             multi_dataset__dataroot=dict(
-                s1=dict(dataroot=f"{PROJECT_ROOT}/example-dataset", base_url="set1/1/2"),
+                s1=dict(dataroot=f"{FIXTURES_ROOT}", base_url="set1/1/2"),
                 s2=dict(dataroot=f"{FIXTURES_ROOT}", base_url="set2"),
                 s3=dict(dataroot=f"{FIXTURES_ROOT}", base_url="set3"),
             )
@@ -255,7 +255,7 @@ class TestServerConfig(ConfigTests):
         with test_server(app_config=self.config) as server:
             session = requests.Session()
 
-            response = session.get(f"{server}/set1/1/2/pbmc3k.h5ad/api/v0.2/config")
+            response = session.get(f"{server}/set1/1/2/pbmc3k.cxg/api/v0.2/config")
             data_config = response.json()
             assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
             assert data_config["config"]["parameters"]["annotations"] is False

@@ -83,7 +83,7 @@ class DiffExpTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as dirname:
             # create a sparse matrix
             h5adfile_path = os.path.join(dirname, "sparse.h5ad")
-            create_test_h5ad(h5adfile_path, 2000, 2000, 10, apply_col_shift)
+            create_test_h5ad(h5adfile_path, 200, 200, 10, apply_col_shift)
 
             h5ad_file_to_convert = H5ADDataFile(h5adfile_path, use_corpora_schema=False)
 

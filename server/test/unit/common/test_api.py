@@ -12,7 +12,6 @@ from server.data_common.matrix_loader import MatrixDataType
 from server.test import (
     data_with_tmp_annotations,
     make_fbs,
-    PROJECT_ROOT,
     FIXTURES_ROOT,
     start_test_server,
     stop_test_server,

@@ -131,20 +131,6 @@ class TestDatasetConfig(ConfigTests):
         cwd = os.getcwd()
         self.assertEqual(config.default_dataset_config.user_annotations._get_output_dir(), cwd)
 
-    def test_handle_embeddings__checks_data_file_types(self):
-        file_name = self.custom_app_config(
-            embedding_names=["name1", "name2"],
-            enable_reembedding="true",
-            dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad",
-            anndata_backed="true",
-            config_file_name=self.config_file_name,
-        )
-        config = AppConfig()
-        config.update_from_config_file(file_name)
-        config.server_config.complete_config(self.context)
-        with self.assertRaises(ConfigurationError):
-            config.default_dataset_config.handle_embeddings()
-
     def test_handle_diffexp__raises_warning_for_large_datasets(self):
         config = self.get_config(lfc_cutoff=0.02, enable_difexp="true", top_n=15)
         config.server_config.complete_config(self.context)
@@ -174,7 +160,7 @@ class TestDatasetConfig(ConfigTests):
         config.update_server_config(
             app__flask_secret_key="secret",
             multi_dataset__dataroot=dict(
-                s1=dict(dataroot=f"{PROJECT_ROOT}/example-dataset", base_url="set1/1/2"),
+                s1=dict(dataroot=f"{FIXTURES_ROOT}", base_url="set1/1/2"),
                 s2=dict(dataroot=f"{FIXTURES_ROOT}", base_url="set2"),
                 s3=dict(dataroot=f"{FIXTURES_ROOT}", base_url="set3"),
             ),
@@ -199,7 +185,7 @@ class TestDatasetConfig(ConfigTests):
         with test_server(app_config=config) as server:
             session = requests.Session()
 
-            response = session.get(f"{server}/set1/1/2/pbmc3k.h5ad/api/v0.2/config")
+            response = session.get(f"{server}/set1/1/2/pbmc3k.cxg/api/v0.2/config")
             data_config = response.json()
             assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
             assert data_config["config"]["parameters"]["annotations"] is False
