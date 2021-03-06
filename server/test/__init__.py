@@ -28,7 +28,6 @@ FIXTURES_ROOT = PROJECT_ROOT + "/server/test/fixtures"
 def data_with_tmp_tiledb_annotations(ext: MatrixDataType):
     tmp_dir = tempfile.mkdtemp()
     fname = {
-        MatrixDataType.H5AD: f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
         MatrixDataType.CXG: "test/fixtures/pbmc3k.cxg",
     }[ext]
     data_locator = DataLocator(fname)
@@ -61,7 +60,6 @@ def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
     if annotations_fixture:
         shutil.copyfile(f"{PROJECT_ROOT}/server/test/fixtures/pbmc3k-annotations.csv", annotations_file)
     fname = {
-        MatrixDataType.H5AD: f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
         MatrixDataType.CXG: "test/fixtures/pbmc3k.cxg",
     }[ext]
     data_locator = DataLocator(fname)

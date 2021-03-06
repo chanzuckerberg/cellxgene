@@ -52,7 +52,7 @@ class AppConfigTest(ConfigTests):
         self.assertDictEqual(dataset_config, expected_dataset_config)
 
     def test_get_dataset_config_returns_default_dataset_config_for_single_datasets(self):
-        datapath = f"{FIXTURES_ROOT}/1e4dfec4-c0b2-46ad-a04e-ff3ffb3c0a8f.h5ad"
+        datapath = f"{FIXTURES_ROOT}/pbmc3k.cxg"
         file_name = self.custom_app_config(dataset_datapath=datapath, config_file_name=self.config_file_name)
         config = AppConfig()
         config.update_from_config_file(file_name)

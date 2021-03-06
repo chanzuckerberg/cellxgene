@@ -28,7 +28,7 @@ class auth(object):
 class WritableTileDBStoredAnnotationTest(unittest.TestCase):
     def setUp(self):
         self.user_id = "1234"
-        self.data, self.tmp_dir, self.annotations = data_with_tmp_tiledb_annotations(MatrixDataType.H5AD)
+        self.data, self.tmp_dir, self.annotations = data_with_tmp_tiledb_annotations(MatrixDataType.CXG)
         self.data.dataset_config.user_annotations = self.annotations
         self.db = self.annotations.db
         self.n_rows = self.data.get_shape()[0]
@@ -161,7 +161,7 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
 
 class WritableAnnotationTest(unittest.TestCase):
     def setUp(self):
-        self.data, self.tmp_dir, self.annotations = data_with_tmp_annotations(MatrixDataType.H5AD)
+        self.data, self.tmp_dir, self.annotations = data_with_tmp_annotations(MatrixDataType.CXG)
         self.data.dataset_config.user_annotations = self.annotations
 
     def tearDown(self):

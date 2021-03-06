@@ -380,31 +380,6 @@ class EndPointsAnnotations(EndPoints):
         self.assertTrue(matching_columns[0]["writable"])
 
 
-class EndPointsAnndata(unittest.TestCase, EndPoints):
-    """Test Case for endpoints"""
-
-    ANNOTATIONS_ENABLED = False
-
-    @classmethod
-    def setUpClass(cls):
-        cls._setupClass(
-            cls,
-            [
-                f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
-                "--disable-annotations",
-                "--experimental-enable-reembedding",
-            ],
-        )
-
-    @classmethod
-    def tearDownClass(cls):
-        stop_test_server(cls.ps)
-
-    @property
-    def annotations_enabled(self):
-        return False
-
-
 class EndPointsCxg(unittest.TestCase, EndPoints):
     """Test Case for endpoints"""
 
@@ -416,24 +391,6 @@ class EndPointsCxg(unittest.TestCase, EndPoints):
 
     @classmethod
     def tearDownClass(cls):
-        stop_test_server(cls.ps)
-
-
-class EndPointsAnndataAnnotations(unittest.TestCase, EndPointsAnnotations):
-    """Test Case for endpoints"""
-
-    ANNOTATIONS_ENABLED = True
-
-    @classmethod
-    def setUpClass(cls):
-        cls.data, cls.tmp_dir, cls.annotations = data_with_tmp_annotations(
-            MatrixDataType.H5AD, annotations_fixture=True
-        )
-        cls._setupClass(cls, ["--annotations-file", cls.annotations.output_file, cls.data.get_location()])
-
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.tmp_dir)
         stop_test_server(cls.ps)
 
 

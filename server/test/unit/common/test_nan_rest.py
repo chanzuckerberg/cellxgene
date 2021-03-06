@@ -16,7 +16,7 @@ class WithNaNs(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ps, cls.server = start_test_server(["test/fixtures/nan.h5ad"])
+        cls.ps, cls.server = start_test_server(["test/fixtures/nan.cxg"])
 
     @classmethod
     def tearDownClass(cls):
