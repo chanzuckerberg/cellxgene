@@ -19,8 +19,16 @@ class GeneExpression extends React.Component {
     const sets = [];
     const { genesets } = this.props;
 
+    console.log("genesets", genesets);
+
     for (const [name, genes] of genesets) {
-      sets.push(<GeneSet key={name} setGenes={[...genes]} setName={name} />);
+      sets.push(
+        <GeneSet
+          key={name}
+          setGenes={Array.from(genes.genes.keys())}
+          setName={name}
+        />
+      );
     }
     return sets;
   };
