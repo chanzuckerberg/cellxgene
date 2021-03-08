@@ -3,17 +3,13 @@
 
 import React from "react";
 import { connect } from "react-redux";
-// import { FaChevronRight, FaChevronDown } from "react-icons/fa";
 
 import { AnchorButton, Icon } from "@blueprintjs/core";
 import Truncate from "../util/truncate";
 import HistogramBrush from "../brushableHistogram";
 
-// import TestMiniHisto from "./test_miniHisto";
 import * as globals from "../../globals";
 import actions from "../../actions";
-
-// import GeneMenus from "./menus/geneMenus";
 
 @connect((state, ownProps) => {
   const { gene } = ownProps;
