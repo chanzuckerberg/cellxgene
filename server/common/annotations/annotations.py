@@ -8,7 +8,7 @@ from server.common.utils.type_conversion_utils import get_schema_type_hint_of_ar
 
 
 class Annotations(metaclass=ABCMeta):
-    """ baseclass for annotations, including ontologies and gene sets"""
+    """ baseclass for annotations, including ontologies"""
 
     """ our default ontology is the PURL for the Cell Ontology.
     See http://www.obofoundry.org/ontology/cl.html """
@@ -62,16 +62,6 @@ class Annotations(metaclass=ABCMeta):
     @abstractmethod
     def write_labels(self, df, data_adaptor):
         """Write the labels (df) to a persistent storage such that it can later be read"""
-        pass
-
-    @abstractmethod
-    def read_genesets(self, data_adaptor):
-        """Return the genesets as a list of list, ie, [['gsname', ['gene1', 'gene2']], ...] """
-        pass
-
-    @abstractmethod
-    def write_genesets(self, gs, data_adaptor):
-        """Write the genesets (gs) to a persistent storage such that it can later be read"""
         pass
 
     @abstractmethod

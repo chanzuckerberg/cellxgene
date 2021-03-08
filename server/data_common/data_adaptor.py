@@ -266,19 +266,6 @@ class DataAdaptor(metaclass=ABCMeta):
 
         return labels_df
 
-    def check_new_genesets(self, genesets):
-        """Check gene sets, return if correct, else raise error"""
-
-        # server_config.single_dataset__var_names
-
-        print("<<<<<<<<>>>>>>>>>>> NEED TO IMPLEMENT check_new_genesets")
-        # XXX TODO -
-        # 1. check that all gs names are legal & non-duplicative.
-        # 2. check that all genes exist in var.index or var-index
-        # 3. de-dup genes
-
-        return genesets
-
     def data_frame_to_fbs_matrix(self, filter, axis):
         """
         Retrieves data 'X' and returns in a flatbuffer Matrix.
@@ -351,7 +338,7 @@ class DataAdaptor(metaclass=ABCMeta):
     @staticmethod
     def normalize_embedding(embedding):
         """Normalize embedding layout to meet client assumptions.
-        Embedding is an ndarray, shape (n_obs, n)., where n is normally 2
+           Embedding is an ndarray, shape (n_obs, n)., where n is normally 2
         """
 
         # scale isotropically

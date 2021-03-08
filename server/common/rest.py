@@ -196,6 +196,9 @@ def annotations_var_get(request, data_adaptor):
 
     try:
         labels = None
+        annotations = data_adaptor.dataset_config.user_annotations
+        if annotations is not None:
+            labels = annotations.read_labels(data_adaptor)
         return make_response(
             data_adaptor.annotation_to_fbs_matrix(Axis.VAR, fields, labels),
             HTTPStatus.OK,
@@ -324,44 +327,4 @@ def layout_obs_put(request, data_adaptor):
     except NotImplementedError as e:
         return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
     except (ValueError, DisabledFeatureError, FilterError) as e:
-        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
-
-
-def genesets_get(request, data_adaptor):
-    preferred_mimetype = request.accept_mimetypes.best_match(["application/json"])
-    if preferred_mimetype != "application/json":
-        return abort(HTTPStatus.NOT_ACCEPTABLE)
-
-    annotations = data_adaptor.dataset_config.user_annotations
-    genesets = annotations.read_genesets(data_adaptor)
-    return make_response(jsonify({"genesets": genesets}), HTTPStatus.OK)
-
-
-def genesets_put(request, data_adaptor):
-    annotations = data_adaptor.dataset_config.user_annotations
-    if annotations is None:
-        return abort(HTTPStatus.NOT_IMPLEMENTED)
-
-    if data_adaptor.dataset_config.user_annotations__genesets__readonly:
-        return abort(HTTPStatus.NOT_IMPLEMENTED)
-
-    anno_collection = request.args.get("annotation-collection-name", default=None)
-
-    if anno_collection is not None:
-        if not annotations.is_safe_collection_name(anno_collection):
-            return abort(HTTPStatus.BAD_REQUEST, "Bad annotation collection name")
-        annotations.set_collection(anno_collection)
-
-    args = request.get_json()
-    try:
-        genesets = args["genesets"]
-        if type(genesets) is list:
-            gs = data_adaptor.check_new_genesets(genesets)
-            annotations.write_genesets(gs, data_adaptor)
-        else:
-            pass
-            annotations.write_genesets([], data_adaptor)
-        res = json.dumps({"status": "OK"})
-        return make_response(res, HTTPStatus.OK, {"Content-Type": "application/json"})
-    except (ValueError, DisabledFeatureError, KeyError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)

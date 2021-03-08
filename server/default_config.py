@@ -192,13 +192,10 @@ dataset:
         hosted_file_directory: null
     local_file_csv:
       directory: null
-      file: null  # annotations file name
-      genesets_file: null  # gene sets file name
+      file: null
     ontology:
       enable: false
       obo_location: null
-    genesets:
-      readonly: true
 
   embeddings:
     names : []
