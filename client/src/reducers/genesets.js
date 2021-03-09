@@ -247,8 +247,8 @@ const GeneSets = (
      *  })
      */
     case "geneset: delete genes": {
-      const { name, genes: genesToDelete } = action;
-      if (!state.genesets.has(name))
+      const { genesetName, geneSymbols } = action;
+      if (!state.genesets.has(genesetName))
         throw new Error(
           "geneset: delete genes -- geneset name does not exist."
         );
@@ -256,15 +256,15 @@ const GeneSets = (
       // clone
       const genesets = new Map(state.genesets);
       const gs = {
-        ...genesets.get(name),
-        genes: new Map(genesets.get(name).genes),
+        ...genesets.get(genesetName),
+        genes: new Map(genesets.get(genesetName).genes),
       };
-      genesets.set(name, gs);
+      genesets.set(genesetName, gs);
 
       // delete
-      const { genes: _genes } = gs;
-      for (const _gene of genesToDelete) {
-        _genes.delete(_gene);
+      const { genes } = gs;
+      for (const geneSymbol of geneSymbols) {
+        genes.delete(geneSymbol);
       }
       return {
         ...state,
