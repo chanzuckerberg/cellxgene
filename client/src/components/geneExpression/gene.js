@@ -58,7 +58,7 @@ class Gene extends React.Component {
     const { dispatch, gene, geneset } = this.props;
 
     dispatch({
-      type: "geneset: del genes",
+      type: "geneset: delete genes",
       name: geneset,
       genes: [gene],
     });
