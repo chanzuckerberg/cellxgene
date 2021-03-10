@@ -98,6 +98,7 @@ class FilenameDialog extends React.Component {
   render() {
     const {
       writableCategoriesEnabled,
+      writableGenesetsEnabled,
       annotations,
       idhash,
       userInfo,
