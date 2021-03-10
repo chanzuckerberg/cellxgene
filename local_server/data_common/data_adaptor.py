@@ -271,7 +271,8 @@ class DataAdaptor(metaclass=ABCMeta):
         Argument genesets may be either the REST OTA format (list of dicts) or the internal
         format (dict of dicts, keyed by the geneset name).
 
-        Will return a modified genesets (eg, remove dups).
+        Will return a modified genesets (eg, remove dups) of the same type as the
+        provided argument. Ie, dict->dict, list->list
 
         Rules:
         0. all geneset names must be unique.
