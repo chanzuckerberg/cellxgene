@@ -19,6 +19,7 @@ from local_server.common.errors import (
     ColorFormatException,
     AnnotationsError,
     ObsoleteRequest,
+    UnsupportedSummaryMethod,
 )
 
 import json
@@ -336,7 +337,7 @@ def genesets_get(request, data_adaptor):
 
     try:
         annotations = data_adaptor.dataset_config.user_annotations
-        (genesets, tid) = data_adaptor.check_new_gene_sets(annotations.read_gene_sets(data_adaptor))
+        (genesets, tid) = annotations.read_gene_sets(data_adaptor)
 
         if preferred_mimetype == "text/csv":
             return make_response(
@@ -373,10 +374,39 @@ def genesets_put(request, data_adaptor):
         if genesets is None:
             abort(HTTPStatus.BAD_REQUEST)
 
-        (gs, _) = data_adaptor.check_new_gene_sets((genesets, tid))
-        annotations.write_gene_sets(gs, tid, data_adaptor)
+        annotations.write_gene_sets(genesets, tid, data_adaptor)
         return make_response(jsonify({"status": "OK"}), HTTPStatus.OK)
     except (ValueError, DisabledFeatureError, KeyError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
     except (ObsoleteRequest, TypeError) as e:
         return abort(HTTPStatus.NOT_FOUND, description=str(e))
+
+
+def geneset_summary_get(request, data_adaptor):
+    preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
+    if preferred_mimetype != "application/octet-stream":
+        return abort(HTTPStatus.NOT_ACCEPTABLE)
+
+    geneset_name = request.args.get("geneset_name", default=None)
+    summary_method = request.args.get("method", default="mean")
+    request_tid = request.args.get("tid", default=None)
+
+    try:
+        annotations = data_adaptor.dataset_config.user_annotations
+        (genesets, tid) = annotations.read_gene_sets(data_adaptor)
+
+        if request_tid is not None and int(request_tid) != tid:
+            return abort(HTTPStatus.NOT_FOUND, "Obsolete TID")
+        if geneset_name is None or geneset_name not in genesets:
+            return abort(HTTPStatus.BAD_REQUEST, "Gene set name not found.")
+        genes = [g["gene_symbol"] for g in genesets.get(geneset_name)["genes"]]
+
+        return make_response(
+            data_adaptor.get_gene_set_summary(geneset_name, genes, summary_method),
+            HTTPStatus.OK,
+            {"Content-Type": "application/octet-stream"},
+        )
+    except (ValueError) as e:
+        return abort(HTTPStatus.NOT_FOUND, description=str(e))
+    except (UnsupportedSummaryMethod) as e:
+        return abort(HTTPStatus.BAD_REQUEST, description=str(e))
