@@ -18,6 +18,7 @@ class CreateGenesetDialogue extends React.PureComponent {
     super(props);
     this.state = {
       genesetName: "",
+      genesToPopulateGeneset: "",
     };
   }
 
@@ -41,15 +42,21 @@ class CreateGenesetDialogue extends React.PureComponent {
       type: "geneset: create",
       genesetName,
     });
-    dispatch({
-      type: "geneset: add genes",
-      genesetName,
-      genes: genesToPopulateGeneset
-        ? _.pull(_.uniq(genesToPopulateGeneset.split(/[ ,]+/)), "")
-        : null,
-    });
+    if (genesToPopulateGeneset) {
+      dispatch({
+        type: "geneset: add genes",
+        genesetName,
+        genes: genesToPopulateGeneset
+          ? _.pull(_.uniq(genesToPopulateGeneset.split(/[ ,]+/)), "")
+          : null,
+      });
+    }
     dispatch({
       type: "geneset: disable create geneset mode",
+    });
+    this.setState({
+      genesetName: "",
+      genesToPopulateGeneset: "",
     });
     e.preventDefault();
   };
