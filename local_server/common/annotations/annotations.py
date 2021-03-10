@@ -110,7 +110,7 @@ class Annotations(metaclass=ABCMeta):
         from io import StringIO
         import csv
 
-        if type(genesets) == dict:
+        if isinstance(genesets, dict):
             genesets = genesets.values()
 
         with StringIO() as sio:

@@ -17,7 +17,7 @@ class DataAdaptor(metaclass=ABCMeta):
     """Base class for loading and accessing matrix data"""
 
     def __init__(self, data_locator, app_config, dataset_config=None):
-        if type(app_config) != AppConfig:
+        if not isinstance(app_config, AppConfig):
             raise TypeError("config expected to be of type AppConfig")
 
         # location to the dataset
@@ -157,7 +157,7 @@ class DataAdaptor(metaclass=ABCMeta):
     def _index_filter_to_mask(self, filter, count):
         mask = np.zeros((count,), dtype=np.bool)
         for i in filter:
-            if type(i) == list:
+            if isinstance(i, list):
                 mask[i[0] : i[1]] = True
             else:
                 mask[i] = True
@@ -289,9 +289,9 @@ class DataAdaptor(metaclass=ABCMeta):
 
         # accept genesets args as either the internal (dict) or REST (list) format,
         # as they are identical except for the dict being keyed by geneset_name.
-        if type(genesets) not in (dict, list):
+        if not isinstance(genesets, dict) and not isinstance(genesets, list):
             raise ValueError("Genesets must be either dict or list.")
-        genesets_iterable = genesets if type(genesets) == list else genesets.values()
+        genesets_iterable = genesets if isinstance(genesets, list) else genesets.values()
 
         # 0. check for uniqueness of geneset names
         geneset_names = [gs["geneset_name"] for gs in genesets_iterable]
@@ -318,18 +318,18 @@ class DataAdaptor(metaclass=ABCMeta):
         # generate a warning and be removed.
         var_names = set(self.query_var_array(self.parameters.get("var_names")))
         for geneset in genesets_iterable:
-            if type(geneset) != dict:
+            if not isinstance(geneset, dict):
                 raise ValueError("Each geneset must be a dict.")
             geneset_name = geneset["geneset_name"]
             genes = geneset["genes"]
-            if type(genes) != list:
+            if not isinstance(genes, list):
                 raise ValueError("Geneset genes field must be a list")
             geneset.setdefault("geneset_description", "")
             gene_symbol_already_seen = set()
             new_genes = []
             for gene in genes:
                 gene_symbol = gene["gene_symbol"]
-                if type(gene_symbol) != str or len(gene_symbol) == 0:
+                if not isinstance(gene_symbol, str) or len(gene_symbol) == 0:
                     raise ValueError("Gene symbol must be non-null string.")
                 if gene_symbol in gene_symbol_already_seen:
                     # duplicate check
