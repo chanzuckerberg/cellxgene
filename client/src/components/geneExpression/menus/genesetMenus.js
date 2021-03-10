@@ -44,7 +44,7 @@ class GenesetMenus extends React.PureComponent {
 
   handleDeleteCategory = () => {
     const { dispatch, geneset } = this.props;
-    dispatch({ type: "geneset: delete", name: geneset });
+    dispatch({ type: "geneset: delete", genesetName: geneset });
   };
 
   render() {

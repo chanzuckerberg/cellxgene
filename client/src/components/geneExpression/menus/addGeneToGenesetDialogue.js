@@ -27,7 +27,7 @@ class AddGeneToGenesetDialogue extends React.PureComponent {
     const { genesToAdd } = this.state;
     dispatch({
       type: "geneset: add genes",
-      name: geneset,
+      genesetName: geneset,
       genes: _.pull(_.uniq(genesToAdd.split(/[ ,]+/)), ""),
     });
     dispatch({
