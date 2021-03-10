@@ -85,7 +85,10 @@ const GeneSets = (
      *
      */
     case "geneset: create": {
-      const { genesetName, genesetDescription } = action;
+      const {
+        genesetName,
+        genesetDescription = "No description provided",
+      } = action;
       if (
         typeof genesetName !== "string" ||
         !genesetName ||
@@ -200,6 +203,7 @@ const GeneSets = (
      */
     case "geneset: add genes": {
       const { genesetName, genes } = action;
+
       if (!state.genesets.has(genesetName))
         throw new Error("geneset: add genes -- geneset name does not exist.");
 
@@ -211,9 +215,20 @@ const GeneSets = (
       };
       genesets.set(genesetName, gs);
 
+      console.log("add genes", genes);
+
+      const genesTmpHardcodedFormat = [];
+
+      genes.forEach((_gene) => {
+        genesTmpHardcodedFormat.push({
+          geneSymbol: _gene,
+          geneDescription: "No description exists",
+        });
+      });
+
       // add
       const newGenes = gs.genes;
-      for (const gene of genes) {
+      for (const gene of genesTmpHardcodedFormat) {
         const { geneSymbol } = gene;
         const geneDescription = gene?.geneDescription ?? "";
         // ignore genes already present

@@ -39,7 +39,11 @@ class CreateGenesetDialogue extends React.PureComponent {
 
     dispatch({
       type: "geneset: create",
-      name: genesetName,
+      genesetName,
+    });
+    dispatch({
+      type: "geneset: add genes",
+      genesetName,
       genes: genesToPopulateGeneset
         ? _.pull(_.uniq(genesToPopulateGeneset.split(/[ ,]+/)), "")
         : null,
