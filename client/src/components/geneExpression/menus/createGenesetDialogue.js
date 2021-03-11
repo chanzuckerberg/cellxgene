@@ -53,7 +53,6 @@ class CreateGenesetDialogue extends React.PureComponent {
       genesArrayFromString.forEach((_gene) => {
         genesTmpHardcodedFormat.push({
           geneSymbol: _gene,
-          geneDescription: "No description exists",
         });
       });
 
