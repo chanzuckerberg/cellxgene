@@ -509,6 +509,16 @@ class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
                     {"genes": [], "geneset_description": "", "geneset_name": "third gene set"},
                     {"genes": [], "geneset_description": "fourth description", "geneset_name": "fourth_gene_set"},
                     {"genes": [], "geneset_description": "", "geneset_name": "fifth_dataset"},
+                    {
+                        "genes": [
+                            {"gene_description": "", "gene_symbol": "ACD"},
+                            {"gene_description": "", "gene_symbol": "AATF"},
+                            {"gene_description": "", "gene_symbol": "F5"},
+                            {"gene_description": "", "gene_symbol": "PIGU"},
+                        ],
+                        "geneset_description": "",
+                        "geneset_name": "summary test",
+                    },
                 ],
                 "tid": 0,
             },
@@ -531,6 +541,10 @@ second gene set,,SIK1,\r
 third gene set,,,\r
 fourth_gene_set,fourth description,,\r
 fifth_dataset,,,\r
+summary test,,ACD,\r
+summary test,,AATF,\r
+summary test,,F5,\r
+summary test,,PIGU,\r
 """,
         )
 
@@ -677,8 +691,86 @@ fifth_dataset,,,\r
             original_data,
         )
 
-    """
-    TODO once we have some code to support it:
-    1. GET genesets_summary
-    2. genesets_summary obeys tid
-    """
+    def test_get_geneset_summary(self):
+        endpoint = "geneset_summary?geneset_name=summary%20test&method=mean"
+        url = f"{self.URL_BASE}{endpoint}"
+        header = {"Accept": "application/octet-stream"}
+        result = self.session.get(url, headers=header)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_matrix_FBS(result.content)
+        self.assertEqual(df["n_rows"], 2638)
+        self.assertEqual(df["n_cols"], 1)
+        self.assertEqual(df["col_idx"], ["summary test"])
+        self.assertAlmostEqual(df["columns"][0][0], -0.19863907)
+
+    def test_get_geneset_summary_default_method(self):
+        endpoint = "geneset_summary?geneset_name=summary%20test"
+        url = f"{self.URL_BASE}{endpoint}"
+        header = {"Accept": "application/octet-stream"}
+        result = self.session.get(url, headers=header)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_matrix_FBS(result.content)
+        self.assertEqual(df["n_rows"], 2638)
+        self.assertEqual(df["n_cols"], 1)
+        self.assertEqual(df["col_idx"], ["summary test"])
+        self.assertAlmostEqual(df["columns"][0][0], -0.19863907)
+
+    def test_get_geneset_summary_check_tid(self):
+        # get the TID
+        result = self.session.get(f"{self.URL_BASE}genesets", headers={"Accept": "application/json"})
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        tid = result.json()["tid"]
+
+        # current tid
+        endpoint = f"geneset_summary?geneset_name=summary%20test&tid={tid}"
+        result = self.session.get(f"{self.URL_BASE}{endpoint}", headers={"Accept": "application/octet-stream"})
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+
+        # future tid
+        endpoint = f"geneset_summary?geneset_name=summary%20test&tid={tid+1}"
+        result = self.session.get(f"{self.URL_BASE}{endpoint}", headers={"Accept": "application/octet-stream"})
+        self.assertEqual(result.status_code, HTTPStatus.NOT_FOUND)
+
+        # past tid
+        endpoint = f"geneset_summary?geneset_name=summary%20test&tid={tid-1}"
+        result = self.session.get(f"{self.URL_BASE}{endpoint}", headers={"Accept": "application/octet-stream"})
+        self.assertEqual(result.status_code, HTTPStatus.NOT_FOUND)
+
+        # No tid - ie, skip check
+        endpoint = "geneset_summary?geneset_name=summary%20test"
+        result = self.session.get(f"{self.URL_BASE}{endpoint}", headers={"Accept": "application/octet-stream"})
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+
+    def test_get_geneset_summary_edge_cases(self):
+        # attempt to summarize _all_ genesets, including edge cases with zero or one gene
+        result = self.session.get(f"{self.URL_BASE}genesets", headers={"Accept": "application/json"})
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        geneset_names = [gs["geneset_name"] for gs in result.json()["genesets"]]
+
+        for gs in geneset_names:
+            endpoint = f"geneset_summary?geneset_name={gs}"
+            result = self.session.get(f"{self.URL_BASE}{endpoint}", headers={"Accept": "application/octet-stream"})
+            self.assertEqual(result.status_code, HTTPStatus.OK)
+            self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+            df = decode_fbs.decode_matrix_FBS(result.content)
+            self.assertEqual(df["n_rows"], 2638)
+            self.assertEqual(df["n_cols"], 1)
+            self.assertEqual(df["col_idx"], [gs])
+
+    def test_get_geneset_error_handling(self):
+        # no geneset
+        endpoint = "geneset_summary"
+        result = self.session.get(f"{self.URL_BASE}{endpoint}", headers={"Accept": "application/octet-stream"})
+        self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
+
+        # unknown geneset
+        endpoint = "geneset_summary?geneset_name=NO_SUCH_GENE_SET"
+        result = self.session.get(f"{self.URL_BASE}{endpoint}", headers={"Accept": "application/octet-stream"})
+        self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
+
+        # unknown method
+        endpoint = "geneset_summary?geneset_name=summary%20test&method=NO_SUCH_METHOD"
+        result = self.session.get(f"{self.URL_BASE}{endpoint}", headers={"Accept": "application/octet-stream"})
+        self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
