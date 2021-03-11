@@ -215,20 +215,9 @@ const GeneSets = (
       };
       genesets.set(genesetName, gs);
 
-      console.log("add genes", genes);
-
-      const genesTmpHardcodedFormat = [];
-
-      genes.forEach((_gene) => {
-        genesTmpHardcodedFormat.push({
-          geneSymbol: _gene,
-          geneDescription: "No description exists",
-        });
-      });
-
       // add
       const newGenes = gs.genes;
-      for (const gene of genesTmpHardcodedFormat) {
+      for (const gene of genes) {
         const { geneSymbol } = gene;
         const geneDescription = gene?.geneDescription ?? "";
         // ignore genes already present

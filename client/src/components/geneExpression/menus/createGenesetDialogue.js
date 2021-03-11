@@ -43,12 +43,24 @@ class CreateGenesetDialogue extends React.PureComponent {
       genesetName,
     });
     if (genesToPopulateGeneset) {
+      const genesTmpHardcodedFormat = [];
+
+      const genesArrayFromString = _.pull(
+        _.uniq(genesToPopulateGeneset.split(/[ ,]+/)),
+        ""
+      );
+
+      genesArrayFromString.forEach((_gene) => {
+        genesTmpHardcodedFormat.push({
+          geneSymbol: _gene,
+          geneDescription: "No description exists",
+        });
+      });
+
       dispatch({
         type: "geneset: add genes",
         genesetName,
-        genes: genesToPopulateGeneset
-          ? _.pull(_.uniq(genesToPopulateGeneset.split(/[ ,]+/)), "")
-          : null,
+        genes: genesTmpHardcodedFormat,
       });
     }
     dispatch({
