@@ -85,7 +85,7 @@ const GeneSets = (
      *
      */
     case "geneset: create": {
-      const { genesetName, genesetDescription = "" } = action;
+      const { genesetName, genesetDescription } = action;
       if (
         typeof genesetName !== "string" ||
         !genesetName ||
