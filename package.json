@@ -1,9 +1,0 @@
-{
-  "name": "cellxgene",
-  "scripts": {
-    "postinstall": "npm install --prefix client && npm run build --prefix client && make copy-client-assets"
-  },
-  "devDependencies": {
-    "@blueprintjs/eslint-plugin": "^0.3.1"
-  }
-}
