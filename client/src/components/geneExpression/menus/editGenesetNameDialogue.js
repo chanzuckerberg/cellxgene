@@ -53,12 +53,6 @@ class RenameGeneset extends React.PureComponent {
     this.setState({ genesetName: e });
   };
 
-  instruction = () => {
-    return "New, unique geneset name";
-    /* todo genesets */
-    // return genesetPrompt(this.genesetNameError(geneset), "New, unique geneset", ":");
-  };
-
   render() {
     const { genesetName } = this.state;
     const { genesetsUI } = this.props;
@@ -74,7 +68,7 @@ class RenameGeneset extends React.PureComponent {
             "data-testid": `${genesetsUI.isEditingGenesetName}:submit-geneset`,
           }}
           title="Rename gene set"
-          instruction={`Rename ${genesetsUI.isEditingGenesetName}`} /* todo genesets this.instruction(genesetName) */
+          instruction={`Rename ${genesetsUI.isEditingGenesetName}`}
           cancelTooltipContent="Close this dialog without renaming the gene set."
           primaryButtonText="Rename gene set"
           text={genesetName}
