@@ -39,6 +39,7 @@ class CreateGenesetDialogue extends React.PureComponent {
     dispatch({
       type: "geneset: create",
       genesetName,
+      genesetDescription: "",
     });
     if (genesToPopulateGeneset) {
       const genesTmpHardcodedFormat = [];

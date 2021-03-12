@@ -25,10 +25,21 @@ class AddGeneToGenesetDialogue extends React.PureComponent {
   handleAddGeneToGeneSet = (e) => {
     const { geneset, dispatch } = this.props;
     const { genesToAdd } = this.state;
+
+    const genesTmpHardcodedFormat = [];
+
+    const genesArrayFromString = _.pull(_.uniq(genesToAdd.split(/[ ,]+/)), "");
+
+    genesArrayFromString.forEach((_gene) => {
+      genesTmpHardcodedFormat.push({
+        geneSymbol: _gene,
+      });
+    });
+
     dispatch({
       type: "geneset: add genes",
       genesetName: geneset,
-      genes: _.pull(_.uniq(genesToAdd.split(/[ ,]+/)), ""),
+      genes: genesTmpHardcodedFormat,
     });
     dispatch({
       type: "geneset: disable add new genes mode",
