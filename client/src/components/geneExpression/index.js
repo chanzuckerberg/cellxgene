@@ -58,21 +58,18 @@ class GeneExpression extends React.Component {
   };
 
   render() {
-    const geneSetsFeatureEnabledTODO = true;
     return (
       <div>
         <div>
-          {geneSetsFeatureEnabledTODO ? (
-            <div style={{ marginBottom: 10, position: "relative", top: -2 }}>
-              <Button
-                data-testid="open-create-geneset-dialog"
-                onClick={this.handleActivateCreateGenesetMode}
-                intent="primary"
-              >
-                Create new <strong>gene set</strong>
-              </Button>
-            </div>
-          ) : null}
+          <div style={{ marginBottom: 10, position: "relative", top: -2 }}>
+            <Button
+              data-testid="open-create-geneset-dialog"
+              onClick={this.handleActivateCreateGenesetMode}
+              intent="primary"
+            >
+              Create new <strong>gene set</strong>
+            </Button>
+          </div>
           <CreateGenesetDialogue />
           <EditGenesetNameDialogue />
         </div>
