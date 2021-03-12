@@ -1,4 +1,3 @@
-// jshint esversion: 6
 /* rc slider https://www.npmjs.com/package/rc-slider */
 
 import React from "react";
@@ -55,21 +54,10 @@ class GeneSet extends React.Component {
 
     Promise.all(
       [...upperGenes.keys()].map((upperGene) => {
-        /* Unlike bulk add... with gene sets this test needs to be within the set... */
-        // if (upperUserDefinedGenes.get(upperGene) !== undefined) {
-        //   return keepAroundErrorToast(`${upperGene} already exists`);
-        // }
-
         const indexOfGene = upperWorldGenes.get(upperGene);
 
         if (indexOfGene === undefined) {
           console.log("found a gene that doesn't appear to be a valid name");
-          // return;
-          // keepAroundErrorToast(
-          //   `${
-          //     genes[upperGenes.get(upperGene)]
-          //   } doesn't appear to be a valid gene name.`
-          // );
         }
         return dispatch(
           actions.requestUserDefinedGene(worldGenes[indexOfGene])
