@@ -74,7 +74,6 @@ class GeneSet extends React.Component {
     this.setState({ isOpen: !isOpen });
   };
 
-  // todo, gene set color by aggregate functionality
   onColorChangeClick = () => {
     //   const { dispatch, setName } = this.props;
     //   dispatch({
@@ -91,6 +90,7 @@ class GeneSet extends React.Component {
   render() {
     const { setName, setGenes, isDiffexp } = this.props;
     const { isOpen, toggleSummaryHisto } = this.state;
+    const genesetNameLengthVisible = 120; /* this magic number determines how much of a long geneset name we see */
     return (
       <div style={{ marginBottom: 3 }}>
         <div
@@ -115,9 +115,7 @@ class GeneSet extends React.Component {
             <Truncate>
               <span
                 style={{
-                  maxWidth:
-                    globals.leftSidebarWidth -
-                    120 /* todo_genesets this magic number determines how much of a long geneset name we see, and will be tweaked as we build */,
+                  maxWidth: globals.leftSidebarWidth - genesetNameLengthVisible,
                 }}
                 data-testid={`${setName}:geneset-label`}
               >
