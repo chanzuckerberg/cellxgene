@@ -1,5 +1,3 @@
-/* rc slider https://www.npmjs.com/package/rc-slider */
-
 import React from "react";
 import { connect } from "react-redux";
 import { Button } from "@blueprintjs/core";

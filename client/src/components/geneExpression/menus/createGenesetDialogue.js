@@ -3,8 +3,6 @@ import React from "react";
 import { connect } from "react-redux";
 import AnnoDialog from "../../categorical/annoDialog";
 import LabelInput from "../../categorical/labelInput";
-// import LabelInput from "../labelInput";
-// import { genesetPrompt, isGenesetErroneous } from "../genesetUtil";
 
 @connect((state) => ({
   annotations: state.annotations,
