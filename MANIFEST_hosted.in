@@ -1,7 +1,7 @@
-recursive-include server/common/web/templates *
-recursive-include server/common/web/static *
+recursive-include backend/server/common/web/templates *
+recursive-include backend/server/common/web/static *
 
-include server/requirements.txt
-include server/requirements-prepare.txt
-include server/converters/schema/hgnc_complete_set.txt.gz
-include server/converters/schema/schema_definitions/*
+include backend/server/requirements.txt
+include backend/server/requirements-prepare.txt
+include backend/server/converters/schema/hgnc_complete_set.txt.gz
+include backend/server/converters/schema/schema_definitions/*

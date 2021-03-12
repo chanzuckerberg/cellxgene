@@ -2,7 +2,7 @@ include common.mk
 
 BUILDDIR := build
 CLIENTBUILD := $(BUILDDIR)/client
-SERVERBUILD := $(BUILDDIR)/server
+SERVERBUILD := $(BUILDDIR)/backend/server
 LOCALSERVERBUILD := $(BUILDDIR)/local_server
 CLEANFILES :=  $(BUILDDIR)/ client/build build dist cellxgene.egg-info
 
@@ -10,7 +10,7 @@ PART ?= patch
 
 # CLEANING
 .PHONY: clean
-clean: clean-lite clean-local-server clean-server clean-client
+clean: clean-lite clean-local-server cleans-server clean-client
 
 # cleaning the client's node_modules is the longest one, so we avoid that if possible
 .PHONY: clean-lite
@@ -20,7 +20,8 @@ clean-lite:
 clean-%:
 	cd $(subst -,_,$*) && $(MAKE) clean
 
-
+cleans-server:
+	cd backend/server && $(MAKE) clean
 # BUILDING PACKAGE
 
 .PHONY: build-client
@@ -36,7 +37,7 @@ build-local: clean build-client
 
 .PHONY: build
 build: clean build-client
-	git ls-files server/ | grep -v 'server/test/' | cpio -pdm $(BUILDDIR)
+	git ls-files backend/server/ | grep -v 'backend/server/test/' | cpio -pdm $(BUILDDIR)
 	cp -r client/build/  $(CLIENTBUILD)
 	$(call copy_client_assets,$(CLIENTBUILD),$(SERVERBUILD))
 	cp MANIFEST_hosted.in README.md setup.cfg setup_hosted.py $(BUILDDIR)
@@ -49,8 +50,8 @@ build-for-server-dev-local: clean-local-server build-client
 	$(call copy_client_assets,client/build,local_server)
 
 .PHONY: build-for-server-dev
-build-for-server-dev: clean-server build-client
-	$(call copy_client_assets,client/build,server)
+build-for-server-dev: cleans-server build-client
+	$(call copy_client_assets,client/build,backend/server)
 
 .PHONY: copy-client-assets-local
 copy-client-assets-local:
@@ -58,7 +59,7 @@ copy-client-assets-local:
 
 .PHONY: copy-client-assets
 copy-client-assets:
-	$(call copy_client_assets,client/build,server)
+	$(call copy_client_assets,client/build,backend/server)
 
 # TESTING
 .PHONY: test
@@ -73,6 +74,9 @@ unit-test-local: unit-test-local-server unit-test-client
 .PHONY: unit-test
 unit-test: unit-test-server unit-test-client
 
+refactor-unit-test:
+	cd backend/server && $(MAKE) unit-test
+
 unit-test-%:
 	cd $(subst -,_,$*) && $(MAKE) unit-test
 
@@ -86,7 +90,7 @@ smoke-test-annotations:
 
 .PHONY: test-db
 test-db:
-	cd server && $(MAKE) test-db
+	cd backend/server && $(MAKE) test-db
 
 # FORMATTING CODE
 
@@ -113,7 +117,7 @@ lint-local-server: fmt-py
 
 .PHONY: lint-server
 lint-server: fmt-py
-	flake8 server --per-file-ignores='server/test/fixtures/dataset_config_outline.py:F821 server/test/fixtures/server_config_outline.py:F821 server/test/performance/scale_test_annotations.py:E501'
+	flake8 server --per-file-ignores='backend/server/test/fixtures/dataset_config_outline.py:F821 backend/server/test/fixtures/server_config_outline.py:F821 backend/server/test/performance/scale_test_annotations.py:E501'
 
 .PHONY: lint-client
 lint-client:
@@ -183,7 +187,7 @@ dev-env-local-server:
 
 .PHONY: dev-env-server
 dev-env-server:
-	pip install -r server/requirements-dev.txt
+	pip install -r backend/server/requirements-dev.txt
 # Set PART=[major, minor, patch] as param to make bump.
 # This will create a release candidate. (i.e. 0.16.1 -> 0.16.2-rc.0 for a patch bump)
 .PHONY: bump-version
