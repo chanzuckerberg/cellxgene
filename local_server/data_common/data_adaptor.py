@@ -17,7 +17,7 @@ class DataAdaptor(metaclass=ABCMeta):
     """Base class for loading and accessing matrix data"""
 
     def __init__(self, data_locator, app_config, dataset_config=None):
-        if type(app_config) != AppConfig:
+        if not isinstance(app_config, AppConfig):
             raise TypeError("config expected to be of type AppConfig")
 
         # location to the dataset
@@ -157,7 +157,7 @@ class DataAdaptor(metaclass=ABCMeta):
     def _index_filter_to_mask(self, filter, count):
         mask = np.zeros((count,), dtype=np.bool)
         for i in filter:
-            if type(i) == list:
+            if isinstance(i, list):
                 mask[i[0] : i[1]] = True
             else:
                 mask[i] = True
@@ -262,15 +262,17 @@ class DataAdaptor(metaclass=ABCMeta):
 
         return labels_df
 
-    def check_new_gene_sets(self, args, context=None):
+    def check_new_gene_sets(self, genesets, context=None):
         """
         Check validity of gene sets, return if correct, else raise error.
         May also modify the gene set for conditions that should be resolved,
         but which do not warrant a hard error.
 
-        Argument 'args' must be a tuple containing (genesets, tid).  Genesets
-        may be either the REST OTA format (list of dicts) or the internal format
-        (dict of dicts, keyed by the geneset name).
+        Argument genesets may be either the REST OTA format (list of dicts) or the internal
+        format (dict of dicts, keyed by the geneset name).
+
+        Will return a modified genesets (eg, remove dups) of the same type as the
+        provided argument. Ie, dict->dict, list->list
 
         Rules:
         0. all geneset names must be unique.
@@ -283,17 +285,16 @@ class DataAdaptor(metaclass=ABCMeta):
            will generate a warning and the symbol removed.
         3. Duplicate gene symbols are silently de-duped.
         """
-        (genesets, tid) = args
         messagefn = context["messagefn"] if context else (lambda x: None)
 
         # accept genesets args as either the internal (dict) or REST (list) format,
         # as they are identical except for the dict being keyed by geneset_name.
-        if type(genesets) not in (dict, list):
+        if not isinstance(genesets, dict) and not isinstance(genesets, list):
             raise ValueError("Genesets must be either dict or list.")
-        genesets = genesets if type(genesets) == list else genesets.values()
+        genesets_iterable = genesets if isinstance(genesets, list) else genesets.values()
 
         # 0. check for uniqueness of geneset names
-        geneset_names = [gs["geneset_name"] for gs in genesets]
+        geneset_names = [gs["geneset_name"] for gs in genesets_iterable]
         if len(set(geneset_names)) != len(geneset_names):
             raise KeyError("All geneset names must be unique.")
 
@@ -316,18 +317,19 @@ class DataAdaptor(metaclass=ABCMeta):
         # 2. & 3. check for duplicate gene symbols, and those not present in the dataset. They will
         # generate a warning and be removed.
         var_names = set(self.query_var_array(self.parameters.get("var_names")))
-        for geneset in genesets:
-            if type(geneset) != dict:
+        for geneset in genesets_iterable:
+            if not isinstance(geneset, dict):
                 raise ValueError("Each geneset must be a dict.")
             geneset_name = geneset["geneset_name"]
             genes = geneset["genes"]
-            if type(genes) != list:
+            if not isinstance(genes, list):
                 raise ValueError("Geneset genes field must be a list")
+            geneset.setdefault("geneset_description", "")
             gene_symbol_already_seen = set()
             new_genes = []
             for gene in genes:
                 gene_symbol = gene["gene_symbol"]
-                if type(gene_symbol) != str or len(gene_symbol) == 0:
+                if not isinstance(gene_symbol, str) or len(gene_symbol) == 0:
                     raise ValueError("Gene symbol must be non-null string.")
                 if gene_symbol in gene_symbol_already_seen:
                     # duplicate check
@@ -345,11 +347,12 @@ class DataAdaptor(metaclass=ABCMeta):
                     continue
 
                 gene_symbol_already_seen.add(gene_symbol)
+                gene.setdefault("gene_description", "")
                 new_genes.append(gene)
 
             geneset["genes"] = new_genes
 
-        return args
+        return genesets
 
     def data_frame_to_fbs_matrix(self, filter, axis):
         """
@@ -479,3 +482,7 @@ class DataAdaptor(metaclass=ABCMeta):
         except RuntimeError:
             lastmod = None
         return lastmod
+
+    @abstractmethod
+    def get_gene_set_summary(self, geneset_name, genes, method):
+        pass

@@ -26,9 +26,13 @@ class AnnotationsLocalFile(Annotations):
         self.label_lock = threading.RLock()
         self.gene_sets_lock = threading.RLock()
 
-        # cache the most recent annotations.
-        self.last_fname = None
+        # cache the most recent cell labels/annotations.
+        self.last_label_fname = None
         self.last_labels = None
+
+        # cache the most recent gene sets.
+        self.last_geneset_fname = None
+        self.last_geneset = None
 
         # txn ID - used to de-dup geneset writes
         self.last_geneset_tid = 0
@@ -63,14 +67,14 @@ class AnnotationsLocalFile(Annotations):
         with self.label_lock:
             if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
                 # returned the cached labels if possible, otherwise read them from the file
-                if fname == self.last_fname:
+                if fname == self.last_label_fname:
                     return self.last_labels
                 else:
                     labels = pd.read_csv(
                         fname, dtype="category", index_col=0, header=0, comment="#", keep_default_na=False
                     )
                     # update the cache
-                    self.last_fname = fname
+                    self.last_label_fname = fname
                     self.last_labels = labels
                     return labels
             else:
@@ -102,7 +106,7 @@ class AnnotationsLocalFile(Annotations):
                 open(fname, "w").close()
 
             # update the cache
-            self.last_fname = fname
+            self.last_label_fname = fname
             self.last_labels = df
 
     def read_gene_sets(self, data_adaptor, context=None):
@@ -116,8 +120,19 @@ class AnnotationsLocalFile(Annotations):
         with self.gene_sets_lock:
             tid = self.last_geneset_tid  # inside the critical section
             if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
-                with open(fname, newline="") as f:
-                    gene_sets = read_gene_set_tidycsv(f, context)
+                # return the cached genesets if possible, otherwise read from file and validate them
+                if fname == self.last_geneset_fname:
+                    gene_sets = self.last_geneset
+                else:
+                    with open(fname, newline="") as f:
+                        gene_sets = read_gene_set_tidycsv(f, context)
+
+                    # validate
+                    gene_sets = data_adaptor.check_new_gene_sets(gene_sets, context)
+
+                    # update cache
+                    self.last_geneset_fname = fname
+                    self.last_geneset = gene_sets
 
         return (gene_sets, tid)
 
@@ -126,6 +141,9 @@ class AnnotationsLocalFile(Annotations):
 
         if type(tid) != int or tid < 0:
             raise ValueError("tid must be a positive integer")
+
+        # may raise
+        gene_sets = data_adaptor.check_new_gene_sets(gene_sets)
 
         with self.gene_sets_lock:
             # skip if the request is stale
@@ -148,6 +166,10 @@ class AnnotationsLocalFile(Annotations):
             with open(fname, "w", newline="") as f:
                 f.write(header)
                 f.write(self.gene_sets_to_csv(gene_sets))
+
+            # update the cache
+            self.last_geneset_fname = fname
+            self.last_geneset = gene_sets if type(gene_sets) == dict else {g["geneset_name"]: g for g in gene_sets}
 
     def _get_userdata_idhash(self, data_adaptor):
         """

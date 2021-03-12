@@ -33,9 +33,9 @@ class DatasetConfig(BaseConfig):
                 "obo_location"
             ]
             self.user_annotations__gene_sets__readonly = default_config["user_annotations"]["gene_sets"]["readonly"]
-            self.user_annotations__local_file_csv__gene_sets_file = default_config["user_annotations"]["local_file_csv"][
-                "gene_sets_file"
-            ]
+            self.user_annotations__local_file_csv__gene_sets_file = default_config["user_annotations"][
+                "local_file_csv"
+            ]["gene_sets_file"]
 
             self.embeddings__names = default_config["embeddings"]["names"]
             self.embeddings__enable_reembedding = default_config["embeddings"]["enable_reembedding"]
@@ -169,10 +169,10 @@ class DatasetConfig(BaseConfig):
         if server_config.single_dataset__datapath:
             data_adaptor = self.get_data_adaptor()
             if self.user_annotations__local_file_csv__file:
-                data_adaptor.check_new_labels(self.user_annotations.read_labels(data_adaptor))
+                self.user_annotations.read_labels(data_adaptor)
             if self.user_annotations__local_file_csv__gene_sets_file:
                 try:
-                    data_adaptor.check_new_gene_sets(self.user_annotations.read_gene_sets(data_adaptor, context), context)
+                    self.user_annotations.read_gene_sets(data_adaptor, context)
                 except (ValueError, AnnotationsError, KeyError) as e:
                     raise ConfigurationError(f"Unable to read genesets CSV file: {str(e)}") from e
 
