@@ -70,6 +70,7 @@ class Gene extends React.Component {
       isDiffexp,
     } = this.props;
     const { geneIsExpanded } = this.state;
+    const genesetNameLengthVisible = 310; /* this magic number determines how much of a long geneset name we see */
     return (
       <div>
         <div
@@ -107,9 +108,7 @@ class Gene extends React.Component {
             <Truncate>
               <span
                 style={{
-                  width:
-                    globals.leftSidebarWidth -
-                    310 /* todo_genesets this magic number determines how much of a long geneset name we see, and will be tweaked as we build */,
+                  width: globals.leftSidebarWidth - genesetNameLengthVisible,
                 }}
                 data-testid={`${gene}:gene-label`}
               >
