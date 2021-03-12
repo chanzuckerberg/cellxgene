@@ -76,12 +76,13 @@ class GeneSet extends React.Component {
     this.setState({ isOpen: !isOpen });
   };
 
+  // todo, gene set color by aggregate functionality
   onColorChangeClick = () => {
-    const { dispatch, setName } = this.props;
-    dispatch({
-      type: "color by gene set",
-      colorAccessor: setName,
-    });
+    //   const { dispatch, setName } = this.props;
+    //   dispatch({
+    //     type: "color by gene set",
+    //     colorAccessor: setName,
+    //   });
   };
 
   toggleSummaryHisto = () => {

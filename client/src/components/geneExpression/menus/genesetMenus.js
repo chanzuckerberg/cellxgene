@@ -104,6 +104,7 @@ class GenesetMenus extends React.PureComponent {
               />
             </Popover>
             <Button
+              disabled
               style={{ marginLeft: 0 }}
               data-testclass="colorby-entire-geneset"
               data-testid={`${geneset}:colorby-entire-geneset`}
