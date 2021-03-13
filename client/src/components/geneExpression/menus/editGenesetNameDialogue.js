@@ -34,9 +34,9 @@ class RenameGeneset extends React.PureComponent {
     const { genesetName } = this.state;
 
     dispatch({
-      type: "geneset: rename",
-      name: genesetsUI.isEditingGenesetName,
-      newName: genesetName,
+      type: "geneset: update",
+      genesetName: genesetsUI.isEditingGenesetName,
+      update: { genesetName },
     });
     dispatch({
       type: "geneset: disable rename geneset mode",
