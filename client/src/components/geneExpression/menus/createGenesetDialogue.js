@@ -9,6 +9,7 @@ import LabelInput from "../../categorical/labelInput";
   schema: state.annoMatrix?.schema,
   ontology: state.ontology,
   obsCrossfilter: state.obsCrossfilter,
+  genesets: state.genesets.genesets,
   genesetsUI: state.genesetsUI,
 }))
 class CreateGenesetDialogue extends React.PureComponent {
@@ -84,15 +85,19 @@ class CreateGenesetDialogue extends React.PureComponent {
     this.setState({ genesToPopulateGeneset: e });
   };
 
-  instruction = () => {
-    return "New, unique geneset";
-    /* todo genesets */
-    // return genesetPrompt(this.genesetNameError(geneset), "New, unique geneset", ":");
+  instruction = (genesetName, genesets) => {
+    return genesets.has(genesetName)
+      ? "Geneset name must be unique."
+      : "New, unique geneset name";
+  };
+
+  validate = (genesetName, genesets) => {
+    return genesets.has(genesetName);
   };
 
   render() {
     const { genesetName } = this.state;
-    const { metadataField, genesetsUI } = this.props;
+    const { metadataField, genesetsUI, genesets } = this.props;
 
     return (
       <>
@@ -105,11 +110,11 @@ class CreateGenesetDialogue extends React.PureComponent {
             "data-testid": `${metadataField}:submit-geneset`,
           }}
           title="Create gene set"
-          instruction="Type a new name for your gene set" /* todo genesets this.instruction(genesetName) */
+          instruction={this.instruction(genesetName, genesets)}
           cancelTooltipContent="Close this dialog without creating a new gene set."
           primaryButtonText="Create gene set"
           text={genesetName}
-          validationError={false}
+          validationError={this.validate(genesetName, genesets)}
           annoInput={
             <LabelInput
               onChange={this.handleChange}
