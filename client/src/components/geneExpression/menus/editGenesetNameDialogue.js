@@ -45,7 +45,6 @@ class RenameGeneset extends React.PureComponent {
   };
 
   genesetNameError = () => {
-    /* todo genesets validation */
     return false;
   };
 

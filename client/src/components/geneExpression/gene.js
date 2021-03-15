@@ -88,7 +88,7 @@ class Gene extends React.Component {
             tabIndex="0"
             data-testclass="gene-expand"
             data-testid={`${gene}:gene-expand`}
-            onKeyPress={/* todo_genesets */ () => {}}
+            onKeyPress={() => {}}
             style={{
               cursor: "pointer",
               display: "flex",

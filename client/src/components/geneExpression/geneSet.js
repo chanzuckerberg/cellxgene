@@ -105,7 +105,9 @@ class GeneSet extends React.Component {
             tabIndex="0"
             data-testclass="geneset-expand"
             data-testid={`${setName}:geneset-expand`}
-            onKeyPress={/* todo_genesets */ () => {}}
+            onKeyPress={
+              /* TODO(colinmegill): #2101: click handler on span */ () => {}
+            }
             style={{
               cursor: "pointer",
               userSelect: "none",
