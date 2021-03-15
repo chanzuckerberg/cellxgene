@@ -1,4 +1,4 @@
-import significantDigits from "../../util/significantDigits";
+import significantDigits from "./significantDigits";
 
 export default function maybeScientific(x) {
   let format = ",";
