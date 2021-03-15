@@ -43,10 +43,7 @@ const HistogramHeader = React.memo(
       >
         {onScatterPlotXClick && onScatterPlotYClick ? (
           <span>
-            <span
-              style={{ marginRight: 7 }}
-              className="bp3-icon-standard bp3-icon-scatter-plot"
-            />
+            <Icon icon={IconNames.SCATTER_PLOT} style={{ marginRight: 7 }} />
             <ButtonGroup style={{ marginRight: 7 }}>
               <Button
                 data-testid={`plot-x-${fieldId}`}
