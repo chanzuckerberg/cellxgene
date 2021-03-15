@@ -1,5 +1,6 @@
 import React, { useCallback } from "react";
-import { Button, ButtonGroup, Tooltip } from "@blueprintjs/core";
+import { Button, ButtonGroup, Tooltip, Icon } from "@blueprintjs/core";
+import { IconNames } from "@blueprintjs/icons";
 import * as globals from "../../globals";
 
 const HistogramHeader = React.memo(
