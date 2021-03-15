@@ -9,7 +9,9 @@ import {
   Tooltip,
   Icon,
   PopoverInteractionKind,
+  Intent,
 } from "@blueprintjs/core";
+import { IconNames } from "@blueprintjs/icons";
 
 import * as globals from "../../../globals";
 import actions from "../../../actions";
@@ -89,8 +91,8 @@ class AnnoMenuCategory extends React.PureComponent {
                     text={editText}
                   />
                   <MenuItem
-                    icon="trash"
-                    intent="danger"
+                    icon={IconNames.TRASH}
+                    intent={Intent.DANGER}
                     data-testclass="handleDeleteCategory"
                     data-testid={`${metadataField}:delete-category`}
                     onClick={this.handleDeleteCategory}
