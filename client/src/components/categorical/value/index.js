@@ -25,8 +25,8 @@ import MiniHistogram from "../../miniHistogram";
 import MiniStackedBar from "../../miniStackedBar";
 import { CategoryCrossfilterContext } from "../categoryContext";
 
-const VALUE_HEIGHT = 11;
-const CHART_WIDTH = 100;
+const STACKED_BAR_HEIGHT = 11;
+const STACKED_BAR_WIDTH = 100;
 
 /* this is defined outside of the class so we can use it in connect() */
 function _currentLabelAsString(ownProps) {
@@ -410,7 +410,7 @@ class CategoryValue extends React.Component {
         label,
         colorTable,
         schema,
-        CHART_WIDTH
+        STACKED_BAR_WIDTH
       ) ?? {};
 
     if (!domainValues || !scale || !domain || !occupancy) {
@@ -426,8 +426,8 @@ class CategoryValue extends React.Component {
           domain,
           occupancy,
         }}
-        height={VALUE_HEIGHT}
-        width={CHART_WIDTH}
+        height={STACKED_BAR_HEIGHT}
+        width={STACKED_BAR_WIDTH}
       />
     );
   };
@@ -460,8 +460,8 @@ class CategoryValue extends React.Component {
         colorAccessor,
         colorData,
         label,
-        CHART_WIDTH,
-        VALUE_HEIGHT
+        STACKED_BAR_WIDTH,
+        STACKED_BAR_HEIGHT
       ) ?? {}; // if createHistogramBins returns empty object assign null to deconstructed
 
     if (!xScale || !yScale || !bins) return null;
@@ -476,8 +476,8 @@ class CategoryValue extends React.Component {
         }}
         obsOrVarContinuousFieldDisplayName={colorAccessor}
         domainLabel={label}
-        height={VALUE_HEIGHT}
-        width={CHART_WIDTH}
+        height={STACKED_BAR_HEIGHT}
+        width={STACKED_BAR_WIDTH}
       />
     );
   };
@@ -534,7 +534,7 @@ class CategoryValue extends React.Component {
       colorAccessor && !isColorBy
         ? globals.leftSidebarWidth -
           otherElementsWidth -
-          CHART_WIDTH -
+          STACKED_BAR_WIDTH -
           CHART_MARGIN
         : globals.leftSidebarWidth - otherElementsWidth;
 
