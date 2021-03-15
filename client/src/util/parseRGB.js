@@ -1,4 +1,3 @@
-// jshint esversion: 6
 import scaleRGB from "./scaleRGB";
 
 // maintain a cache of already parsed RGB names, as it is reasonably expensive
