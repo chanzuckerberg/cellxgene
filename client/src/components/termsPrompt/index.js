@@ -67,7 +67,7 @@ class TermsPrompt extends React.PureComponent {
           target="_blank"
           rel="noopener"
         >
-          terms of service
+          terms of service (updates coming)
         </a>
         .{" "}
       </span>
@@ -89,7 +89,7 @@ class TermsPrompt extends React.PureComponent {
           target="_blank"
           rel="noopener"
         >
-          privacy policy
+          privacy policy (updates coming)
         </a>
         .&nbsp;
       </span>
