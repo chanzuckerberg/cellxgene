@@ -42,7 +42,6 @@ class Elastic_Beanstalk_Test(unittest.TestCase):
 
         config.complete_config()
         config.write_config(f"{tempdirname}/config.yaml")
-
         subprocess.check_call(f"git ls-files . | cpio -pdm {tempdirname}", cwd=f"{PROJECT_ROOT}/backend/czi_hosted/eb", shell=True)
 
         subprocess.check_call(["make", "build"], cwd=tempdirname)
