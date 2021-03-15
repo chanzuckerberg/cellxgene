@@ -48,9 +48,11 @@ class AnnoDialog extends React.PureComponent {
               >
                 {errorMessage}
               </p>
-              <p style={{ marginTop: secondaryInstructions ? 20 : 0 }}>
-                {secondaryInstructions || null}
-              </p>
+              {secondaryInstructions && (
+                <p style={{ marginTop: secondaryInstructions ? 20 : 0 }}>
+                  {secondaryInstructions}
+                </p>
+              )}
               {secondaryInput || null}
             </div>
             {annoSelect || null}
