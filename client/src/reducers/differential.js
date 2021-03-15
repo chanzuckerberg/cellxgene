@@ -45,6 +45,14 @@ const Differential = (
         celllist1: null,
         celllist2: null,
       };
+    case "reset subset":
+    case "subset to selection":
+      return {
+        ...state,
+        diffExp: null,
+        celllist1: null,
+        celllist2: null,
+      };
     default:
       return state;
   }
