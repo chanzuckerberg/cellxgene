@@ -175,7 +175,6 @@ class Gene extends React.Component {
               icon={<Icon icon="tint" iconSize={12} />}
             />
           </span>
-          {/* <TestMiniHisto /> */}
         </div>
         {geneIsExpanded ? <HistogramBrush isUserDefined field={gene} /> : null}
       </div>

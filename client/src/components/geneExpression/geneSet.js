@@ -54,9 +54,6 @@ class GeneSet extends React.Component {
       [...upperGenes.keys()].map((upperGene) => {
         const indexOfGene = upperWorldGenes.get(upperGene);
 
-        if (indexOfGene === undefined) {
-          console.log("found a gene that doesn't appear to be a valid name");
-        }
         return dispatch(
           actions.requestUserDefinedGene(worldGenes[indexOfGene])
         );
