@@ -17,6 +17,7 @@ const skipOnActions = new Set([
   "window resize",
   "reset colorscale",
   "reset centroid labels",
+  "geneset: initial load",
 
   "graph brush change",
   "continuous metadata histogram brush",
@@ -30,6 +31,9 @@ const skipOnActions = new Set([
   "writable obs annotations - save complete",
   "writable obs annotations - save started",
   "writable obs annotations - save error",
+  "autosave: genesets started",
+  "autosave: genesets error",
+  "autosave: genesets complete",
 
   /* annotation component action */
   "annotation: activate add new label mode",
