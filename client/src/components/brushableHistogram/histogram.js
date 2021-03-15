@@ -3,7 +3,7 @@ import { interpolateCool } from "d3-scale-chromatic";
 import * as d3 from "d3";
 
 import maybeScientific from "./maybeScientific";
-import clamp from "./clamp";
+import clamp from "../../util/clamp";
 
 const Histogram = ({
   field,
