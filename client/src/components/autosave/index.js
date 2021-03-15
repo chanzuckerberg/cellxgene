@@ -67,7 +67,7 @@ class Autosave extends React.Component {
   needToSaveGenesets = () => {
     /* return true if we need to save gene ses, false if we do not */
     const { genesets, lastSavedGenesets } = this.props;
-    return genesets.initialized && genesets !== lastSavedGenesets;
+    return genesets.initialized && genesets.genesets !== lastSavedGenesets;
   };
 
   needToSave() {
