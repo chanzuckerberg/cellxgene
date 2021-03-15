@@ -1,8 +1,8 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
-import AnnoDialog from "../../categorical/annoDialog";
-import LabelInput from "../../categorical/labelInput";
+import AnnoDialog from "../../annoDialog";
+import LabelInput from "../../labelInput";
 
 @connect((state) => ({
   genesetsUI: state.genesetsUI,

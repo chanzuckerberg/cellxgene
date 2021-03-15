@@ -1,8 +1,8 @@
 import _ from "lodash";
 import React from "react";
 import { connect } from "react-redux";
-import AnnoDialog from "../../categorical/annoDialog";
-import LabelInput from "../../categorical/labelInput";
+import AnnoDialog from "../../annoDialog";
+import LabelInput from "../../labelInput";
 
 @connect((state) => ({
   annotations: state.annotations,

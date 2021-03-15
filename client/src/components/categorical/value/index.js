@@ -14,8 +14,8 @@ import {
 } from "@blueprintjs/core";
 import * as globals from "../../../globals";
 import styles from "../categorical.css";
-import AnnoDialog from "../annoDialog";
-import LabelInput from "../labelInput";
+import AnnoDialog from "../../annoDialog";
+import LabelInput from "../../labelInput";
 import Truncate from "../../util/truncate";
 
 import { AnnotationsHelpers } from "../../../util/stateManager";

@@ -5,9 +5,9 @@ import { connect } from "react-redux";
 import * as globals from "../../globals";
 import Category from "./category";
 import { AnnotationsHelpers, ControlsHelpers } from "../../util/stateManager";
-import AnnoDialog from "./annoDialog";
+import AnnoDialog from "../annoDialog";
 import AnnoSelect from "./annoSelect";
-import LabelInput from "./labelInput";
+import LabelInput from "../labelInput";
 import { labelPrompt } from "./labelUtil";
 import actions from "../../actions";
 
