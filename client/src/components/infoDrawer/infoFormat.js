@@ -167,7 +167,11 @@ const renderLinks = (projectLinks, aboutURL) => {
 
 const InfoFormat = React.memo(
   ({ datasetTitle, singleValueCategories, aboutURL, dataPortalProps = {} }) => {
-    if (["1.0.0", "1.1.0"].indexOf(dataPortalProps.version?.["corpora_schema_version"]) === -1) {
+    if (
+      ["1.0.0", "1.1.0"].indexOf(
+        dataPortalProps.version?.["corpora_schema_version"]
+      ) === -1
+    ) {
       dataPortalProps = {};
     }
     const {
