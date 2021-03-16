@@ -35,6 +35,7 @@ build-local: clean build-client
 	$(call copy_client_assets,$(CLIENTBUILD),$(LOCALSERVERBUILD))
 	cp backend/__init__.py $(BUILDDIR)
 	cp backend/__init__.py $(BUILDDIR)/backend
+	cp -r backend/common_utils $(BUILDDIR)/backend/common_utils
 	cp MANIFEST.in README.md setup.cfg setup.py $(BUILDDIR)
 
 .PHONY: build
