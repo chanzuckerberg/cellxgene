@@ -8,7 +8,7 @@ from server_timing import Timing as ServerTiming
 from backend.czi_hosted.common.config.app_config import AppConfig
 from backend.common_utils.constants import Axis
 from backend.common_utils.errors import FilterError, JSONEncodingValueError, ExceedsLimitError
-from backend.czi_hosted.common.utils.utils import jsonify_numpy
+from backend.common_utils.utils import jsonify_numpy
 from backend.czi_hosted.data_common.fbs.matrix import encode_matrix_fbs
 
 

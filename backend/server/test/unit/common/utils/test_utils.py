@@ -2,7 +2,7 @@ import os
 import shutil
 import unittest
 
-from backend.server.common.utils.utils import import_plugins
+from backend.common_utils.utils import import_plugins
 from backend.server.test import PROJECT_ROOT, random_string
 
 

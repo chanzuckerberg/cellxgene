@@ -2,7 +2,7 @@ import os
 import shutil
 import unittest
 
-from backend.czi_hosted.common.utils.utils import import_plugins
+from backend.common_utils.utils import import_plugins
 from backend.czi_hosted.test import PROJECT_ROOT, random_string
 
 

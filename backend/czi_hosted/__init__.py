@@ -1,6 +1,6 @@
 import logging
 import sys
-from backend.czi_hosted.common.utils.utils import import_plugins
+from backend.common_utils.utils import import_plugins
 
 __version__ = "0.16.7"
 

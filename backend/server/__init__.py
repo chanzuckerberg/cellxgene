@@ -1,6 +1,6 @@
 import logging
 import sys
-from backend.server.common.utils.utils import import_plugins
+from backend.common_utils.utils import import_plugins
 
 __version__ = "0.16.0"
 display_version = "cellxgene v" + __version__

@@ -11,7 +11,7 @@ from server_timing import Timing as ServerTiming
 from backend.common_utils.errors import DatasetAccessError, ConfigurationError
 from backend.czi_hosted.common.immutable_kvcache import ImmutableKVCache
 from backend.czi_hosted.common.utils.type_conversion_utils import get_schema_type_hint_from_dtype
-from backend.czi_hosted.common.utils.utils import path_join
+from backend.common_utils.utils import path_join
 from backend.czi_hosted.compute import diffexp_cxg
 from backend.czi_hosted.data_common.data_adaptor import DataAdaptor
 from backend.czi_hosted.data_common.fbs.matrix import encode_matrix_fbs

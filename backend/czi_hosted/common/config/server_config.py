@@ -9,7 +9,7 @@ from backend.czi_hosted.common.config import DEFAULT_SERVER_PORT, BIG_FILE_SIZE_
 from backend.czi_hosted.common.config.base_config import BaseConfig
 from backend.czi_hosted.common.data_locator import discover_s3_region_name
 from backend.common_utils.errors import ConfigurationError, DatasetAccessError
-from backend.czi_hosted.common.utils.utils import is_port_available, find_available_port, custom_format_warning
+from backend.common_utils.utils import is_port_available, find_available_port, custom_format_warning
 from backend.czi_hosted.compute import diffexp_cxg as diffexp_tiledb
 from backend.czi_hosted.data_common.matrix_loader import MatrixDataCacheManager, MatrixDataLoader, MatrixDataType
 
