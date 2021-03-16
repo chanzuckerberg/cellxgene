@@ -3,7 +3,7 @@ import os
 from backend.czi_hosted.common.config.base_config import BaseConfig
 from backend.common_utils.errors import ConfigurationError, SecretKeyRetrievalError
 from backend.czi_hosted.common.aws_secret_utils import get_secret_key
-from backend.czi_hosted.common.utils.type_conversion_utils import convert_string_to_value
+from backend.common_utils.type_conversion_utils import convert_string_to_value
 
 
 class ExternalConfig(BaseConfig):

@@ -4,7 +4,7 @@ from backend.server.common.config.base_config import BaseConfig
 from backend.common_utils.errors import ConfigurationError
 from backend.server.common.config import get_secret_key
 from backend.common_utils.errors import SecretKeyRetrievalError
-from backend.server.common.utils.type_conversion_utils import convert_string_to_value
+from backend.common_utils.type_conversion_utils import convert_string_to_value
 
 
 class ExternalConfig(BaseConfig):

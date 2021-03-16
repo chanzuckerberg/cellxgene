@@ -6,7 +6,7 @@ import requests
 from backend.common_utils.errors import ConfigurationError
 from backend.server.common.config.app_config import AppConfig
 from backend.server.test import test_server, FIXTURES_ROOT
-from backend.server.common.utils.type_conversion_utils import convert_string_to_value
+from backend.common_utils.type_conversion_utils import convert_string_to_value
 from backend.server.test.unit.common.config import ConfigTests
 
 
