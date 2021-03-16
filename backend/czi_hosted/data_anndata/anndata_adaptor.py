@@ -16,7 +16,7 @@ from backend.common_utils.errors import PrepareError, DatasetAccessError, Filter
 from backend.common_utils.type_conversion_utils import get_schema_type_hint_of_array
 from backend.czi_hosted.compute.scanpy import scanpy_umap
 from backend.czi_hosted.data_common.data_adaptor import DataAdaptor
-from backend.czi_hosted.data_common.fbs.matrix import encode_matrix_fbs
+from backend.common_utils.fbs.matrix import encode_matrix_fbs
 
 anndata_version = version.parse(str(anndata.__version__)).release
 

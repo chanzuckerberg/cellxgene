@@ -17,7 +17,7 @@ from backend.czi_hosted.common.config import DEFAULT_SERVER_PORT
 from backend.czi_hosted.common.config.app_config import AppConfig
 from backend.common_utils.data_locator import DataLocator
 from backend.common_utils.utils import find_available_port
-from backend.czi_hosted.data_common.fbs.matrix import encode_matrix_fbs
+from backend.common_utils.fbs.matrix import encode_matrix_fbs
 from backend.czi_hosted.data_common.matrix_loader import MatrixDataType, MatrixDataLoader
 from backend.czi_hosted.db.db_utils import DbUtils
 

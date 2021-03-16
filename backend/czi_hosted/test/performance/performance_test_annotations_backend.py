@@ -9,7 +9,7 @@ import sys
 import pandas as pd
 import random
 
-from backend.czi_hosted.data_common.fbs.matrix import encode_matrix_fbs
+from backend.common_utils.fbs.matrix import encode_matrix_fbs
 
 """
 Before running, sign into the dataportal, copy the cookie and paste it below. To test in staging or prod update the

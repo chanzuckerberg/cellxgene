@@ -14,7 +14,7 @@ from backend.common_utils.type_conversion_utils import get_schema_type_hint_from
 from backend.common_utils.utils import path_join
 from backend.czi_hosted.compute import diffexp_cxg
 from backend.czi_hosted.data_common.data_adaptor import DataAdaptor
-from backend.czi_hosted.data_common.fbs.matrix import encode_matrix_fbs
+from backend.common_utils.fbs.matrix import encode_matrix_fbs
 from backend.czi_hosted.data_cxg.cxg_util import pack_selector_from_mask
 
 

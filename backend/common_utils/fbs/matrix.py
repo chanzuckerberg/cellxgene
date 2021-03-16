@@ -5,15 +5,14 @@ import pandas as pd
 from flatbuffers import Builder
 from scipy import sparse
 
-import backend.server.data_common.fbs.NetEncoding.Column as Column
-import backend.server.data_common.fbs.NetEncoding.Float32Array as Float32Array
-import backend.server.data_common.fbs.NetEncoding.Float64Array as Float64Array
-import backend.server.data_common.fbs.NetEncoding.Int32Array as Int32Array
-import backend.server.data_common.fbs.NetEncoding.JSONEncodedArray as JSONEncodedArray
-import backend.server.data_common.fbs.NetEncoding.Matrix as Matrix
-import backend.server.data_common.fbs.NetEncoding.TypedArray as TypedArray
-import backend.server.data_common.fbs.NetEncoding.Uint32Array as Uint32Array
-
+import backend.common_utils.fbs.NetEncoding.Column as Column
+import backend.common_utils.fbs.NetEncoding.Float32Array as Float32Array
+import backend.common_utils.fbs.NetEncoding.Float64Array as Float64Array
+import backend.common_utils.fbs.NetEncoding.Int32Array as Int32Array
+import backend.common_utils.fbs.NetEncoding.JSONEncodedArray as JSONEncodedArray
+import backend.common_utils.fbs.NetEncoding.Matrix as Matrix
+import backend.common_utils.fbs.NetEncoding.TypedArray as TypedArray
+import backend.common_utils.fbs.NetEncoding.Uint32Array as Uint32Array
 
 # Serialization helper
 def serialize_column(builder, typed_arr):

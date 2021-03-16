@@ -7,7 +7,7 @@ import numpy as np
 from backend.czi_hosted.compute import diffexp_generic, diffexp_cxg
 from backend.czi_hosted.compute.diffexp_cxg import diffexp_ttest
 from backend.czi_hosted.converters.h5ad_data_file import H5ADDataFile
-from backend.czi_hosted.data_common.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
+from backend.common_utils.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
 from backend.czi_hosted.data_common.matrix_loader import MatrixDataLoader
 from backend.czi_hosted.test import PROJECT_ROOT, app_config, FIXTURES_ROOT
 from backend.czi_hosted.test.performance.create_test_matrix import create_test_h5ad

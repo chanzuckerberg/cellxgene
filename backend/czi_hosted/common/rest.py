@@ -20,7 +20,7 @@ from backend.common_utils.errors import (
 )
 
 import json
-from backend.czi_hosted.data_common.fbs.matrix import decode_matrix_fbs
+from backend.common_utils.fbs.matrix import decode_matrix_fbs
 
 
 def abort_and_log(code, logmsg, loglevel=logging.DEBUG, include_exc_info=False):

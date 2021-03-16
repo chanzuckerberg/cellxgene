@@ -5,9 +5,9 @@ This code will need to be updated if fbs/matrix.fbs changes. For more informatio
 czi_hosted/data_common/fbs/
 """
 
-import backend.czi_hosted.data_common.fbs.NetEncoding.Matrix as Matrix
+import backend.common_utils.fbs.NetEncoding.Matrix as Matrix
 
-from backend.czi_hosted.data_common.fbs.matrix import deserialize_typed_array
+from backend.common_utils.fbs.matrix import deserialize_typed_array
 
 
 def decode_matrix_FBS(buf):

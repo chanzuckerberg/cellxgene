@@ -10,7 +10,7 @@ from backend.server.common.config.app_config import AppConfig
 from backend.common_utils.constants import Axis
 from backend.common_utils.errors import FilterError, JSONEncodingValueError, ExceedsLimitError
 from backend.common_utils.utils import jsonify_numpy
-from backend.server.data_common.fbs.matrix import encode_matrix_fbs
+from backend.common_utils.fbs.matrix import encode_matrix_fbs
 
 
 class DataAdaptor(metaclass=ABCMeta):
