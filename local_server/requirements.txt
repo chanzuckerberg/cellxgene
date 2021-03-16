@@ -13,6 +13,7 @@ flatten-dict>=0.2.0
 fsspec>=0.4.4,<0.8.0
 gunicorn>=20.0.4
 h5py<3.0.0 # h5py>=3.0.0 had a breaking change; there is a fix in anndata>=0.7.5
+numba==0.52.0
 numpy>=1.15.0
 packaging>=20.0
 pandas>=1.0,!=1.1  # pandas 1.1 breaks tests, https://github.com/pandas-dev/pandas/issues/35446
