@@ -4,7 +4,6 @@ import yaml
 
 from backend.czi_hosted.common.config.app_config import AppConfig
 
-
 def main():
     parser = argparse.ArgumentParser("A script to check hosted configuration files")
     parser.add_argument("config_file", help="the configuration file")

@@ -11,7 +11,7 @@ from server_timing import Timing as ServerTiming
 
 import backend.server.compute.diffexp_generic as diffexp_generic
 from backend.server.common.colors import convert_anndata_category_colors_to_cxg_category_colors
-from backend.server.common.constants import Axis, MAX_LAYOUTS
+from backend.common_utils.constants import Axis, MAX_LAYOUTS
 from backend.server.common.corpora import corpora_get_props_from_anndata
 from backend.server.common.errors import PrepareError, DatasetAccessError, FilterError, UnsupportedSummaryMethod
 from backend.server.common.utils.type_conversion_utils import get_schema_type_hint_of_array
