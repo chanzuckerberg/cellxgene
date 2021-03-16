@@ -10,7 +10,7 @@ from flask import session, has_request_context, current_app
 
 from backend.czi_hosted import __version__ as cellxgene_version
 from backend.czi_hosted.common.annotations.annotations import Annotations
-from backend.czi_hosted.common.errors import AnnotationsError
+from backend.common_utils.errors import AnnotationsError
 
 
 class AnnotationsLocalFile(Annotations):

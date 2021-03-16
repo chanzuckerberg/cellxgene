@@ -1,7 +1,7 @@
 import unittest
 from urllib.parse import parse_qs
 from werkzeug.datastructures import MultiDict
-from backend.czi_hosted.common.errors import FilterError
+from backend.common_utils.errors import FilterError
 from backend.czi_hosted.common.rest import _query_parameter_to_filter
 
 

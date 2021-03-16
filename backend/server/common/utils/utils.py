@@ -10,7 +10,7 @@ from urllib.parse import urlsplit, urljoin
 import numpy as np
 from flask import json
 
-from backend.server.common.errors import ConfigurationError
+from backend.common_utils.errors import ConfigurationError
 
 
 def find_available_port(host, port=5005):

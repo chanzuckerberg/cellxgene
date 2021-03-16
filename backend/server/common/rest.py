@@ -9,7 +9,7 @@ from werkzeug.urls import url_unquote
 
 from backend.server.common.config.client_config import get_client_config, get_client_userinfo
 from backend.common_utils.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
-from backend.server.common.errors import (
+from backend.common_utils.errors import (
     FilterError,
     JSONEncodingValueError,
     PrepareError,

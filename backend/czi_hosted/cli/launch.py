@@ -11,7 +11,7 @@ from flask_cors import CORS
 from backend.czi_hosted.default_config import default_config
 from backend.czi_hosted.app.app import Server
 from backend.czi_hosted.common.config.app_config import AppConfig
-from backend.czi_hosted.common.errors import DatasetAccessError, ConfigurationError
+from backend.common_utils.errors import DatasetAccessError, ConfigurationError
 from backend.czi_hosted.common.utils.utils import sort_options
 
 

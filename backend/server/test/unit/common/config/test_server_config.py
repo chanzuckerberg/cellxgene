@@ -7,7 +7,7 @@ from backend.server.common.config.base_config import BaseConfig
 from backend.server.test import H5AD_FIXTURE
 
 from backend.server.common.config.app_config import AppConfig
-from backend.server.common.errors import ConfigurationError
+from backend.common_utils.errors import ConfigurationError
 from backend.server.test.unit.common.config import ConfigTests
 
 

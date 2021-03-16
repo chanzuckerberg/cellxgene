@@ -5,7 +5,7 @@ from numba import jit
 
 from backend.czi_hosted.data_cxg.cxg_util import pack_selector_from_indices
 from backend.czi_hosted.compute.diffexp_generic import diffexp_ttest_from_mean_var, mean_var_n
-from backend.czi_hosted.common.errors import ComputeError
+from backend.common_utils.errors import ComputeError
 
 """
 See the comments in diffexp_generic for a description of this algorithm

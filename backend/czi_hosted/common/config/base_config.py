@@ -1,7 +1,7 @@
 import copy
 
 from flatten_dict import flatten
-from backend.czi_hosted.common.errors import ConfigurationError
+from backend.common_utils.errors import ConfigurationError
 
 
 class BaseConfig(object):

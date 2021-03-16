@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 import fastobo
 import fsspec
 
-from backend.czi_hosted.common.errors import OntologyLoadFailure
+from backend.common_utils.errors import OntologyLoadFailure
 from backend.czi_hosted.common.utils.type_conversion_utils import get_schema_type_hint_of_array
 
 

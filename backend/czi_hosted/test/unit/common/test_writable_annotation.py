@@ -9,7 +9,7 @@ import pandas as pd
 import tiledb
 from flask import Flask
 
-from backend.czi_hosted.common.errors import AnnotationCategoryNameError
+from backend.common_utils.errors import AnnotationCategoryNameError
 from backend.czi_hosted.common.rest import annotations_put_fbs_helper, schema_get_helper
 from backend.czi_hosted.data_common.matrix_loader import MatrixDataType
 from backend.czi_hosted.db.cellxgene_orm import CellxGeneDataset, Annotation

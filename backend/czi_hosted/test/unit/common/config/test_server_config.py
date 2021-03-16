@@ -10,7 +10,7 @@ from backend.czi_hosted.test import PROJECT_ROOT, FIXTURES_ROOT, test_server
 import requests
 
 from backend.czi_hosted.common.config.app_config import AppConfig
-from backend.czi_hosted.common.errors import ConfigurationError
+from backend.common_utils.errors import ConfigurationError
 from backend.czi_hosted.test.unit.common.config import ConfigTests
 
 

@@ -4,7 +4,7 @@ from flatten_dict import unflatten
 from backend.czi_hosted.common.config.external_config import ExternalConfig
 from backend.czi_hosted.common.config.dataset_config import DatasetConfig
 from backend.czi_hosted.common.config.server_config import ServerConfig
-from backend.czi_hosted.common.errors import ConfigurationError
+from backend.common_utils.errors import ConfigurationError
 from backend.czi_hosted.default_config import get_default_config
 
 

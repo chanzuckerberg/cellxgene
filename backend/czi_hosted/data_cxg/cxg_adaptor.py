@@ -8,7 +8,7 @@ import pandas as pd
 import tiledb
 from server_timing import Timing as ServerTiming
 
-from backend.czi_hosted.common.errors import DatasetAccessError, ConfigurationError
+from backend.common_utils.errors import DatasetAccessError, ConfigurationError
 from backend.czi_hosted.common.immutable_kvcache import ImmutableKVCache
 from backend.czi_hosted.common.utils.type_conversion_utils import get_schema_type_hint_from_dtype
 from backend.czi_hosted.common.utils.utils import path_join

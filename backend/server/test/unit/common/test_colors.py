@@ -4,7 +4,7 @@ import anndata
 
 from backend.czi_hosted.test.fixtures.fixtures import pbmc3k_colors
 from backend.server.common.colors import convert_color_to_hex_format, convert_anndata_category_colors_to_cxg_category_colors
-from backend.server.common.errors import ColorFormatException
+from backend.common_utils.errors import ColorFormatException
 from backend.server.test import PROJECT_ROOT
 
 

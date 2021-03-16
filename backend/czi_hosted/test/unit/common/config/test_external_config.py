@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import requests
 
-from backend.czi_hosted.common.errors import ConfigurationError
+from backend.common_utils.errors import ConfigurationError
 from backend.czi_hosted.common.config.app_config import AppConfig
 from backend.czi_hosted.common.utils.type_conversion_utils import convert_string_to_value
 from backend.czi_hosted.test import test_server, FIXTURES_ROOT

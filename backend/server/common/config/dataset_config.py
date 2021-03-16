@@ -3,7 +3,7 @@ from os.path import splitext, isdir
 
 from backend.server.common.annotations.local_file_csv import AnnotationsLocalFile
 from backend.server.common.config.base_config import BaseConfig
-from backend.server.common.errors import ConfigurationError, OntologyLoadFailure, AnnotationsError
+from backend.common_utils.errors import ConfigurationError, OntologyLoadFailure, AnnotationsError
 from backend.server.compute.scanpy import get_scanpy_module
 from backend.server.data_common.matrix_loader import MatrixDataLoader
 

@@ -8,7 +8,7 @@ import tiledb
 
 from backend.czi_hosted.common.colors import convert_anndata_category_colors_to_cxg_category_colors
 from backend.czi_hosted.common.corpora import corpora_get_props_from_anndata
-from backend.czi_hosted.common.errors import ColorFormatException
+from backend.common_utils.errors import ColorFormatException
 from backend.czi_hosted.common.utils.cxg_constants import CxgConstants
 from backend.czi_hosted.common.utils.cxg_generation_utils import (
     convert_dictionary_to_cxg_group,

@@ -1,9 +1,9 @@
 import os
 
 from backend.server.common.config.base_config import BaseConfig
-from backend.server.common.errors import ConfigurationError
+from backend.common_utils.errors import ConfigurationError
 from backend.server.common.config import get_secret_key
-from backend.server.common.errors import SecretKeyRetrievalError
+from backend.common_utils.errors import SecretKeyRetrievalError
 from backend.server.common.utils.type_conversion_utils import convert_string_to_value
 
 
