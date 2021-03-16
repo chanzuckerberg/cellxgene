@@ -7,7 +7,7 @@ from locust import HttpUser, SequentialTaskSet, task, between, TaskSet
 from locust.clients import HttpSession
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-import backend.czi_hosted.test.unit.decode_fbs as decode_fbs
+import backend.test.unit.test_czi_hosted.decode_fbs as decode_fbs
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 

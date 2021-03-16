@@ -119,11 +119,11 @@ lint-servers: lint-local-server lint-server
 
 .PHONY: lint-local-server
 lint-local-server: fmt-py
-	flake8 backend/server --per-file-ignores='backend/server/test/fixtures/dataset_config_outline.py:F821 backend/server/test/fixtures/server_config_outline.py:F821 backend/server/test/performance/scale_test_annotations.py:E501'
+	flake8 backend/server --per-file-ignores='backend/test/fixtures/dataset_config_outline.py:F821 backend/test/fixtures/server_config_outline.py:F821 backend/server/test/performance/scale_test_annotations.py:E501'
 
 .PHONY: lint-server
 lint-server: fmt-py
-	flake8 backend/czi_hosted --per-file-ignores='backend/czi_hosted/test/fixtures/dataset_config_outline.py:F821 backend/czi_hosted/test/fixtures/server_config_outline.py:F821 backend/czi_hosted/test/performance/scale_test_annotations.py:E501'
+	flake8 backend/czi_hosted --per-file-ignores='backend/test/fixtures/czi_hosted_dataset_config_outline.py:F821 backend/test/fixtures/czi_hosted_server_config_outline.py:F821 backend/test/performance/scale_test_annotations.py:E501'
 
 .PHONY: lint-client
 lint-client:

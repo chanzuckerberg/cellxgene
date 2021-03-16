@@ -12,7 +12,7 @@ unit-test:
 		--source=app,cli,common,compute,converters,data_anndata,data_common \
 		--omit=.coverage,data_common/fbs/NetEncoding,venv \
 		-m unittest discover \
-		--start-directory test/ \
+		--start-directory ../test/unit/test_server \
 		--top-level-directory ../../ \
 		--verbose; test_result=$$?; \
 	exit $$test_result \

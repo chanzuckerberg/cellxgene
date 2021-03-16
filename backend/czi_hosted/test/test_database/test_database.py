@@ -1,7 +1,7 @@
 import unittest
 from backend.czi_hosted.db.cellxgene_orm import CellxGeneUser, CellxGeneDataset, Annotation
 from backend.czi_hosted.db.db_utils import DbUtils
-from backend.czi_hosted.test.fixtures import TestDatabase
+from backend.test.fixtures.database import TestDatabase
 
 
 class DatabaseTest(unittest.TestCase):

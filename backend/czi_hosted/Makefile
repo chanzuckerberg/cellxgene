@@ -12,7 +12,7 @@ unit-test: create-test-db
 		--source=app,cli,common,compute,converters,data_anndata,data_common,data_cxg \
 		--omit=.coverage,data_common/fbs/NetEncoding,venv \
 		-m unittest discover \
-		--start-directory test/ \
+		--start-directory ../test/unit/test_czi_hosted \
 		--top-level-directory ../.. \
 		--verbose; test_result=$$?; \
 	$(MAKE) clean-test-db; \

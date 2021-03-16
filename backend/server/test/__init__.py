@@ -20,7 +20,7 @@ from backend.common.fbs.matrix import encode_matrix_fbs
 from backend.server.data_common.matrix_loader import MatrixDataType, MatrixDataLoader
 
 PROJECT_ROOT = popen("git rev-parse --show-toplevel").read().strip()
-FIXTURES_ROOT = PROJECT_ROOT + "/backend/server/test/fixtures"
+FIXTURES_ROOT = PROJECT_ROOT + "/backend/test/fixtures"
 H5AD_FIXTURE = FIXTURES_ROOT + "/pbmc3k-CSC-gz.h5ad"
 
 
@@ -28,7 +28,7 @@ def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
     tmp_dir = tempfile.mkdtemp()
     annotations_file = path.join(tmp_dir, "test_annotations.csv")
     if annotations_fixture:
-        shutil.copyfile(f"{PROJECT_ROOT}/backend/server/test/fixtures/pbmc3k-annotations.csv", annotations_file)
+        shutil.copyfile(f"{PROJECT_ROOT}/backend/test/fixtures/pbmc3k-annotations.csv", annotations_file)
     fname = {
         MatrixDataType.H5AD: f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
     }[ext]
