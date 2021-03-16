@@ -1,7 +1,7 @@
 import unittest
 import json
 
-from backend.server.common.data_locator import DataLocator
+from backend.common_utils.data_locator import DataLocator
 from backend.server.data_anndata.anndata_adaptor import AnndataAdaptor
 from backend.server.common.config.app_config import AppConfig
 from backend.server.test import PROJECT_ROOT

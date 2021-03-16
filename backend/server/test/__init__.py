@@ -14,7 +14,7 @@ import requests
 from backend.server.common.annotations.local_file_csv import AnnotationsLocalFile
 from backend.server.common.config.app_config import AppConfig
 from backend.server.common.config import DEFAULT_SERVER_PORT
-from backend.server.common.data_locator import DataLocator
+from backend.common_utils.data_locator import DataLocator
 from backend.common_utils.utils import find_available_port
 from backend.server.data_common.fbs.matrix import encode_matrix_fbs
 from backend.server.data_common.matrix_loader import MatrixDataType, MatrixDataLoader

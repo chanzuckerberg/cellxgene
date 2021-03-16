@@ -4,7 +4,7 @@ import warnings
 
 import pytest
 
-from backend.czi_hosted.common.data_locator import DataLocator
+from backend.common_utils.data_locator import DataLocator
 from backend.common_utils.errors import FilterError
 from backend.czi_hosted.data_anndata.anndata_adaptor import AnndataAdaptor
 from backend.czi_hosted.test import app_config, FIXTURES_ROOT

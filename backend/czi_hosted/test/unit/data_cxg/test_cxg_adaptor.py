@@ -1,6 +1,6 @@
 import unittest
 
-from backend.czi_hosted.common.data_locator import DataLocator
+from backend.common_utils.data_locator import DataLocator
 from backend.czi_hosted.data_cxg.cxg_adaptor import CxgAdaptor
 from backend.czi_hosted.test import FIXTURES_ROOT, app_config
 from backend.czi_hosted.test.fixtures.fixtures import pbmc3k_colors

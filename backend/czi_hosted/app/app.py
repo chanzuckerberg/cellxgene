@@ -21,7 +21,7 @@ from flask_restful import Api, Resource
 from server_timing import Timing as ServerTiming
 
 import backend.czi_hosted.common.rest as common_rest
-from backend.czi_hosted.common.data_locator import DataLocator
+from backend.common_utils.data_locator import DataLocator
 from backend.common_utils.errors import DatasetAccessError, RequestException
 from backend.czi_hosted.common.health import health_check
 from backend.common_utils.utils import path_join, Float32JSONEncoder
