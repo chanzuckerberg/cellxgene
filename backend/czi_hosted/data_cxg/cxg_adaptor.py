@@ -8,13 +8,13 @@ import pandas as pd
 import tiledb
 from server_timing import Timing as ServerTiming
 
-from backend.common_utils.errors import DatasetAccessError, ConfigurationError
+from backend.common.errors import DatasetAccessError, ConfigurationError
 from backend.czi_hosted.common.immutable_kvcache import ImmutableKVCache
-from backend.common_utils.type_conversion_utils import get_schema_type_hint_from_dtype
-from backend.common_utils.utils import path_join
+from backend.common.utils.type_conversion_utils import get_schema_type_hint_from_dtype
+from backend.common.utils.utils import path_join
 from backend.czi_hosted.compute import diffexp_cxg
 from backend.czi_hosted.data_common.data_adaptor import DataAdaptor
-from backend.common_utils.fbs.matrix import encode_matrix_fbs
+from backend.common.fbs.matrix import encode_matrix_fbs
 from backend.czi_hosted.data_cxg.cxg_util import pack_selector_from_mask
 
 

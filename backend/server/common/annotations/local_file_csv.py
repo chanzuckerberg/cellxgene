@@ -11,7 +11,7 @@ from flask import session, has_request_context, current_app
 
 from backend.server import __version__ as cellxgene_version
 from backend.server.common.annotations.annotations import Annotations
-from backend.common_utils.errors import AnnotationsError, ObsoleteRequest
+from backend.common.errors import AnnotationsError, ObsoleteRequest
 
 
 class AnnotationsLocalFile(Annotations):

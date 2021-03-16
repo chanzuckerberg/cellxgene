@@ -2,7 +2,7 @@ from http import HTTPStatus
 from flask import make_response, jsonify
 
 from backend.czi_hosted import __version__ as cellxgene_version
-from backend.czi_hosted.common import DataLocator
+from backend.common.utils.data_locator import DataLocator
 
 
 def _is_accessible(path, config):

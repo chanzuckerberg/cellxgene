@@ -2,8 +2,8 @@ from enum import Enum
 import threading
 import time
 
-from backend.common_utils.data_locator import DataLocator
-from backend.common_utils.errors import DatasetAccessError
+from backend.common.utils.data_locator import DataLocator
+from backend.common.errors import DatasetAccessError
 from contextlib import contextmanager
 from http import HTTPStatus
 

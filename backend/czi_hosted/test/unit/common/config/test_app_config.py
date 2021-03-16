@@ -5,7 +5,7 @@ import unittest
 import yaml
 
 from backend.czi_hosted.common.config.app_config import AppConfig
-from backend.common_utils.errors import ConfigurationError
+from backend.common.errors import ConfigurationError
 from backend.czi_hosted.default_config import default_config
 from backend.czi_hosted.test import FIXTURES_ROOT
 from backend.czi_hosted.test.unit.common.config import ConfigTests

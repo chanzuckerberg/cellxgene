@@ -5,7 +5,7 @@ from backend.server.default_config import get_default_config
 from backend.server.common.config.dataset_config import DatasetConfig
 from backend.server.common.config.server_config import ServerConfig
 from backend.server.common.config.external_config import ExternalConfig
-from backend.common_utils.errors import ConfigurationError
+from backend.common.errors import ConfigurationError
 
 
 class AppConfig(object):

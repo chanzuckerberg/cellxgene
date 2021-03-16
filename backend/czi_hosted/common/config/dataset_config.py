@@ -4,7 +4,7 @@ from os.path import splitext, isdir
 from backend.czi_hosted.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
 from backend.czi_hosted.common.annotations.local_file_csv import AnnotationsLocalFile
 from backend.czi_hosted.common.config.base_config import BaseConfig
-from backend.common_utils.errors import ConfigurationError, OntologyLoadFailure
+from backend.common.errors import ConfigurationError, OntologyLoadFailure
 from backend.czi_hosted.compute.scanpy import get_scanpy_module
 from backend.czi_hosted.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
 from backend.czi_hosted.db.db_utils import DbUtils

@@ -35,7 +35,7 @@ build-local: clean build-client
 	$(call copy_client_assets,$(CLIENTBUILD),$(LOCALSERVERBUILD))
 	cp backend/__init__.py $(BUILDDIR)
 	cp backend/__init__.py $(BUILDDIR)/backend
-	cp -r backend/common_utils $(BUILDDIR)/backend/common_utils
+	cp -r backend/common $(BUILDDIR)/backend/common
 	cp MANIFEST.in README.md setup.cfg setup.py $(BUILDDIR)
 
 .PHONY: build
@@ -43,6 +43,9 @@ build: clean build-client
 	git ls-files backend/czi_hosted/ | grep -v 'backend/czi_hosted/test/' | cpio -pdm $(BUILDDIR)
 	cp -r client/build/  $(CLIENTBUILD)
 	$(call copy_client_assets,$(CLIENTBUILD),$(SERVERBUILD))
+	cp -r backend/common $(BUILDDIR)/backend/common
+	cp backend/__init__.py $(BUILDDIR)
+	cp backend/__init__.py $(BUILDDIR)/backend
 	cp MANIFEST_hosted.in README.md setup.cfg setup_hosted.py $(BUILDDIR)
 	mv $(BUILDDIR)/setup_hosted.py $(BUILDDIR)/setup.py
 	mv $(BUILDDIR)/MANIFEST_hosted.in $(BUILDDIR)/MANIFEST.in

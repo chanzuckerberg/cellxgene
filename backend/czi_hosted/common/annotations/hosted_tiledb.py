@@ -8,9 +8,9 @@ import tiledb
 from flask import current_app
 
 from backend.czi_hosted.common.annotations.annotations import Annotations
-from backend.common_utils.errors import AnnotationCategoryNameError
+from backend.common.errors import AnnotationCategoryNameError
 from backend.czi_hosted.common.utils.sanitization_utils import sanitize_values_in_list
-from backend.common_utils.type_conversion_utils import get_dtypes_and_schemas_of_dataframe, get_dtype_of_array
+from backend.common.utils.type_conversion_utils import get_dtypes_and_schemas_of_dataframe, get_dtype_of_array
 from backend.czi_hosted.db.cellxgene_orm import Annotation
 
 

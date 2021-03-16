@@ -15,9 +15,9 @@ from flask import (
 from flask_restful import Api, Resource
 
 import backend.server.common.rest as common_rest
-from backend.common_utils.errors import DatasetAccessError, RequestException
+from backend.common.errors import DatasetAccessError, RequestException
 from backend.server.common.health import health_check
-from backend.common_utils.utils import Float32JSONEncoder
+from backend.common.utils.utils import Float32JSONEncoder
 
 webbp = Blueprint("webapp", "backend.server.common.web", template_folder="templates")
 

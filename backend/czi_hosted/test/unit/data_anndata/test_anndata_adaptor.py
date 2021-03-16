@@ -8,8 +8,8 @@ import pandas as pd
 import pytest
 from parameterized import parameterized_class
 
-from backend.common_utils.data_locator import DataLocator
-from backend.common_utils.errors import FilterError
+from backend.common.utils.data_locator import DataLocator
+from backend.common.errors import FilterError
 from backend.czi_hosted.data_anndata.anndata_adaptor import AnndataAdaptor
 from backend.czi_hosted.test import PROJECT_ROOT, app_config, FIXTURES_ROOT
 from backend.czi_hosted.test.fixtures.fixtures import pbmc3k_colors

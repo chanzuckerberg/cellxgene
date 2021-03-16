@@ -1,6 +1,6 @@
 from flask import session, request, redirect, current_app, after_this_request, has_request_context, g
 from backend.czi_hosted.auth.auth import AuthTypeClientBase, AuthTypeFactory
-from backend.common_utils.errors import AuthenticationError, ConfigurationError
+from backend.common.errors import AuthenticationError, ConfigurationError
 from urllib.parse import urlencode, urlparse
 import json
 import requests

@@ -5,8 +5,8 @@ import warnings
 import pytest
 
 import backend.server.test.unit.decode_fbs as decode_fbs
-from backend.common_utils.data_locator import DataLocator
-from backend.common_utils.errors import FilterError
+from backend.common.utils.data_locator import DataLocator
+from backend.common.errors import FilterError
 from backend.server.data_anndata.anndata_adaptor import AnndataAdaptor
 from backend.server.test import app_config, FIXTURES_ROOT
 

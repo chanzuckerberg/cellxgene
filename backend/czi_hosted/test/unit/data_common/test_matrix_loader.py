@@ -5,7 +5,7 @@ import time
 import unittest
 
 from backend.czi_hosted.common.config.app_config import AppConfig
-from backend.common_utils.errors import DatasetAccessError
+from backend.common.errors import DatasetAccessError
 from backend.czi_hosted.data_common.matrix_loader import MatrixDataCacheManager
 from backend.czi_hosted.test import FIXTURES_ROOT
 

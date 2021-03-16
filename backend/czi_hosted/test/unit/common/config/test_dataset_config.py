@@ -11,7 +11,7 @@ from backend.czi_hosted.common.config.app_config import AppConfig
 from backend.czi_hosted.common.config.base_config import BaseConfig
 from backend.czi_hosted.test import test_server, PROJECT_ROOT, FIXTURES_ROOT
 
-from backend.common_utils.errors import ConfigurationError
+from backend.common.errors import ConfigurationError
 from backend.czi_hosted.test.unit.common.config import ConfigTests
 
 

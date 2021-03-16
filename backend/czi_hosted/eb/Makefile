@@ -18,9 +18,10 @@ build: clean
 	mkdir artifact.dir; \
 	(cd ../../.. ; \
 	  git ls-files backend/czi_hosted/ | cpio -pdm $(cwd)/artifact.dir ; ); \
-	$(call copy_client_assets,../../client/build,artifact.dir/backend/czi_hosted) ; \
+	$(call copy_client_assets,../../../client/build,artifact.dir/backend/czi_hosted) ; \
 	set -e ; \
 	cp app.py artifact.dir/application.py; \
+	cp -r ../../../backend/common artifact.dir/backend/common; \
 	cp ../requirements.txt artifact.dir; \
 	cp -r .ebextensions artifact.dir; \
 	if [ -d customize ] ; then \
@@ -51,8 +52,8 @@ build: clean
 	  cp -r customize/plugins artifact.dir/backend/czi_hosted/;  \
 	fi; \
 	(cd artifact.dir; \
-	  cp -r server/common/web/static static; \
+	  cp -r backend/czi_hosted/common/web/static static; \
 	  zip -r ../artifact.zip . --exclude backend/czi_hosted/test/\* backend/czi_hosted/eb/\* ; ); \
-	if ! grep artifact.zip .elasticbeanstalk/config.yml ; then \
+	if ! [ -f .elasticbeanstalk/config.yml ] ; then \
 	    mkdir -p .elasticbeanstalk ; cat config_deploy.yaml >> .elasticbeanstalk/config.yml ; fi
 

@@ -7,9 +7,9 @@ from urllib.parse import urlparse
 from backend.server.auth.auth import AuthTypeFactory
 from backend.server.common.config.base_config import BaseConfig
 from backend.server.common.config import DEFAULT_SERVER_PORT, BIG_FILE_SIZE_THRESHOLD
-from backend.common_utils.data_locator import discover_s3_region_name
-from backend.common_utils.errors import ConfigurationError, DatasetAccessError
-from backend.common_utils.utils import is_port_available, find_available_port, custom_format_warning
+from backend.common.utils.data_locator import discover_s3_region_name
+from backend.common.errors import ConfigurationError, DatasetAccessError
+from backend.common.utils.utils import is_port_available, find_available_port, custom_format_warning
 from backend.server.data_common.matrix_loader import MatrixDataLoader
 
 

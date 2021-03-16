@@ -21,10 +21,10 @@ from flask_restful import Api, Resource
 from server_timing import Timing as ServerTiming
 
 import backend.czi_hosted.common.rest as common_rest
-from backend.common_utils.data_locator import DataLocator
-from backend.common_utils.errors import DatasetAccessError, RequestException
+from backend.common.utils.data_locator import DataLocator
+from backend.common.errors import DatasetAccessError, RequestException
 from backend.czi_hosted.common.health import health_check
-from backend.common_utils.utils import path_join, Float32JSONEncoder
+from backend.common.utils.utils import path_join, Float32JSONEncoder
 from backend.czi_hosted.data_common.matrix_loader import MatrixDataLoader
 
 webbp = Blueprint("webapp", "backend.czi_hosted.common.web", template_folder="templates")

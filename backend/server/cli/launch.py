@@ -11,8 +11,8 @@ from flask_cors import CORS
 from backend.server.default_config import default_config
 from backend.server.app.app import Server
 from backend.server.common.config.app_config import AppConfig
-from backend.common_utils.errors import DatasetAccessError, ConfigurationError
-from backend.common_utils.utils import sort_options
+from backend.common.errors import DatasetAccessError, ConfigurationError
+from backend.common.utils.utils import sort_options
 
 DEFAULT_CONFIG = AppConfig()
 

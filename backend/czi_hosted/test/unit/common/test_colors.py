@@ -2,9 +2,9 @@ import unittest
 
 import anndata
 
-from backend.common_utils.colors import convert_color_to_hex_format, \
+from backend.common.colors import convert_color_to_hex_format, \
     convert_anndata_category_colors_to_cxg_category_colors
-from backend.common_utils.errors import ColorFormatException
+from backend.common.errors import ColorFormatException
 from backend.czi_hosted.test import PROJECT_ROOT
 from backend.czi_hosted.test.fixtures.fixtures import pbmc3k_colors
 

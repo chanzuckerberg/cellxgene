@@ -3,8 +3,8 @@ from abc import ABCMeta, abstractmethod
 import fastobo
 import fsspec
 
-from backend.common_utils.errors import OntologyLoadFailure, DisabledFeatureError
-from backend.common_utils.type_conversion_utils import get_schema_type_hint_of_array
+from backend.common.errors import OntologyLoadFailure, DisabledFeatureError
+from backend.common.utils.type_conversion_utils import get_schema_type_hint_of_array
 
 
 class Annotations(metaclass=ABCMeta):

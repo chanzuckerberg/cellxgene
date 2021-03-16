@@ -9,14 +9,14 @@ from scipy import sparse
 from server_timing import Timing as ServerTiming
 
 import backend.czi_hosted.compute.diffexp_generic as diffexp_generic
-from backend.common_utils.colors import convert_anndata_category_colors_to_cxg_category_colors
-from backend.common_utils.constants import Axis, MAX_LAYOUTS
+from backend.common.colors import convert_anndata_category_colors_to_cxg_category_colors
+from backend.common.constants import Axis, MAX_LAYOUTS
 from backend.czi_hosted.common.corpora import corpora_get_props_from_anndata
-from backend.common_utils.errors import PrepareError, DatasetAccessError, FilterError
-from backend.common_utils.type_conversion_utils import get_schema_type_hint_of_array
+from backend.common.errors import PrepareError, DatasetAccessError, FilterError
+from backend.common.utils.type_conversion_utils import get_schema_type_hint_of_array
 from backend.czi_hosted.compute.scanpy import scanpy_umap
 from backend.czi_hosted.data_common.data_adaptor import DataAdaptor
-from backend.common_utils.fbs.matrix import encode_matrix_fbs
+from backend.common.fbs.matrix import encode_matrix_fbs
 
 anndata_version = version.parse(str(anndata.__version__)).release
 

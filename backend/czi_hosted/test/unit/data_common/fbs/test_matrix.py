@@ -4,7 +4,7 @@ import numpy as np
 from scipy import sparse
 
 from backend.czi_hosted.test.unit import decode_fbs
-from backend.common_utils.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
+from backend.common.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
 
 
 class FbsTests(unittest.TestCase):

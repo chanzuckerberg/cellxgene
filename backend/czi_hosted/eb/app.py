@@ -24,9 +24,9 @@ SERVERDIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(SERVERDIR)
 
 try:
-    from backend.czi_hosted.common import AppConfig
-    from backend.czi_hosted import Server
-    from backend.czi_hosted.common import DataLocator, discover_s3_region_name
+    from backend.czi_hosted.common.config.app_config import AppConfig
+    from backend.czi_hosted.app.app import Server
+    from backend.common.utils.data_locator import DataLocator, discover_s3_region_name
 except Exception:
     logging.critical("Exception importing server modules", exc_info=True)
     sys.exit(1)

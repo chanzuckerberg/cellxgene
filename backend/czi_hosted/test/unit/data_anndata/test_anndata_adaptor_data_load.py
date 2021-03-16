@@ -1,7 +1,7 @@
 import unittest
 import json
 
-from backend.common_utils.data_locator import DataLocator
+from backend.common.utils.data_locator import DataLocator
 from backend.czi_hosted.data_anndata.anndata_adaptor import AnndataAdaptor
 from backend.czi_hosted.common.config.app_config import AppConfig
 from backend.czi_hosted.test import PROJECT_ROOT

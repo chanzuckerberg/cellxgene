@@ -3,7 +3,7 @@ import logging
 import boto3
 from flask import json
 
-from backend.common_utils.errors import SecretKeyRetrievalError
+from backend.common.errors import SecretKeyRetrievalError
 
 
 def get_secret_key(region_name, secret_name):

@@ -1,7 +1,7 @@
 from enum import Enum
 
-from backend.common_utils.data_locator import DataLocator
-from backend.common_utils.errors import DatasetAccessError
+from backend.common.utils.data_locator import DataLocator
+from backend.common.errors import DatasetAccessError
 from http import HTTPStatus
 
 

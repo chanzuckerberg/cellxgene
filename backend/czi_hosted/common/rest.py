@@ -8,8 +8,8 @@ from flask import make_response, jsonify, current_app, abort
 from werkzeug.urls import url_unquote
 
 from backend.czi_hosted.common.config.client_config import get_client_config, get_client_userinfo
-from backend.common_utils.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
-from backend.common_utils.errors import (
+from backend.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
+from backend.common.errors import (
     FilterError,
     JSONEncodingValueError,
     PrepareError,
@@ -20,7 +20,7 @@ from backend.common_utils.errors import (
 )
 
 import json
-from backend.common_utils.fbs.matrix import decode_matrix_fbs
+from backend.common.fbs.matrix import decode_matrix_fbs
 
 
 def abort_and_log(code, logmsg, loglevel=logging.DEBUG, include_exc_info=False):
