@@ -1,7 +1,6 @@
 import os
 import random
 import shutil
-import string
 import tempfile
 import time
 from contextlib import contextmanager
@@ -18,10 +17,7 @@ from backend.common.utils.data_locator import DataLocator
 from backend.common.utils.utils import find_available_port
 from backend.common.fbs.matrix import encode_matrix_fbs
 from backend.server.data_common.matrix_loader import MatrixDataType, MatrixDataLoader
-
-PROJECT_ROOT = popen("git rev-parse --show-toplevel").read().strip()
-FIXTURES_ROOT = PROJECT_ROOT + "/backend/test/fixtures"
-H5AD_FIXTURE = FIXTURES_ROOT + "/pbmc3k-CSC-gz.h5ad"
+from backend.test.unit import PROJECT_ROOT
 
 
 def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
@@ -90,10 +86,6 @@ def app_config(data_locator, backed=False, extra_server_config={}, extra_dataset
     config.update_dataset_config(**extra_dataset_config)
     config.complete_config()
     return config
-
-
-def random_string(n):
-    return "".join(random.choice(string.ascii_letters) for _ in range(n))
 
 
 def start_test_server(command_line_args=[], app_config=None, env=None):

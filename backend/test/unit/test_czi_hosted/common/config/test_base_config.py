@@ -1,7 +1,7 @@
 import unittest
 
 from backend.czi_hosted.common.config.app_config import AppConfig
-from backend.test.unit.test_czi_hosted import FIXTURES_ROOT
+from backend.test.unit import FIXTURES_ROOT
 from backend.common.errors import ConfigurationError
 from backend.test.unit.test_czi_hosted.common.config import ConfigTests
 

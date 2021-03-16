@@ -83,8 +83,6 @@ class BaseConfig(object):
         mapping = self.create_mapping(config)
         for attr, (key, value) in mapping.items():
             if not hasattr(self, attr):
-                import pdb
-                pdb.set_trace()
                 raise ConfigurationError(f"Unknown key from config file: {prefix}__{attr}")
             setattr(self, attr, value)
 

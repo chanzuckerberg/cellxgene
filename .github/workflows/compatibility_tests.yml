@@ -41,10 +41,10 @@ jobs:
       run: |
         # 1. only install the dev requirements on top of what is in the cellxgene pip package
         sudo apt-get update && sudo apt-get install -y libhdf5-serial-dev
-        sed -i 's/-r requirements.txt//' server/requirements-dev.txt
-        pip install -r server/requirements-dev.txt
+        sed -i 's/-r requirements.txt//' backend/czi_hosted/requirements-dev.txt
+        pip install -r backend/czi_hosted/requirements-dev.txt
         # 2. install cellxgene
-        make pydist install-dist
+        make pydist-czi-hosted install-dist
         # 3. install anndata
         pip install anndata==${{ matrix.anndata-version }}
         # workaround for anndata 0.6.22.post1 bug
@@ -73,8 +73,8 @@ jobs:
           cd cellxgene
           # 1. only install the dev requirements on top of what is in the cellxgene pip package
           make dev-env-client
-          sed -i 's/-r requirements.txt//' server/requirements-dev.txt
-          pip install -r server/requirements-dev.txt
+          sed -i 's/-r requirements.txt//' backend/server/requirements-dev.txt
+          pip install -r backend/server/requirements-dev.txt
           # 2. install cellxgene
           pip install --upgrade cellxgene
           # 3. install anndata
@@ -101,7 +101,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd cellxgene
-          sed -i -E 's/^anndata[>=]=[0-9]+.[0-9]+.[0-9]+$/anndata/g' server/requirements.txt
+          sed -i -E 's/^anndata[>=]=[0-9]+.[0-9]+.[0-9]+$/anndata/g' backend/server/requirements.txt
           make pydist install-dist dev-env
           pip install git+https://github.com/theislab/anndata
       - name: Tests

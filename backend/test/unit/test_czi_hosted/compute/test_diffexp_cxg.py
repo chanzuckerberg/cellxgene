@@ -10,7 +10,8 @@ from backend.czi_hosted.converters.h5ad_data_file import H5ADDataFile
 from backend.common.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
 from backend.czi_hosted.data_common.matrix_loader import MatrixDataLoader
 from backend.czi_hosted.test.performance.create_test_matrix import create_test_h5ad
-from backend.test.unit.test_czi_hosted import PROJECT_ROOT, FIXTURES_ROOT, app_config
+from backend.test.unit.test_czi_hosted import app_config
+from backend.test.unit import PROJECT_ROOT, FIXTURES_ROOT
 
 
 class DiffExpTest(unittest.TestCase):

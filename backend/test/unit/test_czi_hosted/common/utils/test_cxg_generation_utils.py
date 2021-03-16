@@ -14,7 +14,7 @@ from backend.czi_hosted.common.utils.cxg_generation_utils import (
     convert_ndarray_to_cxg_dense_array,
     convert_matrix_to_cxg_array,
 )
-from backend.test.unit.test_czi_hosted import FIXTURES_ROOT
+from backend.test.unit import FIXTURES_ROOT
 
 
 class TestCxgGenerationUtils(unittest.TestCase):

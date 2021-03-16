@@ -12,7 +12,7 @@ from pandas import Series, DataFrame
 from backend.czi_hosted.common.corpora import CorporaConstants
 from backend.czi_hosted.converters.h5ad_data_file import H5ADDataFile
 
-from backend.test.unit.test_czi_hosted import PROJECT_ROOT
+from backend.test.unit import PROJECT_ROOT
 
 
 class TestH5ADDataFile(unittest.TestCase):

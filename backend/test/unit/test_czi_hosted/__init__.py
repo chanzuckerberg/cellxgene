@@ -1,11 +1,10 @@
 import os
 import random
 import shutil
-import string
 import tempfile
 import time
 from contextlib import contextmanager
-from os import path, popen
+from os import path
 from subprocess import Popen
 
 import pandas as pd
@@ -20,9 +19,7 @@ from backend.common.utils.utils import find_available_port
 from backend.common.fbs.matrix import encode_matrix_fbs
 from backend.czi_hosted.data_common.matrix_loader import MatrixDataType, MatrixDataLoader
 from backend.czi_hosted.db.db_utils import DbUtils
-
-PROJECT_ROOT = popen("git rev-parse --show-toplevel").read().strip()
-FIXTURES_ROOT = PROJECT_ROOT + "/backend/test/fixtures"
+from backend.test.unit import PROJECT_ROOT, FIXTURES_ROOT
 
 
 def data_with_tmp_tiledb_annotations(ext: MatrixDataType):
@@ -118,10 +115,6 @@ def app_config(data_locator, backed=False, extra_server_config={}, extra_dataset
     config.update_default_dataset_config(**extra_dataset_config)
     config.complete_config()
     return config
-
-
-def random_string(n):
-    return "".join(random.choice(string.ascii_letters) for _ in range(n))
 
 
 def start_test_server(command_line_args=[], app_config=None, env=None):

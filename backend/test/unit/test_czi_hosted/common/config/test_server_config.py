@@ -5,7 +5,8 @@ from unittest.mock import patch
 
 from backend.czi_hosted.common.config.base_config import BaseConfig
 from backend.common.utils.utils import find_available_port
-from backend.test.unit.test_czi_hosted import PROJECT_ROOT, FIXTURES_ROOT, test_server
+from backend.test.unit.test_czi_hosted import test_server
+from backend.test.unit import PROJECT_ROOT, FIXTURES_ROOT
 import requests
 
 from backend.czi_hosted.common.config.app_config import AppConfig

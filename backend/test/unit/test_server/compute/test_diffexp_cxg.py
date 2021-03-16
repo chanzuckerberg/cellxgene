@@ -3,7 +3,8 @@ import unittest
 import numpy as np
 
 from backend.server.data_common.matrix_loader import MatrixDataLoader
-from backend.test.unit.test_server import app_config, PROJECT_ROOT
+from backend.test.unit.test_server import app_config
+from backend.test.unit import PROJECT_ROOT
 
 
 class DiffExpTest(unittest.TestCase):

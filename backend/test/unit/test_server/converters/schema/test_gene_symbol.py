@@ -3,7 +3,7 @@ import unittest
 
 import pandas as pd
 
-from backend.test.unit.test_server import FIXTURES_ROOT
+from backend.test.unit import FIXTURES_ROOT
 from backend.server.converters.schema import gene_symbol
 
 

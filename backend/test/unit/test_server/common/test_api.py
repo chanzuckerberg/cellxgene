@@ -9,18 +9,16 @@ from os import path
 import pandas as pd
 import requests
 
-import backend.test.unit.test_server.decode_fbs as decode_fbs
+import backend.test.unit.test_common.decode_fbs as decode_fbs
 from backend.server.data_common.matrix_loader import MatrixDataType
 from backend.test.unit.test_server import (
     data_with_tmp_annotations,
     make_fbs,
-    PROJECT_ROOT,
-    FIXTURES_ROOT,
     start_test_server,
     stop_test_server,
 )
 from backend.test.fixtures.fixtures import pbmc3k_colors
-
+from backend.test.unit import PROJECT_ROOT, FIXTURES_ROOT
 BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
 
 

@@ -11,13 +11,12 @@ from backend.czi_hosted.data_common.matrix_loader import MatrixDataType
 from backend.test.unit.test_czi_hosted import (
     data_with_tmp_annotations,
     make_fbs,
-    PROJECT_ROOT,
-    FIXTURES_ROOT,
     start_test_server,
     stop_test_server,
 )
+from backend.test.unit import PROJECT_ROOT, FIXTURES_ROOT
 from backend.test.fixtures.fixtures import pbmc3k_colors
-from backend.test.unit.test_czi_hosted import decode_fbs
+from backend.test.unit.test_common import decode_fbs
 
 BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
 

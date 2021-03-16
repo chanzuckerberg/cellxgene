@@ -1,9 +1,9 @@
 from http import HTTPStatus
 import unittest
 import math
-from backend.test.unit.test_server import start_test_server, stop_test_server, FIXTURES_ROOT
-
-import backend.test.unit.test_server.decode_fbs as decode_fbs
+from backend.test.unit.test_server import start_test_server, stop_test_server
+from backend.test.unit import FIXTURES_ROOT
+import backend.test.unit.test_common.decode_fbs as decode_fbs
 
 import requests
 

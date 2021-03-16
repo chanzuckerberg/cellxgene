@@ -6,7 +6,7 @@ from os import path, listdir
 import numpy as np
 import pandas as pd
 
-import backend.test.unit.test_server.decode_fbs as decode_fbs
+import backend.test.unit.test_common.decode_fbs as decode_fbs
 from backend.server.common.rest import annotations_put_fbs_helper, schema_get_helper
 from backend.server.data_common.matrix_loader import MatrixDataType
 from backend.test.unit.test_server import data_with_tmp_annotations, make_fbs

@@ -15,7 +15,7 @@ from backend.czi_hosted.data_common.matrix_loader import MatrixDataType
 from backend.czi_hosted.db.cellxgene_orm import CellxGeneDataset, Annotation
 from backend.test.fixtures.database import TestDatabase
 from backend.test.unit.test_czi_hosted import make_fbs, data_with_tmp_tiledb_annotations, data_with_tmp_annotations
-from backend.test.unit.test_czi_hosted import decode_fbs
+from backend.test.unit.test_common import decode_fbs
 
 TestDatabase()
 

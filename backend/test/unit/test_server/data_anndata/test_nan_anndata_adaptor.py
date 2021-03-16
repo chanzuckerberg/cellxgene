@@ -4,11 +4,12 @@ import warnings
 
 import pytest
 
-import backend.test.unit.test_server.decode_fbs as decode_fbs
+import backend.test.unit.test_common.decode_fbs as decode_fbs
 from backend.common.utils.data_locator import DataLocator
 from backend.common.errors import FilterError
 from backend.server.data_anndata.anndata_adaptor import AnndataAdaptor
-from backend.test.unit.test_server import app_config, FIXTURES_ROOT
+from backend.test.unit import FIXTURES_ROOT
+from backend.test.unit.test_server import app_config
 
 
 class NaNTest(unittest.TestCase):

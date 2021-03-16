@@ -6,7 +6,7 @@ import scanpy as sc
 
 from backend.czi_hosted.converters.schema import validate
 
-from backend.test.unit.test_czi_hosted import PROJECT_ROOT
+from backend.test.unit import PROJECT_ROOT
 
 
 class TestFieldValidation(unittest.TestCase):

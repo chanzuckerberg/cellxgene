@@ -11,9 +11,10 @@ from parameterized import parameterized_class
 from backend.common.utils.data_locator import DataLocator
 from backend.common.errors import FilterError
 from backend.czi_hosted.data_anndata.anndata_adaptor import AnndataAdaptor
-from backend.test.unit.test_czi_hosted import PROJECT_ROOT, FIXTURES_ROOT,app_config
+from backend.test.unit.test_czi_hosted import app_config
+from backend.test.unit import PROJECT_ROOT, FIXTURES_ROOT
 from backend.test.fixtures.fixtures import pbmc3k_colors
-from backend.test.unit.test_czi_hosted import decode_fbs
+from backend.test.unit.test_common import decode_fbs
 
 """
 Test the anndata adaptor using the pbmc3k data set.

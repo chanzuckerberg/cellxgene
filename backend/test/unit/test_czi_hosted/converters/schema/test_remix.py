@@ -10,7 +10,7 @@ import scanpy as sc
 
 from backend.czi_hosted.converters.schema import remix
 
-from backend.test.unit.test_czi_hosted import PROJECT_ROOT, FIXTURES_ROOT
+from backend.test.unit import PROJECT_ROOT, FIXTURES_ROOT
 
 
 class TestApplySchema(unittest.TestCase):

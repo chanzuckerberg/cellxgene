@@ -6,7 +6,7 @@ import unittest
 import yaml
 
 from backend.czi_hosted.default_config import default_config
-from backend.test.unit.test_czi_hosted import FIXTURES_ROOT
+from backend.test.unit import FIXTURES_ROOT
 
 
 class CLIPLaunchTests(unittest.TestCase):

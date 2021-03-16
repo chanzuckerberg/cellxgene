@@ -7,7 +7,7 @@ import unittest
 
 from contextlib import contextmanager
 from backend.czi_hosted.common.config.app_config import AppConfig
-from backend.test.unit.test_czi_hosted import PROJECT_ROOT, FIXTURES_ROOT
+from backend.test.unit import PROJECT_ROOT, FIXTURES_ROOT
 
 
 @contextmanager
@@ -43,8 +43,6 @@ class Elastic_Beanstalk_Test(unittest.TestCase):
         subprocess.check_call(f"git ls-files . | cpio -pdm {tempdirname}", cwd=f"{PROJECT_ROOT}/backend/czi_hosted/eb", shell=True)
 
         subprocess.check_call(["make", "build"], cwd=tempdirname)
-        import pdb
-        pdb.set_trace()
         with run_eb_app(tempdirname) as server:
             session = requests.Session()
 

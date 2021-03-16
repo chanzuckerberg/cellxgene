@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from scipy import sparse
 
-from backend.test.unit.test_czi_hosted import decode_fbs
+from backend.test.unit.test_common import decode_fbs
 from backend.common.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
 
 

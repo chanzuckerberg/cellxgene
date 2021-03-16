@@ -2,12 +2,13 @@ from http import HTTPStatus
 import unittest
 import math
 
-import backend.test.unit.test_czi_hosted.decode_fbs as decode_fbs
+import backend.test.unit.test_common.decode_fbs as decode_fbs
 
 
 import requests
 
-from backend.test.unit.test_czi_hosted import start_test_server, stop_test_server, FIXTURES_ROOT
+from backend.test.unit.test_czi_hosted import start_test_server, stop_test_server
+from backend.test.unit import FIXTURES_ROOT
 
 VERSION = "v0.2"
 BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}

@@ -7,7 +7,9 @@ import pytest
 from backend.common.utils.data_locator import DataLocator
 from backend.common.errors import FilterError
 from backend.czi_hosted.data_anndata.anndata_adaptor import AnndataAdaptor
-from backend.test.unit.test_czi_hosted import decode_fbs, app_config, FIXTURES_ROOT
+from backend.test.unit.test_czi_hosted import app_config
+from backend.test.unit import FIXTURES_ROOT
+from backend.test.unit.test_common import decode_fbs
 
 
 class NaNTest(unittest.TestCase):

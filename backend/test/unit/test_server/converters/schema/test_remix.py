@@ -9,7 +9,7 @@ import pandas as pd
 import scanpy as sc
 
 from backend.server.converters.schema import remix
-from backend.test.unit.test_server import PROJECT_ROOT
+from backend.test.unit import PROJECT_ROOT
 
 
 class TestApplySchema(unittest.TestCase):

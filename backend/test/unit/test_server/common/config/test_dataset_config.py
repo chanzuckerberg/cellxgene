@@ -7,7 +7,7 @@ from unittest.mock import patch
 from backend.server.common.annotations.local_file_csv import AnnotationsLocalFile
 from backend.server.common.config.app_config import AppConfig
 from backend.server.common.config.base_config import BaseConfig
-from backend.test.unit.test_server import FIXTURES_ROOT, H5AD_FIXTURE
+from backend.test.unit import FIXTURES_ROOT, H5AD_FIXTURE
 
 from backend.common.errors import ConfigurationError
 from backend.test.unit.test_server.common.config import ConfigTests
