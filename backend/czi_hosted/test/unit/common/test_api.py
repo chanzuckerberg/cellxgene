@@ -16,7 +16,7 @@ from backend.czi_hosted.test import (
     start_test_server,
     stop_test_server,
 )
-from backend.czi_hosted.test.fixtures.fixtures import pbmc3k_colors
+from backend.test.fixtures.fixtures import pbmc3k_colors
 from backend.czi_hosted.test.unit import decode_fbs
 
 BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}

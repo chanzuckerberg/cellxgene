@@ -19,7 +19,7 @@ from backend.server.test import (
     start_test_server,
     stop_test_server,
 )
-from backend.server.test.fixtures.fixtures import pbmc3k_colors
+from backend.test.fixtures.fixtures import pbmc3k_colors
 
 BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
 

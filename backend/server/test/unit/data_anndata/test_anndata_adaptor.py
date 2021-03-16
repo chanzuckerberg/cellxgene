@@ -13,7 +13,7 @@ from backend.common.utils.data_locator import DataLocator
 from backend.common.errors import FilterError
 from backend.server.data_anndata.anndata_adaptor import AnndataAdaptor
 from backend.server.test import PROJECT_ROOT, app_config, FIXTURES_ROOT
-from backend.server.test.fixtures.fixtures import pbmc3k_colors
+from backend.test.fixtures.fixtures import pbmc3k_colors
 
 """
 Test the anndata adaptor using the pbmc3k data set.

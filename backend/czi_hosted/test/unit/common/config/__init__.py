@@ -67,7 +67,7 @@ class ConfigTests(unittest.TestCase):
         config_file_name="server_config.yaml",
     ):
         configfile = os.path.join(self.tmp_fixtures_directory, config_file_name)
-        server_config_outline_path = os.path.join(FIXTURES_ROOT, "server_config_outline.py")
+        server_config_outline_path = os.path.join(FIXTURES_ROOT, "czi_hosted_server_config_outline.py")
         with open(server_config_outline_path, "r") as config_skeleton:
             config = config_skeleton.read()
             server_config = eval(config)
@@ -245,7 +245,7 @@ class ConfigTests(unittest.TestCase):
         config_file_name="dataset_config.yml",
     ):
         configfile = os.path.join(self.tmp_fixtures_directory, config_file_name)
-        dataset_config_outline_path = os.path.join(FIXTURES_ROOT, "dataset_config_outline.py")
+        dataset_config_outline_path = os.path.join(FIXTURES_ROOT, "czi_hosted_dataset_config_outline.py")
         with open(dataset_config_outline_path, "r") as config_skeleton:
             config = config_skeleton.read()
             dataset_config = eval(config)
