@@ -12,7 +12,7 @@ from pandas import Series, DataFrame
 from backend.czi_hosted.common.corpora import CorporaConstants
 from backend.czi_hosted.converters.h5ad_data_file import H5ADDataFile
 
-from backend.czi_hosted.test import PROJECT_ROOT
+from backend.test.unit.test_czi_hosted import PROJECT_ROOT
 
 
 class TestH5ADDataFile(unittest.TestCase):
@@ -222,7 +222,7 @@ class TestH5ADDataFile(unittest.TestCase):
         )
 
     def _write_anndata_to_file(self, anndata):
-        temporary_filename = f"{PROJECT_ROOT}/backend/czi_hosted/test/fixtures/{uuid4()}.h5ad"
+        temporary_filename = f"{PROJECT_ROOT}/backend/test/fixtures/{uuid4()}.h5ad"
         anndata.write(temporary_filename)
 
         return temporary_filename

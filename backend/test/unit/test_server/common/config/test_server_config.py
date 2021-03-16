@@ -4,7 +4,7 @@ from unittest import mock
 from unittest.mock import patch
 
 from backend.server.common.config.base_config import BaseConfig
-from backend.server.test import H5AD_FIXTURE
+from backend.test.unit.test_server import H5AD_FIXTURE
 
 from backend.server.common.config.app_config import AppConfig
 from backend.common.errors import ConfigurationError

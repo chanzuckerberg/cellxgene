@@ -13,9 +13,11 @@ from backend.common.errors import AnnotationCategoryNameError
 from backend.czi_hosted.common.rest import annotations_put_fbs_helper, schema_get_helper
 from backend.czi_hosted.data_common.matrix_loader import MatrixDataType
 from backend.czi_hosted.db.cellxgene_orm import CellxGeneDataset, Annotation
-from backend.czi_hosted.test import make_fbs, data_with_tmp_tiledb_annotations, data_with_tmp_annotations
+from backend.test.fixtures.database import TestDatabase
+from backend.test.unit.test_czi_hosted import make_fbs, data_with_tmp_tiledb_annotations, data_with_tmp_annotations
 from backend.test.unit.test_czi_hosted import decode_fbs
 
+TestDatabase()
 
 class auth(object):
     def get_user_id():

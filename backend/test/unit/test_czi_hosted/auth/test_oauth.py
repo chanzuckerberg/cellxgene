@@ -10,7 +10,7 @@ from multiprocessing import Process
 
 import jose
 from backend.czi_hosted.common.config.app_config import AppConfig
-from backend.czi_hosted.test import FIXTURES_ROOT, test_server
+from backend.test.unit.test_czi_hosted import FIXTURES_ROOT, test_server
 
 # This tests the oauth authentication type.
 # This test starts a cellxgene server and a mock oauth server.

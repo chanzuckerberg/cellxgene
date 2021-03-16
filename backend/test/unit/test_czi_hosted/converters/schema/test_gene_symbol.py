@@ -4,7 +4,7 @@ import unittest
 import pandas as pd
 
 from backend.czi_hosted.converters.schema import gene_symbol
-from backend.czi_hosted.test import FIXTURES_ROOT
+from backend.test.unit.test_czi_hosted import FIXTURES_ROOT
 
 
 class TestHGNCSymbolChecker(unittest.TestCase):

@@ -56,7 +56,7 @@ build-for-server-dev-local: clean-local-server build-client
 	$(call copy_client_assets,client/build,backend/server)
 
 .PHONY: build-for-server-dev
-build-for-server-dev: cleans-server build-client
+build-for-server-dev: clean-czi_hosted build-client
 	$(call copy_client_assets,client/build,backend/czi_hosted)
 
 .PHONY: copy-client-assets-local

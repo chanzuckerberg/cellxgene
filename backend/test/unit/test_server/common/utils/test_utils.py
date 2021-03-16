@@ -3,7 +3,7 @@ import shutil
 import unittest
 
 from backend.common.utils.utils import import_plugins
-from backend.server.test import PROJECT_ROOT, random_string
+from backend.test.unit.test_server import PROJECT_ROOT, random_string
 
 
 class TestPlugins(unittest.TestCase):

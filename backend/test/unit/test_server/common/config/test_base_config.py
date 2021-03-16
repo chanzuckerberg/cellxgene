@@ -1,7 +1,7 @@
 import unittest
 
 from backend.server.common.config.app_config import AppConfig
-from backend.server.test import H5AD_FIXTURE
+from backend.test.unit.test_server import H5AD_FIXTURE
 from backend.test.unit.test_server.common.config import ConfigTests
 from backend.common.errors import ConfigurationError
 

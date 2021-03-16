@@ -5,13 +5,12 @@ from unittest.mock import patch
 
 from backend.czi_hosted.common.config.base_config import BaseConfig
 from backend.common.utils.utils import find_available_port
-from backend.czi_hosted.test import PROJECT_ROOT, FIXTURES_ROOT, test_server
-
+from backend.test.unit.test_czi_hosted import PROJECT_ROOT, FIXTURES_ROOT, test_server
 import requests
 
 from backend.czi_hosted.common.config.app_config import AppConfig
 from backend.common.errors import ConfigurationError
-from backend.test.unit.test_czi_hosted.common import ConfigTests
+from backend.test.unit.test_czi_hosted.common.config import ConfigTests
 
 
 def mockenv(**envvars):

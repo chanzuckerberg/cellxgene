@@ -14,12 +14,12 @@ from backend.czi_hosted.common.utils.cxg_generation_utils import (
     convert_ndarray_to_cxg_dense_array,
     convert_matrix_to_cxg_array,
 )
-from backend.czi_hosted.test import PROJECT_ROOT
+from backend.test.unit.test_czi_hosted import FIXTURES_ROOT
 
 
 class TestCxgGenerationUtils(unittest.TestCase):
     def setUp(self):
-        self.testing_cxg_temp_directory = f"{PROJECT_ROOT}/backend/czi_hosted/test/fixtures/{uuid4()}"
+        self.testing_cxg_temp_directory = f"{FIXTURES_ROOT}/{uuid4()}"
         mkdir(self.testing_cxg_temp_directory)
 
     def tearDown(self):

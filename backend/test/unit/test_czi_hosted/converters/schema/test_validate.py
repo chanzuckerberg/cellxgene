@@ -6,8 +6,7 @@ import scanpy as sc
 
 from backend.czi_hosted.converters.schema import validate
 
-# PROJECT_ROOT = os.popen("git rev-parse --show-toplevel").read().strip()
-from backend.czi_hosted.test import PROJECT_ROOT
+from backend.test.unit.test_czi_hosted import PROJECT_ROOT
 
 
 class TestFieldValidation(unittest.TestCase):
@@ -411,7 +410,7 @@ class TestGetSchema(unittest.TestCase):
 class TestValidate(unittest.TestCase):
 
     def setUp(self):
-        self.source_h5ad_path = f"{PROJECT_ROOT}/backend/czi_hosted/test/fixtures/pbmc3k-CSC-gz.h5ad"
+        self.source_h5ad_path = f"{PROJECT_ROOT}/backend/test/fixtures/pbmc3k-CSC-gz.h5ad"
 
     def test_shallow(self):
 

@@ -8,7 +8,7 @@ import pandas as pd
 import requests
 
 from backend.czi_hosted.data_common.matrix_loader import MatrixDataType
-from backend.czi_hosted.test import (
+from backend.test.unit.test_czi_hosted import (
     data_with_tmp_annotations,
     make_fbs,
     PROJECT_ROOT,

@@ -12,7 +12,7 @@ from backend.server.common.corpora import (
     corpora_is_version_supported,
     corpora_get_props_from_anndata,
 )
-from backend.server.test import PROJECT_ROOT, start_test_server, stop_test_server
+from backend.test.unit.test_server import PROJECT_ROOT, start_test_server, stop_test_server
 
 VERSION = "v0.2"
 

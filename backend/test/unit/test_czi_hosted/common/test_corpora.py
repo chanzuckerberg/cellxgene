@@ -12,7 +12,7 @@ from backend.czi_hosted.common.corpora import (
     corpora_is_version_supported,
     corpora_get_props_from_anndata,
 )
-from backend.czi_hosted.test import PROJECT_ROOT, start_test_server, stop_test_server
+from backend.test.unit.test_czi_hosted import PROJECT_ROOT, start_test_server, stop_test_server
 
 VERSION = "v0.2"
 

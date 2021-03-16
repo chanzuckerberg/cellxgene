@@ -8,6 +8,7 @@ import pandas as pd
 import tiledb
 from server_timing import Timing as ServerTiming
 
+from backend.common.constants import Axis
 from backend.common.errors import DatasetAccessError, ConfigurationError
 from backend.czi_hosted.common.immutable_kvcache import ImmutableKVCache
 from backend.common.utils.type_conversion_utils import get_schema_type_hint_from_dtype

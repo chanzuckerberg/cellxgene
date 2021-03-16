@@ -3,7 +3,7 @@ import unittest
 import requests
 
 from backend.server.common.config.app_config import AppConfig
-from backend.server.test import H5AD_FIXTURE, test_server
+from backend.test.unit.test_server import H5AD_FIXTURE, test_server
 
 
 class AuthTest(unittest.TestCase):

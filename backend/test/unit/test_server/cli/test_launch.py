@@ -6,7 +6,7 @@ import unittest
 import yaml
 
 from backend.server.default_config import default_config
-from backend.server.test import FIXTURES_ROOT
+from backend.test.unit.test_server import FIXTURES_ROOT
 
 
 class CLIPLaunchTests(unittest.TestCase):

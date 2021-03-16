@@ -8,7 +8,7 @@ from backend.server.default_config import default_config
 from backend.server.common.config.app_config import AppConfig
 from backend.test.unit.test_server.common.config import ConfigTests
 from backend.common.errors import ConfigurationError
-from backend.server.test import FIXTURES_ROOT, H5AD_FIXTURE
+from backend.test.unit.test_server import FIXTURES_ROOT, H5AD_FIXTURE
 
 
 class AppConfigTest(ConfigTests):

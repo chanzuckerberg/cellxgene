@@ -11,7 +11,7 @@ import requests
 
 import backend.test.unit.test_server.decode_fbs as decode_fbs
 from backend.server.data_common.matrix_loader import MatrixDataType
-from backend.server.test import (
+from backend.test.unit.test_server import (
     data_with_tmp_annotations,
     make_fbs,
     PROJECT_ROOT,

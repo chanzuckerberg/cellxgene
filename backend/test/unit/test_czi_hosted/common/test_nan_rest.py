@@ -7,7 +7,7 @@ import backend.test.unit.test_czi_hosted.decode_fbs as decode_fbs
 
 import requests
 
-from backend.czi_hosted.test import start_test_server, stop_test_server
+from backend.test.unit.test_czi_hosted import start_test_server, stop_test_server, FIXTURES_ROOT
 
 VERSION = "v0.2"
 BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
@@ -18,7 +18,7 @@ class WithNaNs(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ps, cls.server = start_test_server(["test/fixtures/nan.h5ad"])
+        cls.ps, cls.server = start_test_server([f"{FIXTURES_ROOT}/nan.h5ad"])
 
     @classmethod
     def tearDownClass(cls):

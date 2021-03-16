@@ -9,10 +9,10 @@ from backend.czi_hosted.common.annotations.hosted_tiledb import AnnotationsHoste
 from backend.czi_hosted.common.annotations.local_file_csv import AnnotationsLocalFile
 from backend.czi_hosted.common.config.app_config import AppConfig
 from backend.czi_hosted.common.config.base_config import BaseConfig
-from backend.czi_hosted.test import test_server, PROJECT_ROOT, FIXTURES_ROOT
+from backend.test.unit.test_czi_hosted import test_server, PROJECT_ROOT, FIXTURES_ROOT
 
 from backend.common.errors import ConfigurationError
-from backend.test.unit.test_czi_hosted.common import ConfigTests
+from backend.test.unit.test_czi_hosted.common.config import ConfigTests
 
 
 class TestDatasetConfig(ConfigTests):

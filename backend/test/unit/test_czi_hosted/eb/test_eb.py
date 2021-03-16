@@ -1,13 +1,13 @@
-import unittest
-import tempfile
+import os
 import requests
 import subprocess
-
-from backend.czi_hosted.common.config.app_config import AppConfig
-from backend.czi_hosted.test import PROJECT_ROOT, FIXTURES_ROOT
-from contextlib import contextmanager
+import tempfile
 import time
-import os
+import unittest
+
+from contextlib import contextmanager
+from backend.czi_hosted.common.config.app_config import AppConfig
+from backend.test.unit.test_czi_hosted import PROJECT_ROOT, FIXTURES_ROOT
 
 
 @contextmanager
@@ -32,10 +32,8 @@ def run_eb_app(tempdirname):
 
 class Elastic_Beanstalk_Test(unittest.TestCase):
     def test_run(self):
-
         tempdir = tempfile.TemporaryDirectory(dir=f"{PROJECT_ROOT}/backend/czi_hosted")
         tempdirname = tempdir.name
-
         config = AppConfig()
         # test that eb works
         config.update_server_config(multi_dataset__dataroot=f"{FIXTURES_ROOT}", app__flask_secret_key="open sesame")
@@ -45,7 +43,8 @@ class Elastic_Beanstalk_Test(unittest.TestCase):
         subprocess.check_call(f"git ls-files . | cpio -pdm {tempdirname}", cwd=f"{PROJECT_ROOT}/backend/czi_hosted/eb", shell=True)
 
         subprocess.check_call(["make", "build"], cwd=tempdirname)
-
+        import pdb
+        pdb.set_trace()
         with run_eb_app(tempdirname) as server:
             session = requests.Session()
 

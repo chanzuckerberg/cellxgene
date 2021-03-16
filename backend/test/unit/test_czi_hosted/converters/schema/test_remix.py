@@ -10,17 +10,16 @@ import scanpy as sc
 
 from backend.czi_hosted.converters.schema import remix
 
-# PROJECT_ROOT = os.popen("git rev-parse --show-toplevel").read().strip()
-from backend.czi_hosted.test import PROJECT_ROOT
+from backend.test.unit.test_czi_hosted import PROJECT_ROOT, FIXTURES_ROOT
 
 
 class TestApplySchema(unittest.TestCase):
 
     def setUp(self):
-        self.source_h5ad_path = f"{PROJECT_ROOT}/backend/czi_hosted/test/fixtures/pbmc3k-CSC-gz.h5ad"
-        self.output_h5ad_path = f"{PROJECT_ROOT}/backend/czi_hosted/test/fixtures/test_remix.h5ad"
-        self.config_path = f"{PROJECT_ROOT}/backend/czi_hosted/test/fixtures/test_config.yaml"
-        self.bad_config_path = f"{PROJECT_ROOT}/backend/czi_hosted/test/fixtures/test_bad_config.yaml"
+        self.source_h5ad_path = f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad"
+        self.output_h5ad_path = f"{FIXTURES_ROOT}/test_remix.h5ad"
+        self.config_path = f"{FIXTURES_ROOT}/test_config.yaml"
+        self.bad_config_path = f"{FIXTURES_ROOT}/test_bad_config.yaml"
 
     def tearDown(self):
         try:

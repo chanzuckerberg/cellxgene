@@ -4,7 +4,7 @@ import json
 from backend.common.utils.data_locator import DataLocator
 from backend.server.data_anndata.anndata_adaptor import AnndataAdaptor
 from backend.server.common.config.app_config import AppConfig
-from backend.server.test import PROJECT_ROOT
+from backend.test.unit.test_server import PROJECT_ROOT
 
 
 class DataLoadAdaptorTest(unittest.TestCase):

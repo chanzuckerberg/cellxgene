@@ -11,7 +11,7 @@ from parameterized import parameterized_class
 from backend.common.utils.data_locator import DataLocator
 from backend.common.errors import FilterError
 from backend.czi_hosted.data_anndata.anndata_adaptor import AnndataAdaptor
-from backend.czi_hosted.test import PROJECT_ROOT, app_config, FIXTURES_ROOT
+from backend.test.unit.test_czi_hosted import PROJECT_ROOT, FIXTURES_ROOT,app_config
 from backend.test.fixtures.fixtures import pbmc3k_colors
 from backend.test.unit.test_czi_hosted import decode_fbs
 

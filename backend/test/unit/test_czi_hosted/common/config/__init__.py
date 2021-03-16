@@ -5,7 +5,7 @@ import random
 from unittest import mock
 import yaml
 
-from backend.czi_hosted.test import FIXTURES_ROOT
+from backend.test.unit.test_czi_hosted import FIXTURES_ROOT
 
 
 def mockenv(**envvars):

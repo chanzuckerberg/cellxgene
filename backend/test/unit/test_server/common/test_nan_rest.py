@@ -1,7 +1,7 @@
 from http import HTTPStatus
 import unittest
 import math
-from backend.server.test import start_test_server, stop_test_server, FIXTURES_ROOT
+from backend.test.unit.test_server import start_test_server, stop_test_server, FIXTURES_ROOT
 
 import backend.test.unit.test_server.decode_fbs as decode_fbs
 
