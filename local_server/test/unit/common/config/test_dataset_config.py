@@ -47,7 +47,7 @@ class TestDatasetConfig(ConfigTests):
         mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.dataset_config.complete_config(self.context)
         self.assertIsNotNone(self.config.server_config.data_adaptor)
-        self.assertEqual(mock_check_attrs.call_count, 17)
+        self.assertEqual(mock_check_attrs.call_count, 19)
 
     def test_app_sets_script_vars(self):
         config = self.get_config(scripts=["path/to/script"])
@@ -102,7 +102,7 @@ class TestDatasetConfig(ConfigTests):
             enable_users_annotations="true", authentication_enable="true", annotation_type="local_file_csv"
         )
         config.server_config.complete_config(self.context)
-        config.dataset_config.handle_local_file_csv_annotations()
+        config.dataset_config.handle_local_file_csv_annotations(self.context)
         self.assertIsInstance(config.dataset_config.user_annotations, AnnotationsLocalFile)
         cwd = os.getcwd()
         self.assertEqual(config.dataset_config.user_annotations._get_output_dir(), cwd)

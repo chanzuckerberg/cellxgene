@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from os.path import basename, splitext
+import re
 
 import numpy as np
 import pandas as pd
@@ -16,7 +17,7 @@ class DataAdaptor(metaclass=ABCMeta):
     """Base class for loading and accessing matrix data"""
 
     def __init__(self, data_locator, app_config, dataset_config=None):
-        if type(app_config) != AppConfig:
+        if not isinstance(app_config, AppConfig):
             raise TypeError("config expected to be of type AppConfig")
 
         # location to the dataset
@@ -156,7 +157,7 @@ class DataAdaptor(metaclass=ABCMeta):
     def _index_filter_to_mask(self, filter, count):
         mask = np.zeros((count,), dtype=np.bool)
         for i in filter:
-            if type(i) == list:
+            if isinstance(i, list):
                 mask[i[0] : i[1]] = True
             else:
                 mask[i] = True
@@ -261,6 +262,98 @@ class DataAdaptor(metaclass=ABCMeta):
 
         return labels_df
 
+    def check_new_gene_sets(self, genesets, context=None):
+        """
+        Check validity of gene sets, return if correct, else raise error.
+        May also modify the gene set for conditions that should be resolved,
+        but which do not warrant a hard error.
+
+        Argument genesets may be either the REST OTA format (list of dicts) or the internal
+        format (dict of dicts, keyed by the geneset name).
+
+        Will return a modified genesets (eg, remove dups) of the same type as the
+        provided argument. Ie, dict->dict, list->list
+
+        Rules:
+        0. all geneset names must be unique.
+        1. All geneset names must be legal, meaning:
+            * no leading or trailing white space
+            * no multi-space runs
+            * character set matches: [A-Z][a-z][0-9][ .()-]
+           Generates hard error.
+        2. Gene symbols must be part of the current var_index.  If symbol not in var_index,
+           will generate a warning and the symbol removed.
+        3. Duplicate gene symbols are silently de-duped.
+        """
+        messagefn = context["messagefn"] if context else (lambda x: None)
+
+        # accept genesets args as either the internal (dict) or REST (list) format,
+        # as they are identical except for the dict being keyed by geneset_name.
+        if not isinstance(genesets, dict) and not isinstance(genesets, list):
+            raise ValueError("Genesets must be either dict or list.")
+        genesets_iterable = genesets if isinstance(genesets, list) else genesets.values()
+
+        # 0. check for uniqueness of geneset names
+        geneset_names = [gs["geneset_name"] for gs in genesets_iterable]
+        if len(set(geneset_names)) != len(geneset_names):
+            raise KeyError("All geneset names must be unique.")
+
+        # 1. check gene set character set and format
+        legal_name = re.compile(r"^(\w|[ .()-])+$")
+        for name in geneset_names:
+            if type(name) != str or len(name) == 0:
+                raise KeyError("Geneset names must be non-null string.")
+            if name[0] in " \t\n\r" or name[-1] in " \t\n\r" or not legal_name.match(name) or "  " in name:
+                messagefn(
+                    "Error: "
+                    f"Geneset name {name} is not valid. Only alphanumeric and limited special characters (-_.) "
+                    "and space are allowed. Leading, trailing, and multiple spaces within a name are not allowed."
+                )
+                raise KeyError(
+                    "Geneset name is not valid, only alphanumeric and limited special characters (-_.) "
+                    "and space are allowed. Leading, trailing, and multiple spaces within a name are not allowed."
+                )
+
+        # 2. & 3. check for duplicate gene symbols, and those not present in the dataset. They will
+        # generate a warning and be removed.
+        var_names = set(self.query_var_array(self.parameters.get("var_names")))
+        for geneset in genesets_iterable:
+            if not isinstance(geneset, dict):
+                raise ValueError("Each geneset must be a dict.")
+            geneset_name = geneset["geneset_name"]
+            genes = geneset["genes"]
+            if not isinstance(genes, list):
+                raise ValueError("Geneset genes field must be a list")
+            geneset.setdefault("geneset_description", "")
+            gene_symbol_already_seen = set()
+            new_genes = []
+            for gene in genes:
+                gene_symbol = gene["gene_symbol"]
+                if not isinstance(gene_symbol, str) or len(gene_symbol) == 0:
+                    raise ValueError("Gene symbol must be non-null string.")
+                if gene_symbol in gene_symbol_already_seen:
+                    # duplicate check
+                    messagefn(
+                        f"Warning: a duplicate of gene {gene_symbol} was found in geneset {geneset_name}, "
+                        "and will be ignored."
+                    )
+                    continue
+
+                if gene_symbol not in var_names:
+                    messagefn(
+                        f"Warning: {gene_symbol}, used in geneset {geneset_name}, "
+                        "was not found in the dataset and will be ignored."
+                    )
+                    continue
+
+                gene_symbol_already_seen.add(gene_symbol)
+                gene.setdefault("gene_description", "")
+                new_genes.append(gene)
+
+            geneset["genes"] = new_genes
+
+        return genesets
+
     def data_frame_to_fbs_matrix(self, filter, axis):
         """
         Retrieves data 'X' and returns in a flatbuffer Matrix.
@@ -333,7 +426,7 @@ class DataAdaptor(metaclass=ABCMeta):
     @staticmethod
     def normalize_embedding(embedding):
         """Normalize embedding layout to meet client assumptions.
-           Embedding is an ndarray, shape (n_obs, n)., where n is normally 2
+        Embedding is an ndarray, shape (n_obs, n)., where n is normally 2
         """
 
         # scale isotropically
@@ -389,3 +482,7 @@ class DataAdaptor(metaclass=ABCMeta):
         except RuntimeError:
             lastmod = None
         return lastmod
+
+    @abstractmethod
+    def get_gene_set_summary(self, geneset_name, genes, method):
+        pass
