@@ -79,7 +79,10 @@ export function requestReembed() {
         type: "reembed: request completed",
       });
 
-      const { annoMatrix: prevAnnoMatrix, obsCrossfilter: prevCrossfilter } = getState();
+      const {
+        annoMatrix: prevAnnoMatrix,
+        obsCrossfilter: prevCrossfilter,
+      } = getState();
       const base = prevAnnoMatrix.base().addEmbedding(schema);
       const [annoMatrix, obsCrossfilter] = await _switchEmbedding(
         base,
