@@ -69,7 +69,7 @@ jobs:
       - name: Unit tests
         run: |
           make unit-test
-          bash <(curl -s https://codecov.io/bash) -y .codecov.yml -k server -cF backend,python,unitTest
+          bash <(curl -s https://codecov.io/bash) -y .codecov.yml -k backend/server -cF backend,python,unitTest
           cd client && ./node_modules/codecov/bin/codecov --yml=../.codecov.yml --root=../ --gcov-root=../ -C -F frontend,javascript,unitTest
 
   unit-test-czi-hosted:
