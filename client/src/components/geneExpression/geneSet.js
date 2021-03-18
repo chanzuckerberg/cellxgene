@@ -124,12 +124,12 @@ class GeneSet extends React.Component {
             {isOpen ? (
               <FaChevronDown
                 data-testclass="geneset-expand-is-expanded"
-                style={{ fontSize: 10, marginRight: 5 }}
+                style={{ fontSize: 10, marginLeft: 5 }}
               />
             ) : (
               <FaChevronRight
                 data-testclass="geneset-expand-is-not-expanded"
-                style={{ fontSize: 10, marginRight: 5 }}
+                style={{ fontSize: 10, marginLeft: 5 }}
               />
             )}
           </span>
