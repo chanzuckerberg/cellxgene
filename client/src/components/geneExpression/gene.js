@@ -83,7 +83,7 @@ class Gene extends React.Component {
             alignItems: "center",
           }}
         >
-          <span
+          <div
             role="menuitem"
             tabIndex="0"
             data-testclass="gene-expand"
@@ -93,33 +93,36 @@ class Gene extends React.Component {
               cursor: "pointer",
               display: "flex",
               justifyContent: "space-between",
+              width: "100%",
             }}
           >
-            <Icon
-              icon="drag-handle-horizontal"
-              iconSize={12}
-              style={{
-                marginRight: 7,
-                cursor: "grab",
-                position: "relative",
-                top: 3,
-              }}
-            />
-            <Truncate>
-              <span
+            <div>
+              <Icon
+                icon="drag-handle-horizontal"
+                iconSize={12}
                 style={{
-                  width: globals.leftSidebarWidth - genesetNameLengthVisible,
+                  marginRight: 7,
+                  cursor: "grab",
+                  position: "relative",
+                  top: -1,
                 }}
-                data-testid={`${gene}:gene-label`}
-              >
-                {gene}
-              </span>
-            </Truncate>
+              />
+              <Truncate>
+                <span
+                  style={{
+                    width: globals.leftSidebarWidth - genesetNameLengthVisible,
+                  }}
+                  data-testid={`${gene}:gene-label`}
+                >
+                  {gene}
+                </span>
+              </Truncate>
+            </div>
             {!geneIsExpanded ? (
               <HistogramBrush isUserDefined field={gene} mini />
             ) : null}
-          </span>
-          <span>
+          </div>
+          <div style={{ flexShrink: 0, marginLeft: 2 }}>
             {!isDiffexp ? (
               <AnchorButton
                 minimal
@@ -174,7 +177,7 @@ class Gene extends React.Component {
               intent={isColorAccessor ? "primary" : "none"}
               icon={<Icon icon="tint" iconSize={12} />}
             />
-          </span>
+          </div>
         </div>
         {geneIsExpanded ? <HistogramBrush isUserDefined field={gene} /> : null}
       </div>
