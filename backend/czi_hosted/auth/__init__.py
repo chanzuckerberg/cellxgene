@@ -3,3 +3,4 @@
 import backend.czi_hosted.auth.auth_test  # noqa: F401
 import backend.czi_hosted.auth.auth_session  # noqa: F401
 import backend.czi_hosted.auth.auth_oauth  # noqa: F401
+import backend.czi_hosted.auth.auth_none  # noqa: F401

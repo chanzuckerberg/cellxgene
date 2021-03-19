@@ -210,7 +210,7 @@ dev-env-server:
 
 .PHONY: dev-env-czi-hosted
 dev-env-czi-hosted:
-	pip3 install -r backend/czi_hosted/requirements-dev.txt
+	pip install -r backend/czi_hosted/requirements-dev.txt
 # Set PART=[major, minor, patch] as param to make bump.
 # This will create a release candidate. (i.e. 0.16.1 -> 0.16.2-rc.0 for a patch bump)
 .PHONY: bump-version
@@ -246,7 +246,7 @@ gen-package-lock:
 # install from source tree for development
 .PHONY: install-dev
 install-dev: uninstall
-	pip3 install -e .
+	pip install -e .
 
 # install from test.pypi to test your release
 .PHONY: install-release-test
@@ -263,7 +263,7 @@ install-release: uninstall
 # install from dist
 .PHONY: install-dist
 install-dist: uninstall
-	pip3 install dist/cellxgene*.tar.gz
+	pip install dist/cellxgene*.tar.gz
 
 .PHONY: uninstall
 uninstall:
