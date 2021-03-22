@@ -1,9 +1,3 @@
-/*
-https://bl.ocks.org/mbostock/4341954
-https://bl.ocks.org/mbostock/34f08d5e11952a80609169b7917d4172
-https://bl.ocks.org/SpaceActuary/2f004899ea1b2bd78d6f1dbb2febf771
-https://bl.ocks.org/mbostock/3019563
-*/
 import React from "react";
 import { connect } from "react-redux";
 import * as d3 from "d3";
