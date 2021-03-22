@@ -18,6 +18,7 @@ const skipOnActions = new Set([
   "reset colorscale",
   "reset centroid labels",
   "geneset: initial load",
+  "geneset: set tid",
 
   "graph brush change",
   "continuous metadata histogram brush",
@@ -43,6 +44,14 @@ const skipOnActions = new Set([
   "annotation: activate edit label mode",
   "annotation: cancel edit label mode",
   "set annotations collection name",
+
+  /* geneset component action */
+  "geneset: activate add new geneset mode",
+  "geneset: disable create geneset mode",
+  "geneset: activate add new genes mode",
+  "geneset: disable add new genes mode",
+  "geneset: activate rename geneset mode",
+  "geneset: disable rename geneset mode",
 ]);
 
 /*
@@ -94,6 +103,14 @@ const saveOnActions = new Set([
   "annotation: label current cell selection",
   "annotation: delete label",
   "annotation: category edited",
+
+  /* geneset component action */
+  "geneset: create",
+  "geneset: delete",
+  "geneset: update",
+  "geneset: add genes",
+  "geneset: delete genes",
+  "geneset: set gene description",
 ]);
 
 /**
