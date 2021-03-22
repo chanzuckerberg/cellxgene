@@ -1,5 +1,15 @@
 import significantDigits from "./significantDigits";
 
+/**
+ * The function will conditionally convert a d3 axis label to scientific notation
+ * @param x - a d3 axis, ie:
+ *  d3
+ *    .axisBottom(x)
+ *    .ticks(4)
+ *    .tickFormat(d3.format(maybeScientific(x)))
+ * @returns - the number formatted as scientific, if it's big enough
+ */
+
 export default function maybeScientific(x) {
   let format = ",";
   const _ticks = x.ticks(4);
