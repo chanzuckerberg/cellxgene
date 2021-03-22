@@ -568,8 +568,26 @@ summary test,,PIGU,\r
         result = self.session.put(url, json=test1)
         self.assertEqual(result.status_code, HTTPStatus.NOT_FOUND)
 
-        test2 = {"tid": 4, "genesets": [{"geneset_name": "foobar", "genes": []}]}
-        test2_response = {"tid": 4, "genesets": [{"geneset_name": "foobar", "geneset_description": "", "genes": []}]}
+        test2 = {
+            "tid": 4,
+            "genesets": [
+                {"geneset_name": "foobar", "genes": []},
+                {"geneset_name": "contains a space", "genes": []},
+                {"geneset_name": "contains_weird_characters: #$%^&*()_+=-!@<>,./?';:\"[]{}|\\", "genes": []},
+            ],
+        }
+        test2_response = {
+            "tid": 4,
+            "genesets": [
+                {"geneset_name": "foobar", "geneset_description": "", "genes": []},
+                {"geneset_name": "contains a space", "geneset_description": "", "genes": []},
+                {
+                    "geneset_name": "contains_weird_characters: #$%^&*()_+=-!@<>,./?';:\"[]{}|\\",
+                    "geneset_description": "",
+                    "genes": [],
+                },
+            ],
+        }
         result = self.session.put(url, json=test2)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         result = self.session.get(url, headers={"Accept": "application/json"})
@@ -629,7 +647,37 @@ summary test,,PIGU,\r
 
         # illegal geneset_name
         test_case(
-            {"tid": tid + 1, "genesets": [{"geneset_name": "&quot;", "genes": []}]},
+            {"tid": tid + 1, "genesets": [{"geneset_name": " foo", "genes": []}]},
+            HTTPStatus.BAD_REQUEST,
+            original_data,
+        )
+        test_case(
+            {"tid": tid + 1, "genesets": [{"geneset_name": "foo ", "genes": []}]},
+            HTTPStatus.BAD_REQUEST,
+            original_data,
+        )
+        test_case(
+            {"tid": tid + 1, "genesets": [{"geneset_name": "f  oo", "genes": []}]},
+            HTTPStatus.BAD_REQUEST,
+            original_data,
+        )
+        test_case(
+            {"tid": tid + 1, "genesets": [{"geneset_name": "f\too", "genes": []}]},
+            HTTPStatus.BAD_REQUEST,
+            original_data,
+        )
+        test_case(
+            {"tid": tid + 1, "genesets": [{"geneset_name": "f\roo", "genes": []}]},
+            HTTPStatus.BAD_REQUEST,
+            original_data,
+        )
+        test_case(
+            {"tid": tid + 1, "genesets": [{"geneset_name": "f\noo", "genes": []}]},
+            HTTPStatus.BAD_REQUEST,
+            original_data,
+        )
+        test_case(
+            {"tid": tid + 1, "genesets": [{"geneset_name": "f\voo", "genes": []}]},
             HTTPStatus.BAD_REQUEST,
             original_data,
         )
