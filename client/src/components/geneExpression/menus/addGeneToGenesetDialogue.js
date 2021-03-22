@@ -1,8 +1,8 @@
 import React from "react";
-import _ from "lodash";
 import { connect } from "react-redux";
 import AnnoDialog from "../../annoDialog";
 import LabelInput from "../../labelInput";
+import parseBulkGeneString from "../../../util/parseBulkGeneString";
 
 @connect((state) => ({
   genesetsUI: state.genesetsUI,
@@ -28,7 +28,7 @@ class AddGeneToGenesetDialogue extends React.PureComponent {
 
     const genesTmpHardcodedFormat = [];
 
-    const genesArrayFromString = _.pull(_.uniq(genesToAdd.split(/[ ,]+/)), "");
+    const genesArrayFromString = parseBulkGeneString(genesToAdd);
 
     genesArrayFromString.forEach((_gene) => {
       genesTmpHardcodedFormat.push({

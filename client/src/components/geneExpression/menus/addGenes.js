@@ -1,5 +1,4 @@
 import React from "react";
-import _ from "lodash";
 import fuzzysort from "fuzzysort";
 import { connect } from "react-redux";
 import { Suggest } from "@blueprintjs/select";
@@ -19,6 +18,7 @@ import {
 } from "../../framework/toasters";
 
 import { memoize } from "../../../util/dataframe/util";
+import parseBulkGeneString from "../../../util/parseBulkGeneString";
 
 const renderGene = (fuzzySortResult, { handleClick, modifiers }) => {
   if (!modifiers.matchesPredicate) {
@@ -99,7 +99,7 @@ class AddGenes extends React.Component {
       Apod,,, Cd74,,    ,,,    Foo,    Bar-2,,
     */
     if (bulkAdd !== "") {
-      const genes = _.pull(_.uniq(bulkAdd.split(/[ ,]+/)), "");
+      const genes = parseBulkGeneString(bulkAdd);
       if (genes.length === 0) {
         return keepAroundErrorToast("Must enter a gene name.");
       }
