@@ -1,8 +1,7 @@
 import React from "react";
 import * as globals from "../../globals";
 
-const ErrorLoading = ({ displayName, error, zebra }) => {
-  console.log(error); // log to console as this is unexpected
+const ErrorLoading = ({ displayName, zebra }) => {
   return (
     <div
       style={{
