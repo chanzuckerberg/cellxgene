@@ -206,11 +206,16 @@ class GenesetsAPI(Resource):
         return common_rest.genesets_put(request, data_adaptor)
 
 
-class GenesetSummaryAPI(Resource):
+class SummaryVarAPI(Resource):
+    @rest_get_data_adaptor
+    @cache_control(public=True, max_age=ONE_WEEK)
+    def get(self, data_adaptor):
+        return common_rest.summary_var_get(request, data_adaptor)
+
     @rest_get_data_adaptor
     @cache_control(no_store=True)
-    def get(self, data_adaptor):
-        return common_rest.geneset_summary_get(request, data_adaptor)
+    def post(self, data_adaptor):
+        return common_rest.summary_var_post(request, data_adaptor)
 
 
 def get_api_base_resources(bp_base):
@@ -239,7 +244,7 @@ def get_api_dataroot_resources(bp_dataroot):
     add_resource(AnnotationsVarAPI, "/annotations/var")
     add_resource(DataVarAPI, "/data/var")
     add_resource(GenesetsAPI, "/genesets")
-    add_resource(GenesetSummaryAPI, "/geneset_summary")
+    add_resource(SummaryVarAPI, "/summary/var")
     # Display routes
     add_resource(ColorsAPI, "/colors")
     # Computation routes

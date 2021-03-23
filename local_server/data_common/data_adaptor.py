@@ -1,14 +1,15 @@
 from abc import ABCMeta, abstractmethod
 from os.path import basename, splitext
 import re
-
+import hashlib
 import numpy as np
 import pandas as pd
+from scipy import sparse
 from server_timing import Timing as ServerTiming
 
 from local_server.common.config.app_config import AppConfig
 from local_server.common.constants import Axis
-from local_server.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError
+from local_server.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError, UnsupportedSummaryMethod
 from local_server.common.utils.utils import jsonify_numpy
 from local_server.data_common.fbs.matrix import encode_matrix_fbs
 
@@ -482,6 +483,23 @@ class DataAdaptor(metaclass=ABCMeta):
             lastmod = None
         return lastmod
 
-    @abstractmethod
-    def get_gene_set_summary(self, geneset_name, genes, method):
-        pass
+    def summarize_var(self, method, filter, query_hash):
+        if method != "mean":
+            raise UnsupportedSummaryMethod("Unknown gene set summary method.")
+
+        print(filter, query_hash)
+        obs_selector, var_selector = self._filter_to_mask(filter)
+        if obs_selector is not None:
+            raise FilterError("filtering on obs unsupported")
+        print(var_selector, np.count_nonzero(var_selector))
+        if var_selector is None or np.count_nonzero(var_selector) == 0:
+            raise FilterError("summarize requires a var filter")
+
+        X = self.get_X_array(obs_selector, var_selector)
+        print(query_hash, filter, X)
+        if sparse.issparse(X):
+            mean = X.mean(axis=1)
+        else:
+            mean = X.mean(axis=1, keepdims=True)
+        col_idx = pd.Index([query_hash])
+        return encode_matrix_fbs(mean, col_idx=col_idx, row_idx=None)

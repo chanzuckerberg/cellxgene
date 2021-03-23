@@ -5,7 +5,6 @@ import anndata
 import numpy as np
 from packaging import version
 from pandas.core.dtypes.dtypes import CategoricalDtype
-import pandas as pd
 from scipy import sparse
 from server_timing import Timing as ServerTiming
 
@@ -13,7 +12,7 @@ import local_server.compute.diffexp_generic as diffexp_generic
 from local_server.common.colors import convert_anndata_category_colors_to_cxg_category_colors
 from local_server.common.constants import Axis, MAX_LAYOUTS
 from local_server.common.corpora import corpora_get_props_from_anndata
-from local_server.common.errors import PrepareError, DatasetAccessError, FilterError, UnsupportedSummaryMethod
+from local_server.common.errors import PrepareError, DatasetAccessError, FilterError
 from local_server.common.utils.type_conversion_utils import get_schema_type_hint_of_array
 from local_server.compute.scanpy import scanpy_umap
 from local_server.data_common.data_adaptor import DataAdaptor
@@ -368,29 +367,3 @@ class AnndataAdaptor(DataAdaptor):
     def get_var_keys(self):
         # return list of keys
         return self.data.var.keys().to_list()
-
-    def get_gene_set_summary(self, geneset_name, genes, method):
-        if method != "mean":
-            raise UnsupportedSummaryMethod("Unknown gene set summary method.")
-
-        var_index = self.parameters.get("var_names")
-        obs_selector, var_selector = self._filter_to_mask(
-            {
-                "var": {
-                    "annotation_value": [
-                        {
-                            "name": var_index,
-                            "values": genes,
-                        }
-                    ]
-                }
-            }
-        )
-
-        X = self.get_X_array(obs_selector, var_selector)
-        if sparse.issparse(X):
-            mean = X.mean(axis=1)
-        else:
-            mean = X.mean(axis=1, keepdims=True)
-        col_idx = pd.Index([geneset_name])
-        return encode_matrix_fbs(mean, col_idx=col_idx, row_idx=None)
