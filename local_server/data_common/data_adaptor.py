@@ -276,11 +276,11 @@ class DataAdaptor(metaclass=ABCMeta):
 
         Rules:
         0. all geneset names must be unique.
-        1. All geneset names must be legal, meaning:
+        1. All geneset names must be comprised of legal characters, meaning:
             * no leading or trailing white space
             * no multi-space runs
-            * character set matches: [A-Z][a-z][0-9][ .()-]
-           Generates hard error.
+            * no tab, vertical tab, newline or return
+           Where "space" means ASCII 32. Generates hard error.
         2. Gene symbols must be part of the current var_index.  If symbol not in var_index,
            will generate a warning and the symbol removed.
         3. Duplicate gene symbols are silently de-duped.
@@ -299,19 +299,18 @@ class DataAdaptor(metaclass=ABCMeta):
             raise KeyError("All geneset names must be unique.")
 
         # 1. check gene set character set and format
-        legal_name = re.compile(r"^(\w|[ .()-])+$")
+        illegal_name = re.compile(r"^\s|  |[\v\t\r\n]|\s$")
         for name in geneset_names:
             if type(name) != str or len(name) == 0:
                 raise KeyError("Geneset names must be non-null string.")
-            if name[0] in " \t\n\r" or name[-1] in " \t\n\r" or not legal_name.match(name) or "  " in name:
+            if illegal_name.search(name):
                 messagefn(
                     "Error: "
-                    f"Geneset name {name} is not valid. Only alphanumeric and limited special characters (-_.) "
-                    "and space are allowed. Leading, trailing, and multiple spaces within a name are not allowed."
+                    f"Geneset name {name} "
+                    "is not valid. Leading, trailing, and multiple spaces within a name are not allowed."
                 )
                 raise KeyError(
-                    "Geneset name is not valid, only alphanumeric and limited special characters (-_.) "
-                    "and space are allowed. Leading, trailing, and multiple spaces within a name are not allowed."
+                    "Geneset name is not valid. Leading, trailing, and multiple spaces within a name are not allowed."
                 )
 
         # 2. & 3. check for duplicate gene symbols, and those not present in the dataset. They will
