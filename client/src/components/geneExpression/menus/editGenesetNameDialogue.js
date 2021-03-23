@@ -71,7 +71,7 @@ class RenameGeneset extends React.PureComponent {
           cancelTooltipContent="Close this dialog without renaming the gene set."
           primaryButtonText="Rename gene set"
           text={genesetName}
-          validationError={false}
+          validationError={genesetsUI.isEditingGenesetName === genesetName}
           annoInput={
             <LabelInput
               onChange={this.handleChange}
