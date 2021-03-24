@@ -34,8 +34,9 @@ const GeneSetsUI = (
     }
     /**
      * Activate the interface for adding new genes to a geneset
-     * No params, if the action is fired we flip
-     * a boolean here.
+     * isAddingGenesToGeneset {
+     *  geneset: string, name of geneset
+     * },
      */
     case "geneset: activate add new genes mode": {
       return {
@@ -56,8 +57,10 @@ const GeneSetsUI = (
     }
     /**
      * Activate the interface for renaming a geneset
-     * No params, if the action is fired we flip
-     * a boolean here.
+     * isEditingGenesetName: {
+     *   type: "geneset: activate rename geneset mode",
+     *   data: geneset, // a string, name of geneset
+     * }
      */
     case "geneset: activate rename geneset mode": {
       return {
