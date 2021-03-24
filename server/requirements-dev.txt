@@ -9,3 +9,4 @@ python-jose>=3.2.0
 twine>=1.12.1
 -r requirements.txt
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
+pygments>=2.7.4 # not directly required, pinned by Snyk to avoid a vulnerability
