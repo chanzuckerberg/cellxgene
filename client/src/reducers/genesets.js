@@ -200,6 +200,7 @@ const GeneSets = (
      */
     case "geneset: add genes": {
       const { genesetName, genes } = action;
+
       if (!state.genesets.has(genesetName))
         throw new Error("geneset: add genes -- geneset name does not exist.");
 

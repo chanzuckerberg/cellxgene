@@ -1,7 +1,4 @@
-/* rc slider https://www.npmjs.com/package/rc-slider */
-
 import React from "react";
-import _ from "lodash";
 import fuzzysort from "fuzzysort";
 import { connect } from "react-redux";
 import { Suggest } from "@blueprintjs/select";
@@ -13,14 +10,15 @@ import {
   Intent,
   MenuItem,
 } from "@blueprintjs/core";
-import * as globals from "../../globals";
-import actions from "../../actions";
+import * as globals from "../../../globals";
+import actions from "../../../actions";
 import {
   postUserErrorToast,
   keepAroundErrorToast,
-} from "../framework/toasters";
+} from "../../framework/toasters";
 
-import { memoize } from "../../util/dataframe/util";
+import { memoize } from "../../../util/dataframe/util";
+import parseBulkGeneString from "../../../util/parseBulkGeneString";
 
 const renderGene = (fuzzySortResult, { handleClick, modifiers }) => {
   if (!modifiers.matchesPredicate) {
@@ -101,7 +99,7 @@ class AddGenes extends React.Component {
       Apod,,, Cd74,,    ,,,    Foo,    Bar-2,,
     */
     if (bulkAdd !== "") {
-      const genes = _.pull(_.uniq(bulkAdd.split(/[ ,]+/)), "");
+      const genes = parseBulkGeneString(bulkAdd);
       if (genes.length === 0) {
         return keepAroundErrorToast("Must enter a gene name.");
       }

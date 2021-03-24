@@ -1,4 +1,3 @@
-// jshint esversion: 6
 import React from "react";
 import { Button, Menu, MenuItem, Popover, Position } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";

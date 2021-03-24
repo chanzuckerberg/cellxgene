@@ -16,6 +16,7 @@ import layoutChoice from "./layoutChoice";
 import controls from "./controls";
 import annotations from "./annotations";
 import genesets from "./genesets";
+import genesetsUI from "./genesetsUI";
 import autosave from "./autosave";
 import ontology from "./ontology";
 import centroidLabels from "./centroidLabels";
@@ -33,6 +34,7 @@ const Reducer = undoable(
     ["ontology", ontology],
     ["annotations", annotations],
     ["genesets", genesets],
+    ["genesetsUI", genesetsUI],
     ["layoutChoice", layoutChoice],
     ["categoricalSelection", categoricalSelection],
     ["continuousSelection", continuousSelection],
@@ -58,6 +60,7 @@ const Reducer = undoable(
     "layoutChoice",
     "centroidLabels",
     "genesets",
+    "genesetsUI",
     "annotations",
   ],
   undoableConfig

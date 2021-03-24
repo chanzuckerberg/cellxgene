@@ -1,5 +1,3 @@
-// jshint esversion: 6
-
 // Interval operations - very simple version of interval set relationship
 // operators.   An interval is a multi-interval list of [min, max),
 // where min and max are mandatory.   Constraints:

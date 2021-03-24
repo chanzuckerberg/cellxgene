@@ -1,5 +1,3 @@
-// jshint esversion: 6
-
 import { sortIndex } from "./sort";
 import { rangeFill as fillRange } from "../range";
 

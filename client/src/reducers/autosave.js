@@ -53,7 +53,7 @@ const Autosave = (
       return {
         ...state,
         genesetSaveInProgress: false,
-        lastSavedGenesets: nextSharedState.genesets,
+        lastSavedGenesets: nextSharedState.genesets.genesets,
       };
     }
 
