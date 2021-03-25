@@ -383,16 +383,21 @@ def genesets_put(request, data_adaptor):
         return abort(HTTPStatus.NOT_FOUND, description=str(e))
 
 
-def summary_var_helper(request, data_adaptor, raw_query):
+def summarize_var_helper(request, data_adaptor, raw_query):
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
     if preferred_mimetype != "application/octet-stream":
         return abort(HTTPStatus.NOT_ACCEPTABLE)
 
     summary_method = request.values.get("method", default="mean")
-    args_without_method = request.values.copy()
-    args_without_method.poplist("method")
-    filter = _query_parameter_to_filter(args_without_method)
+    key = request.values.get("key", default=None)
     query_hash = hashlib.sha1(raw_query).hexdigest()  # cache helper
+    if key and query_hash != key:
+        return abort(HTTPStatus.BAD_REQUEST, description="query key did not match")
+
+    args_filter_only = request.values.copy()
+    args_filter_only.poplist("method")
+    args_filter_only.poplist("key")
+    filter = _query_parameter_to_filter(args_filter_only)
 
     try:
         return make_response(
@@ -406,14 +411,14 @@ def summary_var_helper(request, data_adaptor, raw_query):
         return abort(HTTPStatus.BAD_REQUEST, description=str(e))
 
 
-def summary_var_get(request, data_adaptor):
-    return summary_var_helper(request, data_adaptor, request.query_string)
+def summarize_var_get(request, data_adaptor):
+    return summarize_var_helper(request, data_adaptor, request.query_string)
 
 
-def summary_var_post(request, data_adaptor):
+def summarize_var_post(request, data_adaptor):
     if "application/x-www-form-urlencoded" not in request.content_type:
         return abort(HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
     if request.content_length > 1_000_000:  # just a sanity check to avoid memory exhaustion
         return abort(HTTPStatus.BAD_REQUEST)
 
-    return summary_var_helper(request, data_adaptor, request.get_data())
+    return summarize_var_helper(request, data_adaptor, request.get_data())

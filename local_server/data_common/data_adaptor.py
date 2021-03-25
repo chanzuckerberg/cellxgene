@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from os.path import basename, splitext
 import re
-import hashlib
 import numpy as np
 import pandas as pd
 from scipy import sparse
@@ -487,16 +486,13 @@ class DataAdaptor(metaclass=ABCMeta):
         if method != "mean":
             raise UnsupportedSummaryMethod("Unknown gene set summary method.")
 
-        print(filter, query_hash)
         obs_selector, var_selector = self._filter_to_mask(filter)
         if obs_selector is not None:
             raise FilterError("filtering on obs unsupported")
-        print(var_selector, np.count_nonzero(var_selector))
         if var_selector is None or np.count_nonzero(var_selector) == 0:
             raise FilterError("summarize requires a var filter")
 
         X = self.get_X_array(obs_selector, var_selector)
-        print(query_hash, filter, X)
         if sparse.issparse(X):
             mean = X.mean(axis=1)
         else:
