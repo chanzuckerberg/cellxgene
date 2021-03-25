@@ -1,4 +1,4 @@
-export { doBinaryRequest } from "../util/actionHelpers";
+export { doBinaryRequest, doFetch } from "../util/actionHelpers";
 
 /* double URI encode - needed for query-param filters */
 export function _dubEncURIComp(s) {

@@ -711,9 +711,11 @@ class HistogramBrush extends React.PureComponent {
     return [
       "X",
       {
-        field: "var",
-        column: varIndex,
-        value: field,
+        where: {
+          field: "var",
+          column: varIndex,
+          value: field,
+        },
       },
     ];
   }

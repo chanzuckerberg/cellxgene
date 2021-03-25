@@ -12,6 +12,7 @@ import {
 import { indexEntireSchema } from "../util/stateManager/schemaHelpers";
 import { _whereCacheGet, _whereCacheMerge } from "./whereCache";
 import _shallowClone from "./clone";
+import { _queryValidate, _queryCacheKey } from "./query";
 
 const _dataframeCache = dataframeMemo(128);
 
@@ -181,7 +182,7 @@ export default class AnnoMatrix {
 		Returns a Promise for the query result, which will resolve to a dataframe.
 
 		Field must be one of the matrix fields: 'obs', 'var', 'X', 'emb'.  Value
-		represents the underlying object upon which the query is occuring.
+		represents the underlying object upon which the query is occurring.
 
 		Query is one of:
 			* a string, representing a single column name from the field, eg,
@@ -196,12 +197,6 @@ export default class AnnoMatrix {
 		A value query allows for fetching based upon the value in another 
 		field/column, similar to a join.  Currently only supported on the var
 		dimension, allowing query of X columns by var value (eg, gene name)
-
-    The query filter	is a single value filter:
-			{ "field name": [
-				{name: "column name", values: [ list of values ]}
-			]}
-		One and only one value filter is allowed in a value query.
 
 		Examples:
 
@@ -220,7 +215,9 @@ export default class AnnoMatrix {
        value "TYMP" in the var index.
 
 			fetch("X", { 
-				where: {field: "var", column: this.schema.annotations.var.index, value: "TYMP"}
+				where: {
+          field: "var", column: this.schema.annotations.var.index, value: "TYMP"
+        }
 			})
 
       In AnnData & Pandas DataFrame API, this is equivalent to:
@@ -427,6 +424,7 @@ export default class AnnoMatrix {
   async _fetch(field, q) {
     if (!AnnoMatrix.fields().includes(field)) return undefined;
     const queries = Array.isArray(q) ? q : [q];
+    queries.forEach(_queryValidate);
 
     /* find cached columns we need, and GC the rest */
     const cachedColumns = this._resolveCachedQueries(field, queries);
@@ -507,7 +505,7 @@ export default class AnnoMatrix {
     * obs, var and emb do not grow without bounds, and are needed constantly 
       for rendering.  
       a) There is no upside to GC'ing these in the base (loader)
-      b) The undo/redo cache can hold a large number in views, which is worht GC'ing
+      b) The undo/redo cache can hold a large number in views, which is worth GC'ing
     * X is often much larger than memory, and the UI allows add/del from
       this.  Most of the GC potential is here in both the base and views.
 
@@ -522,7 +520,7 @@ export default class AnnoMatrix {
   as much of the cache is pinned by that data structure.
   */
   _gcField(field, isHot, pinnedColumns) {
-    const maxColumns = isHot ? 256 : 10; // maybe to aggessive?
+    const maxColumns = isHot ? 256 : 10; // maybe to aggressive?
 
     const cache = this._cache[field];
     if (cache.colIndex.size() < maxColumns) return; // trivial rejection
@@ -590,23 +588,18 @@ export default class AnnoMatrix {
     called each time a query is performed, allowing the gc to update any bookkeeping
     information.  Currently, this is just a simple last-fetched timestamp, stored
     in a Map.
-
-    Map objects preserve order of insertion. This is leveraged as a cheap way to
-    do LRU, by removing and re-inserting keys.  IMPORTANT: the cleanup code assumes
-    the map insertion order is least-recently-used first.
     */
     const cols = dataframe.colIndex.labels();
     const { _gcInfo } = this;
     const now = Date.now();
     cols.forEach((c) => {
-      // gcInfo.delete(c);
       _gcInfo.set(_columnCacheKey(field, c), now);
     });
   }
 
   /**
-  Cloning sublcass protocol - we rely in cloning to preserve immutable
-  symantics while not causing races or other side effects in internal
+  Cloning subclass protocol - we rely in cloning to preserve immutable
+  semantics while not causing races or other side effects in internal
   cache management.
 
   Subclasses must override _cloneDeeper() if they have state which requires 
@@ -639,15 +632,6 @@ export default class AnnoMatrix {
 /*
 private utility functions below
 */
-
-function _queryCacheKey(field, query) {
-  if (typeof query === "object") {
-    const { field: queryField, column: queryColumn, value: queryValue } = query;
-    return `${field}/${queryField}/${queryColumn}/${queryValue}`;
-  }
-  return `${field}/${query}`;
-}
-
 function _columnCacheKey(field, column) {
   return `${field}/${column}`;
 }
