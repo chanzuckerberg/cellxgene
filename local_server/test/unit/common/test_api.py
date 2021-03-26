@@ -5,6 +5,7 @@ import zlib
 from http import HTTPStatus
 import tempfile
 from os import path
+import hashlib
 
 import pandas as pd
 import requests
@@ -431,6 +432,75 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
         result_data = result.json()
         self.assertEqual(len(result_data), 10)
 
+    def test_get_summaryvar(self):
+        index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
+        endpoint = "summarize/var"
+
+        # single column
+        filter = f"var:{index_col_name}=F5"
+        query = f"method=mean&{filter}"
+        query_hash = hashlib.sha1(query.encode()).hexdigest()
+        url = f"{self.URL_BASE}{endpoint}?{query}"
+        header = {"Accept": "application/octet-stream"}
+        result = self.session.get(url, headers=header)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_matrix_FBS(result.content)
+        self.assertEqual(df["n_rows"], 2638)
+        self.assertEqual(df["n_cols"], 1)
+        self.assertEqual(df["col_idx"], [query_hash])
+        self.assertAlmostEqual(df["columns"][0][0], -0.110451095)
+
+        # multi-column
+        col_names = ["F5", "BEB3", "SIK1"]
+        filter = "&".join([f"var:{index_col_name}={name}" for name in col_names])
+        query = f"method=mean&{filter}"
+        query_hash = hashlib.sha1(query.encode()).hexdigest()
+        url = f"{self.URL_BASE}{endpoint}?{query}"
+        header = {"Accept": "application/octet-stream"}
+        result = self.session.get(url, headers=header)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_matrix_FBS(result.content)
+        self.assertEqual(df["n_rows"], 2638)
+        self.assertEqual(df["n_cols"], 1)
+        self.assertEqual(df["col_idx"], [query_hash])
+        self.assertAlmostEqual(df["columns"][0][0], -0.16628358)
+
+    def test_post_summaryvar(self):
+        index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
+        endpoint = "summarize/var"
+        headers = {"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/octet-stream"}
+
+        # single column
+        filter = f"var:{index_col_name}=F5"
+        query = f"method=mean&{filter}"
+        query_hash = hashlib.sha1(query.encode()).hexdigest()
+        url = f"{self.URL_BASE}{endpoint}?key={query_hash}"
+        result = self.session.post(url, headers=headers, data=query)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_matrix_FBS(result.content)
+        self.assertEqual(df["n_rows"], 2638)
+        self.assertEqual(df["n_cols"], 1)
+        self.assertEqual(df["col_idx"], [query_hash])
+        self.assertAlmostEqual(df["columns"][0][0], -0.110451095)
+
+        # multi-column
+        col_names = ["F5", "BEB3", "SIK1"]
+        filter = "&".join([f"var:{index_col_name}={name}" for name in col_names])
+        query = f"method=mean&{filter}"
+        query_hash = hashlib.sha1(query.encode()).hexdigest()
+        url = f"{self.URL_BASE}{endpoint}?key={query_hash}"
+        result = self.session.post(url, headers=headers, data=query)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_matrix_FBS(result.content)
+        self.assertEqual(df["n_rows"], 2638)
+        self.assertEqual(df["n_cols"], 1)
+        self.assertEqual(df["col_idx"], [query_hash])
+        self.assertAlmostEqual(df["columns"][0][0], -0.16628358)
+
 
 class EndPointsAnndataAnnotations(unittest.TestCase, EndPointsAnnotations):
     """Test Case for endpoints"""
@@ -739,86 +809,26 @@ summary test,,PIGU,\r
             original_data,
         )
 
-    def test_get_geneset_summary(self):
-        endpoint = "geneset_summary?geneset_name=summary%20test&method=mean"
-        url = f"{self.URL_BASE}{endpoint}"
-        header = {"Accept": "application/octet-stream"}
-        result = self.session.get(url, headers=header)
-        self.assertEqual(result.status_code, HTTPStatus.OK)
-        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
-        df = decode_fbs.decode_matrix_FBS(result.content)
-        self.assertEqual(df["n_rows"], 2638)
-        self.assertEqual(df["n_cols"], 1)
-        self.assertEqual(df["col_idx"], ["summary test"])
-        self.assertAlmostEqual(df["columns"][0][0], -0.19863907)
-
-    def test_get_geneset_summary_default_method(self):
-        endpoint = "geneset_summary?geneset_name=summary%20test"
-        url = f"{self.URL_BASE}{endpoint}"
-        header = {"Accept": "application/octet-stream"}
-        result = self.session.get(url, headers=header)
-        self.assertEqual(result.status_code, HTTPStatus.OK)
-        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
-        df = decode_fbs.decode_matrix_FBS(result.content)
-        self.assertEqual(df["n_rows"], 2638)
-        self.assertEqual(df["n_cols"], 1)
-        self.assertEqual(df["col_idx"], ["summary test"])
-        self.assertAlmostEqual(df["columns"][0][0], -0.19863907)
-
-    def test_get_geneset_summary_check_tid(self):
-        # get the TID
-        result = self.session.get(f"{self.URL_BASE}genesets", headers={"Accept": "application/json"})
-        self.assertEqual(result.status_code, HTTPStatus.OK)
-        tid = result.json()["tid"]
-
-        # current tid
-        endpoint = f"geneset_summary?geneset_name=summary%20test&tid={tid}"
-        result = self.session.get(f"{self.URL_BASE}{endpoint}", headers={"Accept": "application/octet-stream"})
-        self.assertEqual(result.status_code, HTTPStatus.OK)
-
-        # future tid
-        endpoint = f"geneset_summary?geneset_name=summary%20test&tid={tid+1}"
-        result = self.session.get(f"{self.URL_BASE}{endpoint}", headers={"Accept": "application/octet-stream"})
-        self.assertEqual(result.status_code, HTTPStatus.NOT_FOUND)
-
-        # past tid
-        endpoint = f"geneset_summary?geneset_name=summary%20test&tid={tid-1}"
-        result = self.session.get(f"{self.URL_BASE}{endpoint}", headers={"Accept": "application/octet-stream"})
-        self.assertEqual(result.status_code, HTTPStatus.NOT_FOUND)
-
-        # No tid - ie, skip check
-        endpoint = "geneset_summary?geneset_name=summary%20test"
-        result = self.session.get(f"{self.URL_BASE}{endpoint}", headers={"Accept": "application/octet-stream"})
-        self.assertEqual(result.status_code, HTTPStatus.OK)
-
     def test_get_geneset_summary_edge_cases(self):
         # attempt to summarize _all_ genesets, including edge cases with zero or one gene
         result = self.session.get(f"{self.URL_BASE}genesets", headers={"Accept": "application/json"})
         self.assertEqual(result.status_code, HTTPStatus.OK)
-        geneset_names = [gs["geneset_name"] for gs in result.json()["genesets"]]
+        genesets = result.json()["genesets"]
 
-        for gs in geneset_names:
-            endpoint = f"geneset_summary?geneset_name={gs}"
-            result = self.session.get(f"{self.URL_BASE}{endpoint}", headers={"Accept": "application/octet-stream"})
+        endpoint = "summarize/var"
+        index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
+        for gs in genesets:
+            genes = [g["gene_symbol"] for g in gs["genes"]]
+            filter = "&".join([f"var:{index_col_name}={gene}" for gene in genes])
+            query = f"method=mean&{filter}"
+            query_hash = hashlib.sha1(query.encode()).hexdigest()
+            url = f"{self.URL_BASE}{endpoint}?{query}"
+            print(">>>>>>>>>>>>", url)
+
+            result = self.session.get(url, headers={"Accept": "application/octet-stream"})
             self.assertEqual(result.status_code, HTTPStatus.OK)
             self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
             df = decode_fbs.decode_matrix_FBS(result.content)
             self.assertEqual(df["n_rows"], 2638)
             self.assertEqual(df["n_cols"], 1)
-            self.assertEqual(df["col_idx"], [gs])
-
-    def test_get_geneset_error_handling(self):
-        # no geneset
-        endpoint = "geneset_summary"
-        result = self.session.get(f"{self.URL_BASE}{endpoint}", headers={"Accept": "application/octet-stream"})
-        self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
-
-        # unknown geneset
-        endpoint = "geneset_summary?geneset_name=NO_SUCH_GENE_SET"
-        result = self.session.get(f"{self.URL_BASE}{endpoint}", headers={"Accept": "application/octet-stream"})
-        self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
-
-        # unknown method
-        endpoint = "geneset_summary?geneset_name=summary%20test&method=NO_SUCH_METHOD"
-        result = self.session.get(f"{self.URL_BASE}{endpoint}", headers={"Accept": "application/octet-stream"})
-        self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
+            self.assertEqual(df["col_idx"], [query_hash])
