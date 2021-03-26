@@ -1,4 +1,3 @@
-// jshint esversion: 6
 export default (input) => {
   const outputMax = 1;
   const outputMin = 0;
