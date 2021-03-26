@@ -10,6 +10,7 @@ server:
     open_browser: false
     force_https: false
     flask_secret_key: null
+    generate_cache_control_headers: false
 
   authentication:
     # The authentication types may be "none" or "session"
