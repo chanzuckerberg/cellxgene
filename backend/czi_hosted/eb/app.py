@@ -185,7 +185,7 @@ else:
 
 if __name__ == "__main__":
     try:
-        application.run(host=app_config.server_config.app__host, debug=debug, threaded=not debug, use_debugger=True)
+        application.run(host=app_config.server_config.app__host, debug=debug, threaded=not debug, use_debugger=False)
     except Exception:
         logging.critical("Caught exception during initialization", exc_info=True)
         sys.exit(1)
