@@ -14,9 +14,9 @@ import StillLoading from "./loading";
 import ErrorLoading from "./error";
 
 @connect((state, ownProps) => {
-  const { isObs, isUserDefined, isDiffExp, field } = ownProps;
+  const { isObs, isUserDefined, isDiffExp, isGeneSetSummary, field } = ownProps;
   const myName = makeContinuousDimensionName(
-    { isObs, isUserDefined, isDiffExp },
+    { isObs, isUserDefined, isDiffExp, isGeneSetSummary },
     field
   );
   return {
@@ -71,7 +71,14 @@ class HistogramBrush extends React.PureComponent {
   onBrush = (selection, x, eventType) => {
     const type = `continuous metadata histogram ${eventType}`;
     return () => {
-      const { dispatch, field, isObs, isUserDefined, isDiffExp } = this.props;
+      const {
+        dispatch,
+        field,
+        isObs,
+        isUserDefined,
+        isDiffExp,
+        isGeneSetSummary,
+      } = this.props;
 
       // ignore programmatically generated events
       if (!d3.event.sourceEvent) return;
@@ -88,6 +95,7 @@ class HistogramBrush extends React.PureComponent {
           isObs,
           isUserDefined,
           isDiffExp,
+          isGeneSetSummary,
         },
       };
       dispatch(
@@ -98,7 +106,14 @@ class HistogramBrush extends React.PureComponent {
 
   onBrushEnd = (selection, x) => {
     return () => {
-      const { dispatch, field, isObs, isUserDefined, isDiffExp } = this.props;
+      const {
+        dispatch,
+        field,
+        isObs,
+        isUserDefined,
+        isDiffExp,
+        isGeneSetSummary,
+      } = this.props;
       const minAllowedBrushSize = 10;
       const smallAmountToAvoidInfiniteLoop = 0.1;
 
@@ -138,6 +153,7 @@ class HistogramBrush extends React.PureComponent {
           isObs,
           isUserDefined,
           isDiffExp,
+          isGeneSetSummary,
         },
       };
       dispatch(
@@ -300,13 +316,29 @@ class HistogramBrush extends React.PureComponent {
   }
 
   createQuery() {
-    const { isObs, field, annoMatrix } = this.props;
+    const { isObs, isGeneSetSummary, field, setGenes, annoMatrix } = this.props;
     const { schema } = annoMatrix;
     if (isObs) {
       return ["obs", field];
     }
     const varIndex = schema?.annotations?.var?.index;
     if (!varIndex) return null;
+
+    if (isGeneSetSummary) {
+      return [
+        "X",
+        {
+          summarize: {
+            method: "mean",
+            field: "var",
+            column: varIndex,
+            values: setGenes,
+          },
+        },
+      ];
+    }
+
+    // else, we assume it is a gene expression
     return [
       "X",
       {
