@@ -2,8 +2,8 @@ include common.mk
 
 BUILDDIR := build
 CLIENTBUILD := $(BUILDDIR)/client
-SERVERBUILD := $(BUILDDIR)/backend/czi_hosted
-LOCALSERVERBUILD := $(BUILDDIR)/backend/server
+CZIHOSTEDBUILD := $(BUILDDIR)/backend/czi_hosted
+SERVERBUILD := $(BUILDDIR)/backend/server
 CLEANFILES :=  $(BUILDDIR)/ client/build build dist cellxgene.egg-info
 
 PART ?= patch
@@ -39,7 +39,7 @@ build-client:
 build: clean build-client
 	git ls-files backend/server/ | grep -v 'backend/server/test/' | cpio -pdm $(BUILDDIR)
 	cp -r client/build/  $(CLIENTBUILD)
-	$(call copy_client_assets,$(CLIENTBUILD),$(LOCALSERVERBUILD))
+	$(call copy_client_assets,$(CLIENTBUILD),$(SERVERBUILD))
 	cp backend/__init__.py $(BUILDDIR)
 	cp backend/__init__.py $(BUILDDIR)/backend
 	cp -r backend/common $(BUILDDIR)/backend/common
@@ -49,7 +49,7 @@ build: clean build-client
 build-czi-hosted: clean build-client
 	git ls-files backend/czi_hosted/ | grep -v 'backend/czi_hosted/test/' | cpio -pdm $(BUILDDIR)
 	cp -r client/build/  $(CLIENTBUILD)
-	$(call copy_client_assets,$(CLIENTBUILD),$(SERVERBUILD))
+	$(call copy_client_assets,$(CLIENTBUILD),$(CZIHOSTEDBUILD))
 	cp -r backend/common $(BUILDDIR)/backend/common
 	cp backend/__init__.py $(BUILDDIR)
 	cp backend/__init__.py $(BUILDDIR)/backend
