@@ -42,7 +42,7 @@ jobs:
         run: |
           make lint
 
-  unit-test-server:
+  unit-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
