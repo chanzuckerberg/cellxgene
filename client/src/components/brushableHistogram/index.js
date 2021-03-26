@@ -367,6 +367,7 @@ class HistogramBrush extends React.PureComponent {
       continuousSelectionRange,
       isObs,
       mini,
+      setGenes,
     } = this.props;
     const {
       margin,
@@ -380,7 +381,7 @@ class HistogramBrush extends React.PureComponent {
     const showScatterPlot = isDiffExp || isUserDefined;
 
     return (
-      <Async watch={annoMatrix} promiseFn={this.fetchAsyncProps}>
+      <Async watch={(annoMatrix, setGenes)} promiseFn={this.fetchAsyncProps}>
         <Async.Pending initial>
           <StillLoading displayName={field} zebra={zebra} />
         </Async.Pending>

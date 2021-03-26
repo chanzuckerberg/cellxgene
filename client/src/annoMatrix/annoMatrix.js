@@ -407,6 +407,14 @@ export default class AnnoMatrix {
     _subclassResponsibility();
   }
 
+  getCacheKeys(field, query) {
+    /*
+    Return cache keys for columns associated with this query.  May return
+    [unknown] if no keys are known (ie, nothing is or was cached).
+    */
+    return _whereCacheGet(this._whereCache, this.schema, field, query);
+  }
+
   /**
    ** Private interfaces below.
    **/

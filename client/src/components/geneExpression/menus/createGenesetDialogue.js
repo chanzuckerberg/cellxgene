@@ -3,6 +3,7 @@ import React from "react";
 import { connect } from "react-redux";
 import AnnoDialog from "../../annoDialog";
 import LabelInput from "../../labelInput";
+import actions from "../../../actions";
 
 @connect((state) => ({
   annotations: state.annotations,
@@ -56,11 +57,7 @@ class CreateGenesetDialogue extends React.PureComponent {
         });
       });
 
-      dispatch({
-        type: "geneset: add genes",
-        genesetName,
-        genes: genesTmpHardcodedFormat,
-      });
+      dispatch(actions.genesetAddGenes(genesetName, genesTmpHardcodedFormat));
     }
     dispatch({
       type: "geneset: disable create geneset mode",

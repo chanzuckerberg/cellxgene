@@ -13,6 +13,7 @@ import * as selnActions from "./selection";
 import * as annoActions from "./annotation";
 import * as viewActions from "./viewStack";
 import * as embActions from "./embedding";
+import * as genesetActions from "./geneset";
 
 /*
 return promise fetching user-configured colors
@@ -269,4 +270,7 @@ export default {
   needToSaveObsAnnotations: annoActions.needToSaveObsAnnotations,
   layoutChoiceAction: embActions.layoutChoiceAction,
   setCellSetFromSelection: selnActions.setCellSetFromSelection,
+  genesetDelete: genesetActions.genesetDelete,
+  genesetAddGenes: genesetActions.genesetAddGenes,
+  genesetDeleteGenes: genesetActions.genesetDeleteGenes,
 };
