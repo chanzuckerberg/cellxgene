@@ -26,7 +26,7 @@ export JEST_ENV := $(call env_or_else_default,JEST_ENV)
 start-server:
 	cellxgene launch -p $(CXG_SERVER_PORT) $(CXG_OPTIONS) $(DATASET)
 
-# copy the client assests to a location known to the server
+# copy the client assets to a location known to the server
 # $(1) is the source of the client assets
 # $(2) is the destination
 define copy_client_assets

@@ -19,9 +19,13 @@ venv/
 cellxgene/
 
 # client build
-server/common/web/static/*
-server/common/web/templates/
-server/common/web/csp-hashes.json
+backend/server/common/web/static/*
+backend/server/common/web/templates/
+backend/server/common/web/csp-hashes.json
+
+backend/czi_hosted/common/web/static/*
+backend/czi_hosted/common/web/templates/
+backend/czi_hosted/common/web/csp-hashes.json
 
 # eb build
 artifact.dir

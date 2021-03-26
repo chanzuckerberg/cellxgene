@@ -68,11 +68,11 @@ jobs:
         run: make pydist install-dist dev-env-server
       - name: Unit tests
         run: |
-          make unit-test
-          bash <(curl -s https://codecov.io/bash) -y .codecov.yml -k server -cF backend,python,unitTest
+          make unit-test-server
+          bash <(curl -s https://codecov.io/bash) -y .codecov.yml -k backend/server -cF backend,python,unitTest
           cd client && ./node_modules/codecov/bin/codecov --yml=../.codecov.yml --root=../ --gcov-root=../ -C -F frontend,javascript,unitTest
 
-  unit-test-local:
+  unit-test-czi-hosted:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -95,11 +95,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Install dependencies
-        run: make pydist-local install-dist dev-env-local-server
+        run: make pydist-czi-hosted install-dist dev-env-czi-hosted
       - name: Unit tests
         run: |
-          make unit-test-local
-          bash <(curl -s https://codecov.io/bash) -y .codecov.yml -k local_server -cF backend,python,unitTest
+          make unit-test-czi-hosted
+          bash <(curl -s https://codecov.io/bash) -y .codecov.yml -k backend/czi-hosted -cF backend,python,unitTest
           cd client && ./node_modules/codecov/bin/codecov --yml=../.codecov.yml --root=../ --gcov-root=../ -C -F frontend,javascript,unitTest
 
   smoke-tests:
@@ -126,7 +126,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Install dependencies
-        run: make pydist install-dist
+        run: make pydist-czi-hosted install-dist
       - name: Smoke tests (without annotations feature)
         run: |
           cd client && make smoke-test
@@ -156,7 +156,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Install dependencies
-        run: make pydist-local install-dist
+        run: make pydist install-dist
       - name: Smoke tests (with annotations feature)
         run: |
           cd client && make smoke-test-annotations
