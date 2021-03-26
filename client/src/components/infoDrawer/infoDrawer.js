@@ -11,7 +11,7 @@ import { selectableCategoryNames } from "../../util/stateManager/controlsHelpers
     datasetTitle: state.config?.displayNames?.dataset ?? "",
     aboutURL: state.config?.links?.["about-dataset"],
     isOpen: state.controls.datasetDrawer,
-    dataPortalProps: state.config?.["corpora_props"],
+    dataPortalProps: state.config?.corpora_props,
   };
 })
 class InfoDrawer extends PureComponent {

@@ -58,7 +58,7 @@ async function genesetsFetch(dispatch, config) {
     genesets: [],
     tid: 0,
   };
-  if (config?.parameters?.["annotations_genesets"] ?? false) {
+  if (config?.parameters?.annotations_genesets ?? false) {
     fetchJson("genesets").then((response) => {
       dispatch({
         type: "geneset: initial load",
@@ -111,7 +111,7 @@ const doInitialDataLoad = () =>
       });
       dispatch({ type: "initial data load complete" });
 
-      const defaultEmbedding = config?.parameters?.["default_embedding"];
+      const defaultEmbedding = config?.parameters?.default_embedding;
       const layoutSchema = schema?.schema?.layout?.obs ?? [];
       if (
         defaultEmbedding &&

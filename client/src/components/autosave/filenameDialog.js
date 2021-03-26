@@ -18,7 +18,7 @@ import {
   userInfo: state.userInfo,
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
   writableGenesetsEnabled: !(
-    state.config?.parameters?.["annotations_genesets_readonly"] ?? true
+    state.config?.parameters?.annotations_genesets_readonly ?? true
   ),
 }))
 class FilenameDialog extends React.Component {

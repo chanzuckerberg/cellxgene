@@ -10,10 +10,8 @@ const Ontology = (
   switch (action.type) {
     case "configuration load complete": {
       const enabled =
-        action.config?.parameters?.["annotations_cell_ontology_enabled"] ??
-        false;
-      const terms =
-        action.config?.parameters?.["annotations_cell_ontology_terms"];
+        action.config?.parameters?.annotations_cell_ontology_enabled ?? false;
+      const terms = action.config?.parameters?.annotations_cell_ontology_terms;
 
       const termSet = new Set(terms);
       return {

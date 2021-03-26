@@ -57,12 +57,12 @@ const GeneSets = (
         for (const gene of gsData.genes) {
           genes.set(gene.gene_symbol, {
             geneSymbol: gene.gene_symbol,
-            geneDescription: gene?.["gene_description"] ?? "",
+            geneDescription: gene?.gene_description ?? "",
           });
         }
         const gs = {
           genesetName: gsData.geneset_name,
-          genesetDescription: gsData?.["geneset_description"] ?? "",
+          genesetDescription: gsData?.geneset_description ?? "",
           genes,
         };
         genesets.set(gsData.geneset_name, gs);

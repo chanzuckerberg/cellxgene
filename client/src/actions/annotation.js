@@ -396,9 +396,9 @@ export const saveGenesetsAction = () => async (dispatch, getState) => {
   const { lastTid, genesets } = state.genesets;
 
   const genesetsAreAvailable =
-    config?.parameters?.["annotations_genesets"] ?? false;
+    config?.parameters?.annotations_genesets ?? false;
   const genesetsReadonly =
-    config?.parameters?.["annotations_genesets_readonly"] ?? true;
+    config?.parameters?.annotations_genesets_readonly ?? true;
   if (!genesetsAreAvailable || genesetsReadonly) {
     // our non-save was completed!
     return dispatch({
