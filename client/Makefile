@@ -1,6 +1,6 @@
 include ../common.mk
 
-ANNOTATIONS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../local_server/test/fixtures/pbmc3k-annotations.csv)
+ANNOTATIONS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../backend/test/fixtures/pbmc3k-annotations.csv)
 ANNOTATIONS_FILENAME := $(shell basename $(ANNOTATIONS))
 
 CXG_CONFIG := $(if $(CXG_CONFIG), $(CXG_CONFIG), ./__tests__/e2e/test_config.yaml)

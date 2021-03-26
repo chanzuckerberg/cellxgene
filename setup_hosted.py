@@ -3,10 +3,10 @@ from setuptools import setup, find_packages
 with open("README.md", "rb") as fh:
     long_description = fh.read().decode()
 
-with open("server/requirements.txt") as fh:
+with open("backend/czi_hosted/requirements.txt") as fh:
     requirements = fh.read().splitlines()
 
-with open("server/requirements-prepare.txt") as fh:
+with open("backend/czi_hosted/requirements-prepare.txt") as fh:
     requirements_prepare = fh.read().splitlines()
 
 setup(
@@ -38,6 +38,6 @@ setup(
         "Programming Language :: Python :: 3 :: Only",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
-    entry_points={"console_scripts": ["cellxgene = server.cli.cli:cli"]},
+    entry_points={"console_scripts": ["cellxgene = backend.czi_hosted.cli.cli:cli"]},
     extras_require=dict(prepare=requirements_prepare),
 )
