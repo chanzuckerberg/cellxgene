@@ -393,6 +393,8 @@ export const saveGenesetsAction = () => async (dispatch, getState) => {
 
   // bail if gene sets not available, or in readonly mode.
   const { config } = state;
+  const { lastTid, genesets } = state.genesets;
+
   const genesetsAreAvailable =
     config?.parameters?.["annotations_genesets"] ?? false;
   const genesetsReadonly =
@@ -401,16 +403,18 @@ export const saveGenesetsAction = () => async (dispatch, getState) => {
     // our non-save was completed!
     return dispatch({
       type: "autosave: genesets complete",
-      lastSavedGenesets: state.genesets,
+      lastSavedGenesets: genesets,
     });
   }
 
-  const { lastTid, genesets: lastGenesets } = state.genesets;
+  dispatch({
+    type: "autosave: genesets started",
+  });
 
   /* Create the JSON OTA data structure */
   const tid = (lastTid ?? 0) + 1;
-  const genesets = [];
-  for (const [name, gs] of lastGenesets) {
+  const genesetsOTA = [];
+  for (const [name, gs] of genesets) {
     const genes = [];
     for (const g of gs.genes.values()) {
       genes.push({
@@ -418,7 +422,7 @@ export const saveGenesetsAction = () => async (dispatch, getState) => {
         gene_description: g.geneDescription,
       });
     }
-    genesets.push({
+    genesetsOTA.push({
       geneset_name: name,
       geneset_description: gs.genesetDescription,
       genes,
@@ -426,7 +430,7 @@ export const saveGenesetsAction = () => async (dispatch, getState) => {
   }
   const ota = {
     tid,
-    genesets,
+    genesets: genesetsOTA,
   };
 
   /* Save to server */

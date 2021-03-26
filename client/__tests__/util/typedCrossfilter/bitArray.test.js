@@ -1,5 +1,3 @@
-// jshint esversion: 6
-
 import BitArray from "../../../src/util/typedCrossfilter/bitArray";
 
 const defaultTestLength = 8;

@@ -1,5 +1,3 @@
-// jshint esversion: 6
-
 // const PositiveIntervals = require("../../src/util/typedCrossfilter/positiveIntervals");
 import PositiveIntervals from "../../../src/util/typedCrossfilter/positiveIntervals";
 

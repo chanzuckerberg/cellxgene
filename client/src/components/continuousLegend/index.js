@@ -1,4 +1,3 @@
-// jshint esversion: 6
 import React from "react";
 import { connect } from "react-redux";
 import * as d3 from "d3";
@@ -10,7 +9,6 @@ import {
 } from "../../util/stateManager/colorHelpers";
 
 // create continuous color legend
-// http://bl.ocks.org/syntagmatic/e8ccca52559796be775553b467593a9f
 const continuous = (selectorId, colorScale, colorAccessor) => {
   const legendHeight = 200;
   const legendWidth = 80;

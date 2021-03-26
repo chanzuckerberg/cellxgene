@@ -1,4 +1,3 @@
-// jshint esversion: 6
 import * as d3 from "d3";
 import Lasso from "./setupLasso";
 

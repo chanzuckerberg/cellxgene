@@ -1,7 +1,5 @@
-// jshint esversion: 6
 import React from "react";
 import { connect } from "react-redux";
-import Continuous from "../continuous/continuous";
 import GeneExpression from "../geneExpression";
 import * as globals from "../../globals";
 
@@ -22,10 +20,10 @@ class RightSidebar extends React.Component {
           overflowY: "inherit",
           height: "inherit",
           width: "inherit",
+          padding: globals.leftSidebarSectionPadding,
         }}
       >
         <GeneExpression />
-        <Continuous />
       </div>
     );
   }

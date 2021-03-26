@@ -15,10 +15,10 @@ jobs:
           python-version: 3.7
       - name: Install dependencies
         run: |
-          pip install -r server/test/locust/requirements-locust.txt
+          pip install -r backend/czi_hosted/test/locust/requirements-locust.txt
       - name: Dev Scale Test
         run: |
-          locust -f server/test/locust/locustfile.py --headless -u 30 -r 10 --host https://api.cellxgene.dev.single-cell.czi.technology/cellxgene/e/ --run-time 5m 2>&1 | tee locust_dev_stats.txt
+          locust -f backend/czi_hosted/test/locust/locustfile.py --headless -u 30 -r 10 --host https://api.cellxgene.dev.single-cell.czi.technology/cellxgene/e/ --run-time 5m 2>&1 | tee locust_dev_stats.txt
       - name: Slack success webhook
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

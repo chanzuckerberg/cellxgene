@@ -1,5 +1,3 @@
-// jshint esversion: 6
-
 // Substitute for a d3 linear scale - less flexible, more performant.
 // Returns a function which will scale a value.
 //
