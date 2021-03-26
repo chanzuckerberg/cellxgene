@@ -107,7 +107,7 @@ def rest_get_data_adaptor(func):
 
 
 class HealthAPI(Resource):
-    @cache_control(no_store=True)
+    @cache_control_always(no_store=True)
     def get(self):
         config = current_app.app_config
         return health_check(config)
