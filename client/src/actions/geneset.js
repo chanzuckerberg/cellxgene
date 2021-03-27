@@ -62,23 +62,6 @@ export const genesetDeleteGenes = (genesetName, geneSymbols) => (
 ) => {
   const state = getState();
   const obsCrossfilter = dropGeneset(dispatch, state, genesetName, geneSymbols);
-  // const { obsCrossfilter: prevObsCrossfilter } = state;
-  // const obsCrossfilter = geneSymbols.reduce(
-  //   (crossfilter, gene) => dropGeneDimension(crossfilter, state, gene),
-  //   dropGenesetSummaryDimension(prevObsCrossfilter, state, genesetName)
-  // );
-  // dispatch({
-  //   type: "continuous metadata histogram cancel",
-  //   continuousNamespace: { isGeneSetSummary: true },
-  //   selection: genesetName,
-  // });
-  // geneSymbols.forEach((g) =>
-  //   dispatch({
-  //     type: "continuous metadata histogram cancel",
-  //     continuousNamespace: { isUserDefined: true },
-  //     selection: g,
-  //   })
-  // );
   return dispatch({
     type: "geneset: delete genes",
     genesetName,

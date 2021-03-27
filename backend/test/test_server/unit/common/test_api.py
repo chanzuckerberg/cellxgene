@@ -822,7 +822,6 @@ summary test,,PIGU,\r
             query = f"method=mean&{filter}"
             query_hash = hashlib.sha1(query.encode()).hexdigest()
             url = f"{self.URL_BASE}{endpoint}?{query}"
-            print(">>>>>>>>>>>>", url)
 
             result = self.session.get(url, headers={"Accept": "application/octet-stream"})
             self.assertEqual(result.status_code, HTTPStatus.OK)
