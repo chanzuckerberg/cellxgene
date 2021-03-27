@@ -9,6 +9,7 @@ import { memoize } from "../../util/dataframe/util";
 import Truncate from "../util/truncate";
 import * as globals from "../../globals";
 import GenesetMenus from "./menus/genesetMenus";
+import EditGenesetNameDialogue from "./menus/editGenesetNameDialogue";
 
 @connect((state, ownProps) => {
   return {
@@ -88,6 +89,8 @@ class GeneSet extends React.Component {
     const { setName, setGenes, isDiffexp } = this.props;
     const { isOpen, toggleSummaryHisto } = this.state;
     const genesetNameLengthVisible = 120; /* this magic number determines how much of a long geneset name we see */
+    const genesetIsEmpty = setGenes.length === 0;
+
     return (
       <div style={{ marginBottom: 3 }}>
         <div
@@ -139,7 +142,7 @@ class GeneSet extends React.Component {
         </div>
 
         <div style={{ marginLeft: 15, marginTop: 5, marginRight: 0 }}>
-          {isOpen ? (
+          {isOpen && !genesetIsEmpty && (
             <Tooltip
               content="Aggregate all genes in this geneset, and allow coloring by and selecting on the entire set."
               position={Position.BOTTOM_RIGHT}
@@ -160,21 +163,29 @@ class GeneSet extends React.Component {
                 onChange={this.toggleSummaryHisto}
               />
             </Tooltip>
-          ) : null}
+          )}
+
+          {isOpen && genesetIsEmpty && (
+            <p style={{ fontStyle: "italic", color: "lightgrey" }}>
+              No genes to display
+            </p>
+          )}
         </div>
 
-        {isOpen && !toggleSummaryHisto
-          ? _.map(setGenes, (gene) => {
-              return (
-                <Gene
-                  key={gene}
-                  gene={gene}
-                  geneset={setName}
-                  isDiffexp={isDiffexp}
-                />
-              );
-            })
-          : null}
+        {isOpen &&
+          !toggleSummaryHisto &&
+          !genesetIsEmpty &&
+          _.map(setGenes, (gene) => {
+            return (
+              <Gene
+                key={gene}
+                gene={gene}
+                geneset={setName}
+                isDiffexp={isDiffexp}
+              />
+            );
+          })}
+        <EditGenesetNameDialogue parentGeneset={setName} />
       </div>
     );
   }
