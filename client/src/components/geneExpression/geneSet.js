@@ -115,6 +115,8 @@ class GeneSet extends React.Component {
     const { setName, setGenes } = this.props;
     const { isOpen, toggleSummaryHisto } = this.state;
     const genesetNameLengthVisible = 120; /* this magic number determines how much of a long geneset name we see */
+    const genesetIsEmpty = setGenes.length === 0;
+
     return (
       <div style={{ marginBottom: 3 }}>
         <div
@@ -166,7 +168,7 @@ class GeneSet extends React.Component {
         </div>
 
         <div style={{ marginLeft: 15, marginTop: 5, marginRight: 0 }}>
-          {isOpen ? (
+          {isOpen && !genesetIsEmpty && (
             <Tooltip
               content="Aggregate all genes in this geneset, and allow coloring by and selecting on the entire set."
               position={Position.BOTTOM_RIGHT}
@@ -187,12 +189,32 @@ class GeneSet extends React.Component {
                 onChange={this.toggleSummaryHisto}
               />
             </Tooltip>
-          ) : null}
+          )}
+
+          {isOpen && genesetIsEmpty && (
+            <p style={{ fontStyle: "italic", color: "lightgrey" }}>
+              No genes to display
+            </p>
+          )}
         </div>
 
         {isOpen &&
+<<<<<<< main
           (!toggleSummaryHisto
             ? this.renderGenes()
+=======
+          (!toggleSummaryHisto && !genesetIsEmpty
+            ? _.map(setGenes, (gene) => {
+                return (
+                  <Gene
+                    key={gene}
+                    gene={gene}
+                    geneset={setName}
+                    isDiffexp={isDiffexp}
+                  />
+                );
+              })
+>>>>>>> handle empty gene set case
             : setGenes.length > 0 && (
                 <HistogramBrush
                   isGeneSetSummary
