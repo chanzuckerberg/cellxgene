@@ -1,5 +1,5 @@
 import React from "react";
-import { connect } from "react-redux";
+import { connect, shallowEqual } from "react-redux";
 import * as d3 from "d3";
 import Async from "react-async";
 import memoize from "memoize-one";
@@ -28,6 +28,10 @@ import ErrorLoading from "./error";
   };
 })
 class HistogramBrush extends React.PureComponent {
+  static watchAsync(props, prevProps) {
+    return !shallowEqual(props.watchProps, prevProps.watchProps);
+  }
+
   /* memoized closure to prevent HistogramHeader unecessary repaint */
   handleColorAction = memoize((dispatch) => (field, isObs) => {
     if (isObs) {
@@ -381,7 +385,11 @@ class HistogramBrush extends React.PureComponent {
     const showScatterPlot = isDiffExp || isUserDefined;
 
     return (
-      <Async watch={(annoMatrix, setGenes)} promiseFn={this.fetchAsyncProps}>
+      <Async
+        watchFn={HistogramBrush.watchAsync}
+        promiseFn={this.fetchAsyncProps}
+        watchProps={{ annoMatrix, setGenes }}
+      >
         <Async.Pending initial>
           <StillLoading displayName={field} zebra={zebra} />
         </Async.Pending>
