@@ -397,9 +397,9 @@ def summarize_var_helper(request, data_adaptor, key, raw_query):
     args_filter_only = request.values.copy()
     args_filter_only.poplist("method")
     args_filter_only.poplist("key")
-    filter = _query_parameter_to_filter(args_filter_only)
 
-    try:
+    try:    
+        filter = _query_parameter_to_filter(args_filter_only)
         return make_response(
             data_adaptor.summarize_var(summary_method, filter, query_hash),
             HTTPStatus.OK,
