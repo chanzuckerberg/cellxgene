@@ -161,7 +161,7 @@ const dispatchDiffExpErrors = (dispatch, response) => {
   }
 };
 
-const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
+const requestDifferentialExpression = (set1, set2, num_genes = 50) => async (
   dispatch,
   getState
 ) => {
