@@ -11,8 +11,8 @@ import {
 import { storageGet, storageSet, KEYS } from "../util/localStorage";
 
 @connect((state) => ({
-  tosURL: state.config?.parameters?.["about_legal_tos"],
-  privacyURL: state.config?.parameters?.["about_legal_privacy"],
+  tosURL: state.config?.parameters?.about_legal_tos,
+  privacyURL: state.config?.parameters?.about_legal_privacy,
 }))
 class TermsPrompt extends React.PureComponent {
   constructor(props) {

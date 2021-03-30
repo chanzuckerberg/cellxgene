@@ -77,6 +77,26 @@ class AddGenes extends React.Component {
     this.updateState(prevProps);
   }
 
+  handleClick(g) {
+    const { dispatch, userDefinedGenes } = this.props;
+    const { geneNames } = this.state;
+    if (!g) return;
+    const gene = g.target;
+    if (userDefinedGenes.indexOf(gene) !== -1) {
+      postUserErrorToast("That gene already exists");
+    } else if (userDefinedGenes.length > globals.maxUserDefinedGenes) {
+      postUserErrorToast(
+        `That's too many genes, you can have at most ${globals.maxUserDefinedGenes} user defined genes`
+      );
+    } else if (geneNames.indexOf(gene) === undefined) {
+      postUserErrorToast("That doesn't appear to be a valid gene name.");
+    } else {
+      dispatch({ type: "single user defined gene start" });
+      dispatch(actions.requestUserDefinedGene(gene));
+      dispatch({ type: "single user defined gene complete" });
+    }
+  }
+
   _genesToUpper = (listGenes) => {
     // Has to be a Map to preserve index
     const upperGenes = new Map();
@@ -188,26 +208,6 @@ class AddGenes extends React.Component {
     }
     // default - should never happen.
     return "Apod, Cd74, ...";
-  }
-
-  handleClick(g) {
-    const { dispatch, userDefinedGenes } = this.props;
-    const { geneNames } = this.state;
-    if (!g) return;
-    const gene = g.target;
-    if (userDefinedGenes.indexOf(gene) !== -1) {
-      postUserErrorToast("That gene already exists");
-    } else if (userDefinedGenes.length > globals.maxUserDefinedGenes) {
-      postUserErrorToast(
-        `That's too many genes, you can have at most ${globals.maxUserDefinedGenes} user defined genes`
-      );
-    } else if (geneNames.indexOf(gene) === undefined) {
-      postUserErrorToast("That doesn't appear to be a valid gene name.");
-    } else {
-      dispatch({ type: "single user defined gene start" });
-      dispatch(actions.requestUserDefinedGene(gene));
-      dispatch({ type: "single user defined gene complete" });
-    }
   }
 
   render() {

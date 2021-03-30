@@ -9,6 +9,7 @@ import { memoize } from "../../util/dataframe/util";
 import Truncate from "../util/truncate";
 import * as globals from "../../globals";
 import GenesetMenus from "./menus/genesetMenus";
+import HistogramBrush from "../brushableHistogram";
 
 @connect((state, ownProps) => {
   return {
@@ -163,18 +164,25 @@ class GeneSet extends React.Component {
           ) : null}
         </div>
 
-        {isOpen && !toggleSummaryHisto
-          ? _.map(setGenes, (gene) => {
-              return (
-                <Gene
-                  key={gene}
-                  gene={gene}
-                  geneset={setName}
-                  isDiffexp={isDiffexp}
+        {isOpen &&
+          (!toggleSummaryHisto
+            ? _.map(setGenes, (gene) => {
+                return (
+                  <Gene
+                    key={gene}
+                    gene={gene}
+                    geneset={setName}
+                    isDiffexp={isDiffexp}
+                  />
+                );
+              })
+            : setGenes.length > 0 && (
+                <HistogramBrush
+                  isGeneSetSummary
+                  field={setName}
+                  setGenes={setGenes}
                 />
-              );
-            })
-          : null}
+              ))}
       </div>
     );
   }

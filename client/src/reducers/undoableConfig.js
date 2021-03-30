@@ -178,7 +178,7 @@ See undoable.js for description action filter interface description.
 Basic approach:
   * trivial handlers for skip, clear & save cases to keep config simple.
   * only implement complex state machines where absolutely required (eg,
-    multi-event seleciton and the like)
+    multi-event selection and the like)
 */
 const actionFilter = (debug) => (state, action, prevFilterState) => {
   const actionType = action.type;

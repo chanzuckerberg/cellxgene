@@ -5,7 +5,6 @@ import anndata
 import numpy as np
 from packaging import version
 from pandas.core.dtypes.dtypes import CategoricalDtype
-import pandas as pd
 from scipy import sparse
 from server_timing import Timing as ServerTiming
 
@@ -13,7 +12,7 @@ import backend.server.compute.diffexp_generic as diffexp_generic
 from backend.common.colors import convert_anndata_category_colors_to_cxg_category_colors
 from backend.common.constants import Axis, MAX_LAYOUTS
 from backend.server.common.corpora import corpora_get_props_from_anndata
-from backend.common.errors import PrepareError, DatasetAccessError, FilterError, UnsupportedSummaryMethod
+from backend.common.errors import PrepareError, DatasetAccessError, FilterError
 from backend.common.utils.type_conversion_utils import get_schema_type_hint_of_array
 from backend.server.compute.scanpy import scanpy_umap
 from backend.server.data_common.data_adaptor import DataAdaptor
@@ -69,11 +68,11 @@ class AnndataAdaptor(DataAdaptor):
 
     @staticmethod
     def _create_unique_column_name(df, col_name_prefix):
-        """ given the columns of a dataframe, and a name prefix, return a column name which
-            does not exist in the dataframe, AND which is prefixed by `prefix`
+        """given the columns of a dataframe, and a name prefix, return a column name which
+        does not exist in the dataframe, AND which is prefixed by `prefix`
 
-            The approach is to append a numeric suffix, starting at zero and increasing by
-            one, until an unused name is found (eg, prefix_0, prefix_1, ...).
+        The approach is to append a numeric suffix, starting at zero and increasing by
+        one, until an unused name is found (eg, prefix_0, prefix_1, ...).
         """
         suffix = 0
         while f"{col_name_prefix}{suffix}" in df:
@@ -200,10 +199,10 @@ class AnndataAdaptor(DataAdaptor):
             self.parameters.update({"diffexp_may_be_slow": True})
 
     def _is_valid_layout(self, arr):
-        """ return True if this layout data is a valid array for front-end presentation:
-            * ndarray, dtype float/int/uint
-            * with shape (n_obs, >= 2)
-            * with all values finite or NaN (no +Inf or -Inf)
+        """return True if this layout data is a valid array for front-end presentation:
+        * ndarray, dtype float/int/uint
+        * with shape (n_obs, >= 2)
+        * with all values finite or NaN (no +Inf or -Inf)
         """
         is_valid = type(arr) == np.ndarray and arr.dtype.kind in "fiu"
         is_valid = is_valid and arr.shape[0] == self.data.n_obs and arr.shape[1] >= 2
@@ -368,29 +367,3 @@ class AnndataAdaptor(DataAdaptor):
     def get_var_keys(self):
         # return list of keys
         return self.data.var.keys().to_list()
-
-    def get_gene_set_summary(self, geneset_name, genes, method):
-        if method != "mean":
-            raise UnsupportedSummaryMethod("Unknown gene set summary method.")
-
-        var_index = self.parameters.get("var_names")
-        obs_selector, var_selector = self._filter_to_mask(
-            {
-                "var": {
-                    "annotation_value": [
-                        {
-                            "name": var_index,
-                            "values": genes,
-                        }
-                    ]
-                }
-            }
-        )
-
-        X = self.get_X_array(obs_selector, var_selector)
-        if sparse.issparse(X):
-            mean = X.mean(axis=1)
-        else:
-            mean = X.mean(axis=1, keepdims=True)
-        col_idx = pd.Index([geneset_name])
-        return encode_matrix_fbs(mean, col_idx=col_idx, row_idx=None)

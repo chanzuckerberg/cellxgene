@@ -1,5 +1,5 @@
 import React from "react";
-import { connect } from "react-redux";
+import { connect, shallowEqual } from "react-redux";
 import * as d3 from "d3";
 import Async from "react-async";
 import memoize from "memoize-one";
@@ -14,9 +14,9 @@ import StillLoading from "./loading";
 import ErrorLoading from "./error";
 
 @connect((state, ownProps) => {
-  const { isObs, isUserDefined, isDiffExp, field } = ownProps;
+  const { isObs, isUserDefined, isDiffExp, isGeneSetSummary, field } = ownProps;
   const myName = makeContinuousDimensionName(
-    { isObs, isUserDefined, isDiffExp },
+    { isObs, isUserDefined, isDiffExp, isGeneSetSummary },
     field
   );
   return {
@@ -28,6 +28,10 @@ import ErrorLoading from "./error";
   };
 })
 class HistogramBrush extends React.PureComponent {
+  static watchAsync(props, prevProps) {
+    return !shallowEqual(props.watchProps, prevProps.watchProps);
+  }
+
   /* memoized closure to prevent HistogramHeader unecessary repaint */
   handleColorAction = memoize((dispatch) => (field, isObs) => {
     if (isObs) {
@@ -71,7 +75,14 @@ class HistogramBrush extends React.PureComponent {
   onBrush = (selection, x, eventType) => {
     const type = `continuous metadata histogram ${eventType}`;
     return () => {
-      const { dispatch, field, isObs, isUserDefined, isDiffExp } = this.props;
+      const {
+        dispatch,
+        field,
+        isObs,
+        isUserDefined,
+        isDiffExp,
+        isGeneSetSummary,
+      } = this.props;
 
       // ignore programmatically generated events
       if (!d3.event.sourceEvent) return;
@@ -88,6 +99,7 @@ class HistogramBrush extends React.PureComponent {
           isObs,
           isUserDefined,
           isDiffExp,
+          isGeneSetSummary,
         },
       };
       dispatch(
@@ -98,7 +110,14 @@ class HistogramBrush extends React.PureComponent {
 
   onBrushEnd = (selection, x) => {
     return () => {
-      const { dispatch, field, isObs, isUserDefined, isDiffExp } = this.props;
+      const {
+        dispatch,
+        field,
+        isObs,
+        isUserDefined,
+        isDiffExp,
+        isGeneSetSummary,
+      } = this.props;
       const minAllowedBrushSize = 10;
       const smallAmountToAvoidInfiniteLoop = 0.1;
 
@@ -138,6 +157,7 @@ class HistogramBrush extends React.PureComponent {
           isObs,
           isUserDefined,
           isDiffExp,
+          isGeneSetSummary,
         },
       };
       dispatch(
@@ -300,19 +320,37 @@ class HistogramBrush extends React.PureComponent {
   }
 
   createQuery() {
-    const { isObs, field, annoMatrix } = this.props;
+    const { isObs, isGeneSetSummary, field, setGenes, annoMatrix } = this.props;
     const { schema } = annoMatrix;
     if (isObs) {
       return ["obs", field];
     }
     const varIndex = schema?.annotations?.var?.index;
     if (!varIndex) return null;
+
+    if (isGeneSetSummary) {
+      return [
+        "X",
+        {
+          summarize: {
+            method: "mean",
+            field: "var",
+            column: varIndex,
+            values: setGenes,
+          },
+        },
+      ];
+    }
+
+    // else, we assume it is a gene expression
     return [
       "X",
       {
-        field: "var",
-        column: varIndex,
-        value: field,
+        where: {
+          field: "var",
+          column: varIndex,
+          value: field,
+        },
       },
     ];
   }
@@ -333,6 +371,7 @@ class HistogramBrush extends React.PureComponent {
       continuousSelectionRange,
       isObs,
       mini,
+      setGenes,
     } = this.props;
     const {
       margin,
@@ -346,7 +385,11 @@ class HistogramBrush extends React.PureComponent {
     const showScatterPlot = isDiffExp || isUserDefined;
 
     return (
-      <Async watch={annoMatrix} promiseFn={this.fetchAsyncProps}>
+      <Async
+        watchFn={HistogramBrush.watchAsync}
+        promiseFn={this.fetchAsyncProps}
+        watchProps={{ annoMatrix, setGenes }}
+      >
         <Async.Pending initial>
           <StillLoading displayName={field} zebra={zebra} />
         </Async.Pending>

@@ -53,12 +53,7 @@ class Gene extends React.Component {
 
   handleDeleteGeneFromSet = () => {
     const { dispatch, gene, geneset } = this.props;
-
-    dispatch({
-      type: "geneset: delete genes",
-      genesetName: geneset,
-      geneSymbols: [gene],
-    });
+    dispatch(actions.genesetDeleteGenes(geneset, [gene]));
   };
 
   render() {
