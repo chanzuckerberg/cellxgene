@@ -31,23 +31,20 @@ class GeneExpression extends React.Component {
 
   renderDiffexpGeneSets = () => {
     const { differential } = this.props;
+    const { diffExp } = differential;
+    if (!diffExp) return null;
 
-    const setGenes = [];
-
-    if (differential.diffExp) {
-      differential.diffExp.forEach((diffexpGene) => {
-        setGenes.push(diffexpGene[0]);
-      });
-    }
-
-    return differential.diffExp ? (
+    // [ [gene, logfoldchange, pval, pval_adj], ...]
+    const setGenes = diffExp.map((diffExpGene) => diffExpGene[0]);
+    return (
       <GeneSet
         key="Temp DiffExp Set"
         setGenes={setGenes}
-        isDiffexp
+        isDiffExp
+        diffExp={diffExp}
         setName="Temp DiffExp Set"
       />
-    ) : null;
+    );
   };
 
   handleActivateCreateGenesetMode = () => {

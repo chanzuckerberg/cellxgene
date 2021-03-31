@@ -452,6 +452,7 @@ class HistogramBrush extends React.PureComponent {
                 {!mini ? (
                   <HistogramFooter
                     isObs={isObs}
+                    isDiffExp={isDiffExp}
                     displayName={field}
                     hideRanges={asyncProps.isSingleValue}
                     rangeMin={asyncProps.unclippedRange[0]}
