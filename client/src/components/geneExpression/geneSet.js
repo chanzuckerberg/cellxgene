@@ -198,23 +198,8 @@ class GeneSet extends React.Component {
           )}
         </div>
 
-        {isOpen &&
-<<<<<<< main
-          (!toggleSummaryHisto
+        {isOpen && !toggleSummaryHisto && !genesetIsEmpty
             ? this.renderGenes()
-=======
-          (!toggleSummaryHisto && !genesetIsEmpty
-            ? _.map(setGenes, (gene) => {
-                return (
-                  <Gene
-                    key={gene}
-                    gene={gene}
-                    geneset={setName}
-                    isDiffexp={isDiffexp}
-                  />
-                );
-              })
->>>>>>> handle empty gene set case
             : setGenes.length > 0 && (
                 <HistogramBrush
                   isGeneSetSummary
