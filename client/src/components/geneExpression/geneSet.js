@@ -199,14 +199,14 @@ class GeneSet extends React.Component {
         </div>
 
         {isOpen && !toggleSummaryHisto && !genesetIsEmpty
-            ? this.renderGenes()
-            : setGenes.length > 0 && (
-                <HistogramBrush
-                  isGeneSetSummary
-                  field={setName}
-                  setGenes={setGenes}
-                />
-              ))}
+          ? this.renderGenes()
+          : setGenes.length > 0 && (
+              <HistogramBrush
+                isGeneSetSummary
+                field={setName}
+                setGenes={setGenes}
+              />
+            )}
       </div>
     );
   }
