@@ -8,6 +8,7 @@ import { memoize } from "../../util/dataframe/util";
 import Truncate from "../util/truncate";
 import * as globals from "../../globals";
 import GenesetMenus from "./menus/genesetMenus";
+import EditGenesetNameDialogue from "./menus/editGenesetNameDialogue";
 import HistogramBrush from "../brushableHistogram";
 
 @connect((state, ownProps) => {
@@ -115,6 +116,8 @@ class GeneSet extends React.Component {
     const { setName, setGenes } = this.props;
     const { isOpen, toggleSummaryHisto } = this.state;
     const genesetNameLengthVisible = 120; /* this magic number determines how much of a long geneset name we see */
+    const genesetIsEmpty = setGenes.length === 0;
+
     return (
       <div style={{ marginBottom: 3 }}>
         <div
@@ -166,7 +169,7 @@ class GeneSet extends React.Component {
         </div>
 
         <div style={{ marginLeft: 15, marginTop: 5, marginRight: 0 }}>
-          {isOpen ? (
+          {isOpen && !genesetIsEmpty && (
             <Tooltip
               content="Aggregate all genes in this geneset, and allow coloring by and selecting on the entire set."
               position={Position.BOTTOM_RIGHT}
@@ -187,11 +190,17 @@ class GeneSet extends React.Component {
                 onChange={this.toggleSummaryHisto}
               />
             </Tooltip>
-          ) : null}
+          )}
+
+          {isOpen && genesetIsEmpty && (
+            <p style={{ fontStyle: "italic", color: "lightgrey" }}>
+              No genes to display
+            </p>
+          )}
         </div>
 
         {isOpen &&
-          (!toggleSummaryHisto
+          (!toggleSummaryHisto && !genesetIsEmpty
             ? this.renderGenes()
             : setGenes.length > 0 && (
                 <HistogramBrush
@@ -200,6 +209,7 @@ class GeneSet extends React.Component {
                   setGenes={setGenes}
                 />
               ))}
+        <EditGenesetNameDialogue parentGeneset={setName} />
       </div>
     );
   }
