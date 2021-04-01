@@ -198,7 +198,6 @@ class GeneSet extends React.Component {
             </p>
           )}
         </div>
-
         {isOpen &&
           (!toggleSummaryHisto && !genesetIsEmpty
             ? this.renderGenes()
