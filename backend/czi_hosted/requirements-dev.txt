@@ -1,0 +1,11 @@
+Authlib>=0.14.3
+black
+bumpversion>=0.5
+codecov>=2.0.15
+parameterized>=0.7.0
+psycopg2-binary>=2.8.5
+pytest>=3.6.3
+python-jose>=3.2.0
+twine>=1.12.1
+-r requirements.txt
+rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability

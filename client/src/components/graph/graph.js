@@ -1,4 +1,3 @@
-// jshint esversion: 6
 import React from "react";
 import * as d3 from "d3";
 import { connect, shallowEqual } from "react-redux";
@@ -21,6 +20,12 @@ import GraphOverlayLayer from "./overlays/graphOverlayLayer";
 import CentroidLabels from "./overlays/centroidLabels";
 import actions from "../../actions";
 import renderThrottle from "../../util/renderThrottle";
+
+import {
+  flagBackground,
+  flagSelected,
+  flagHighlight,
+} from "../../util/glHelpers";
 
 /*
 Simple 2D transforms control all point painting.  There are three:
@@ -61,10 +66,6 @@ function createModelTF() {
   mat3.translate(m, m, [-0.5, -0.5]);
   return m;
 }
-
-const flagSelected = 1;
-const flagNaN = 2;
-const flagHighlight = 4;
 
 @connect((state) => ({
   annoMatrix: state.annoMatrix,
@@ -159,8 +160,9 @@ class Graph extends React.Component {
     const flags = new Float32Array(nObs);
     if (colorByData) {
       for (let i = 0, len = flags.length; i < len; i += 1) {
-        if (!Number.isFinite(colorByData[i])) {
-          flags[i] = flagNaN;
+        const val = colorByData[i];
+        if (typeof val === "number" && !Number.isFinite(val)) {
+          flags[i] = flagBackground;
         }
       }
     }
@@ -301,13 +303,6 @@ class Graph extends React.Component {
     window.removeEventListener("resize", this.handleResize);
   }
 
-  setReglCanvas = (canvas) => {
-    this.reglCanvas = canvas;
-    this.setState({
-      ...Graph.createReglState(canvas),
-    });
-  };
-
   handleResize = () => {
     const { state } = this.state;
     const viewport = this.getViewportDimensions();
@@ -319,14 +314,6 @@ class Graph extends React.Component {
     });
   };
 
-  getViewportDimensions = () => {
-    const { viewportRef } = this.props;
-    return {
-      height: viewportRef.clientHeight,
-      width: viewportRef.clientWidth,
-    };
-  };
-
   handleCanvasEvent = (e) => {
     const { camera, projectionTF } = this.state;
     if (e.type !== "wheel") e.preventDefault();
@@ -336,6 +323,143 @@ class Graph extends React.Component {
         return { ...state, updateOverlay: !state.updateOverlay };
       });
     }
+  };
+
+  handleBrushDragAction() {
+    /*
+      event describing brush position:
+      @-------|
+      |       |
+      |       |
+      |-------@
+    */
+    // ignore programatically generated events
+    if (d3.event.sourceEvent === null || !d3.event.selection) return;
+
+    const { dispatch, layoutChoice } = this.props;
+    const s = d3.event.selection;
+    const northwest = this.mapScreenToPoint(s[0]);
+    const southeast = this.mapScreenToPoint(s[1]);
+    const [minX, maxY] = northwest;
+    const [maxX, minY] = southeast;
+    dispatch(
+      actions.graphBrushChangeAction(layoutChoice.current, {
+        minX,
+        minY,
+        maxX,
+        maxY,
+        northwest,
+        southeast,
+      })
+    );
+  }
+
+  handleBrushStartAction() {
+    // Ignore programatically generated events.
+    if (!d3.event.sourceEvent) return;
+
+    const { dispatch } = this.props;
+    dispatch(actions.graphBrushStartAction());
+  }
+
+  handleBrushEndAction() {
+    // Ignore programatically generated events.
+    if (!d3.event.sourceEvent) return;
+
+    /*
+    coordinates will be included if selection made, null
+    if selection cleared.
+    */
+    const { dispatch, layoutChoice } = this.props;
+    const s = d3.event.selection;
+    if (s) {
+      const northwest = this.mapScreenToPoint(s[0]);
+      const southeast = this.mapScreenToPoint(s[1]);
+      const [minX, maxY] = northwest;
+      const [maxX, minY] = southeast;
+      dispatch(
+        actions.graphBrushEndAction(layoutChoice.current, {
+          minX,
+          minY,
+          maxX,
+          maxY,
+          northwest,
+          southeast,
+        })
+      );
+    } else {
+      dispatch(actions.graphBrushDeselectAction(layoutChoice.current));
+    }
+  }
+
+  handleBrushDeselectAction() {
+    const { dispatch, layoutChoice } = this.props;
+    dispatch(actions.graphBrushDeselectAction(layoutChoice.current));
+  }
+
+  handleLassoStart() {
+    const { dispatch, layoutChoice } = this.props;
+    dispatch(actions.graphLassoStartAction(layoutChoice.current));
+  }
+
+  // when a lasso is completed, filter to the points within the lasso polygon
+  handleLassoEnd(polygon) {
+    const minimumPolygonArea = 10;
+    const { dispatch, layoutChoice } = this.props;
+
+    if (
+      polygon.length < 3 ||
+      Math.abs(d3.polygonArea(polygon)) < minimumPolygonArea
+    ) {
+      // if less than three points, or super small area, treat as a clear selection.
+      dispatch(actions.graphLassoDeselectAction(layoutChoice.current));
+    } else {
+      dispatch(
+        actions.graphLassoEndAction(
+          layoutChoice.current,
+          polygon.map((xy) => this.mapScreenToPoint(xy))
+        )
+      );
+    }
+  }
+
+  handleLassoCancel() {
+    const { dispatch, layoutChoice } = this.props;
+    dispatch(actions.graphLassoCancelAction(layoutChoice.current));
+  }
+
+  handleLassoDeselectAction() {
+    const { dispatch, layoutChoice } = this.props;
+    dispatch(actions.graphLassoDeselectAction(layoutChoice.current));
+  }
+
+  handleDeselectAction() {
+    const { selectionTool } = this.props;
+    if (selectionTool === "brush") this.handleBrushDeselectAction();
+    if (selectionTool === "lasso") this.handleLassoDeselectAction();
+  }
+
+  handleOpacityRangeChange(e) {
+    const { dispatch } = this.props;
+    dispatch({
+      type: "change opacity deselected cells in 2d graph background",
+      data: e.target.value,
+    });
+  }
+
+  setReglCanvas = (canvas) => {
+    this.reglCanvas = canvas;
+    this.setState({
+      ...Graph.createReglState(canvas),
+    });
+  };
+
+  getViewportDimensions = () => {
+    const { viewportRef } = this.props;
+    return {
+      height: viewportRef.clientHeight,
+      width: viewportRef.clientWidth,
+    };
   };
 
   createToolSVG = () => {
@@ -587,128 +711,6 @@ class Graph extends React.Component {
     ];
   }
 
-  handleBrushDragAction() {
-    /*
-      event describing brush position:
-      @-------|
-      |       |
-      |       |
-      |-------@
-    */
-    // ignore programatically generated events
-    if (d3.event.sourceEvent === null || !d3.event.selection) return;
-
-    const { dispatch, layoutChoice } = this.props;
-    const s = d3.event.selection;
-    const northwest = this.mapScreenToPoint(s[0]);
-    const southeast = this.mapScreenToPoint(s[1]);
-    const [minX, maxY] = northwest;
-    const [maxX, minY] = southeast;
-    dispatch(
-      actions.graphBrushChangeAction(layoutChoice.current, {
-        minX,
-        minY,
-        maxX,
-        maxY,
-        northwest,
-        southeast,
-      })
-    );
-  }
-
-  handleBrushStartAction() {
-    // Ignore programatically generated events.
-    if (!d3.event.sourceEvent) return;
-
-    const { dispatch } = this.props;
-    dispatch(actions.graphBrushStartAction());
-  }
-
-  handleBrushEndAction() {
-    // Ignore programatically generated events.
-    if (!d3.event.sourceEvent) return;
-
-    /*
-    coordinates will be included if selection made, null
-    if selection cleared.
-    */
-    const { dispatch, layoutChoice } = this.props;
-    const s = d3.event.selection;
-    if (s) {
-      const northwest = this.mapScreenToPoint(s[0]);
-      const southeast = this.mapScreenToPoint(s[1]);
-      const [minX, maxY] = northwest;
-      const [maxX, minY] = southeast;
-      dispatch(
-        actions.graphBrushEndAction(layoutChoice.current, {
-          minX,
-          minY,
-          maxX,
-          maxY,
-          northwest,
-          southeast,
-        })
-      );
-    } else {
-      dispatch(actions.graphBrushDeselectAction(layoutChoice.current));
-    }
-  }
-
-  handleBrushDeselectAction() {
-    const { dispatch, layoutChoice } = this.props;
-    dispatch(actions.graphBrushDeselectAction(layoutChoice.current));
-  }
-
-  handleLassoStart() {
-    const { dispatch, layoutChoice } = this.props;
-    dispatch(actions.graphLassoStartAction(layoutChoice.current));
-  }
-
-  // when a lasso is completed, filter to the points within the lasso polygon
-  handleLassoEnd(polygon) {
-    const minimumPolygonArea = 10;
-    const { dispatch, layoutChoice } = this.props;
-
-    if (
-      polygon.length < 3 ||
-      Math.abs(d3.polygonArea(polygon)) < minimumPolygonArea
-    ) {
-      // if less than three points, or super small area, treat as a clear selection.
-      dispatch(actions.graphLassoDeselectAction(layoutChoice.current));
-    } else {
-      dispatch(
-        actions.graphLassoEndAction(
-          layoutChoice.current,
-          polygon.map((xy) => this.mapScreenToPoint(xy))
-        )
-      );
-    }
-  }
-
-  handleLassoCancel() {
-    const { dispatch, layoutChoice } = this.props;
-    dispatch(actions.graphLassoCancelAction(layoutChoice.current));
-  }
-
-  handleLassoDeselectAction() {
-    const { dispatch, layoutChoice } = this.props;
-    dispatch(actions.graphLassoDeselectAction(layoutChoice.current));
-  }
-
-  handleDeselectAction() {
-    const { selectionTool } = this.props;
-    if (selectionTool === "brush") this.handleBrushDeselectAction();
-    if (selectionTool === "lasso") this.handleLassoDeselectAction();
-  }
-
-  handleOpacityRangeChange(e) {
-    const { dispatch } = this.props;
-    dispatch({
-      type: "change opacity deselected cells in 2d graph background",
-      data: e.target.value,
-    });
-  }
-
   renderCanvas = renderThrottle(() => {
     const {
       regl,
@@ -730,14 +732,28 @@ class Graph extends React.Component {
     );
   });
 
-  updateReglAndRender(asyncProps) {
-    const { positions, colors, flags } = asyncProps;
+  updateReglAndRender(asyncProps, prevAsyncProps) {
+    const { positions, colors, flags, height, width } = asyncProps;
     this.cachedAsyncProps = asyncProps;
     const { pointBuffer, colorBuffer, flagBuffer } = this.state;
-    pointBuffer({ data: positions, dimension: 2 });
-    colorBuffer({ data: colors, dimension: 3 });
-    flagBuffer({ data: flags, dimension: 1 });
-    this.renderCanvas();
+    let needToRenderCanvas = false;
+
+    if (height !== prevAsyncProps?.height || width !== prevAsyncProps?.width) {
+      needToRenderCanvas = true;
+    }
+    if (positions !== prevAsyncProps?.positions) {
+      pointBuffer({ data: positions, dimension: 2 });
+      needToRenderCanvas = true;
+    }
+    if (colors !== prevAsyncProps?.colors) {
+      colorBuffer({ data: colors, dimension: 3 });
+      needToRenderCanvas = true;
+    }
+    if (flags !== prevAsyncProps?.flags) {
+      flagBuffer({ data: flags, dimension: 1 });
+      needToRenderCanvas = true;
+    }
+    if (needToRenderCanvas) this.renderCanvas();
   }
 
   updateColorTable(colors, colorDf) {
@@ -906,7 +922,7 @@ class Graph extends React.Component {
           <Async.Fulfilled>
             {(asyncProps) => {
               if (regl && !shallowEqual(asyncProps, this.cachedAsyncProps)) {
-                this.updateReglAndRender(asyncProps);
+                this.updateReglAndRender(asyncProps, this.cachedAsyncProps);
               }
               return null;
             }}

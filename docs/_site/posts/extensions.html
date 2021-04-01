@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Extensions | cellxgene</title>
+<meta name="generator" content="Jekyll v3.8.7" />
+<meta property="og:title" content="Extensions" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="An interactive explorer for single-cell transcriptomics data" />
+<meta property="og:description" content="An interactive explorer for single-cell transcriptomics data" />
+<link rel="canonical" href="https://chanzuckerberg.github.io/cellxgene/posts/extensions.html" />
+<meta property="og:url" content="https://chanzuckerberg.github.io/cellxgene/posts/extensions.html" />
+<meta property="og:site_name" content="cellxgene" />
+<script type="application/ld+json">
+{"@type":"WebPage","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://chanzuckerberg.github.io/cellxgene/cellxgene-logo.png"}},"headline":"Extensions","description":"An interactive explorer for single-cell transcriptomics data","url":"https://chanzuckerberg.github.io/cellxgene/posts/extensions.html","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/cellxgene/assets/css/style.css?v=f70dffced52a32aada1a22504c841e97e941401a">
+    <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <img src="/cellxgene/cellxgene-logo.png" alt="cellxgene" />
+
+        <p>An interactive explorer for single-cell transcriptomics data</p>
+        <p>
+
+        
+        <a href="/cellxgene/" class="btn">Quick start</a><br>
+        
+
+        
+        
+        <a href="/cellxgene/posts/install" class="btn">Installation</a><br>
+        
+        
+        
+        <a href="/cellxgene/posts/gallery" class="btn">Gallery</a><br>
+        
+        
+        
+        <a href="/cellxgene/posts/demo-data" class="btn">Demo datasets</a><br>
+        
+        
+        
+        <a href="https://cellxgene.cziscience.com/" class="btn">All other datasets</a><br>
+        
+        
+        
+        <a href="/cellxgene/posts/prepare" class="btn">Preparing your data</a><br>
+        
+        
+        
+        <a href="/cellxgene/posts/launch" class="btn">Launching cellxgene</a><br>
+        
+        
+        
+        <a href="/cellxgene/posts/hosted" class="btn">Hosting cellxgene</a><br>
+        
+        
+        
+        <a href="/cellxgene/posts/annotations" class="btn">Annotating data</a><br>
+        
+        
+        
+        <a href="/cellxgene/posts/methods" class="btn">Methods</a><br>
+        
+        
+        
+        <a href="/cellxgene/posts/troubleshooting" class="btn">Troubleshooting</a><br>
+        
+        
+        
+        <a href="/cellxgene/posts/roadmap" class="btn">Roadmap</a><br>
+        
+        
+        
+        <a href="/cellxgene/posts/contribute" class="btn">Contributing (ideas or code)</a><br>
+        
+        
+        
+        <a href="/cellxgene/posts/extensions" class="btn"><b>Extensions</b></a><br>
+        
+        
+        
+        <a href="/cellxgene/posts/contact" class="btn">Contact & finding help</a><br>
+        
+        
+
+        <a href="https://github.com/chanzuckerberg/cellxgene" class="btn" target="_blank">Code</a>
+    </p>
+    </header>
+
+      <section>
+      <h1 id="extensions">Extensions</h1>
+
+<p>This project was started with the sole goal of empowering the scientific community to explore and understand their data. 
+As such, we encourage other scientific tool builders in academia or industry to adopt the patterns, tools, and code from 
+this project. All code is freely available for reuse under the <a href="https://opensource.org/licenses/MIT">MIT license</a>.</p>
+
+<p>Before extending cellxgene, we encourage you to reach out to us with ideas or questions. It might be possible that an 
+extension could be directly contributed, which would make it available for a wider audience, or that it’s on our 
+<a href="/cellxgene/posts/roadmap.html">roadmap</a> and under active development.</p>
+
+<p>Please note that cellxgene does not have public APIs. Our development may break extensions. We will document changes to the code base but it is advised that extensions pin the version of cellxgene they develop against.</p>
+
+<h2 id="example-reuse--extensions">Example Reuse &amp; extensions</h2>
+
+<h4 id="cellxgene-gateway">cellxgene Gateway</h4>
+
+<p><a href="https://github.com/Novartis/cellxgene-gateway">cellxgene Gateway</a> allows you to use with multiple datasets. It 
+displays an index of available h5ad (anndata) files. When a user clicks on a file name, it launches a Cellxgene Server 
+instance that loads that particular data file and once it is available proxies requests to that server.</p>
+
+<h4 id="cellxgene-vip-visualization-in-plugin">cellxgene-VIP (Visualization in Plugin)</h4>
+
+<p><a href="https://github.com/interactivereport/cellxgene_VIP">cellxgene-VIP</a> enables cellxgene to generate violin, stacked violin, stacked bar, heatmap, volcano, embedding, dot, track, density, 2D density, sankey and dual-gene plot in high-resolution SVG/PNG format. It also performs differential gene expression analysis and provides a Command Line Interface (CLI) for advanced users to perform analysis using python and R.</p>
+
+<h4 id="galaxy">Galaxy</h4>
+
+<p><a href="https://galaxyproject.org">Galaxy</a> is an open source, collaborative, web-based platform for data intensive biomedical research.
+Galaxy provides various tools for <a href="https://singlecell.usegalaxy.eu/">single-cell data analysis</a> and also infrastructure to the
+<a href="https://humancellatlas.usegalaxy.eu">Galaxy Human Cell Atlas project</a>. cellxgene can be <a href="https://usegalaxy.eu/root?tool_id=interactive_tool_cellxgene">
+  accessed within Galaxy</a> to view analyzed datasets. See also the relevant <a href="https://doi.org/10.1093/gigascience/giaa102">publication</a>
+
+</p>
+
+<h4 id="single-cell-portal">Single Cell Portal</h4>
+
+<p>The <a href="https://singlecell.broadinstitute.org/single_cell">Single Cell Portal</a> is a data hosting and visualization service. cellxgene can be embedded as an additional view to complement the visualizations provided by the. 
+<a href="https://singlecell.broadinstitute.org/single_cell/study/SCP807/atlas-of-healthy-and-shiv-infected-non-human-primate-lung-and-ileum-ace2-cells">Example</a>.</p>
+
+<h4 id="fastgenomics">FASTGenomics</h4>
+
+<p><a href="https://beta.fastgenomics.org/">FASTGenomics</a> is a collaborative research platform that offers easy-to-use data management and reproducible analytics to drive single-cell research forward. Many of the publicly available datasets in FASTGenomics - as well as your private datasets - can be interactively explored with cellxgene. 
+See also this <a href="https://beta.fastgenomics.org/datasets/detail-dataset-952687f71ef34322a850553c4a24e82e#Cellxgene">example</a> for data from <a href="https://beta.fastgenomics.org/p/schulte-schrepping_covid19">Schulte-Schrepping et al. (Cell, 2020)</a>. 
+Note that it is not necessary to create an account, anonymous login is permitted.</p>
+
+      </section>
+      <footer>
+        
+        <p>This project is maintained by <a href="https://github.com/chanzuckerberg">chanzuckerberg</a></p>
+        
+      </footer>
+    </div>
+    <script src="/cellxgene/assets/js/scale.fix.js"></script>
+    
+  </body>
+</html>

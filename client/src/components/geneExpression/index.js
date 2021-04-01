@@ -1,59 +1,73 @@
-/* rc slider https://www.npmjs.com/package/rc-slider */
-
 import React from "react";
-import _ from "lodash";
 import { connect } from "react-redux";
-import HistogramBrush from "../brushableHistogram";
-import * as globals from "../../globals";
-import AddGenes from "./addGenes";
+import { Button } from "@blueprintjs/core";
+import GeneSet from "./geneSet";
+
+import CreateGenesetDialogue from "./menus/createGenesetDialogue";
 
 @connect((state) => {
   return {
-    userDefinedGenes: state.controls.userDefinedGenes,
     differential: state.differential,
+    genesets: state.genesets.genesets,
   };
 })
 class GeneExpression extends React.Component {
-  render() {
-    const { userDefinedGenes, differential } = this.props;
+  renderGeneSets = () => {
+    const sets = [];
+    const { genesets } = this.props;
+
+    for (const [name, genes] of genesets) {
+      sets.push(
+        <GeneSet
+          key={name}
+          setGenes={Array.from(genes.genes.keys())}
+          setName={name}
+        />
+      );
+    }
+    return sets;
+  };
+
+  renderDiffexpGeneSets = () => {
+    const { differential } = this.props;
+    const { diffExp } = differential;
+    if (!diffExp) return null;
+
+    // [ [gene, logfoldchange, pval, pval_adj], ...]
+    const setGenes = diffExp.map((diffExpGene) => diffExpGene[0]);
     return (
-      <div
-        style={{
-          borderBottom: `1px solid ${globals.lighterGrey}`,
-        }}
-      >
+      <GeneSet
+        key="Temp DiffExp Set"
+        setGenes={setGenes}
+        isDiffExp
+        diffExp={diffExp}
+        setName="Temp DiffExp Set"
+      />
+    );
+  };
+
+  handleActivateCreateGenesetMode = () => {
+    const { dispatch } = this.props;
+    dispatch({ type: "geneset: activate add new geneset mode" });
+  };
+
+  render() {
+    return (
+      <div>
         <div>
-          <AddGenes />
-          {userDefinedGenes.length > 0
-            ? _.map(userDefinedGenes, (geneName, index) => {
-                return (
-                  <HistogramBrush
-                    key={geneName}
-                    field={geneName}
-                    zebra={index % 2 === 0}
-                    isUserDefined
-                  />
-                );
-              })
-            : null}
+          <div style={{ marginBottom: 10, position: "relative", top: -2 }}>
+            <Button
+              data-testid="open-create-geneset-dialog"
+              onClick={this.handleActivateCreateGenesetMode}
+              intent="primary"
+            >
+              Create new <strong>gene set</strong>
+            </Button>
+          </div>
+          <CreateGenesetDialogue />
         </div>
-        <div>
-          {differential.diffExp
-            ? _.map(differential.diffExp, (value, index) => {
-                return (
-                  <HistogramBrush
-                    key={value[0]}
-                    field={value[0]}
-                    zebra={index % 2 === 0}
-                    isDiffExp
-                    logFoldChange={value[1]}
-                    pval={value[2]}
-                    pvalAdj={value[3]}
-                  />
-                );
-              })
-            : null}
-        </div>
+        <div>{this.renderDiffexpGeneSets()}</div>
+        <div>{this.renderGeneSets()}</div>
       </div>
     );
   }

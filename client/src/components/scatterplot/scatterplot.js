@@ -16,10 +16,11 @@ import {
   createColorQuery,
 } from "../../util/stateManager/colorHelpers";
 import renderThrottle from "../../util/renderThrottle";
-
-const flagSelected = 1;
-const flagNaN = 2;
-const flagHighlight = 4;
+import {
+  flagBackground,
+  flagSelected,
+  flagHighlight,
+} from "../../util/glHelpers";
 
 function createProjectionTF(viewportWidth, viewportHeight) {
   /*
@@ -135,8 +136,9 @@ class Scatterplot extends React.PureComponent {
     const flags = new Float32Array(nObs);
     if (colorByData) {
       for (let i = 0, len = flags.length; i < len; i += 1) {
-        if (!Number.isFinite(colorByData[i])) {
-          flags[i] = flagNaN;
+        const val = colorByData[i];
+        if (typeof val === "number" && !Number.isFinite(val)) {
+          flags[i] = flagBackground;
         }
       }
     }
@@ -301,9 +303,11 @@ class Scatterplot extends React.PureComponent {
     return [
       "X",
       {
-        field: "var",
-        column: varIndex,
-        value: geneName,
+        where: {
+          field: "var",
+          column: varIndex,
+          value: geneName,
+        },
       },
     ];
   }

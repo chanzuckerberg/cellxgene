@@ -14,8 +14,8 @@ import {
 } from "@blueprintjs/core";
 import * as globals from "../../../globals";
 import styles from "../categorical.css";
-import AnnoDialog from "../annoDialog";
-import LabelInput from "../labelInput";
+import AnnoDialog from "../../annoDialog";
+import LabelInput from "../../labelInput";
 import Truncate from "../../util/truncate";
 
 import { AnnotationsHelpers } from "../../../util/stateManager";
@@ -25,8 +25,8 @@ import MiniHistogram from "../../miniHistogram";
 import MiniStackedBar from "../../miniStackedBar";
 import { CategoryCrossfilterContext } from "../categoryContext";
 
-const VALUE_HEIGHT = 11;
-const CHART_WIDTH = 100;
+const STACKED_BAR_HEIGHT = 11;
+const STACKED_BAR_WIDTH = 100;
 
 /* this is defined outside of the class so we can use it in connect() */
 function _currentLabelAsString(ownProps) {
@@ -174,7 +174,7 @@ class CategoryValue extends React.Component {
     Checks to see if at least one of the following changed:
     * world state
     * the color accessor (what is currently being colored by)
-    * if this catagorical value's selection status has changed
+    * if this categorical value's selection status has changed
     * the crossfilter (ie, global selection state)
 
     If and only if true, update the component
@@ -201,6 +201,13 @@ class CategoryValue extends React.Component {
     const newCount = newCategorySummary.categoryValueCounts[newCategoryIndex];
     const countChanged = count !== newCount;
 
+    // If the user edits an annotation that is currently colored-by, colors may be re-assigned.
+    // This test is conservative - it may cause re-rendering of entire category (all labels)
+    // if any one changes, but only for the currently colored-by category.
+    const colorMightHaveChanged =
+      nextProps.colorAccessor === nextProps.metadataField &&
+      props.categorySummary !== nextProps.categorySummary;
+
     return (
       labelChanged ||
       valueSelectionChange ||
@@ -208,7 +215,8 @@ class CategoryValue extends React.Component {
       annotationsChange ||
       editingLabel ||
       dilationChange ||
-      countChanged
+      countChanged ||
+      colorMightHaveChanged
     );
   };
 
@@ -402,7 +410,7 @@ class CategoryValue extends React.Component {
         label,
         colorTable,
         schema,
-        CHART_WIDTH
+        STACKED_BAR_WIDTH
       ) ?? {};
 
     if (!domainValues || !scale || !domain || !occupancy) {
@@ -418,8 +426,8 @@ class CategoryValue extends React.Component {
           domain,
           occupancy,
         }}
-        height={VALUE_HEIGHT}
-        width={CHART_WIDTH}
+        height={STACKED_BAR_HEIGHT}
+        width={STACKED_BAR_WIDTH}
       />
     );
   };
@@ -452,8 +460,8 @@ class CategoryValue extends React.Component {
         colorAccessor,
         colorData,
         label,
-        CHART_WIDTH,
-        VALUE_HEIGHT
+        STACKED_BAR_WIDTH,
+        STACKED_BAR_HEIGHT
       ) ?? {}; // if createHistogramBins returns empty object assign null to deconstructed
 
     if (!xScale || !yScale || !bins) return null;
@@ -468,8 +476,8 @@ class CategoryValue extends React.Component {
         }}
         obsOrVarContinuousFieldDisplayName={colorAccessor}
         domainLabel={label}
-        height={VALUE_HEIGHT}
-        width={CHART_WIDTH}
+        height={STACKED_BAR_HEIGHT}
+        width={STACKED_BAR_WIDTH}
       />
     );
   };
@@ -526,7 +534,7 @@ class CategoryValue extends React.Component {
       colorAccessor && !isColorBy
         ? globals.leftSidebarWidth -
           otherElementsWidth -
-          CHART_WIDTH -
+          STACKED_BAR_WIDTH -
           CHART_MARGIN
         : globals.leftSidebarWidth - otherElementsWidth;
 
@@ -669,8 +677,8 @@ class CategoryValue extends React.Component {
               display={isColorBy && categoryValueIndices ? "auto" : "none"}
               style={{
                 marginLeft: 5,
-                width: VALUE_HEIGHT,
-                height: VALUE_HEIGHT,
+                width: 15,
+                height: 15,
                 backgroundColor:
                   isColorBy && categoryValueIndices
                     ? colorScale(categoryValueIndices.get(label))
@@ -731,7 +739,7 @@ class CategoryValue extends React.Component {
                       ) : null}
                       {displayString !== globals.unassignedCategoryLabel ? (
                         <MenuItem
-                          icon="delete"
+                          icon="trash"
                           intent="danger"
                           data-testclass="handleDeleteValue"
                           data-testid={`${metadataField}:${displayString}:delete-label`}

@@ -67,13 +67,22 @@ For any errors, [report bugs on Github](https://github.com/chanzuckerberg/cellxg
 
 ### Contributing
 
-We warmly welcome contributions from the community! Please see our [contributing guide](https://chanzuckerberg.github.io/cellxgene/posts/contribute) and don't hesitate to open an issue or send a pull request to improve cellxgene.
+We warmly welcome contributions from the community! Please see our [contributing guide](https://chanzuckerberg.github.io/cellxgene/posts/contribute) and don't hesitate to open an issue or send a pull request to improve cellxgene. Please see the [dev_docs](https://github.com/chanzuckerberg/cellxgene/tree/main/dev_docs) for pull request suggestions, unit test details, local documentation preview, and other development specifics. 
 
 This project adheres to the Contributor Covenant [code of conduct](https://github.com/chanzuckerberg/.github/blob/master/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to opensource@chanzuckerberg.com.
 
 ### Reuse
 
-This project was started with the sole goal of empowering the scientific community to explore and understand their data. As such, we encourage other scientific tool builders in academia or industry to adopt the patterns, tools, and code from this project, and reach out to us with ideas or questions. All code is freely available for reuse under the [MIT license](https://opensource.org/licenses/MIT).
+This project was started with the sole goal of empowering the scientific community to explore and understand their data. 
+As such, we encourage other scientific tool builders in academia or industry to adopt the patterns, tools, and code from 
+this project. All code is freely available for reuse under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+Before extending cellxgene, we encourage you to reach out to us with ideas or questions. It might be possible that an 
+extension could be directly contributed, which would make it available for a wider audience, or that it's on our 
+[roadmap](./docs/posts/roadmap.md) and under active development. 
+
+See the [cellxgene extensions](./docs/posts/extensions.md) section of our documentation for examples of community use and cellxgene extensions. 
 
 ### Security
 

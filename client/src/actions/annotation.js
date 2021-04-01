@@ -2,6 +2,7 @@
 Action creators for user annotation
 */
 import _ from "lodash";
+import pako from "pako";
 import * as globals from "../globals";
 import { MatrixFBS, AnnotationsHelpers } from "../util/stateManager";
 
@@ -153,7 +154,7 @@ export const annotationCreateLabelInCategory = (
   assignSelected
 ) => async (dispatch, getState) => {
   /*
-  Add a new label to a user-defined category.  If assignSelected is true, assign 
+  Add a new label to a user-defined category.  If assignSelected is true, assign
   the label to all currently selected cells.
   */
   const {
@@ -347,6 +348,7 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
 
   const df = await annoMatrix.fetch("obs", writableAnnotations(annoMatrix));
   const matrix = MatrixFBS.encodeMatrixFBS(df);
+  const compressedMatrix = pako.deflate(matrix);
   try {
     const queryString =
       !dataCollectionNameIsReadOnly && !!dataCollectionName
@@ -358,7 +360,7 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
       `${globals.API.prefix}${globals.API.version}annotations/obs${queryString}`,
       {
         method: "PUT",
-        body: matrix,
+        body: compressedMatrix,
         headers: new Headers({
           "Content-Type": "application/octet-stream",
         }),
@@ -380,6 +382,102 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
   } catch (error) {
     dispatch({
       type: "writable obs annotations - save error",
+      message: error.toString(),
+      error,
+    });
+  }
+};
+
+export const saveGenesetsAction = () => async (dispatch, getState) => {
+  const state = getState();
+
+  // bail if gene sets not available, or in readonly mode.
+  const { config } = state;
+  const { lastTid, genesets } = state.genesets;
+
+  const genesetsAreAvailable =
+    config?.parameters?.annotations_genesets ?? false;
+  const genesetsReadonly =
+    config?.parameters?.annotations_genesets_readonly ?? true;
+  if (!genesetsAreAvailable || genesetsReadonly) {
+    // our non-save was completed!
+    return dispatch({
+      type: "autosave: genesets complete",
+      lastSavedGenesets: genesets,
+    });
+  }
+
+  dispatch({
+    type: "autosave: genesets started",
+  });
+
+  /* Create the JSON OTA data structure */
+  const tid = (lastTid ?? 0) + 1;
+  const genesetsOTA = [];
+  for (const [name, gs] of genesets) {
+    const genes = [];
+    for (const g of gs.genes.values()) {
+      genes.push({
+        gene_symbol: g.geneSymbol,
+        gene_description: g.geneDescription,
+      });
+    }
+    genesetsOTA.push({
+      geneset_name: name,
+      geneset_description: gs.genesetDescription,
+      genes,
+    });
+  }
+  const ota = {
+    tid,
+    genesets: genesetsOTA,
+  };
+
+  /* Save to server */
+  try {
+    const {
+      dataCollectionNameIsReadOnly,
+      dataCollectionName,
+    } = state.annotations;
+    const queryString =
+      !dataCollectionNameIsReadOnly && !!dataCollectionName
+        ? `?annotation-collection-name=${encodeURIComponent(
+            dataCollectionName
+          )}`
+        : "";
+
+    const res = await fetch(
+      `${globals.API.prefix}${globals.API.version}genesets${queryString}`,
+      {
+        method: "PUT",
+        headers: new Headers({
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify(ota),
+        credentials: "include",
+      }
+    );
+    if (!res.ok) {
+      return dispatch({
+        type: "autosave: genesets error",
+        message: `HTTP error ${res.status} - ${res.statusText}`,
+        res,
+      });
+    }
+    return Promise.all([
+      dispatch({
+        type: "autosave: genesets complete",
+        lastSavedGenesets: genesets,
+      }),
+      dispatch({
+        type: "geneset: set tid",
+        tid,
+      }),
+    ]);
+  } catch (error) {
+    return dispatch({
+      type: "autosave: genesets error",
       message: error.toString(),
       error,
     });

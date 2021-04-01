@@ -1,5 +1,3 @@
-// jshint esversion: 6
-
 import _ from "lodash";
 import { subsetAndResetGeneLists } from "../util/stateManager/controlsHelpers";
 

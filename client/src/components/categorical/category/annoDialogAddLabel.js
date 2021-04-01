@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
-import AnnoDialog from "../annoDialog";
-import LabelInput from "../labelInput";
+import AnnoDialog from "../../annoDialog";
+import LabelInput from "../../labelInput";
 import { labelPrompt, isLabelErroneous } from "../labelUtil";
 import actions from "../../../actions";
 

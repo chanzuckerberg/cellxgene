@@ -1,0 +1,95 @@
+title: Corpora schema version 1.0.0
+type: anndata
+components:
+    uns:
+        type: dict
+        keys:
+            version:
+                type: dict
+                keys:
+                    corpora_schema_version: null
+                    corpora_encoding_version: null
+            title:
+                type: string
+            contributors:
+                type: stringified list of dicts
+            layer_descriptions:
+                type: dict
+                keys:
+                    X: null
+            organism:
+                type: string
+                nullable: false
+            organism_ontology_term_id:
+                type: curie
+                prefixes:
+                    - NCBITaxon
+    var:
+        type: dataframe
+        index:
+            type: human-readable string
+            unique: true
+    obs:
+        type: dataframe
+        index:
+            unique: true
+        columns:
+            tissue:
+                type: human-readable string
+                nullable: false
+            tissue_ontology_term_id:
+                type: suffixed curie
+                nullable: true
+                prefixes:
+                    - UBERON
+            assay:
+                type: human-readable string
+                nullable: false
+            assay_ontology_term_id:
+                type: curie
+                nullable: true
+                prefixes:
+                    - EFO
+            disease:
+                type: human-readable string
+                nullable: false
+            disease_ontology_term_id:
+                type: curie
+                nullable: true
+                prefixes:
+                    - MONDO
+                    - PATO
+            cell_type:
+                type: human-readable string
+                nullable: false
+            cell_type_ontology_term_id:
+                type: curie
+                nullable: true
+                prefixes:
+                    - CL
+                    - UBERON
+            sex:
+                type: string
+                enum:
+                    - male
+                    - female
+                    - mixed
+                    - unknown
+                    - other
+            ethnicity:
+                type: human-readable string
+                nullable: false
+            ethnicity_ontology_term_id:
+                type: curie
+                nullable: true
+                prefixes:
+                    - HANCESTRO
+            development_stage:
+                type: human-readable string
+                nullable: false
+            development_stage_ontology_term_id:
+                type: curie
+                nullable: true
+                prefixes:
+                    - HsapDv
+                    - EFO

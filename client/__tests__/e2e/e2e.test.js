@@ -15,22 +15,17 @@ import {
   getOneElementInnerHTML,
   getTestId,
   goToPage,
-  typeInto,
   waitByID,
+  clickOnUntil,
 } from "./puppeteerUtils";
 
 import {
-  addGeneToSearch,
-  bulkAddGenes,
   calcDragCoordinates,
   clip,
   drag,
   getAllCategoriesAndCounts,
-  getAllHistograms,
   getCellSetCount,
-  runDiffExp,
   selectCategory,
-  subset,
   login,
   logout,
 } from "./cellxgeneActions";
@@ -148,47 +143,6 @@ describe("cell selection", () => {
   });
 });
 
-describe("gene entry", () => {
-  test("search for single gene", async () => {
-    await goToPage(appUrlBase);
-    await addGeneToSearch(data.genes.search);
-  });
-
-  test("bulk add genes", async () => {
-    await goToPage(appUrlBase);
-
-    const testGenes = data.genes.bulkadd;
-
-    await bulkAddGenes(testGenes);
-    const allHistograms = await getAllHistograms(
-      "histogram-user-gene",
-      testGenes
-    );
-
-    expect(allHistograms).toEqual(expect.arrayContaining(testGenes));
-    expect(allHistograms).toHaveLength(testGenes.length);
-  });
-});
-
-describe("differential expression", () => {
-  test("selects cells, saves them and performs diffexp", async () => {
-    await goToPage(appUrlBase);
-
-    await runDiffExp(data.diffexp.cellset1, data.diffexp.cellset2);
-
-    const allHistograms = await getAllHistograms(
-      "histogram-diffexp",
-      data.diffexp["gene-results"]
-    );
-
-    expect(allHistograms).toEqual(
-      expect.arrayContaining(data.diffexp["gene-results"])
-    );
-
-    expect(allHistograms).toHaveLength(data.diffexp["gene-results"].length);
-  });
-});
-
 describe("subset", () => {
   test("subset - cell count matches", async () => {
     await goToPage(appUrlBase);
@@ -235,94 +189,6 @@ describe("subset", () => {
     const cellCount = await getCellSetCount(1);
     expect(cellCount).toBe(data.subset.lasso.count);
   });
-
-  test("undo selection appends the top diff exp genes to user defined genes", async () => {
-    await goToPage(appUrlBase);
-
-    const userDefinedGenes = data.genes.bulkadd;
-    const diffExpGenes = data.diffexp["gene-results"];
-
-    await bulkAddGenes(userDefinedGenes);
-    const userDefinedHistograms = await getAllHistograms(
-      "histogram-user-gene",
-      userDefinedGenes
-    );
-
-    expect(userDefinedHistograms).toEqual(
-      expect.arrayContaining(userDefinedGenes)
-    );
-
-    await subset({ x1: 0.15, y1: 0.1, x2: 0.98, y2: 0.98 });
-    await runDiffExp(data.diffexp.cellset1, data.diffexp.cellset2);
-
-    const diffExpHistograms = await getAllHistograms(
-      "histogram-diffexp",
-      diffExpGenes
-    );
-
-    expect(diffExpHistograms).toEqual(expect.arrayContaining(diffExpGenes));
-
-    await clickOn("reset-subset-button");
-    const expected = [].concat(userDefinedGenes, diffExpGenes);
-    const userDefinedHistogramsAfterSubset = await getAllHistograms(
-      "histogram-user-gene",
-      expected
-    );
-
-    expect(userDefinedHistogramsAfterSubset).toEqual(
-      expect.arrayContaining(expected)
-    );
-  });
-
-  test("subset selection appends the top diff exp genes to user defined genes", async () => {
-    await goToPage(appUrlBase);
-
-    const userDefinedGenes = data.genes.bulkadd;
-    const diffExpGenes = data.diffexp["gene-results"];
-
-    await bulkAddGenes(userDefinedGenes);
-    const userDefinedHistograms = await getAllHistograms(
-      "histogram-user-gene",
-      userDefinedGenes
-    );
-
-    expect(userDefinedHistograms).toEqual(
-      expect.arrayContaining(userDefinedGenes)
-    );
-
-    await subset({ x1: 0.15, y1: 0.1, x2: 0.98, y2: 0.98 });
-    await runDiffExp(data.diffexp.cellset1, data.diffexp.cellset2);
-
-    const diffExpHistograms = await getAllHistograms(
-      "histogram-diffexp",
-      diffExpGenes
-    );
-
-    expect(diffExpHistograms).toEqual(expect.arrayContaining(diffExpGenes));
-
-    await subset({ x1: 0.16, y1: 0.11, x2: 0.97, y2: 0.97 });
-
-    const expected = [].concat(userDefinedGenes, diffExpGenes);
-    const userDefinedHistogramsAfterSubset = await getAllHistograms(
-      "histogram-user-gene",
-      expected
-    );
-
-    expect(userDefinedHistogramsAfterSubset).toEqual(
-      expect.arrayContaining(expected)
-    );
-  });
-});
-
-describe("scatter plot", () => {
-  test("scatter plot appears", async () => {
-    await goToPage(appUrlBase);
-
-    await bulkAddGenes(Object.values(data.scatter.genes));
-    await clickOn(`plot-x-${data.scatter.genes.x}`);
-    await clickOn(`plot-y-${data.scatter.genes.y}`);
-    await waitByID("scatterplot");
-  });
 });
 
 describe("clipping", () => {
@@ -339,30 +205,6 @@ describe("clipping", () => {
     const cellCount = await getCellSetCount(1);
     expect(cellCount).toBe(data.clip.count);
   });
-
-  test("clip gene", async () => {
-    await goToPage(appUrlBase);
-
-    await typeInto("gene-search", data.clip.gene);
-    await page.keyboard.press("Enter");
-
-    await page.waitForSelector(`[data-testid='histogram-${data.clip.gene}']`);
-
-    await clip(data.clip.min, data.clip.max);
-
-    const histBrushableAreaId = `histogram-${data.clip.gene}-plot-brushable-area`;
-
-    const coords = await calcDragCoordinates(
-      histBrushableAreaId,
-      data.clip["coordinates-as-percent"]
-    );
-
-    await drag(histBrushableAreaId, coords.start, coords.end);
-
-    const cellCount = await getCellSetCount(1);
-
-    expect(cellCount).toBe(data.clip["gene-cell-count"]);
-  });
 });
 
 // interact with UI elements just that they do not break
@@ -378,17 +220,6 @@ describe("ui elements don't error", () => {
     for (const label of allLabels) {
       await clickOn(`colorby-${label}`);
     }
-  });
-
-  test("color by for gene", async () => {
-    await goToPage(appUrlBase);
-
-    await typeInto("gene-search", data.genes.search);
-    await page.keyboard.press("Enter");
-    await page.waitForSelector(
-      `[data-testid='histogram-${data.genes.search}']`
-    );
-    await clickOn(`colorby-${data.genes.search}`);
   });
 
   test("pan and zoom", async () => {
@@ -521,8 +352,23 @@ test("lasso moves after pan", async () => {
   expect(panCount).toBe(initialCount);
 });
 
-const conditionalDescribe =
-  process.env.TEST_AUTH_INTEGRATION === "true" ? describe : describe.skip;
+const describeIfCalledByMakeFileTarget =
+  process.env.CXG_AUTH_TYPE?.toLowerCase() === "test"
+    ? describe
+    : describe.skip;
+
+describeIfCalledByMakeFileTarget("auth buttons", () => {
+  test("login then logout", async () => {
+    await goToPage(appUrlBase);
+    await clickOnUntil("log-in", async () => {
+      await page.waitForNavigation({ waitUntil: "networkidle0" });
+      await waitByID("user-info");
+    });
+    await logout();
+  });
+});
+
+const conditionalDescribe = describe.skip;
 
 conditionalDescribe("AuthN Integration", () => {
   it("logs in", async () => {

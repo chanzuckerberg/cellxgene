@@ -1,0 +1,31 @@
+server:
+  app:
+    force_https: true
+    port: 5005
+
+  authentication:
+    # The authentication types may be "none", "session", "oauth"
+    # none:  No authentication support, features like user_annotations must not be enabled.
+    # session:  A session based userid is automatically generated. (no params needed)
+    # oauth: oauth2 is used for authentication;  parameters are defined in params_oauth.
+    type: test
+    insecure_test_environment: true
+
+dataset:
+  presentation:
+    max_categories: 1000
+    custom_colors: true
+
+  user_annotations:
+    enable: false
+    type: local_file_csv
+    local_file_csv:
+      directory: null
+      file: null
+    ontology:
+      enable: false
+      obo_location: null
+
+  embeddings:
+    names: []
+    enable_reembedding: false

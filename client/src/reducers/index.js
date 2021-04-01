@@ -4,7 +4,7 @@ import thunk from "redux-thunk";
 import cascadeReducers from "./cascade";
 import undoable from "./undoable";
 import config from "./config";
-import userinfo from "./userinfo";
+import userInfo from "./userInfo";
 import annoMatrix from "./annoMatrix";
 import obsCrossfilter from "./obsCrossfilter";
 import categoricalSelection from "./categoricalSelection";
@@ -15,6 +15,8 @@ import differential from "./differential";
 import layoutChoice from "./layoutChoice";
 import controls from "./controls";
 import annotations from "./annotations";
+import genesets from "./genesets";
+import genesetsUI from "./genesetsUI";
 import autosave from "./autosave";
 import ontology from "./ontology";
 import centroidLabels from "./centroidLabels";
@@ -31,6 +33,8 @@ const Reducer = undoable(
     ["obsCrossfilter", obsCrossfilter],
     ["ontology", ontology],
     ["annotations", annotations],
+    ["genesets", genesets],
+    ["genesetsUI", genesetsUI],
     ["layoutChoice", layoutChoice],
     ["categoricalSelection", categoricalSelection],
     ["continuousSelection", continuousSelection],
@@ -42,7 +46,7 @@ const Reducer = undoable(
     ["pointDilation", pointDialation],
     ["reembedController", reembedController],
     ["autosave", autosave],
-    ["userinfo", userinfo],
+    ["userInfo", userInfo],
   ]),
   [
     "annoMatrix",
@@ -55,6 +59,8 @@ const Reducer = undoable(
     "differential",
     "layoutChoice",
     "centroidLabels",
+    "genesets",
+    "genesetsUI",
     "annotations",
   ],
   undoableConfig

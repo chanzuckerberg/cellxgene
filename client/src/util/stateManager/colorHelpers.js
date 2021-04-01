@@ -25,9 +25,11 @@ export function createColorQuery(colorMode, colorByAccessor, schema) {
       return [
         "X",
         {
-          field: "var",
-          column: varIndex,
-          value: colorByAccessor,
+          where: {
+            field: "var",
+            column: varIndex,
+            value: colorByAccessor,
+          },
         },
       ];
     }
@@ -55,8 +57,8 @@ create colors scale and RGB array and return as object. Parameters:
   * userColors - optional user color table
 Returns:
   {
-    scale: color scale
-    rgb: cell to color mapping
+    scale: function, mapping label index to color scale
+    rgb: cell label to color mapping
   }
 */
 function _createColorTable(
@@ -70,7 +72,7 @@ function _createColorTable(
     case "color by categorical metadata": {
       const data = colorByData.col(colorByAccessor).asArray();
       if (userColors && colorByAccessor in userColors) {
-        return createUserColors(data, colorByAccessor, userColors);
+        return createUserColors(data, colorByAccessor, schema, userColors);
       }
       return createColorsByCategoricalMetadata(data, colorByAccessor, schema);
     }
@@ -91,38 +93,41 @@ function _createColorTable(
 }
 export const createColorTable = memoize(_createColorTable);
 
+/**
+ * Create two category label-indexed objects:
+ *    - colors: maps label to RGB triplet for that label (used by graph, etc)
+ *    - scale: function which given label returns d3 color scale for label
+ * Order doesn't matter - everything is keyed by label value.
+ */
 export function loadUserColorConfig(userColors) {
   const convertedUserColors = {};
   Object.keys(userColors).forEach((category) => {
-    // We cannot iterate over keys without sorting
-    // because we handle categorical values in alphabetical order __ignoring case__
-    //  while Object.keys() _usually_ is ordered alphabetically where all upper characters are less than lowercase (A, B, C, a, b, c)
-    const [colors, scaleMap] = Object.keys(userColors[category])
-      .sort((a, b) => {
-        a = a.toLowerCase();
-        b = b.toLowerCase();
-        if (a === b) return 0;
-        if (a > b) return 1;
-        return -1;
-      })
-      .reduce(
-        (acc, label, i) => {
-          const color = parseRGB(userColors[category][label]);
-          acc[0][label] = color;
-          acc[1][i] = d3.rgb(255 * color[0], 255 * color[1], 255 * color[2]);
-          return acc;
-        },
-        [{}, {}]
-      );
-    const scale = (i) => scaleMap[i];
+    const [colors, scaleMap] = Object.keys(userColors[category]).reduce(
+      (acc, label) => {
+        const color = parseRGB(userColors[category][label]);
+        acc[0][label] = color;
+        acc[1][label] = d3.rgb(255 * color[0], 255 * color[1], 255 * color[2]);
+        return acc;
+      },
+      [{}, {}]
+    );
+    const scale = (label) => scaleMap[label];
     convertedUserColors[category] = { colors, scale };
   });
   return convertedUserColors;
 }
 
-function _createUserColors(data, colorAccessor, userColors) {
-  const { colors, scale } = userColors[colorAccessor];
+function _createUserColors(data, colorAccessor, schema, userColors) {
+  const { colors, scale: scaleByLabel } = userColors[colorAccessor];
   const rgb = createRgbArray(data, colors);
+
+  // color scale function param is INDEX (offset) into schema categories. It is NOT label value.
+  // See createColorsByCategoricalMetadata() for another example.
+  const { categories } = schema.annotations.obsByName[colorAccessor];
+  const categoryMap = new Map();
+  categories.forEach((label, idx) => categoryMap.set(idx, label));
+  const scale = (idx) => scaleByLabel(categoryMap.get(idx));
+
   return { rgb, scale };
 }
 const createUserColors = memoize(_createUserColors);

@@ -29,7 +29,7 @@ export function _getColumnSchema(schema, field, col) {
 export function _getColumnDimensionNames(schema, field, col) {
   /*
 		field/col may be an alias for multiple columns. Currently used to map ND 
-		values to 1D dataframe columns for embeddings/layout. Signfied by the presence
+		values to 1D dataframe columns for embeddings/layout. Signified by the presence
 		of the "dims" value in the schema.
 		*/
   const colSchema = _getColumnSchema(schema, field, col);

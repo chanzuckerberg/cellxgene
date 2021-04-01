@@ -1,13 +1,12 @@
-// jshint esversion: 6
 import React from "react";
 import { AnchorButton, Tooltip, Position } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import Category from "./category";
 import { AnnotationsHelpers, ControlsHelpers } from "../../util/stateManager";
-import AnnoDialog from "./annoDialog";
+import AnnoDialog from "../annoDialog";
 import AnnoSelect from "./annoSelect";
-import LabelInput from "./labelInput";
+import LabelInput from "../labelInput";
 import { labelPrompt } from "./labelUtil";
 import actions from "../../actions";
 
@@ -15,7 +14,7 @@ import actions from "../../actions";
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
   schema: state.annoMatrix?.schema,
   ontology: state.ontology,
-  userinfo: state.userinfo,
+  userInfo: state.userInfo,
 }))
 class Categories extends React.Component {
   constructor(props) {
@@ -132,7 +131,7 @@ class Categories extends React.Component {
       writableCategoriesEnabled,
       schema,
       ontology,
-      userinfo,
+      userInfo,
     } = this.props;
     const ontologyEnabled = ontology?.enabled ?? false;
     /* all names, sorted in display order.  Will be rendered in this order */
@@ -182,6 +181,35 @@ class Categories extends React.Component {
           }
         />
 
+        {writableCategoriesEnabled ? (
+          <div style={{ marginBottom: 10 }}>
+            <Tooltip
+              content={
+                userInfo.is_authenticated
+                  ? "Create a new category"
+                  : "You must be logged in to create new categorical fields"
+              }
+              position={Position.RIGHT}
+              boundary="viewport"
+              hoverOpenDelay={globals.tooltipHoverOpenDelay}
+              modifiers={{
+                preventOverflow: { enabled: false },
+                hide: { enabled: false },
+              }}
+            >
+              <AnchorButton
+                type="button"
+                data-testid="open-annotation-dialog"
+                onClick={this.handleEnableAnnoMode}
+                intent="primary"
+                disabled={!userInfo.is_authenticated}
+              >
+                Create new <strong>category</strong>
+              </AnchorButton>
+            </Tooltip>
+          </div>
+        ) : null}
+
         {/* READ ONLY CATEGORICAL FIELDS */}
         {/* this is duplicative but flat, could be abstracted */}
         {allCategoryNames.map((catName) =>
@@ -209,33 +237,6 @@ class Categories extends React.Component {
             />
           ) : null
         )}
-
-        {writableCategoriesEnabled ? (
-          <Tooltip
-            content={
-              userinfo.is_authenticated
-                ? "Create a new category"
-                : "You must be logged in to create new categorical fields"
-            }
-            position={Position.RIGHT}
-            boundary="viewport"
-            hoverOpenDelay={globals.tooltipHoverOpenDelay}
-            modifiers={{
-              preventOverflow: { enabled: false },
-              hide: { enabled: false },
-            }}
-          >
-            <AnchorButton
-              type="button"
-              data-testid="open-annotation-dialog"
-              onClick={this.handleEnableAnnoMode}
-              intent="primary"
-              disabled={!userinfo.is_authenticated}
-            >
-              Create new category
-            </AnchorButton>
-          </Tooltip>
-        ) : null}
       </div>
     );
   }

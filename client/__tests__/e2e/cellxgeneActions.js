@@ -317,12 +317,12 @@ export async function assertCategoryDoesNotExist(categoryName) {
 }
 
 export async function login() {
-  const email = `cellxgene-smoke-test+${process.env.DEPLOYMENT_STAGE}@chanzuckerberg.com`;
-  const password = "Test1111";
+  const email = ``;
+  const password = "";
 
   await goToPage(appUrlBase);
 
-  await clickOn("auth-button");
+  await clickOn("log-in");
 
   // (thuang): Auth0 form is unstable and unsafe for input until verified
   await waitUntilFormFieldStable('[name="email"]');
@@ -341,16 +341,15 @@ export async function login() {
 }
 
 export async function logout() {
-  await clickOnUntil("menu", async () => {
-    await expect(page).toMatch("Log Out");
-
+  await clickOnUntil("user-info", async () => {
+    await waitByID("log-out");
     await Promise.all([
       page.waitForNavigation({ waitUntil: "networkidle0" }),
-      expect(page).toClick("a", { text: "Log Out" }),
+      clickOn("log-out"),
     ]);
   });
 
-  await expect(page).toMatch("Log In");
+  await waitByID("log-in");
 }
 
 async function waitUntilFormFieldStable(selector) {

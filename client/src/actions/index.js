@@ -13,6 +13,7 @@ import * as selnActions from "./selection";
 import * as annoActions from "./annotation";
 import * as viewActions from "./viewStack";
 import * as embActions from "./embedding";
+import * as genesetActions from "./geneset";
 
 /*
 return promise fetching user-configured colors
@@ -43,13 +44,34 @@ async function configFetch(dispatch) {
 
 async function userInfoFetch(dispatch) {
   return fetchJson("userinfo").then((response) => {
-    const { userinfo } = response || {};
+    const { userinfo: userInfo } = response || {};
     dispatch({
-      type: "userinfo load complete",
-      userinfo,
+      type: "userInfo load complete",
+      userInfo,
     });
-    return userinfo;
+    return userInfo;
   });
+}
+
+async function genesetsFetch(dispatch, config) {
+  /* request genesets ONLY if the backend supports the feature */
+  const defaultResponse = {
+    genesets: [],
+    tid: 0,
+  };
+  if (config?.parameters?.annotations_genesets ?? false) {
+    fetchJson("genesets").then((response) => {
+      dispatch({
+        type: "geneset: initial load",
+        data: response ?? defaultResponse,
+      });
+    });
+  } else {
+    dispatch({
+      type: "geneset: initial load",
+      data: defaultResponse,
+    });
+  }
 }
 
 function prefetchEmbeddings(annoMatrix) {
@@ -76,6 +98,8 @@ const doInitialDataLoad = () =>
         userInfoFetch(dispatch),
       ]);
 
+      genesetsFetch(dispatch, config);
+
       const baseDataUrl = `${globals.API.prefix}${globals.API.version}`;
       const annoMatrix = new AnnoMatrixLoader(baseDataUrl, schema.schema);
       const obsCrossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
@@ -88,7 +112,7 @@ const doInitialDataLoad = () =>
       });
       dispatch({ type: "initial data load complete" });
 
-      const defaultEmbedding = config?.parameters?.["default_embedding"];
+      const defaultEmbedding = config?.parameters?.default_embedding;
       const layoutSchema = schema?.schema?.layout?.obs ?? [];
       if (
         defaultEmbedding &&
@@ -138,7 +162,7 @@ const dispatchDiffExpErrors = (dispatch, response) => {
   }
 };
 
-const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
+const requestDifferentialExpression = (set1, set2, num_genes = 50) => async (
   dispatch,
   getState
 ) => {
@@ -242,7 +266,11 @@ export default {
   annotationRenameLabelInCategory: annoActions.annotationRenameLabelInCategory,
   annotationLabelCurrentSelection: annoActions.annotationLabelCurrentSelection,
   saveObsAnnotationsAction: annoActions.saveObsAnnotationsAction,
+  saveGenesetsAction: annoActions.saveGenesetsAction,
   needToSaveObsAnnotations: annoActions.needToSaveObsAnnotations,
   layoutChoiceAction: embActions.layoutChoiceAction,
   setCellSetFromSelection: selnActions.setCellSetFromSelection,
+  genesetDelete: genesetActions.genesetDelete,
+  genesetAddGenes: genesetActions.genesetAddGenes,
+  genesetDeleteGenes: genesetActions.genesetDeleteGenes,
 };

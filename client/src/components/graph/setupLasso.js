@@ -1,5 +1,3 @@
-// https://bl.ocks.org/pbeshai/8008075f9ce771ee8be39e8c38907570
-
 import * as d3 from "d3";
 import { Colors } from "@blueprintjs/core";
 

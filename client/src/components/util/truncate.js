@@ -1,5 +1,5 @@
 import React, { cloneElement } from "react";
-import { Tooltip, Position } from "@blueprintjs/core";
+import { Tooltip2 } from "@blueprintjs/popover2";
 
 import { tooltipHoverOpenDelayQuick } from "../../globals";
 
@@ -86,18 +86,12 @@ export default (props) => {
     })
   );
   return (
-    <Tooltip
+    <Tooltip2
       content={originalString}
       hoverOpenDelay={tooltipHoverOpenDelayQuick}
-      position={Position.LEFT}
-      usePortal
-      modifiers={{
-        preventOverflow: { enabled: false },
-        hide: { enabled: false },
-      }}
       targetProps={{ style: children.props.style }}
     >
       {newChildren}
-    </Tooltip>
+    </Tooltip2>
   );
 };

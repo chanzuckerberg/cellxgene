@@ -3,7 +3,6 @@
       Setup SVG & Canvas elements
 ******************************************
 ******************************************/
-// jshint esversion: 6
 import * as d3 from "d3";
 
 const setupParallelCoordinates = (width, height, margin) => {
