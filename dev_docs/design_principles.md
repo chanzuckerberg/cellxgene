@@ -10,7 +10,7 @@ cellxgene is a tool for scientists investigating single cell rna seq datasets. T
 4. the tool should **avoid duplicating data** onscreen 
     - for example, if we render a categorical label on the left hand side bar, locate further information related to that label in place on the left hand sidebar, rather than rendering that data again.
     - for a concrete example, see the relationship between this solution: https://github.com/chanzuckerberg/cellxgene/pull/827 and this problem: https://github.com/chanzuckerberg/cellxgene/issues/762
-5. the tool should **enable interactive recomputation of views** into the data, for example: 
+5. the tool should enable users to rapidly test hypotheses on the application, which may require it to **enable interactive recomputation of views** into the data, for example: 
     - interactive differential expression
     - interactive reprojection of umap
 6. the tool should enable a productive workflow between those who are computational and those who are not
