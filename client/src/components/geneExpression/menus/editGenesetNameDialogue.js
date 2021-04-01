@@ -14,7 +14,7 @@ class RenameGeneset extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      genesetName: "",
+      genesetName: props.parentGeneset,
     };
   }
 
@@ -54,12 +54,12 @@ class RenameGeneset extends React.PureComponent {
 
   render() {
     const { genesetName } = this.state;
-    const { genesetsUI } = this.props;
+    const { genesetsUI, parentGeneset } = this.props;
 
     return (
       <>
         <AnnoDialog
-          isActive={genesetsUI.isEditingGenesetName}
+          isActive={genesetsUI.isEditingGenesetName === parentGeneset}
           inputProps={{
             "data-testid": `${genesetsUI.isEditingGenesetName}:rename-geneset-dialog`,
           }}
@@ -74,6 +74,7 @@ class RenameGeneset extends React.PureComponent {
           validationError={genesetsUI.isEditingGenesetName === genesetName}
           annoInput={
             <LabelInput
+              label={genesetName}
               onChange={this.handleChange}
               inputProps={{
                 "data-testid": "rename-geneset-modal",

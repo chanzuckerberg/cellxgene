@@ -8,6 +8,7 @@ import { memoize } from "../../util/dataframe/util";
 import Truncate from "../util/truncate";
 import * as globals from "../../globals";
 import GenesetMenus from "./menus/genesetMenus";
+import EditGenesetNameDialogue from "./menus/editGenesetNameDialogue";
 import HistogramBrush from "../brushableHistogram";
 
 @connect((state, ownProps) => {
@@ -197,16 +198,17 @@ class GeneSet extends React.Component {
             </p>
           )}
         </div>
-
-        {isOpen && !toggleSummaryHisto && !genesetIsEmpty
-          ? this.renderGenes()
-          : setGenes.length > 0 && (
-              <HistogramBrush
-                isGeneSetSummary
-                field={setName}
-                setGenes={setGenes}
-              />
-            )}
+        {isOpen &&
+          (!toggleSummaryHisto && !genesetIsEmpty
+            ? this.renderGenes()
+            : setGenes.length > 0 && (
+                <HistogramBrush
+                  isGeneSetSummary
+                  field={setName}
+                  setGenes={setGenes}
+                />
+              ))}
+        <EditGenesetNameDialogue parentGeneset={setName} />
       </div>
     );
   }
