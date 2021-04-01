@@ -25,9 +25,11 @@ export function createColorQuery(colorMode, colorByAccessor, schema) {
       return [
         "X",
         {
-          field: "var",
-          column: varIndex,
-          value: colorByAccessor,
+          where: {
+            field: "var",
+            column: varIndex,
+            value: colorByAccessor,
+          },
         },
       ];
     }

@@ -1,5 +1,4 @@
 import React from "react";
-import _ from "lodash";
 import { connect } from "react-redux";
 import { Tooltip, Position, Switch } from "@blueprintjs/core";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
@@ -10,6 +9,7 @@ import Truncate from "../util/truncate";
 import * as globals from "../../globals";
 import GenesetMenus from "./menus/genesetMenus";
 import EditGenesetNameDialogue from "./menus/editGenesetNameDialogue";
+import HistogramBrush from "../brushableHistogram";
 
 @connect((state, ownProps) => {
   return {
@@ -85,8 +85,35 @@ class GeneSet extends React.Component {
     this.setState({ toggleSummaryHisto: !toggleSummaryHisto });
   };
 
+  renderGenes() {
+    const { setName, setGenes, isDiffExp, diffExp } = this.props;
+
+    if (isDiffExp) {
+      // [ [gene, logfoldchange, pval, pval_adj], ...]
+      return setGenes.map((gene, idx) => {
+        const logFoldChange = diffExp[idx][1];
+        const pvalAdj = diffExp[idx][3];
+        return (
+          <Gene
+            key={gene}
+            gene={gene}
+            geneset={setName}
+            isDiffExp
+            logFoldChange={logFoldChange}
+            pvalAdj={pvalAdj}
+          />
+        );
+      });
+    }
+
+    // otherwise...
+    return setGenes.map((gene) => {
+      return <Gene key={gene} gene={gene} geneset={setName} />;
+    });
+  }
+
   render() {
-    const { setName, setGenes, isDiffexp } = this.props;
+    const { setName, setGenes } = this.props;
     const { isOpen, toggleSummaryHisto } = this.state;
     const genesetNameLengthVisible = 120; /* this magic number determines how much of a long geneset name we see */
     const genesetIsEmpty = setGenes.length === 0;
@@ -173,18 +200,15 @@ class GeneSet extends React.Component {
         </div>
 
         {isOpen &&
-          !toggleSummaryHisto &&
-          !genesetIsEmpty &&
-          _.map(setGenes, (gene) => {
-            return (
-              <Gene
-                key={gene}
-                gene={gene}
-                geneset={setName}
-                isDiffexp={isDiffexp}
-              />
-            );
-          })}
+          (!toggleSummaryHisto && !genesetIsEmpty
+            ? this.renderGenes()
+            : setGenes.length > 0 && (
+                <HistogramBrush
+                  isGeneSetSummary
+                  field={setName}
+                  setGenes={setGenes}
+                />
+              ))}
         <EditGenesetNameDialogue parentGeneset={setName} />
       </div>
     );

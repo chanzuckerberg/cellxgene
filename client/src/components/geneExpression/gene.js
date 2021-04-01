@@ -53,12 +53,7 @@ class Gene extends React.Component {
 
   handleDeleteGeneFromSet = () => {
     const { dispatch, gene, geneset } = this.props;
-
-    dispatch({
-      type: "geneset: delete genes",
-      genesetName: geneset,
-      geneSymbols: [gene],
-    });
+    dispatch(actions.genesetDeleteGenes(geneset, [gene]));
   };
 
   render() {
@@ -67,7 +62,9 @@ class Gene extends React.Component {
       isColorAccessor,
       isScatterplotXXaccessor,
       isScatterplotYYaccessor,
-      isDiffexp,
+      isDiffExp,
+      pvalAdj,
+      logFoldChange,
     } = this.props;
     const { geneIsExpanded } = this.state;
     const genesetNameLengthVisible = 310; /* this magic number determines how much of a long geneset name we see */
@@ -119,11 +116,15 @@ class Gene extends React.Component {
               </Truncate>
             </div>
             {!geneIsExpanded ? (
-              <HistogramBrush isUserDefined field={gene} mini />
+              isDiffExp ? (
+                <HistogramBrush isDiffExp field={gene} mini />
+              ) : (
+                <HistogramBrush isUserDefined field={gene} mini />
+              )
             ) : null}
           </div>
           <div style={{ flexShrink: 0, marginLeft: 2 }}>
-            {!isDiffexp ? (
+            {!isDiffExp ? (
               <AnchorButton
                 minimal
                 small
@@ -179,7 +180,17 @@ class Gene extends React.Component {
             />
           </div>
         </div>
-        {geneIsExpanded ? <HistogramBrush isUserDefined field={gene} /> : null}
+        {geneIsExpanded &&
+          (isDiffExp ? (
+            <HistogramBrush
+              isDiffExp
+              field={gene}
+              pvalAdj={pvalAdj}
+              logFoldChange={logFoldChange}
+            />
+          ) : (
+            <HistogramBrush isUserDefined field={gene} />
+          ))}
       </div>
     );
   }

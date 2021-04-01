@@ -13,6 +13,7 @@ import * as selnActions from "./selection";
 import * as annoActions from "./annotation";
 import * as viewActions from "./viewStack";
 import * as embActions from "./embedding";
+import * as genesetActions from "./geneset";
 
 /*
 return promise fetching user-configured colors
@@ -58,7 +59,7 @@ async function genesetsFetch(dispatch, config) {
     genesets: [],
     tid: 0,
   };
-  if (config?.parameters?.["annotations_genesets"] ?? false) {
+  if (config?.parameters?.annotations_genesets ?? false) {
     fetchJson("genesets").then((response) => {
       dispatch({
         type: "geneset: initial load",
@@ -111,7 +112,7 @@ const doInitialDataLoad = () =>
       });
       dispatch({ type: "initial data load complete" });
 
-      const defaultEmbedding = config?.parameters?.["default_embedding"];
+      const defaultEmbedding = config?.parameters?.default_embedding;
       const layoutSchema = schema?.schema?.layout?.obs ?? [];
       if (
         defaultEmbedding &&
@@ -161,7 +162,7 @@ const dispatchDiffExpErrors = (dispatch, response) => {
   }
 };
 
-const requestDifferentialExpression = (set1, set2, num_genes = 10) => async (
+const requestDifferentialExpression = (set1, set2, num_genes = 50) => async (
   dispatch,
   getState
 ) => {
@@ -269,4 +270,7 @@ export default {
   needToSaveObsAnnotations: annoActions.needToSaveObsAnnotations,
   layoutChoiceAction: embActions.layoutChoiceAction,
   setCellSetFromSelection: selnActions.setCellSetFromSelection,
+  genesetDelete: genesetActions.genesetDelete,
+  genesetAddGenes: genesetActions.genesetAddGenes,
+  genesetDeleteGenes: genesetActions.genesetDeleteGenes,
 };

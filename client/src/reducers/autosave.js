@@ -76,7 +76,7 @@ const Autosave = (
       const { lastSavedGenesets } = action;
       return {
         ...state,
-        genesetSaveInProgess: false,
+        genesetSaveInProgress: false,
         error: false,
         lastSavedGenesets,
       };

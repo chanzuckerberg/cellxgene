@@ -11,7 +11,7 @@ import FilenameDialog from "./filenameDialog";
   error: state.autosave?.error,
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
   writableGenesetsEnabled: !(
-    state.config?.parameters?.["annotations_genesets_readonly"] ?? true
+    state.config?.parameters?.annotations_genesets_readonly ?? true
   ),
   annoMatrix: state.annoMatrix,
   genesets: state.genesets,

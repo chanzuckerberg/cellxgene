@@ -8,6 +8,9 @@ have a obsAnnotation named X, but we are using that for layout. So
 we namespace, and abstract to avoid proliferating strings throughout the
 codebase.
 
+It is _no longer_ used to remove collisions in the crossfilter or
+anno matrix namespaces. It is still used by the component tier.
+
 */
 
 const makeDimensionName = (namespace, key) => `${namespace}_${key}`;
@@ -18,12 +21,15 @@ export const diffexpDimensionName = (key) =>
   makeDimensionName("varData_diffexp", key);
 export const userDefinedDimensionName = (key) =>
   makeDimensionName("varData_userDefined", key);
+export const geneSetSummaryDimensionName = (key) =>
+  makeDimensionName("geneSetSummary", key);
 
 /*
     continuousNamespace = {
     isObs: true,
     isDiffExp: false,
-    isUserDefined: false
+    isUserDefined: false,
+    isGeneSet: false,
   }
 
   ie., makeContinuousDimensionName(continuousNamespace = {isObs: true}, "total_reads")
@@ -37,6 +43,8 @@ export const makeContinuousDimensionName = (continuousNamespace, key) => {
     name = diffexpDimensionName(key);
   } else if (continuousNamespace.isUserDefined) {
     name = userDefinedDimensionName(key);
+  } else if (continuousNamespace.isGeneSetSummary) {
+    name = geneSetSummaryDimensionName(key);
   } else {
     throw new Error("unknown continuous dimension");
   }

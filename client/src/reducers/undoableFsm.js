@@ -101,6 +101,12 @@ const createFsmTransitions = (
       action: cancelPending,
     },
     {
+      event: "continuous metadata histogram cancel",
+      from: "init",
+      to: "done",
+      action: save,
+    },
+    {
       event: "continuous metadata histogram end",
       from: "continuous histo select in progress",
       to: "done",

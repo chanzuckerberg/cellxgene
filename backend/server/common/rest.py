@@ -3,6 +3,7 @@ import logging
 import sys
 from http import HTTPStatus
 import zlib
+import hashlib
 
 from flask import make_response, jsonify, current_app, abort
 from werkzeug.urls import url_unquote
@@ -383,31 +384,42 @@ def genesets_put(request, data_adaptor):
         return abort(HTTPStatus.NOT_FOUND, description=str(e))
 
 
-def geneset_summary_get(request, data_adaptor):
+def summarize_var_helper(request, data_adaptor, key, raw_query):
     preferred_mimetype = request.accept_mimetypes.best_match(["application/octet-stream"])
     if preferred_mimetype != "application/octet-stream":
         return abort(HTTPStatus.NOT_ACCEPTABLE)
 
-    geneset_name = request.args.get("geneset_name", default=None)
-    summary_method = request.args.get("method", default="mean")
-    request_tid = request.args.get("tid", default=None)
+    summary_method = request.values.get("method", default="mean")
+    query_hash = hashlib.sha1(raw_query).hexdigest()  # cache helper
+    if key and query_hash != key:
+        return abort(HTTPStatus.BAD_REQUEST, description="query key did not match")
 
-    try:
-        annotations = data_adaptor.dataset_config.user_annotations
-        (genesets, tid) = annotations.read_gene_sets(data_adaptor)
+    args_filter_only = request.values.copy()
+    args_filter_only.poplist("method")
+    args_filter_only.poplist("key")
 
-        if request_tid is not None and int(request_tid) != tid:
-            return abort(HTTPStatus.NOT_FOUND, "Obsolete TID")
-        if geneset_name is None or geneset_name not in genesets:
-            return abort(HTTPStatus.BAD_REQUEST, "Gene set name not found.")
-        genes = [g["gene_symbol"] for g in genesets.get(geneset_name)["genes"]]
-
+    try:    
+        filter = _query_parameter_to_filter(args_filter_only)
         return make_response(
-            data_adaptor.get_gene_set_summary(geneset_name, genes, summary_method),
+            data_adaptor.summarize_var(summary_method, filter, query_hash),
             HTTPStatus.OK,
             {"Content-Type": "application/octet-stream"},
         )
     except (ValueError) as e:
         return abort(HTTPStatus.NOT_FOUND, description=str(e))
-    except (UnsupportedSummaryMethod) as e:
+    except (UnsupportedSummaryMethod, FilterError) as e:
         return abort(HTTPStatus.BAD_REQUEST, description=str(e))
+
+
+def summarize_var_get(request, data_adaptor):
+    return summarize_var_helper(request, data_adaptor, None, request.query_string)
+
+
+def summarize_var_post(request, data_adaptor):
+    if not request.content_type or "application/x-www-form-urlencoded" not in request.content_type:
+        return abort(HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
+    if request.content_length > 1_000_000:  # just a sanity check to avoid memory exhaustion
+        return abort(HTTPStatus.BAD_REQUEST)
+
+    key = request.args.get("key", default=None)
+    return summarize_var_helper(request, data_adaptor, key, request.get_data())

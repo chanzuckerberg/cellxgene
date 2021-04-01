@@ -124,6 +124,24 @@ export default class AnnoMatrixObsCrossfilter {
   }
 
   /**
+   * Drop the crossfilter dimension. Do not change the annoMatrix. Useful when we
+   * want to stop trackin the selection state, but aren't sure we want to blow the
+   * annomatrix cache.
+   */
+  dropDimension(field, query) {
+    const { annoMatrix } = this;
+    let { obsCrossfilter } = this;
+    const keys = annoMatrix
+      .getCacheKeys(field, query)
+      .filter((k) => k !== undefined);
+    const dimName = _dimensionName(field, keys);
+    if (obsCrossfilter.hasDimension(dimName)) {
+      obsCrossfilter = obsCrossfilter.delDimension(dimName);
+    }
+    return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
+  }
+
+  /**
   Selection state - API is identical to ImmutableTypedCrossfilter, as these
   are just wrappers to lazy create indices.
   **/

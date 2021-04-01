@@ -40,7 +40,7 @@ import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
     scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
     celllist1: state.differential.celllist1,
     celllist2: state.differential.celllist2,
-    libraryVersions: state.config?.["library_versions"],
+    libraryVersions: state.config?.library_versions,
     auth: state.config?.authentication,
     userInfo: state.userInfo,
     undoDisabled: state["@@undoable/past"].length === 0,
@@ -50,8 +50,8 @@ import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
     diffexpMayBeSlow:
       state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
     showCentroidLabels: state.centroidLabels.showLabels,
-    tosURL: state.config?.parameters?.["about_legal_tos"],
-    privacyURL: state.config?.parameters?.["about_legal_privacy"],
+    tosURL: state.config?.parameters?.about_legal_tos,
+    privacyURL: state.config?.parameters?.about_legal_privacy,
     categoricalSelection: state.categoricalSelection,
     enableReembedding:
       state.config?.parameters?.["enable-reembedding"] ?? false,

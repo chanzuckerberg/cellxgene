@@ -170,9 +170,11 @@ describe("AnnoMatrixCrossfilter", () => {
       const xfltr = await crossfilter.select(
         "X",
         {
-          field: "var",
-          column: varIndex,
-          value: "TYMP",
+          where: {
+            field: "var",
+            column: varIndex,
+            value: "TYMP",
+          },
         },
         {
           mode: "range",
@@ -186,9 +188,11 @@ describe("AnnoMatrixCrossfilter", () => {
       expect(xfltr.countSelected()).toEqual(501);
 
       const df = await annoMatrix.fetch("X", {
-        field: "var",
-        column: varIndex,
-        value: "TYMP",
+        where: {
+          field: "var",
+          column: varIndex,
+          value: "TYMP",
+        },
       });
       const values = df.icol(0).asArray();
       const selected = xfltr.allSelectedMask();

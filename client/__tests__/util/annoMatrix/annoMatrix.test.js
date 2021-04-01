@@ -85,9 +85,11 @@ describe("AnnoMatrix", () => {
       fetch.once(serverMocks.responder);
       await expect(
         annoMatrix.fetch("X", {
-          field: "var",
-          column: annoMatrix.schema.annotations.var.index,
-          value: "TYMP",
+          where: {
+            field: "var",
+            column: annoMatrix.schema.annotations.var.index,
+            value: "TYMP",
+          },
         })
       ).resolves.toBeInstanceOf(Dataframe);
 
@@ -103,14 +105,18 @@ describe("AnnoMatrix", () => {
       await expect(
         annoMatrix.fetch("X", [
           {
-            field: "var",
-            column: varIndex,
-            value: "SUMO3",
+            where: {
+              field: "var",
+              column: varIndex,
+              value: "SUMO3",
+            },
           },
           {
-            field: "var",
-            column: varIndex,
-            value: "TYMP",
+            where: {
+              field: "var",
+              column: varIndex,
+              value: "TYMP",
+            },
           },
         ])
       ).resolves.toBeInstanceOf(Dataframe);
