@@ -149,6 +149,7 @@ const GeneSets = (
      */
     case "geneset: update": {
       const { genesetName, update } = action;
+
       if (
         typeof genesetName !== "string" ||
         !genesetName ||
@@ -157,8 +158,10 @@ const GeneSets = (
         throw new Error(
           "geneset: update -- geneset name unspecified or does not exist."
         );
-      if (state.genesets.has(update.genesetName))
-        throw new Error("geneset: update -- update specified existing name.");
+
+      /* TODO(bkmartin): #foo: handle case where only description updated */
+      // if (state.genesets.has(update.genesetName))
+      //   throw new Error("geneset: update -- update specified existing name.");
 
       const prevGs = state.genesets.get(genesetName);
       const newGs = {
