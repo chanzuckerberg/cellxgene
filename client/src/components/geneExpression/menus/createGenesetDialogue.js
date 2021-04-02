@@ -106,8 +106,6 @@ class CreateGenesetDialogue extends React.PureComponent {
     const { genesetName } = this.state;
     const { metadataField, genesetsUI, genesets } = this.props;
 
-    console.log("create geneset dialogue", this.state);
-
     return (
       <>
         <Dialog
