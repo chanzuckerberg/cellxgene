@@ -1,7 +1,8 @@
 import _ from "lodash";
 import React from "react";
 import { connect } from "react-redux";
-import AnnoDialog from "../../annoDialog";
+import { Button, Dialog, Classes, Colors } from "@blueprintjs/core";
+import { Tooltip2 } from "@blueprintjs/popover2";
 import LabelInput from "../../labelInput";
 import actions from "../../../actions";
 
@@ -27,6 +28,7 @@ class CreateGenesetDialogue extends React.PureComponent {
     this.setState({
       genesetName: "",
       genesToPopulateGeneset: "",
+      genesetDescription: "",
     });
     dispatch({
       type: "geneset: disable create geneset mode",
@@ -36,12 +38,16 @@ class CreateGenesetDialogue extends React.PureComponent {
 
   createGeneset = (e) => {
     const { dispatch } = this.props;
-    const { genesetName, genesToPopulateGeneset } = this.state;
+    const {
+      genesetName,
+      genesToPopulateGeneset,
+      genesetDescription,
+    } = this.state;
 
     dispatch({
       type: "geneset: create",
       genesetName,
-      genesetDescription: "",
+      genesetDescription,
     });
     if (genesToPopulateGeneset) {
       const genesTmpHardcodedFormat = [];
@@ -81,6 +87,10 @@ class CreateGenesetDialogue extends React.PureComponent {
     this.setState({ genesToPopulateGeneset: e });
   };
 
+  handleDescriptionInputChange = (e) => {
+    this.setState({ genesetDescription: e });
+  };
+
   instruction = (genesetName, genesets) => {
     return genesets.has(genesetName)
       ? "Geneset name must be unique."
@@ -97,47 +107,96 @@ class CreateGenesetDialogue extends React.PureComponent {
 
     return (
       <>
-        <AnnoDialog
-          isActive={genesetsUI.createGenesetModeActive}
-          inputProps={{
-            "data-testid": `${metadataField}:create-geneset-dialog`,
-          }}
-          primaryButtonProps={{
-            "data-testid": `${metadataField}:submit-geneset`,
-          }}
+        <Dialog
+          icon="tag"
           title="Create gene set"
-          instruction={this.instruction(genesetName, genesets)}
-          cancelTooltipContent="Close this dialog without creating a new gene set."
-          primaryButtonText="Create gene set"
-          text={genesetName}
-          validationError={this.validate(genesetName, genesets)}
-          annoInput={
-            <LabelInput
-              onChange={this.handleChange}
-              inputProps={{
-                "data-testid": "create-geneset-modal",
-                leftIcon: "manually-entered-data",
-                intent: "none",
-                autoFocus: true,
-              }}
-              newLabelMessage="Create gene set"
-            />
-          }
-          secondaryInstructions="Optionally add a list of comma separated genes to populate the gene set"
-          secondaryInput={
-            <LabelInput
-              onChange={this.handleGenesetInputChange}
-              inputProps={{
-                "data-testid": "add-genes",
-                intent: "none",
-                autoFocus: false,
-              }}
-              newLabelMessage="populate geneset with genes"
-            />
-          }
-          handleSubmit={this.createGeneset}
-          handleCancel={this.disableCreateGenesetMode}
-        />
+          isOpen={genesetsUI.createGenesetModeActive}
+          onClose={this.disableCreateGenesetMode}
+        >
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+            }}
+          >
+            <div className={Classes.DIALOG_BODY}>
+              <div style={{ marginBottom: 20 }}>
+                <p>{this.instruction(genesetName, genesets)}</p>
+                <LabelInput
+                  onChange={this.handleChange}
+                  inputProps={{
+                    "data-testid": "create-geneset-modal",
+                    leftIcon: "manually-entered-data",
+                    intent: "none",
+                    autoFocus: true,
+                  }}
+                  newLabelMessage="Create gene set"
+                />
+                <p
+                  style={{
+                    marginTop: 7,
+                    visibility: this.validate(genesetName, genesets)
+                      ? "visible"
+                      : "hidden",
+                    color: Colors.ORANGE3,
+                  }}
+                >
+                  {this.genesetNameError()}
+                </p>
+                <p style={{ marginTop: 20 }}>
+                  Optionally add a{" "}
+                  <span style={{ fontWeight: 700 }}>description</span> for this
+                  gene set
+                </p>
+                <LabelInput
+                  onChange={this.handleDescriptionInputChange}
+                  inputProps={{
+                    "data-testid": "add-geneset-description",
+                    intent: "none",
+                    autoFocus: false,
+                  }}
+                  newLabelMessage="Add geneset description"
+                />
+
+                <p style={{ marginTop: 20 }}>
+                  Optionally add a list of comma separated{" "}
+                  <span style={{ fontWeight: 700 }}>genes</span> to populate the
+                  gene set
+                </p>
+                <LabelInput
+                  onChange={this.handleGenesetInputChange}
+                  inputProps={{
+                    "data-testid": "add-genes",
+                    intent: "none",
+                    autoFocus: false,
+                  }}
+                  newLabelMessage="populate geneset with genes"
+                />
+              </div>
+            </div>
+            <div className={Classes.DIALOG_FOOTER}>
+              <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                <Tooltip2 content="Close this dialog without creating a new gene set.">
+                  <Button onClick={this.disableCreateGenesetMode}>
+                    Cancel
+                  </Button>
+                </Tooltip2>
+                <Button
+                  primaryButtonProps={{
+                    "data-testid": `${metadataField}:submit-geneset`,
+                  }}
+                  onClick={this.createGeneset}
+                  disabled={
+                    !genesetName || this.validate(genesetName, genesets)
+                  }
+                  intent="primary"
+                  type="submit"
+                >
+                  Create gene set
+                </Button>
+              </div>
+            </div>
+          </form>
+        </Dialog>
       </>
     );
   }

@@ -1,6 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Tooltip, Position, Switch } from "@blueprintjs/core";
+import { Position, Switch } from "@blueprintjs/core";
+import { Tooltip2 } from "@blueprintjs/popover2";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
 import actions from "../../actions";
 import Gene from "./gene";
@@ -113,10 +114,12 @@ class GeneSet extends React.Component {
   }
 
   render() {
-    const { setName, setGenes } = this.props;
+    const { setName, setGenes, genesetDescription } = this.props;
     const { isOpen, toggleSummaryHisto } = this.state;
     const genesetNameLengthVisible = 120; /* this magic number determines how much of a long geneset name we see */
     const genesetIsEmpty = setGenes.length === 0;
+
+    console.log("gne set", this.props);
 
     return (
       <div style={{ marginBottom: 3 }}>
@@ -141,7 +144,9 @@ class GeneSet extends React.Component {
             }}
             onClick={this.onGenesetMenuClick}
           >
-            <Truncate>
+            <Truncate
+              tooltipAddendum={`: ${genesetDescription || "<no description>"}`}
+            >
               <span
                 style={{
                   maxWidth: globals.leftSidebarWidth - genesetNameLengthVisible,
@@ -170,7 +175,7 @@ class GeneSet extends React.Component {
 
         <div style={{ marginLeft: 15, marginTop: 5, marginRight: 0 }}>
           {isOpen && !genesetIsEmpty && (
-            <Tooltip
+            <Tooltip2
               content="Aggregate all genes in this geneset, and allow coloring by and selecting on the entire set."
               position={Position.BOTTOM_RIGHT}
               usePortal
@@ -189,7 +194,7 @@ class GeneSet extends React.Component {
                 innerLabelChecked="on"
                 onChange={this.toggleSummaryHisto}
               />
-            </Tooltip>
+            </Tooltip2>
           )}
 
           {isOpen && genesetIsEmpty && (
