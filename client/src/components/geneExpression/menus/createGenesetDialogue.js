@@ -20,6 +20,7 @@ class CreateGenesetDialogue extends React.PureComponent {
     this.state = {
       genesetName: "",
       genesToPopulateGeneset: "",
+      genesetDescription: "",
     };
   }
 
@@ -105,6 +106,8 @@ class CreateGenesetDialogue extends React.PureComponent {
     const { genesetName } = this.state;
     const { metadataField, genesetsUI, genesets } = this.props;
 
+    console.log("create geneset dialogue", this.state);
+
     return (
       <>
         <Dialog
@@ -181,9 +184,7 @@ class CreateGenesetDialogue extends React.PureComponent {
                   </Button>
                 </Tooltip2>
                 <Button
-                  primaryButtonProps={{
-                    "data-testid": `${metadataField}:submit-geneset`,
-                  }}
+                  data-testid={`${metadataField}:submit-geneset`}
                   onClick={this.createGeneset}
                   disabled={
                     !genesetName || this.validate(genesetName, genesets)
