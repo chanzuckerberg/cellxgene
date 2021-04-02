@@ -15,6 +15,7 @@ class RenameGeneset extends React.PureComponent {
     super(props);
     this.state = {
       genesetName: props.parentGeneset,
+      genesetDescription: props.parentGenesetDescription,
     };
   }
 
@@ -22,6 +23,7 @@ class RenameGeneset extends React.PureComponent {
     const { dispatch } = this.props;
     this.setState({
       genesetName: "",
+      genesetDescription: "",
     });
     dispatch({
       type: "geneset: disable rename geneset mode",
@@ -31,12 +33,12 @@ class RenameGeneset extends React.PureComponent {
 
   renameGeneset = (e) => {
     const { dispatch, genesetsUI } = this.props;
-    const { genesetName } = this.state;
+    const { genesetName, genesetDescription } = this.state;
 
     dispatch({
       type: "geneset: update",
       genesetName: genesetsUI.isEditingGenesetName,
-      update: { genesetName },
+      update: { genesetName, genesetDescription },
     });
     dispatch({
       type: "geneset: disable rename geneset mode",
@@ -52,8 +54,12 @@ class RenameGeneset extends React.PureComponent {
     this.setState({ genesetName: e });
   };
 
+  handleChangeDescription = (e) => {
+    this.setState({ genesetDescription: e });
+  };
+
   render() {
-    const { genesetName } = this.state;
+    const { genesetName, genesetDescription } = this.state;
     const { genesetsUI, parentGeneset } = this.props;
 
     return (
@@ -71,6 +77,7 @@ class RenameGeneset extends React.PureComponent {
           cancelTooltipContent="Close this dialog without renaming the gene set."
           primaryButtonText="Rename gene set"
           text={genesetName}
+          secondaryText={genesetDescription}
           validationError={genesetsUI.isEditingGenesetName === genesetName}
           annoInput={
             <LabelInput
@@ -82,7 +89,16 @@ class RenameGeneset extends React.PureComponent {
                 intent: "none",
                 autoFocus: true,
               }}
-              newLabelMessage="Rename gene set"
+            />
+          }
+          secondaryInstructions="Geneset Description"
+          secondaryInput={
+            <LabelInput
+              label={genesetDescription}
+              onChange={this.handleChangeDescription}
+              inputProps={{ "data-testid": "change geneset description" }}
+              intent="none"
+              autoFocus={false}
             />
           }
           handleSubmit={this.renameGeneset}

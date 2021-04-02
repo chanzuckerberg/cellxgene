@@ -119,8 +119,6 @@ class GeneSet extends React.Component {
     const genesetNameLengthVisible = 120; /* this magic number determines how much of a long geneset name we see */
     const genesetIsEmpty = setGenes.length === 0;
 
-    console.log("gne set", this.props);
-
     return (
       <div style={{ marginBottom: 3 }}>
         <div
@@ -213,7 +211,10 @@ class GeneSet extends React.Component {
                   setGenes={setGenes}
                 />
               ))}
-        <EditGenesetNameDialogue parentGeneset={setName} />
+        <EditGenesetNameDialogue
+          parentGeneset={setName}
+          parentGenesetDescription={genesetDescription}
+        />
       </div>
     );
   }
