@@ -159,9 +159,16 @@ const GeneSets = (
           "geneset: update -- geneset name unspecified or does not exist."
         );
 
-      /* TODO(bkmartin): #foo: handle case where only description updated */
-      // if (state.genesets.has(update.genesetName))
-      //   throw new Error("geneset: update -- update specified existing name.");
+      /* now that we've confirmed the gene set exists, check for duplicates */
+      const genesetNameIsDuplicate = state.genesets.has(update.genesetName);
+      const descriptionIsDuplicate =
+        state.genesets.get(update.genesetName).genesetDescription ===
+        update.genesetDescription;
+
+      if (genesetNameIsDuplicate && descriptionIsDuplicate)
+        throw new Error(
+          "geneset: update -- update specified existing name and description."
+        );
 
       const prevGs = state.genesets.get(genesetName);
       const newGs = {
