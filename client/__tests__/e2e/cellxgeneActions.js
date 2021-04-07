@@ -16,7 +16,7 @@ import {
   goToPage,
 } from "./puppeteerUtils";
 
-import { appUrlBase } from "./config";
+import { appUrlBase, TEST_EMAIL, TEST_PASSWORD } from "./config";
 
 export async function drag(testId, start, end, lasso = false) {
   const layout = await waitByID(testId);
@@ -317,9 +317,6 @@ export async function assertCategoryDoesNotExist(categoryName) {
 }
 
 export async function login() {
-  const email = ``;
-  const password = "";
-
   await goToPage(appUrlBase);
 
   await clickOn("log-in");
@@ -328,8 +325,8 @@ export async function login() {
   await waitUntilFormFieldStable('[name="email"]');
 
   await expect(page).toFillForm("form", {
-    email,
-    password,
+    email: TEST_EMAIL,
+    password: TEST_PASSWORD,
   });
 
   await Promise.all([
