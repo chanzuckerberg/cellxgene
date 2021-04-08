@@ -6,3 +6,5 @@ export const appUrlBase =
 export const DATASET = "pbmc3k";
 export const isDev = jestEnv === ENV_DEFAULT.DEV;
 export const isDebug = jestEnv === ENV_DEFAULT.DEBUG;
+export const TEST_EMAIL = "user@example.com";
+export const TEST_PASSWORD = process.env.TEST_ACCOUNT_PASS ?? "";

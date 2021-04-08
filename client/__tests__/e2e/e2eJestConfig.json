@@ -4,7 +4,7 @@
   "testMatch": ["**/__tests__/**/?(*.)(spec|test).js?(x)"],
   "setupFiles": ["../setupMissingGlobals.js"],
   "setupFilesAfterEnv": ["expect-puppeteer", "./puppeteer.setup.js"],
-  "globalSetup": "jest-environment-puppeteer/setup",
+  "globalSetup": "../globalSetup.js",
   "globalTeardown": "jest-environment-puppeteer/teardown",
   "testEnvironment": "./screenshot_env.js"
 }

@@ -38,6 +38,7 @@
     "not Explorer > 0"
   ],
   "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.10.0",
     "@blueprintjs/core": "^3.30.0",
     "@blueprintjs/icons": "^3.19.0",
     "@blueprintjs/popover2": "^0.3.0",

@@ -368,7 +368,8 @@ describeIfCalledByMakeFileTarget("auth buttons", () => {
   });
 });
 
-const conditionalDescribe = describe.skip;
+const conditionalDescribe =
+  process.env.TEST_AUTH_INTEGRATION === "true" ? describe : describe.skip;
 
 conditionalDescribe("AuthN Integration", () => {
   it("logs in", async () => {
