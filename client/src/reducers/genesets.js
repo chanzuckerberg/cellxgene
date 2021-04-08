@@ -162,8 +162,9 @@ const GeneSets = (
       /* now that we've confirmed the gene set exists, check for duplicates */
       const genesetNameIsDuplicate = state.genesets.has(update.genesetName);
       const descriptionIsDuplicate =
+        state.genesets.get(update.genesetName) &&
         state.genesets.get(update.genesetName).genesetDescription ===
-        update.genesetDescription;
+          update.genesetDescription;
 
       if (genesetNameIsDuplicate && descriptionIsDuplicate)
         throw new Error(

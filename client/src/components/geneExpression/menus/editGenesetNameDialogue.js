@@ -75,10 +75,10 @@ class RenameGeneset extends React.PureComponent {
           primaryButtonProps={{
             "data-testid": `${genesetsUI.isEditingGenesetName}:submit-geneset`,
           }}
-          title="Rename gene set"
+          title="Edit gene set and description"
           instruction={`Rename ${genesetsUI.isEditingGenesetName}`}
           cancelTooltipContent="Close this dialog without renaming the gene set."
-          primaryButtonText="Rename gene set"
+          primaryButtonText="Edit gene set and description"
           text={newGenesetName}
           secondaryText={newGenesetDescription}
           validationError={
@@ -97,7 +97,7 @@ class RenameGeneset extends React.PureComponent {
               }}
             />
           }
-          secondaryInstructions="Geneset Description"
+          secondaryInstructions="Edit description"
           secondaryInput={
             <LabelInput
               label={newGenesetDescription}

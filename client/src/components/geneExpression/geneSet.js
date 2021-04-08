@@ -143,7 +143,9 @@ class GeneSet extends React.Component {
             onClick={this.onGenesetMenuClick}
           >
             <Truncate
-              tooltipAddendum={`: ${genesetDescription || "<no description>"}`}
+              tooltipAddendum={
+                genesetDescription ? `: ${genesetDescription}` : ""
+              }
             >
               <span
                 style={{
