@@ -33,7 +33,7 @@ const SECOND_HALF_INNER_STYLE = {
 };
 
 export default (props) => {
-  const { children } = props;
+  const { children, tooltipAddendum = "" } = props;
   // Truncate only support a single child with a text child
 
   if (
@@ -87,7 +87,7 @@ export default (props) => {
   );
   return (
     <Tooltip2
-      content={originalString}
+      content={`${originalString}${tooltipAddendum}`}
       hoverOpenDelay={tooltipHoverOpenDelayQuick}
       targetProps={{ style: children.props.style }}
     >

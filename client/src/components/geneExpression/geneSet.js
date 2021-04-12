@@ -86,7 +86,13 @@ class GeneSet extends React.Component {
   };
 
   renderGenes() {
-    const { setName, setGenes, isDiffExp, diffExp } = this.props;
+    const {
+      setName,
+      setGenes,
+      setGenesWithDescriptions,
+      isDiffExp,
+      diffExp,
+    } = this.props;
 
     if (isDiffExp) {
       // [ [gene, logfoldchange, pval, pval_adj], ...]
@@ -108,7 +114,16 @@ class GeneSet extends React.Component {
 
     // otherwise...
     return setGenes.map((gene) => {
-      return <Gene key={gene} gene={gene} geneset={setName} />;
+      const { geneDescription } = setGenesWithDescriptions.get(gene);
+
+      return (
+        <Gene
+          key={gene}
+          gene={gene}
+          geneDescription={geneDescription}
+          geneset={setName}
+        />
+      );
     });
   }
 
