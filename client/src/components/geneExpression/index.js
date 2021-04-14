@@ -21,6 +21,7 @@ class GeneExpression extends React.Component {
         <GeneSet
           key={name}
           setGenes={Array.from(geneset.genes.keys())}
+          setGenesWithDescriptions={geneset.genes}
           setName={name}
           genesetDescription={geneset.genesetDescription}
         />
