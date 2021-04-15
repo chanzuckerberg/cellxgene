@@ -155,7 +155,7 @@ pydist: build
 
 .PHONY: pydist-czi-hosted
 pydist-czi-hosted: build-czi-hosted
-	cd $(BUILDDIR); python setup_hosted.py sdist -d ../dist
+	cd $(BUILDDIR); python setup.py sdist -d ../dist
 	@echo "done"
 
 
