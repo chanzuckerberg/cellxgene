@@ -94,8 +94,8 @@ class CreateGenesetDialogue extends React.PureComponent {
 
   instruction = (genesetName, genesets) => {
     return genesets.has(genesetName)
-      ? "Geneset name must be unique."
-      : "New, unique geneset name";
+      ? "Gene set name must be unique."
+      : "New, unique gene set name";
   };
 
   validate = (genesetName, genesets) => {
