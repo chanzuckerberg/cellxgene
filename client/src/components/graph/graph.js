@@ -76,6 +76,7 @@ function createModelTF() {
   graphInteractionMode: state.controls.graphInteractionMode,
   colors: state.colors,
   pointDilation: state.pointDilation,
+  genesets: state.genesets.genesets,
 }))
 class Graph extends React.Component {
   static createReglState(canvas) {
@@ -526,6 +527,7 @@ class Graph extends React.Component {
       colorsProp,
       pointDilation
     );
+
     const { currentDimNames } = layoutChoice;
     const X = layoutDf.col(currentDimNames[0]).asArray();
     const Y = layoutDf.col(currentDimNames[1]).asArray();
@@ -782,10 +784,11 @@ class Graph extends React.Component {
   }
 
   createColorByQuery(colors) {
-    const { annoMatrix } = this.props;
+    const { annoMatrix, genesets } = this.props;
     const { schema } = annoMatrix;
     const { colorMode, colorAccessor } = colors;
-    return createColorQuery(colorMode, colorAccessor, schema);
+
+    return createColorQuery(colorMode, colorAccessor, schema, genesets);
   }
 
   renderPoints(

@@ -12,7 +12,7 @@ import { range } from "../range";
 given a color mode & accessor, generate an annoMatrix query that will
 fulfill it
 */
-export function createColorQuery(colorMode, colorByAccessor, schema) {
+export function createColorQuery(colorMode, colorByAccessor, schema, genesets) {
   if (!colorMode || !colorByAccessor || !schema) return null;
   switch (colorMode) {
     case "color by categorical metadata":
@@ -29,6 +29,25 @@ export function createColorQuery(colorMode, colorByAccessor, schema) {
             field: "var",
             column: varIndex,
             value: colorByAccessor,
+          },
+        },
+      ];
+    }
+    case "color by geneset mean expression": {
+      const varIndex = schema?.annotations?.var?.index;
+      if (!varIndex) return null;
+
+      const _geneset = genesets.get(colorByAccessor);
+      const _setGenes = Array.from(_geneset.genes.keys());
+
+      return [
+        "X",
+        {
+          summarize: {
+            method: "mean",
+            field: "var",
+            column: varIndex,
+            values: _setGenes,
           },
         },
       ];
@@ -82,6 +101,11 @@ function _createColorTable(
       return createColorsByContinuousMetadata(col.asArray(), min, max);
     }
     case "color by expression": {
+      const col = colorByData.icol(0);
+      const { min, max } = col.summarize();
+      return createColorsByContinuousMetadata(col.asArray(), min, max);
+    }
+    case "color by geneset mean expression": {
       const col = colorByData.icol(0);
       const { min, max } = col.summarize();
       return createColorsByContinuousMetadata(col.asArray(), min, max);
