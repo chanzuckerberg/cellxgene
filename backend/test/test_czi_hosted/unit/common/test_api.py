@@ -562,7 +562,6 @@ class EndPointsCxg(unittest.TestCase, EndPoints):
         result = self.session.get(url, headers={"Accept": "text/csv"})
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "text/csv")
-        print(result.text)
         self.assertEqual(
             result.text,
             """gene_set_name,gene_set_description,gene_symbol,gene_description\r
