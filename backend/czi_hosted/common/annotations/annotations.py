@@ -128,6 +128,12 @@ class Annotations:
 def dataset_uri_to_geneset_uri(data_uri_or_path):
     """ XXX FIXME TODO -- Not final - awaiting design decision """
     data_basename = os.path.basename(data_uri_or_path)
+
+    base, ext = os.path.splitext(data_basename)
+    if ext is not None:  # strip extension, if any
+        data_basename = base
+
     genesets_basename = f"{data_basename}-genesets.csv"
     gene_sets_uri_or_path = path_join(data_uri_or_path, "..", genesets_basename)
+
     return gene_sets_uri_or_path

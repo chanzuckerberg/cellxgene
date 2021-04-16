@@ -507,6 +507,92 @@ class EndPointsCxg(unittest.TestCase, EndPoints):
     def tearDownClass(cls):
         stop_test_server(cls.ps)
 
+    def test_get_genesets_json(self):
+        endpoint = "genesets"
+        url = f"{self.URL_BASE}{endpoint}"
+        result = self.session.get(url, headers={"Accept": "application/json"})
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
+        result_data = result.json()
+        self.assertIsNotNone(result_data["genesets"])
+        self.assertIsNotNone(result_data["tid"])
+
+        self.assertEqual(
+            result_data,
+            {
+                "genesets": [
+                    {
+                        "genes": [
+                            {"gene_description": " a gene_description", "gene_symbol": "F5"},
+                            {"gene_description": "", "gene_symbol": "SUMO3"},
+                            {"gene_description": "", "gene_symbol": "SRM"},
+                        ],
+                        "geneset_description": "a description",
+                        "geneset_name": "first gene set name",
+                    },
+                    {
+                        "genes": [
+                            {"gene_description": "", "gene_symbol": "RER1"},
+                            {"gene_description": "", "gene_symbol": "SIK1"},
+                        ],
+                        "geneset_description": "",
+                        "geneset_name": "second gene set",
+                    },
+                    {"genes": [], "geneset_description": "", "geneset_name": "third gene set"},
+                    {"genes": [], "geneset_description": "fourth description", "geneset_name": "fourth_gene_set"},
+                    {"genes": [], "geneset_description": "", "geneset_name": "fifth_dataset"},
+                    {
+                        "genes": [
+                            {"gene_description": "", "gene_symbol": "ACD"},
+                            {"gene_description": "", "gene_symbol": "AATF"},
+                            {"gene_description": "", "gene_symbol": "F5"},
+                            {"gene_description": "", "gene_symbol": "PIGU"},
+                        ],
+                        "geneset_description": "",
+                        "geneset_name": "summary test",
+                    },
+                ],
+                "tid": 0,
+            },
+        )
+
+    def test_get_genesets_csv(self):
+        endpoint = "genesets"
+        url = f"{self.URL_BASE}{endpoint}"
+        result = self.session.get(url, headers={"Accept": "text/csv"})
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "text/csv")
+        print(result.text)
+        self.assertEqual(
+            result.text,
+            """gene_set_name,gene_set_description,gene_symbol,gene_description\r
+first gene set name,a description,F5, a gene_description\r
+first gene set name,a description,SUMO3,\r
+first gene set name,a description,SRM,\r
+second gene set,,RER1,\r
+second gene set,,SIK1,\r
+third gene set,,,\r
+fourth_gene_set,fourth description,,\r
+fifth_dataset,,,\r
+summary test,,ACD,\r
+summary test,,AATF,\r
+summary test,,F5,\r
+summary test,,PIGU,\r
+""",
+        )
+
+    def test_put_genesets(self):
+        endpoint = "genesets"
+        url = f"{self.URL_BASE}{endpoint}"
+
+        result = self.session.get(url, headers={"Accept": "application/json"})
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+
+        test1 = {"tid": 3, "genesets": []}
+        result = self.session.put(url, json=test1)
+
+        self.assertEqual(result.status_code, HTTPStatus.NOT_IMPLEMENTED)
+
 
 class EndPointsAnndataAnnotations(unittest.TestCase, EndPointsAnnotations):
     """Test Case for endpoints"""
