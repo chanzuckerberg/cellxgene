@@ -591,7 +591,7 @@ summary test,,PIGU,\r
         test1 = {"tid": 3, "genesets": []}
         result = self.session.put(url, json=test1)
 
-        self.assertEqual(result.status_code, HTTPStatus.NOT_IMPLEMENTED)
+        self.assertEqual(result.status_code, HTTPStatus.METHOD_NOT_ALLOWED)
 
 
 class EndPointsAnndataAnnotations(unittest.TestCase, EndPointsAnnotations):
