@@ -126,9 +126,8 @@ class Annotations:
 
 
 def dataset_uri_to_geneset_uri(data_uri_or_path):
-    """ XXX FIXME TODO -- Not final - awaiting design decision """
+    """ given a dataset URI, return the associated gene set URI """
     data_basename = os.path.basename(data_uri_or_path)
-
     base, ext = os.path.splitext(data_basename)
     if ext is not None:  # strip extension, if any
         data_basename = base
