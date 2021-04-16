@@ -1,5 +1,6 @@
 import fastobo
 import fsspec
+import os
 
 from flask import current_app, has_request_context
 
@@ -7,6 +8,7 @@ from backend.common.errors import OntologyLoadFailure, DisabledFeatureError
 from backend.common.utils.type_conversion_utils import get_schema_type_hint_of_array
 from backend.common.genesets import write_gene_sets_tidycsv, read_gene_sets_tidycsv, validate_gene_sets
 from backend.common.utils.data_locator import DataLocator
+from backend.common.utils.utils import path_join
 
 
 class Annotations:
@@ -106,13 +108,11 @@ class Annotations:
             if not current_app.auth.is_user_authenticated():
                 return ({}, 0)
 
-        # XXX FIXME TODO BKM - this is fake.  Need to convert dataset URI to ...?
-        gene_sets_url = "./test.csv"
+        gene_sets_uri_or_path = dataset_uri_to_geneset_uri(data_adaptor.data_locator.uri_or_path)
 
         server_config = data_adaptor.server_config
         region_name = None if server_config is None else server_config.data_locator__s3__region_name
-        gene_sets_locator = DataLocator(gene_sets_url, region_name=region_name)
-
+        gene_sets_locator = DataLocator(gene_sets_uri_or_path, region_name=region_name)
         if not gene_sets_locator.exists():
             return ({}, 0)
 
@@ -123,3 +123,11 @@ class Annotations:
 
         gene_sets = validate_gene_sets(gene_sets, var_names)
         return (gene_sets, 0)
+
+
+def dataset_uri_to_geneset_uri(data_uri_or_path):
+    """ XXX FIXME TODO -- Not final - awaiting design decision """
+    data_basename = os.path.basename(data_uri_or_path)
+    genesets_basename = f"{data_basename}-genesets.csv"
+    gene_sets_uri_or_path = path_join(data_uri_or_path, "..", genesets_basename)
+    return gene_sets_uri_or_path
