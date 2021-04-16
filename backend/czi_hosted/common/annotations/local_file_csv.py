@@ -16,8 +16,8 @@ from backend.common.errors import AnnotationsError
 class AnnotationsLocalFile(Annotations):
     CXG_ANNO_COLLECTION = "cxg_anno_collection"
 
-    def __init__(self, output_dir, output_file):
-        super().__init__()
+    def __init__(self, config, output_dir, output_file):
+        super().__init__(config)
         self.output_dir = output_dir
         self.output_file = output_file
         # lock used to protect label file write ops
@@ -169,6 +169,8 @@ class AnnotationsLocalFile(Annotations):
                 os.remove(os.path.join(backup_dir, bu))
 
     def update_parameters(self, parameters, data_adaptor):
+        super().update_parameters(parameters, data_adaptor)
+
         params = {}
         params["annotations"] = True
         params["user_annotation_collection_name_enabled"] = True
@@ -190,7 +192,7 @@ class AnnotationsLocalFile(Annotations):
             collection = self.get_collection()
             if current_app.auth.is_user_authenticated():
                 params["annotations-user-data-idhash"] = self._get_userdata_idhash(data_adaptor)
-                params["annotations-data-collection-is-read-only"] = False
+                params["annotations-data-collection-is-read-only"] = not self.user_annotations_enabled()
                 params["annotations-data-collection-name"] = collection
 
         parameters.update(params)

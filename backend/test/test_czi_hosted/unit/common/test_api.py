@@ -3,6 +3,7 @@ import time
 import unittest
 import zlib
 from http import HTTPStatus
+import hashlib
 
 import pandas as pd
 import requests
@@ -315,6 +316,95 @@ class EndPoints(object):
         result = self.session.get(url)
         self.assertEqual(result.status_code, HTTPStatus.OK)
 
+    def test_genesets_config(self):
+        result = self.session.get(f"{self.URL_BASE}config")
+        config_data = result.json()
+        params = config_data["config"]["parameters"]
+        annotations_genesets = params["annotations_genesets"]
+        annotations_genesets_readonly = params["annotations_genesets_readonly"]
+        annotations_genesets_summary_methods = params["annotations_genesets_summary_methods"]
+        self.assertTrue(annotations_genesets)
+        self.assertTrue(annotations_genesets_readonly)
+        self.assertEqual(annotations_genesets_summary_methods, ["mean"])
+
+    def test_get_genesets(self):
+        endpoint = "genesets"
+        url = f"{self.URL_BASE}{endpoint}"
+        result = self.session.get(url, headers={"Accept": "application/json"})
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/json")
+        result_data = result.json()
+        self.assertIsNotNone(result_data["genesets"])
+
+    def test_get_summaryvar(self):
+        index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
+        endpoint = "summarize/var"
+
+        # single column
+        filter = f"var:{index_col_name}=F5"
+        query = f"method=mean&{filter}"
+        query_hash = hashlib.sha1(query.encode()).hexdigest()
+        url = f"{self.URL_BASE}{endpoint}?{query}"
+        header = {"Accept": "application/octet-stream"}
+        result = self.session.get(url, headers=header)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_matrix_FBS(result.content)
+        self.assertEqual(df["n_rows"], 2638)
+        self.assertEqual(df["n_cols"], 1)
+        self.assertEqual(df["col_idx"], [query_hash])
+        self.assertAlmostEqual(df["columns"][0][0], -0.110451095)
+
+        # multi-column
+        col_names = ["F5", "BEB3", "SIK1"]
+        filter = "&".join([f"var:{index_col_name}={name}" for name in col_names])
+        query = f"method=mean&{filter}"
+        query_hash = hashlib.sha1(query.encode()).hexdigest()
+        url = f"{self.URL_BASE}{endpoint}?{query}"
+        header = {"Accept": "application/octet-stream"}
+        result = self.session.get(url, headers=header)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_matrix_FBS(result.content)
+        self.assertEqual(df["n_rows"], 2638)
+        self.assertEqual(df["n_cols"], 1)
+        self.assertEqual(df["col_idx"], [query_hash])
+        self.assertAlmostEqual(df["columns"][0][0], -0.16628358)
+
+    def test_post_summaryvar(self):
+        index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
+        endpoint = "summarize/var"
+        headers = {"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/octet-stream"}
+
+        # single column
+        filter = f"var:{index_col_name}=F5"
+        query = f"method=mean&{filter}"
+        query_hash = hashlib.sha1(query.encode()).hexdigest()
+        url = f"{self.URL_BASE}{endpoint}?key={query_hash}"
+        result = self.session.post(url, headers=headers, data=query)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_matrix_FBS(result.content)
+        self.assertEqual(df["n_rows"], 2638)
+        self.assertEqual(df["n_cols"], 1)
+        self.assertEqual(df["col_idx"], [query_hash])
+        self.assertAlmostEqual(df["columns"][0][0], -0.110451095)
+
+        # multi-column
+        col_names = ["F5", "BEB3", "SIK1"]
+        filter = "&".join([f"var:{index_col_name}={name}" for name in col_names])
+        query = f"method=mean&{filter}"
+        query_hash = hashlib.sha1(query.encode()).hexdigest()
+        url = f"{self.URL_BASE}{endpoint}?key={query_hash}"
+        result = self.session.post(url, headers=headers, data=query)
+        self.assertEqual(result.status_code, HTTPStatus.OK)
+        self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
+        df = decode_fbs.decode_matrix_FBS(result.content)
+        self.assertEqual(df["n_rows"], 2638)
+        self.assertEqual(df["n_cols"], 1)
+        self.assertEqual(df["col_idx"], [query_hash])
+        self.assertAlmostEqual(df["columns"][0][0], -0.16628358)
+
     def _setupClass(child_class, command_line):
         child_class.ps, child_class.server = start_test_server(command_line)
         child_class.URL_BASE = f"{child_class.server}/api/v0.2/"
@@ -333,7 +423,8 @@ class EndPointsAnnotations(EndPoints):
 
     def test_get_user_annotations_existing_obs_keys_fbs(self):
         self._test_get_user_annotations_obs_keys_fbs(
-            "cluster-test", {"unassigned", "one", "two", "three", "four", "five", "six", "seven"},
+            "cluster-test",
+            {"unassigned", "one", "two", "three", "four", "five", "six", "seven"},
         )
 
     def test_put_user_annotations_obs_fbs(self):

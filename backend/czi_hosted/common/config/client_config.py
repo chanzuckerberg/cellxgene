@@ -44,6 +44,9 @@ def get_client_config(app_config, data_adaptor):
         "annotations": False,
         "annotations_file": None,
         "annotations_dir": None,
+        "annotations_genesets": True,  # feature flag
+        "annotations_genesets_readonly": True,
+        "annotations_genesets_summary_methods": ["mean"],
         "annotations_cell_ontology_enabled": False,
         "annotations_cell_ontology_obopath": None,
         "annotations_cell_ontology_terms": None,

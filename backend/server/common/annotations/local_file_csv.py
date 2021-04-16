@@ -4,14 +4,15 @@ import re
 import threading
 from datetime import datetime
 from hashlib import blake2b
-import csv
 
 import pandas as pd
 from flask import session, has_request_context, current_app
 
 from backend.server import __version__ as cellxgene_version
 from backend.server.common.annotations.annotations import Annotations
+from backend.common.genesets import read_gene_sets_tidycsv
 from backend.common.errors import AnnotationsError, ObsoleteRequest
+from backend.common.utils.data_locator import DataLocator
 
 
 class AnnotationsLocalFile(Annotations):
@@ -124,8 +125,8 @@ class AnnotationsLocalFile(Annotations):
                 if fname == self.last_geneset_fname:
                     gene_sets = self.last_geneset
                 else:
-                    with open(fname, newline="") as f:
-                        gene_sets = read_gene_set_tidycsv(f, context)
+                    # read
+                    gene_sets = read_gene_sets_tidycsv(DataLocator(fname), context)
 
                     # validate
                     gene_sets = data_adaptor.check_new_gene_sets(gene_sets, context)
@@ -259,6 +260,7 @@ class AnnotationsLocalFile(Annotations):
         params = {}
         params["annotations"] = self.user_annotations_enabled()
         params["annotations_genesets_readonly"] = not self.gene_sets_save_enabled()
+        params["annotations_genesets_name_is_read_only"] = self.gene_sets_output_file is not None
         params["user_annotation_collection_name_enabled"] = True
 
         if self.ontology_data:
@@ -276,99 +278,10 @@ class AnnotationsLocalFile(Annotations):
 
         elif session is not None:
             collection = self.get_collection()
-            params["annotations-data-collection-is-read-only"] = False
+            params["annotations-data-collection-is-read-only"] = not self.user_annotations_enabled()
             params["annotations-data-collection-name"] = collection
 
         if current_app.auth.is_user_authenticated():
             params["annotations-user-data-idhash"] = self._get_userdata_idhash(data_adaptor)
 
         parameters.update(params)
-
-
-def read_gene_set_tidycsv(f, context=None):
-    """
-    Read & parse the Tidy CSV format, applying validation checks for mandatory
-    values, and de-duping rules.
-
-    Format is a four-column CSV, with a mandatory header row, and optional "#" prefixed
-    comments.  Format:
-
-        gene_set_name, gene_set_description, gene_symbol, gene_description
-
-    gene_set_name must be non-null; others are optional.
-
-    Returns: a dictionary of the shape (values in angle-brackets vary):
-
-        {
-            <string, a gene set name>: {
-                "geneset_name": <string, a gene set name>,
-                "geneset_description": <a string or None>,
-                "genes": [
-                    {
-                        "gene_symbol": <string, a gene symbol or name>,
-                        "gene_description": <a string or None>
-                    },
-                    ...
-                ]
-            },
-            ...
-        }
-    """
-
-    class myDialect(csv.excel):
-        skipinitialspace = True
-
-    def just(n, seq):
-        it = iter(seq)
-        for _ in range(n - 1):
-            yield next(it, "")
-        yield tuple(it)
-
-    messagefn = context["messagefn"] if context else (lambda x: None)
-
-    reader = csv.reader(f, dialect=myDialect())
-    gene_sets = {}
-    haveReadHeader = False
-    lineno = 0
-    for row in reader:
-        lineno += 1
-        # ignore empty rows
-        if len(row) == 0:
-            continue
-        # if row starts with '#' it is a comment
-        if row[0].startswith("#"):
-            continue
-        # if this is the first non-comment row, assume it is a header
-        if not haveReadHeader:
-            if row != Annotations.Genesets_Header:
-                raise AnnotationsError("Geneset CSV file missing the required column header.")
-            haveReadHeader = True
-            continue
-
-        geneset_name, geneset_description, gene_symbol, gene_description, _ = just(5, row)
-        if not geneset_name:
-            raise AnnotationsError(f"Geneset CSV missing required geneset or gene name on line {lineno}")
-        if (not gene_symbol) and gene_description:
-            messagefn(f"Warning: Missing gene name in geneset name {geneset_name} on line {lineno}.")
-
-        if geneset_name in gene_sets:
-            gs = gene_sets[geneset_name]
-        else:
-            gs = gene_sets[geneset_name] = {
-                "geneset_name": geneset_name,
-                "geneset_description": geneset_description,
-                "genes": [],
-            }
-        # Use first geneset_description with a value
-        if not gs["geneset_description"] and geneset_description:
-            gs["geneset_description"] = geneset_description
-        # add the gene if the gene_symbol is defined
-        if gene_symbol:
-            gs["genes"].append(
-                {
-                    "gene_symbol": gene_symbol,
-                    "gene_description": gene_description,
-                }
-            )
-
-    return gene_sets
