@@ -1,12 +1,14 @@
 import React from "react";
 import { connect } from "react-redux";
+import { Tooltip2 } from "@blueprintjs/popover2";
+
 import {
   Button,
+  AnchorButton,
   Menu,
   MenuItem,
   Popover,
   Position,
-  Tooltip,
   Icon,
   PopoverInteractionKind,
 } from "@blueprintjs/core";
@@ -18,6 +20,7 @@ import AddGeneToGenesetDialogue from "./addGeneToGenesetDialogue";
 @connect((state) => {
   return {
     genesetsUI: state.genesetsUI,
+    colorAccessor: state.colors.colorAccessor,
   };
 })
 class GenesetMenus extends React.PureComponent {
@@ -43,19 +46,41 @@ class GenesetMenus extends React.PureComponent {
     });
   };
 
+  handleColorByEntireGeneset = () => {
+    const { dispatch, geneset } = this.props;
+
+    dispatch({
+      type: "color by geneset mean expression",
+      geneset,
+    });
+  };
+
   handleDeleteCategory = () => {
     const { dispatch, geneset } = this.props;
     dispatch(actions.genesetDelete(geneset));
   };
 
   render() {
-    const { geneset, genesetsEditable, createText } = this.props;
+    const {
+      geneset,
+      genesetsEditable,
+      createText,
+      colorAccessor,
+      isOpen,
+      toggleSummaryHisto,
+    } = this.props;
+
+    const isColorBy = geneset === colorAccessor;
+    const genesetClosed = !isOpen;
+    const showingAllGenes = !toggleSummaryHisto;
+
+    const notShowingSummary = genesetClosed || showingAllGenes;
 
     return (
       <>
         {genesetsEditable ? (
           <>
-            <Tooltip
+            <Tooltip2
               content={createText}
               position={Position.BOTTOM}
               hoverOpenDelay={globals.tooltipHoverOpenDelay}
@@ -69,7 +94,7 @@ class GenesetMenus extends React.PureComponent {
                 small
                 minimal
               />
-            </Tooltip>
+            </Tooltip2>
             <AddGeneToGenesetDialogue geneset={geneset} />
             <Popover
               interactionKind={PopoverInteractionKind.HOVER}
@@ -104,13 +129,22 @@ class GenesetMenus extends React.PureComponent {
                 minimal
               />
             </Popover>
-            <Button
-              disabled
-              style={{ marginLeft: 0 }}
-              data-testclass="colorby-entire-geneset"
-              data-testid={`${geneset}:colorby-entire-geneset`}
-              icon={<Icon icon="tint" iconSize={16} />}
-            />
+            <Tooltip2
+              content={`Color by gene set ${geneset} mean (gene set must be open, and toggled to mean expression histogram)`}
+              position={Position.BOTTOM}
+              hoverOpenDelay={globals.tooltipHoverOpenDelay}
+            >
+              <AnchorButton
+                disabled={notShowingSummary && !isColorBy}
+                active={isColorBy}
+                intent={isColorBy ? "primary" : "none"}
+                style={{ marginLeft: 0 }}
+                onClick={this.handleColorByEntireGeneset}
+                data-testclass="colorby-entire-geneset"
+                data-testid={`${geneset}:colorby-entire-geneset`}
+                icon={<Icon icon="tint" iconSize={16} />}
+              />
+            </Tooltip2>
           </>
         ) : null}
       </>

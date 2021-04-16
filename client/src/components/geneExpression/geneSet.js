@@ -179,7 +179,12 @@ class GeneSet extends React.Component {
             )}
           </span>
           <div>
-            <GenesetMenus genesetsEditable geneset={setName} />
+            <GenesetMenus
+              isOpen={isOpen}
+              toggleSummaryHisto={toggleSummaryHisto}
+              genesetsEditable
+              geneset={setName}
+            />
           </div>
         </div>
 
