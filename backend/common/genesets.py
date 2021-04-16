@@ -1,8 +1,11 @@
 """
 Utility code for gene sets handling
 """
+
 import re
 import csv
+import hashlib
+
 from .errors import AnnotationsError
 
 
@@ -131,9 +134,12 @@ def write_gene_sets_tidycsv(f, genesets):
             )
 
 
-def validate_gene_sets(genesets, var_names, context=None):
-    # XXX - TODO FIXME BKM needs updating to match requirements.
+def summarizeQueryHash(raw_query):
+    """ generate a cache key (hash) from the raw query string """
+    return hashlib.sha1(raw_query).hexdigest()
 
+
+def validate_gene_sets(genesets, var_names, context=None):
     """
     Check validity of gene sets, return if correct, else raise error.
     May also modify the gene set for conditions that should be resolved,
@@ -142,20 +148,28 @@ def validate_gene_sets(genesets, var_names, context=None):
     Argument gene sets may be either the REST OTA format (list of dicts) or the internal
     format (dict of dicts, keyed by the gene set name).
 
-    Will return a modified gene sets (eg, remove dups) of the same type as the
+    Will return a modified gene sets (eg, remove warnings) of the same type as the
     provided argument. Ie, dict->dict, list->list
 
     Rules:
-    0. all gene set names must be unique.
-    1. All gene set names must be comprised of legal characters, meaning:
-        * no leading or trailing white space
-        * no multi-space runs
-        * no tab, vertical tab, newline or return
-        Where "space" means ASCII 32. Generates hard error.
-    2. Gene symbols must be part of the current var_index.  If symbol not in var_index,
-        will generate a warning and the symbol removed.
-    3. Duplicate gene symbols are silently de-duped.
+
+    0. All gene set names must be unique. [error]
+    1. Gene set names must conform to the following: [error]
+        * Names must be comprised of 1 or more ASCII characters 32-126
+        * No leading or trailing spaces (ASCII 32)
+        * No multi-space (ASCII 32) runs
+    2. Gene symbols must be part of the current var_index. [warning]
+       If gene symbol is not in the var_index, generate a warning and remove the symbol
+       from the gene sets.
+    3. Gene symbols must not be duplicated in a gene set.  [warning]
+       Duplications will be silently de-duped.
+
+    Items marked [error] will generate a hard error, causing the validation to fail.
+
+    Items marked [warning] will generate a warning, and will be resolved without failing
+    the validation (typically by removing the offending item from the gene sets).
     """
+
     messagefn = context["messagefn"] if context else (lambda x: None)
 
     # accept genesets args as either the internal (dict) or REST (list) format,
@@ -170,7 +184,7 @@ def validate_gene_sets(genesets, var_names, context=None):
         raise KeyError("All gene set names must be unique.")
 
     # 1. check gene set character set and format
-    illegal_name = re.compile(r"^\s|  |[\v\t\r\n]|\s$")
+    illegal_name = re.compile(r"^\s|  |[\u0000-\u001F\u007F-\uFFFF]|\s$")
     for name in geneset_names:
         if type(name) != str or len(name) == 0:
             raise KeyError("Gene set names must be non-null string.")

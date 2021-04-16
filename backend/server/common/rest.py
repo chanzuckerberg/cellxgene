@@ -3,7 +3,7 @@ import logging
 import sys
 from http import HTTPStatus
 import zlib
-import hashlib
+import json
 
 from flask import make_response, jsonify, current_app, abort
 from werkzeug.urls import url_unquote
@@ -22,9 +22,7 @@ from backend.common.errors import (
     ObsoleteRequest,
     UnsupportedSummaryMethod,
 )
-
-import json
-
+from backend.common.genesets import summarizeQueryHash
 from backend.common.fbs.matrix import decode_matrix_fbs
 
 
@@ -390,7 +388,7 @@ def summarize_var_helper(request, data_adaptor, key, raw_query):
         return abort(HTTPStatus.NOT_ACCEPTABLE)
 
     summary_method = request.values.get("method", default="mean")
-    query_hash = hashlib.sha1(raw_query).hexdigest()  # cache helper
+    query_hash = summarizeQueryHash(raw_query)
     if key and query_hash != key:
         return abort(HTTPStatus.BAD_REQUEST, description="query key did not match")
 
