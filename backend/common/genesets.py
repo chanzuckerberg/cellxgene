@@ -132,7 +132,7 @@ def write_gene_sets_tidycsv(f, genesets):
 
 
 def validate_gene_sets(genesets, var_names, context=None):
-    # XXX - FIXME BKM needs updating.
+    # XXX - TODO FIXME BKM needs updating to match requirements.
 
     """
     Check validity of gene sets, return if correct, else raise error.
