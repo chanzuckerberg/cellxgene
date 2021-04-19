@@ -41,7 +41,7 @@
     "@aws-sdk/client-secrets-manager": "^3.13.0",
     "@blueprintjs/core": "^3.30.0",
     "@blueprintjs/icons": "^3.19.0",
-    "@blueprintjs/popover2": "^0.3.0",
+    "@blueprintjs/popover2": "^0.5.0",
     "@blueprintjs/select": "^3.13.5",
     "abort-controller": "^3.0.0",
     "core-js": "^3.6.5",
