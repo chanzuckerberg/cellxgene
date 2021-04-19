@@ -59,6 +59,7 @@ class Gene extends React.Component {
   render() {
     const {
       gene,
+      geneDescription,
       isColorAccessor,
       isScatterplotXXaccessor,
       isScatterplotYYaccessor,
@@ -68,6 +69,7 @@ class Gene extends React.Component {
     } = this.props;
     const { geneIsExpanded } = this.state;
     const genesetNameLengthVisible = 310; /* this magic number determines how much of a long geneset name we see */
+
     return (
       <div>
         <div
@@ -104,7 +106,7 @@ class Gene extends React.Component {
                   top: -1,
                 }}
               />
-              <Truncate>
+              <Truncate tooltipAddendum={`: ${geneDescription}`}>
                 <span
                   style={{
                     width: globals.leftSidebarWidth - genesetNameLengthVisible,
