@@ -95,7 +95,7 @@
     "babel-loader": "^8.1.0",
     "babel-preset-modern-browsers": "^15.0.2",
     "chalk": "^4.1.0",
-    "cheerio": "^1.0.0-rc.3",
+    "cheerio": "^1.0.0-rc.6",
     "clean-css": "^5.1.2",
     "clean-webpack-plugin": "^4.0.0-alpha.0",
     "codecov": "^3.7.1",
