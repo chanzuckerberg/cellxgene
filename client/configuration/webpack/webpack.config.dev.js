@@ -31,7 +31,7 @@ const devConfig = {
         test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2|otf)$/i,
         loader: "file-loader",
         include: [nodeModules, fonts],
-        query: {
+        options: {
           name: "static/assets/[name].[ext]",
           // (thuang): This is needed to make sure @font url path is '/static/assets/'
           publicPath: "/",
@@ -67,14 +67,19 @@ const devConfig = {
       __REACT_DEVTOOLS_GLOBAL_HOOK__: "({ isDisabled: true })",
     }),
     new webpack.DefinePlugin({
-      "process.env.CXG_SERVER_PORT": JSON.stringify(
-        process.env.CXG_SERVER_PORT
-      ),
+      // webpack 5 no longer polyfills NodeJS modules, so fake the one we need
+      "process.env": JSON.stringify({
+        NODE_ENV: process.env.NODE_ENV || "development",
+        CXG_SERVER_PORT: process.env.CXG_SERVER_PORT || "5005",
+      }),
     }),
     new ScriptExtHtmlWebpackPlugin({
       async: "obsolete",
     }),
   ],
+  infrastructureLogging: {
+    level: "warn",
+  },
 };
 
 module.exports = merge(sharedConfig, devConfig);

@@ -1,6 +1,6 @@
 import { Colors } from "@blueprintjs/core";
 import { dispatchNetworkErrorMessageToUser } from "./util/actionHelpers";
-import * as ENV_DEFAULT from "../../environment.default.json";
+import ENV_DEFAULT from "../../environment.default.json";
 
 /* if a categorical metadata field has more options than this, truncate */
 export const maxCategoricalOptionsToDisplay = 200;
