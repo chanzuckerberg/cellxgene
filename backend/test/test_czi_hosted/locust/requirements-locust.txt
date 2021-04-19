@@ -1,2 +1,2 @@
 locust
--r ../../requirements.txt
+-r ../../../czi_hosted/requirements.txt
