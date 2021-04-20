@@ -1,5 +1,5 @@
 import filter from "lodash.filter";
-ipmort zip from "lodash.zip";
+import zip from "lodash.zip";
 
 import Crossfilter from "../../../src/util/typedCrossfilter";
 
