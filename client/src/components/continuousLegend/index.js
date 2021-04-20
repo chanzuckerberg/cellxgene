@@ -116,6 +116,7 @@ class ContinuousLegend extends React.Component {
     if (colors !== prevProps?.colors || annoMatrix !== prevProps?.annoMatrix) {
       const { schema } = annoMatrix;
       const { colorMode, colorAccessor, userColors } = colors;
+
       const colorQuery = createColorQuery(
         colorMode,
         colorAccessor,
