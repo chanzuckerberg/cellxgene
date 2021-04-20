@@ -41,7 +41,7 @@ export function createColorQuery(colorMode, colorByAccessor, schema, genesets) {
       if (!genesets) return null;
 
       const _geneset = genesets.get(colorByAccessor);
-      const _setGenes = Array.from(_geneset.genes.keys());
+      const _setGenes = [..._geneset.genes];
 
       return [
         "X",
