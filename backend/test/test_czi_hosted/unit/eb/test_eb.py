@@ -40,9 +40,11 @@ class Elastic_Beanstalk_Test(unittest.TestCase):
 
         config.complete_config()
         config.write_config(f"{tempdirname}/config.yaml")
-        subprocess.check_call(f"git ls-files . | cpio -pdm {tempdirname}", cwd=f"{PROJECT_ROOT}/backend/czi_hosted/eb", shell=True)
+        subprocess.check_call(
+            f"git ls-files . | cpio -pdm {tempdirname}", cwd=f"{PROJECT_ROOT}/backend/czi_hosted/eb", shell=True
+        )
 
-        subprocess.check_call(["make", "build"], cwd=tempdirname)
+        subprocess.check_call(["make", "build-czi-hosted"], cwd=tempdirname)
         with run_eb_app(tempdirname) as server:
             session = requests.Session()
 
@@ -66,6 +68,7 @@ class Elastic_Beanstalk_Test(unittest.TestCase):
             with self.assertRaises(subprocess.CalledProcessError) as exception_context:
                 subprocess.check_output(command, env=env)
             output = str(exception_context.exception.stdout, "utf-8")
+            print(output)
             self.assertTrue(
                 output.startswith(
                     "Error: Invalid type for attribute: app__flask_secret_key, expected type str, got NoneType"
