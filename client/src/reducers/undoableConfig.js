@@ -80,6 +80,7 @@ const saveOnActions = new Set([
   "color by categorical metadata",
   "color by continuous metadata",
   "color by expression",
+  "color by geneset mean expression",
 
   "show centroid labels for category",
 
