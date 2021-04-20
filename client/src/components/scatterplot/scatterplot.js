@@ -53,6 +53,7 @@ const getYScale = memoize(getScale);
 
     differential: state.differential,
     crossfilter,
+    genesets: state.genesets.genesets,
   };
 })
 class Scatterplot extends React.PureComponent {
@@ -313,10 +314,10 @@ class Scatterplot extends React.PureComponent {
   }
 
   createColorByQuery(colors) {
-    const { annoMatrix } = this.props;
+    const { annoMatrix, genesets } = this.props;
     const { schema } = annoMatrix;
     const { colorMode, colorAccessor } = colors;
-    return createColorQuery(colorMode, colorAccessor, schema);
+    return createColorQuery(colorMode, colorAccessor, schema, genesets);
   }
 
   updateColorTable(colors, colorDf) {

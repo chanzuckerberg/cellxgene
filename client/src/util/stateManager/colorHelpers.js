@@ -13,7 +13,7 @@ given a color mode & accessor, generate an annoMatrix query that will
 fulfill it
 */
 export function createColorQuery(colorMode, colorByAccessor, schema, genesets) {
-  if (!colorMode || !colorByAccessor || !schema) return null;
+  if (!colorMode || !colorByAccessor || !schema || !genesets) return null;
   switch (colorMode) {
     case "color by categorical metadata":
     case "color by continuous metadata": {

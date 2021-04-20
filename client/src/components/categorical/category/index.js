@@ -44,6 +44,7 @@ const LABEL_WIDTH_ANNO = LABEL_WIDTH - ANNO_BUTTON_WIDTH;
     schema,
     crossfilter: state.obsCrossfilter,
     isUserAnno,
+    genesets: state.genesets.genesets,
   };
 })
 class Category extends React.PureComponent {
@@ -142,9 +143,15 @@ class Category extends React.PureComponent {
     */
     const { schema } = annoMatrix;
     const { colorAccessor, colorMode } = colors;
+    const { genesets } = this.props;
     let colorDataPromise = Promise.resolve(null);
     if (colorAccessor) {
-      const query = createColorQuery(colorMode, colorAccessor, schema);
+      const query = createColorQuery(
+        colorMode,
+        colorAccessor,
+        schema,
+        genesets
+      );
       if (query) colorDataPromise = annoMatrix.fetch(...query);
     }
     const [categoryData, colorData] = await Promise.all([

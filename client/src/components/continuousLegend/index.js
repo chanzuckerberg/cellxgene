@@ -106,16 +106,23 @@ const continuous = (selectorId, colorScale, colorAccessor) => {
 @connect((state) => ({
   annoMatrix: state.annoMatrix,
   colors: state.colors,
+  genesets: state.genesets.genesets,
 }))
 class ContinuousLegend extends React.Component {
   async componentDidUpdate(prevProps) {
-    const { annoMatrix, colors } = this.props;
+    const { annoMatrix, colors, genesets } = this.props;
     if (!colors || !annoMatrix) return;
 
     if (colors !== prevProps?.colors || annoMatrix !== prevProps?.annoMatrix) {
       const { schema } = annoMatrix;
       const { colorMode, colorAccessor, userColors } = colors;
-      const colorQuery = createColorQuery(colorMode, colorAccessor, schema);
+      const colorQuery = createColorQuery(
+        colorMode,
+        colorAccessor,
+        schema,
+        genesets
+      );
+
       const colorDf = colorQuery ? await annoMatrix.fetch(...colorQuery) : null;
       const colorTable = createColorTable(
         colorMode,
