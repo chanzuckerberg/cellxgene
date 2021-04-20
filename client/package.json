@@ -133,6 +133,7 @@
     "jest-puppeteer": "^4.4.0",
     "json-loader": "^0.5.7",
     "lint-staged": "^10.2.11",
+    "lodash": "^4.17.21",
     "lodash.every": "^4.6.0",
     "lodash.filter": "^4.6.0",
     "lodash.isnumber": "^3.0.3",
