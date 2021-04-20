@@ -78,7 +78,7 @@ class GenesetMenus extends React.PureComponent {
 
     return (
       <>
-        {genesetsEditable ? (
+        {genesetsEditable && (
           <>
             <Tooltip2
               content={createText}
@@ -146,7 +146,7 @@ class GenesetMenus extends React.PureComponent {
               />
             </Tooltip2>
           </>
-        ) : null}
+        )}
       </>
     );
   }
