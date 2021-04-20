@@ -34,9 +34,10 @@ export function createColorQuery(colorMode, colorByAccessor, schema, genesets) {
       ];
     }
     case "color by geneset mean expression": {
-      const varIndex = schema?.annotations?.var?.index;
       if (!varIndex) return null;
+      if (!genesets) return null;
 
+      const varIndex = schema?.annotations?.var?.index;
       const _geneset = genesets.get(colorByAccessor);
       const _setGenes = Array.from(_geneset.genes.keys());
 
