@@ -238,7 +238,7 @@ export async function createLabel(categoryName, labelName) {
    * 4. You will see `123` is persisted in the input box
    * 5. Expected behavior is to get an empty input box
    */
-  await page.waitFor(500);
+  await page.waitForTimeout(500);
 
   await clickOn(`${categoryName}:see-actions`);
 
@@ -374,7 +374,7 @@ async function waitUntilFormFieldStable(selector) {
     } catch (error) {
       retry += 1;
 
-      await page.waitFor(WAIT_FOR_MS);
+      await page.waitForTimeout(WAIT_FOR_MS);
     }
   }
 
