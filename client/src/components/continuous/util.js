@@ -1,4 +1,4 @@
-import _ from "lodash";
+import each from "lodash.each";
 import * as d3 from "d3";
 
 const paddingRight = 120;
@@ -14,7 +14,7 @@ export const devicePixelRatio = window.devicePixelRatio || 1;
 
 export const createDimensions = (data) => {
   const newArr = [];
-  _.each(data, (value, key) => {
+  each(data, (value, key) => {
     if (value.range) {
       newArr.push({
         key /* room for confusion: lodash calls this key, it's also the name of the property parallel coords code is looking for */,
