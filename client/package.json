@@ -39,10 +39,10 @@
   ],
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.13.0",
-    "@blueprintjs/core": "^3.30.0",
+    "@blueprintjs/core": "^3.44.0",
     "@blueprintjs/icons": "^3.19.0",
-    "@blueprintjs/popover2": "^0.5.0",
-    "@blueprintjs/select": "^3.13.5",
+    "@blueprintjs/popover2": "^0.6.0",
+    "@blueprintjs/select": "^3.16.0",
     "abort-controller": "^3.0.0",
     "core-js": "^3.6.5",
     "d3": "^4.10.0",
@@ -80,7 +80,7 @@
     "whatwg-fetch": "^3.2.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.13.15",
+    "@babel/core": "^7.13.16",
     "@babel/plugin-proposal-class-properties": "^7.10.4",
     "@babel/plugin-proposal-decorators": "^7.13.15",
     "@babel/plugin-proposal-export-namespace-from": "^7.10.4",
@@ -91,8 +91,8 @@
     "@babel/plugin-transform-runtime": "^7.13.15",
     "@babel/preset-env": "^7.13.15",
     "@babel/preset-react": "^7.13.13",
-    "@babel/register": "^7.13.14",
-    "@babel/runtime": "^7.10.5",
+    "@babel/register": "^7.13.16",
+    "@babel/runtime": "^7.13.16",
     "@blueprintjs/eslint-plugin": "^0.3.0",
     "@sentry/webpack-plugin": "^1.15.0",
     "babel-eslint": "^10.1.0",
