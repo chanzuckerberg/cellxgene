@@ -1,4 +1,4 @@
-import each from "lodash.each";
+import each from "lodash.foreach";
 import * as d3 from "d3";
 
 const paddingRight = 120;

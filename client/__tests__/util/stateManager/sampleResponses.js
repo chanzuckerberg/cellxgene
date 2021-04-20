@@ -1,6 +1,6 @@
 import every from "lodash.every";
 import map from "lodash.map";
-import isNumber from "lodash.isNumber";
+import isNumber from "lodash.isnumber";
 import zip from "lodash.zip";
 import { flatbuffers } from "flatbuffers";
 import { NetEncoding } from "../../../src/util/stateManager/matrix_generated";

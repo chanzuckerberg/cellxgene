@@ -3,8 +3,9 @@
  * @param geneString - a string of comma delimited genes
  * @returns an array
  */
+import pull from "lodash.pull";
 import uniq from "lodash.uniq";
 
 export default function parseBulkGeneString(geneString) {
-  return _.pull(uniq(geneString.split(/[ ,]+/)), "");
+  return pull(uniq(geneString.split(/[ ,]+/)), "");
 }
