@@ -8,7 +8,9 @@ function isLikelyASyntaxError(message) {
   return message.indexOf(friendlySyntaxErrorLabel) !== -1;
 }
 
-function formatMessage(message) {
+function formatMessage(messageObject) {
+  let { message, details } = messageObject;
+  if (details) message = message + ": " + details;
   return message
     .replace("Module build failed: SyntaxError:", friendlySyntaxErrorLabel)
     .replace(

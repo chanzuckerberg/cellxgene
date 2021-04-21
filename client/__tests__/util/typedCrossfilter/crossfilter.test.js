@@ -1,4 +1,5 @@
-import _ from "lodash";
+import filter from "lodash.filter";
+import zip from "lodash.zip";
 
 import Crossfilter from "../../../src/util/typedCrossfilter";
 
@@ -251,12 +252,12 @@ describe("ImmutableTypedCrossfilter", () => {
     test.each([[[]], [[2]], [[2, 1]], [[9, 82]], [[0, 1]]])("exact: %p", (v) =>
       expect(
         p.select("quantity", { mode: "exact", values: v }).countSelected()
-      ).toEqual(_.filter(someData, (d) => v.includes(d.quantity)).length)
+      ).toEqual(filter(someData, (d) => v.includes(d.quantity)).length)
     );
     test("single value exact", () => {
       expect(
         p.select("quantity", { mode: "exact", values: 2 }).countSelected()
-      ).toEqual(_.filter(someData, (d) => d.quantity === 2).length);
+      ).toEqual(filter(someData, (d) => d.quantity === 2).length);
     });
     test.each([
       [0, 1],
@@ -267,7 +268,7 @@ describe("ImmutableTypedCrossfilter", () => {
       expect(
         p.select("quantity", { mode: "range", lo, hi }).countSelected()
       ).toEqual(
-        _.filter(someData, (d) => d.quantity >= lo && d.quantity < hi).length
+        filter(someData, (d) => d.quantity >= lo && d.quantity < hi).length
       )
     );
     test("bad mode", () => {
@@ -298,12 +299,12 @@ describe("ImmutableTypedCrossfilter", () => {
     ])("exact: %p", (v) =>
       expect(
         p.select("type", { mode: "exact", values: v }).countSelected()
-      ).toEqual(_.filter(someData, (d) => v.includes(d.type)).length)
+      ).toEqual(filter(someData, (d) => v.includes(d.type)).length)
     );
     test("single value exact", () => {
       expect(
         p.select("type", { mode: "exact", values: "tab" }).countSelected()
-      ).toEqual(_.filter(someData, (d) => d.type === "tab").length);
+      ).toEqual(filter(someData, (d) => d.type === "tab").length);
     });
     test("range", () => {
       expect(() => p.select("type", { mode: "range", lo: 0, hi: 9 })).toThrow(
@@ -341,7 +342,7 @@ describe("ImmutableTypedCrossfilter", () => {
           .select("coords", { mode: "within-rect", minX, minY, maxX, maxY })
           .allSelected()
       ).toEqual(
-        _.filter(someData, (d) => {
+        filter(someData, (d) => {
           const [x, y] = d.coords;
           return minX <= x && x < maxX && minY <= y && y < maxY;
         })
@@ -397,7 +398,7 @@ describe("ImmutableTypedCrossfilter", () => {
       expect(
         p.select("coords", { mode: "within-polygon", polygon }).allSelected()
       ).toEqual(
-        _.zip(someData, expected)
+        zip(someData, expected)
           .filter((x) => x[1])
           .map((x) => x[0])
       );
