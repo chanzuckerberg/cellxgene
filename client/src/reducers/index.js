@@ -60,7 +60,6 @@ const Reducer = undoable(
     "layoutChoice",
     "centroidLabels",
     "genesets",
-    "genesetsUI",
     "annotations",
   ],
   undoableConfig
