@@ -1,7 +1,7 @@
 /*
 Action creators for user annotation
 */
-import _ from "lodash";
+import difference from "lodash.difference";
 import pako from "pako";
 import * as globals from "../globals";
 import { MatrixFBS, AnnotationsHelpers } from "../util/stateManager";
@@ -308,7 +308,7 @@ export const needToSaveObsAnnotations = (annoMatrix, lastSavedAnnoMatrix) => {
 
   // if the schema has changed, we need to save
   const currentWritable = writableAnnotations(annoMatrix);
-  if (_.difference(currentWritable, writableAnnotations(lastSavedAnnoMatrix))) {
+  if (difference(currentWritable, writableAnnotations(lastSavedAnnoMatrix))) {
     return true;
   }
 

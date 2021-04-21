@@ -423,6 +423,7 @@ const CategoryHeader = React.memo(
                   maxWidth: isUserAnno ? LABEL_WIDTH_ANNO : LABEL_WIDTH,
                 }}
                 data-testid={`${metadataField}:category-label`}
+                tabIndex="-1"
               >
                 {metadataField}
               </span>

@@ -1,3 +1,7 @@
+import every from "lodash.every";
+import map from "lodash.map";
+import isNumber from "lodash.isnumber";
+import zip from "lodash.zip";
 import _ from "lodash";
 import { flatbuffers } from "flatbuffers";
 import { NetEncoding } from "../../../src/util/stateManager/matrix_generated";
@@ -121,10 +125,10 @@ function encodeMatrix(columns, colIndex = undefined) {
   */
   const utf8Encoder = new TextEncoder("utf-8");
   const builder = new flatbuffers.Builder(1024);
-  const cols = _.map(columns, (carr) => {
+  const cols = map(columns, (carr) => {
     let uType;
     let tarr;
-    if (_.every(carr, _.isNumber)) {
+    if (every(carr, isNumber)) {
       uType = NetEncoding.TypedArray.Float32Array;
       tarr = encodeTypedArray(builder, uType, new Float32Array(carr));
     } else {
@@ -167,12 +171,12 @@ function encodeMatrix(columns, colIndex = undefined) {
 }
 
 const anAnnotationsObsFBSResponse = (() => {
-  const columns = _.zip(...anAnnotationsObsJSONResponse.data).slice(1);
+  const columns = zip(...anAnnotationsObsJSONResponse.data).slice(1);
   return encodeMatrix(columns, anAnnotationsObsJSONResponse.names);
 })();
 
 const anAnnotationsVarFBSResponse = (() => {
-  const columns = _.zip(...anAnnotationsVarJSONResponse.data).slice(1);
+  const columns = zip(...anAnnotationsVarJSONResponse.data).slice(1);
   return encodeMatrix(columns, anAnnotationsVarJSONResponse.names);
 })();
 

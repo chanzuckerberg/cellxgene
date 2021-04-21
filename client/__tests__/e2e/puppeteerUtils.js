@@ -32,7 +32,7 @@ export async function typeInto(testId, text) {
   const selector = getTestId(testId);
   // type ahead can be annoying if you don't pause before you type
   await page.click(selector);
-  await page.waitFor(200);
+  await page.waitForTimeout(200);
   await page.type(selector, text);
 }
 
@@ -42,7 +42,7 @@ export async function clearInputAndTypeInto(testId, text) {
   // only works for text without special characters
   // type ahead can be annoying if you don't pause before you type
   await page.click(selector);
-  await page.waitFor(200);
+  await page.waitForTimeout(200);
   // select all
   await page.click(selector, { clickCount: 3 });
   await page.keyboard.press("Backspace");
@@ -72,7 +72,7 @@ export async function clickOnUntil(testId, assert) {
     } catch (error) {
       retry += 1;
 
-      await page.waitFor(WAIT_FOR_MS);
+      await page.waitForTimeout(WAIT_FOR_MS);
     }
   }
 
