@@ -1,4 +1,4 @@
-import _ from "lodash";
+import cloneDeep from "lodash.clonedeep";
 
 import calcCentroid from "../../src/util/centroid";
 import quantile from "../../src/util/quantile";
@@ -13,7 +13,7 @@ describe("centroid", () => {
   let obsLayout;
 
   beforeAll(() => {
-    schema = indexEntireSchema(_.cloneDeep(REST.schema.schema));
+    schema = indexEntireSchema(cloneDeep(REST.schema.schema));
     obsAnnotations = matrixFBSToDataframe(REST.annotationsObs);
     obsLayout = matrixFBSToDataframe(REST.layoutObs);
 

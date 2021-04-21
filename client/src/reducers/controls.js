@@ -1,4 +1,5 @@
-import _ from "lodash";
+import uniq from "lodash.uniq";
+import filter from "lodash.filter";
 import { subsetAndResetGeneLists } from "../util/stateManager/controlsHelpers";
 
 const Controls = (
@@ -80,7 +81,7 @@ const Controls = (
     }
     case "request user defined gene success": {
       const { userDefinedGenes } = state;
-      const _userDefinedGenes = _.uniq(
+      const _userDefinedGenes = uniq(
         userDefinedGenes.concat(action.data.genes)
       );
       return {
@@ -104,7 +105,7 @@ const Controls = (
     }
     case "clear user defined gene": {
       const { userDefinedGenes } = state;
-      const newUserDefinedGenes = _.filter(
+      const newUserDefinedGenes = filter(
         userDefinedGenes,
         (d) => d !== action.data
       );

@@ -1,4 +1,5 @@
-import _ from "lodash";
+import pull from "lodash.pull";
+import uniq from "lodash.uniq";
 import React from "react";
 import { connect } from "react-redux";
 import AnnoDialog from "../../annoDialog";
@@ -46,8 +47,8 @@ class CreateGenesetDialogue extends React.PureComponent {
     if (genesToPopulateGeneset) {
       const genesTmpHardcodedFormat = [];
 
-      const genesArrayFromString = _.pull(
-        _.uniq(genesToPopulateGeneset.split(/[ ,]+/)),
+      const genesArrayFromString = pull(
+        uniq(genesToPopulateGeneset.split(/[ ,]+/)),
         ""
       );
 

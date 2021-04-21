@@ -2,7 +2,8 @@
 Helper functions for the controls reducer
 */
 
-import _ from "lodash";
+import uniq from "lodash.uniq";
+import difference from "lodash.difference";
 
 import * as globals from "../../globals";
 import { rangeFill as fillRange } from "../range";
@@ -145,7 +146,7 @@ export function pruneVarDataCache(varData, needed) {
 
   const { colIndex } = varData;
   const all = colIndex.labels();
-  const unused = _.difference(all, needed);
+  const unused = difference(all, needed);
   if (unused.length > 0) {
     // sort by offset in the dataframe - ie, psuedo-LRU
     unused.sort((a, b) => colIndex.getOffset(a) - colIndex.getOffset(b));
@@ -160,7 +161,7 @@ export function pruneVarDataCache(varData, needed) {
 
 export function subsetAndResetGeneLists(state) {
   const { userDefinedGenes, diffexpGenes } = state;
-  const newUserDefinedGenes = _.uniq(
+  const newUserDefinedGenes = uniq(
     [].concat(userDefinedGenes, diffexpGenes)
   ).slice(0, globals.maxGenes);
   const newDiffExpGenes = [];

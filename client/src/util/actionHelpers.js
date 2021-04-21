@@ -1,4 +1,4 @@
-import _ from "lodash";
+import sortBy from "lodash.sortby";
 /* XXX: cough, cough, ... */
 import { postNetworkErrorToast } from "../components/framework/toasters";
 
@@ -110,7 +110,7 @@ export const rangeEncodeIndices = (
   }
 
   if (!sorted) {
-    indices = _.sortBy(indices);
+    indices = sortBy(indices);
   }
 
   const result = new Array(indices.length);
