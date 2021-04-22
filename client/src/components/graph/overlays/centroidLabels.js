@@ -14,6 +14,8 @@ export default
   dilatedValue: state.pointDilation.categoryField,
   categoricalSelection: state.categoricalSelection,
   showLabels: state.centroidLabels?.showLabels,
+  genesets: state.genesets.genesets,
+  differential: state.differential,
 }))
 class CentroidLabels extends PureComponent {
   static watchAsync(props, prevProps) {
@@ -74,10 +76,16 @@ class CentroidLabels extends PureComponent {
   };
 
   colorByQuery() {
-    const { annoMatrix, colors } = this.props;
+    const { annoMatrix, colors, genesets, differential } = this.props;
     const { schema } = annoMatrix;
     const { colorMode, colorAccessor } = colors;
-    return createColorQuery(colorMode, colorAccessor, schema);
+    return createColorQuery(
+      colorMode,
+      colorAccessor,
+      schema,
+      genesets,
+      differential.diffExp
+    );
   }
 
   async fetchData() {
