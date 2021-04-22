@@ -276,7 +276,7 @@ describe("geneset: update", () => {
           },
         }
       );
-    }).toThrow("update specified existing name");
+    }).toThrow("update specified existing name and description");
   });
 });
 

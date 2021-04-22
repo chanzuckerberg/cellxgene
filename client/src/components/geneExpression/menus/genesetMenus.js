@@ -107,7 +107,7 @@ class GenesetMenus extends React.PureComponent {
                     data-testclass="activateEditGenesetNameMode"
                     data-testid={`${geneset}:edit-genesetName-mode`}
                     onClick={this.activateEditGenesetNameMode}
-                    text="Edit gene set name"
+                    text="Edit gene set name and description"
                   />
                   <MenuItem
                     icon="trash"
