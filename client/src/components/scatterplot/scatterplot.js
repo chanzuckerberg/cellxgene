@@ -314,10 +314,16 @@ class Scatterplot extends React.PureComponent {
   }
 
   createColorByQuery(colors) {
-    const { annoMatrix, genesets } = this.props;
+    const { annoMatrix, genesets, differential } = this.props;
     const { schema } = annoMatrix;
     const { colorMode, colorAccessor } = colors;
-    return createColorQuery(colorMode, colorAccessor, schema, genesets);
+    return createColorQuery(
+      colorMode,
+      colorAccessor,
+      schema,
+      genesets,
+      differential
+    );
   }
 
   updateColorTable(colors, colorDf) {
