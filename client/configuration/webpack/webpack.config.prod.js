@@ -1,4 +1,5 @@
 const path = require("path");
+const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const TerserJSPlugin = require("terser-webpack-plugin");
@@ -45,7 +46,7 @@ const prodConfig = {
         test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2|otf)$/i,
         loader: "file-loader",
         include: [nodeModules, fonts],
-        query: {
+        options: {
           name: "static/assets/[name]-[contenthash].[ext]",
           // (thuang): This is needed to make sure @font url path is '../static/assets/'
           publicPath: "static/",
@@ -85,6 +86,12 @@ const prodConfig = {
     }),
     new CspHashPlugin({
       filename: "csp-hashes.json",
+    }),
+    new webpack.DefinePlugin({
+      // webpack 5 no longer polyfills NodeJS modules, so fake the one we need
+      "process.env": JSON.stringify({
+        NODE_ENV: "production",
+      }),
     }),
   ],
   performance: {

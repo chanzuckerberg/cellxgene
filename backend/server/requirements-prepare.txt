@@ -1,2 +1,2 @@
-python-igraph
+python-igraph>=0.8
 louvain>=0.6

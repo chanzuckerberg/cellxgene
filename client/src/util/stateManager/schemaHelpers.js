@@ -4,7 +4,7 @@ Helpers for schema management
 TODO: all this would be much more natural if done with a framework
 like immutable.js
 */
-import _ from "lodash";
+import cloneDeep from "lodash.clonedeep";
 
 import fromEntries from "../fromEntries";
 import catLabelSort from "../catLabelSort";
@@ -39,7 +39,7 @@ function _copyObsAnno(schema) {
     ...schema,
     annotations: {
       ...schema.annotations,
-      obs: _.cloneDeep(schema.annotations.obs),
+      obs: cloneDeep(schema.annotations.obs),
     },
   };
 }
@@ -49,7 +49,7 @@ function _copyObsLayout(schema) {
     ...schema,
     layout: {
       ...schema.layout,
-      obs: _.cloneDeep(schema.layout.obs),
+      obs: cloneDeep(schema.layout.obs),
     },
   };
 }

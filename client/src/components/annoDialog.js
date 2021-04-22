@@ -48,6 +48,7 @@ class AnnoDialog extends React.PureComponent {
               >
                 {errorMessage}
               </p>
+              {/* we might rename, secondary button and secondary input are not related */}
               {secondaryInstructions && (
                 <p style={{ marginTop: secondaryInstructions ? 20 : 0 }}>
                   {secondaryInstructions}
@@ -62,6 +63,7 @@ class AnnoDialog extends React.PureComponent {
               <Tooltip content={cancelTooltipContent}>
                 <Button onClick={handleCancel}>Cancel</Button>
               </Tooltip>
+              {/* we might rename, secondary button and secondary input are not related */}
               {handleSecondaryButtonSubmit && secondaryButtonText ? (
                 <Button
                   onClick={handleSecondaryButtonSubmit}

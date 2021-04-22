@@ -32,7 +32,6 @@ const app = express();
 
 app.use(
   devMiddleware(compiler, {
-    logLevel: "warn",
     publicPath: config.output.publicPath,
     index: true,
   })
