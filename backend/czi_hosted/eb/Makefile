@@ -54,6 +54,6 @@ build: clean
 	(cd artifact.dir; \
 	  cp -r backend/czi_hosted/common/web/static static; \
 	  zip -r ../artifact.zip . --exclude backend/czi_hosted/test/\* backend/czi_hosted/eb/\* ; ); \
-	if ! [ -f .elasticbeanstalk/config.yml ] ; then \
+	if ! grep artifact.zip .elasticbeanstalk/config.yml ; then \
 	    mkdir -p .elasticbeanstalk ; cat config_deploy.yaml >> .elasticbeanstalk/config.yml ; fi
 
