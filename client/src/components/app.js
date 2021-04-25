@@ -8,6 +8,7 @@ import LeftSideBar from "./leftSidebar";
 import RightSideBar from "./rightSidebar";
 import Legend from "./continuousLegend";
 import Graph from "./graph/graph";
+import Dotplot from "./dotplot";
 import MenuBar from "./menubar";
 import Autosave from "./autosave";
 import Embedding from "./embedding";
@@ -19,6 +20,7 @@ import actions from "../actions";
   loading: state.controls.loading,
   error: state.controls.error,
   graphRenderCounter: state.controls.graphRenderCounter,
+  layoutChoice: state.layoutChoice,
 }))
 class App extends React.Component {
   componentDidMount() {
@@ -39,7 +41,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { loading, error, graphRenderCounter } = this.props;
+    const { loading, error, graphRenderCounter, layoutChoice } = this.props;
     return (
       <Container>
         <Helmet title="cellxgene" />
@@ -77,7 +79,11 @@ class App extends React.Component {
                 <Autosave />
                 <TermsOfServicePrompt />
                 <Legend viewportRef={viewportRef} />
-                <Graph key={graphRenderCounter} viewportRef={viewportRef} />
+                {layoutChoice.dotplot ? (
+                  <Dotplot viewportRef={viewportRef} />
+                ) : (
+                  <Graph key={graphRenderCounter} viewportRef={viewportRef} />
+                )}
               </>
             )}
             <RightSideBar />

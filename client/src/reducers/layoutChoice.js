@@ -24,6 +24,7 @@ function setToDefaultLayout(schema) {
 const LayoutChoice = (
   state = {
     available: [], // all available choices
+    dotplot: true /* todo(colinmegill) #632 wire up inputs */,
     current: undefined, // name of the current layout, eg, 'umap'
     currentDimNames: [], // dimension name
   },
