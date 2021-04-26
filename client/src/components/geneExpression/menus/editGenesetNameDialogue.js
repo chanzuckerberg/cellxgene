@@ -14,14 +14,16 @@ class RenameGeneset extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      genesetName: props.parentGeneset,
+      newGenesetName: props.parentGeneset,
+      newGenesetDescription: props.parentGenesetDescription,
     };
   }
 
   disableEditGenesetNameMode = (e) => {
     const { dispatch } = this.props;
     this.setState({
-      genesetName: "",
+      newGenesetName: "",
+      newGenesetDescription: "",
     });
     dispatch({
       type: "geneset: disable rename geneset mode",
@@ -31,12 +33,15 @@ class RenameGeneset extends React.PureComponent {
 
   renameGeneset = (e) => {
     const { dispatch, genesetsUI } = this.props;
-    const { genesetName } = this.state;
+    const { newGenesetName, newGenesetDescription } = this.state;
 
     dispatch({
       type: "geneset: update",
       genesetName: genesetsUI.isEditingGenesetName,
-      update: { genesetName },
+      update: {
+        genesetName: newGenesetName,
+        genesetDescription: newGenesetDescription,
+      },
     });
     dispatch({
       type: "geneset: disable rename geneset mode",
@@ -49,12 +54,16 @@ class RenameGeneset extends React.PureComponent {
   };
 
   handleChange = (e) => {
-    this.setState({ genesetName: e });
+    this.setState({ newGenesetName: e });
+  };
+
+  handleChangeDescription = (e) => {
+    this.setState({ newGenesetDescription: e });
   };
 
   render() {
-    const { genesetName } = this.state;
-    const { genesetsUI, parentGeneset } = this.props;
+    const { newGenesetName, newGenesetDescription } = this.state;
+    const { genesetsUI, parentGeneset, parentGenesetDescription } = this.props;
 
     return (
       <>
@@ -66,15 +75,19 @@ class RenameGeneset extends React.PureComponent {
           primaryButtonProps={{
             "data-testid": `${genesetsUI.isEditingGenesetName}:submit-geneset`,
           }}
-          title="Rename gene set"
+          title="Edit gene set name and description"
           instruction={`Rename ${genesetsUI.isEditingGenesetName}`}
           cancelTooltipContent="Close this dialog without renaming the gene set."
-          primaryButtonText="Rename gene set"
-          text={genesetName}
-          validationError={genesetsUI.isEditingGenesetName === genesetName}
+          primaryButtonText="Edit gene set name and description"
+          text={newGenesetName}
+          secondaryText={newGenesetDescription}
+          validationError={
+            genesetsUI.isEditingGenesetName === newGenesetName &&
+            parentGenesetDescription === newGenesetDescription
+          }
           annoInput={
             <LabelInput
-              label={genesetName}
+              label={newGenesetName}
               onChange={this.handleChange}
               inputProps={{
                 "data-testid": "rename-geneset-modal",
@@ -82,7 +95,16 @@ class RenameGeneset extends React.PureComponent {
                 intent: "none",
                 autoFocus: true,
               }}
-              newLabelMessage="Rename gene set"
+            />
+          }
+          secondaryInstructions="Edit description"
+          secondaryInput={
+            <LabelInput
+              label={newGenesetDescription}
+              onChange={this.handleChangeDescription}
+              inputProps={{ "data-testid": "change geneset description" }}
+              intent="none"
+              autoFocus={false}
             />
           }
           handleSubmit={this.renameGeneset}

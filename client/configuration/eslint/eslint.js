@@ -7,7 +7,7 @@ module.exports = {
     "plugin:@blueprintjs/recommended",
     "plugin:compat/recommended",
     "plugin:prettier/recommended",
-    "prettier/react",
+    "prettier",
   ],
   settings: {
     polyfills: [

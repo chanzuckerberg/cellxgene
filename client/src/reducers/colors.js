@@ -4,8 +4,8 @@ Color By UI state
 
 const ColorsReducer = (
   state = {
-    colorMode: null,
-    colorAccessor: null,
+    colorMode: null /* by continuous, by expression */,
+    colorAccessor: null /* tissue, Apod */,
   },
   action,
   nextSharedState,
@@ -88,6 +88,21 @@ const ColorsReducer = (
         action.type === state.colorMode && action.gene === state.colorAccessor;
       const colorMode = !resetCurrent ? action.type : null;
       const colorAccessor = !resetCurrent ? action.gene : null;
+
+      return {
+        ...state,
+        colorMode,
+        colorAccessor,
+      };
+    }
+
+    case "color by geneset mean expression": {
+      /* toggle between this mode and reset */
+      const resetCurrent =
+        action.type === state.colorMode &&
+        action.geneset === state.colorAccessor;
+      const colorMode = !resetCurrent ? action.type : null;
+      const colorAccessor = !resetCurrent ? action.geneset : null;
 
       return {
         ...state,

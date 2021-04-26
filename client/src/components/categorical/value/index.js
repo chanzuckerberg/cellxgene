@@ -590,6 +590,7 @@ class CategoryValue extends React.Component {
               <span
                 data-testid={`categorical-value-${metadataField}-${displayString}`}
                 data-testclass="categorical-value"
+                tabIndex="-1"
                 style={{
                   width: labelWidth,
                   color:

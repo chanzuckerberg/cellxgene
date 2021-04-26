@@ -5,7 +5,7 @@ const {
 
 const { setup } = require("jest-environment-puppeteer");
 
-const client = new SecretsManagerClient();
+const client = new SecretsManagerClient({ region: "us-west-2" });
 
 const secretValueRequest = {
   SecretId: "corpora/backend/dev/auth0-secret",
