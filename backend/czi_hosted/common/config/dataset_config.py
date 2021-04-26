@@ -54,7 +54,9 @@ class DatasetConfig(BaseConfig):
         except KeyError as e:
             raise ConfigurationError(f"Unexpected config: {str(e)}")
 
-        # The annotation object is created during complete_config and stored here.
+        # Create the default annotation, which supports gene set reading without
+        # further configuration. Depending on configuration options, `complete_config` 
+        # may create a more specialized annotation object and replace this default.
         self.user_annotations = Annotations()
 
     def complete_config(self, context):
