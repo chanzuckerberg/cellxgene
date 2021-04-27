@@ -5,10 +5,11 @@ import fsspec
 
 from backend.common.errors import OntologyLoadFailure, DisabledFeatureError
 from backend.common.utils.type_conversion_utils import get_schema_type_hint_of_array
+from backend.common.genesets import write_gene_sets_tidycsv
 
 
 class Annotations(metaclass=ABCMeta):
-    """ baseclass for annotations, including ontologies and genesets"""
+    """ baseclass for annotations, including ontologies and gene sets"""
 
     """ our default ontology is the PURL for the Cell Ontology.
     See http://www.obofoundry.org/ontology/cl.html """
@@ -30,7 +31,7 @@ class Annotations(metaclass=ABCMeta):
 
     def check_gene_sets_save_enabled(self):
         if not self.gene_sets_save_enabled():
-            raise DisabledFeatureError("User genesets save is disabled.")
+            raise DisabledFeatureError("User gene sets save is disabled.")
 
     def load_ontology(self, path):
         """Load and parse ontologies - currently support OBO files only."""
@@ -81,12 +82,12 @@ class Annotations(metaclass=ABCMeta):
 
     @abstractmethod
     def read_gene_sets(self, data_adaptor):
-        """Return the genesets from persistent storage """
+        """Return the gene sets from persistent storage """
         pass
 
     @abstractmethod
     def write_gene_sets(self, gs, data_adaptor):
-        """Write the genesets (gs) to a persistent storage such that it can later be read"""
+        """Write the gene sets (gs) to a persistent storage such that it can later be read"""
         pass
 
     @abstractmethod
@@ -94,51 +95,25 @@ class Annotations(metaclass=ABCMeta):
         """Update configuration parameters that describe information about the annotations feature"""
         pass
 
-    Genesets_Header = [
-        "gene_set_name",
-        "gene_set_description",
-        "gene_symbol",
-        "gene_description",
-    ]
-
     @staticmethod
     def gene_sets_to_csv(genesets):
         """
-        Convert the internal genesets format (returned by read_gene_set) into
+        Convert the internal gene sets format (returned by read_gene_set) into
         the simple Tidy CSV.
         """
         from io import StringIO
-        import csv
 
         if isinstance(genesets, dict):
             genesets = genesets.values()
 
         with StringIO() as sio:
-            writer = csv.writer(sio, dialect='excel')
-            writer.writerow(Annotations.Genesets_Header)
-            for geneset in genesets:
-                # genes may be empty, in which case we skip the geneset entirely
-                genes = geneset["genes"]
-                if not genes:
-                    writer.writerow([geneset["geneset_name"], geneset.get("geneset_description", ""), "", ""])
-                else:
-                    writer.writerows(
-                        [
-                            [
-                                geneset["geneset_name"],
-                                geneset.get("geneset_description", ""),
-                                gene["gene_symbol"],
-                                gene.get("gene_description", ""),
-                            ]
-                            for gene in genes
-                        ]
-                    )
+            write_gene_sets_tidycsv(sio, genesets)
             return sio.getvalue()
 
     @staticmethod
     def gene_sets_to_response(genesets):
         """
-        Convert the internal genesets format (returned by read_gene_set) into
+        Convert the internal gene sets format (returned by read_gene_set) into
         the dict expected by the JSON REST API
         """
         return list(genesets.values())

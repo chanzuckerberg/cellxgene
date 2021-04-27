@@ -138,7 +138,7 @@ class DatasetConfig(BaseConfig):
 
         if dirname is not None and (filename is not None or genesets_filename is not None):
             raise ConfigurationError(
-                "'user-generated-data-dir' may not be used with annotations-file' or 'genesets-file'."
+                "'user-generated-data-dir' may not be used with 'annotations-file' or 'gene-sets-file'."
             )
 
         if filename is not None:

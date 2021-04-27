@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 from os.path import basename, splitext
-import re
 import numpy as np
 import pandas as pd
 from scipy import sparse
@@ -11,6 +10,7 @@ from backend.common.constants import Axis
 from backend.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError, UnsupportedSummaryMethod
 from backend.common.utils.utils import jsonify_numpy
 from backend.common.fbs.matrix import encode_matrix_fbs
+from backend.common.genesets import validate_gene_sets
 
 
 class DataAdaptor(metaclass=ABCMeta):
@@ -263,95 +263,8 @@ class DataAdaptor(metaclass=ABCMeta):
         return labels_df
 
     def check_new_gene_sets(self, genesets, context=None):
-        """
-        Check validity of gene sets, return if correct, else raise error.
-        May also modify the gene set for conditions that should be resolved,
-        but which do not warrant a hard error.
-
-        Argument genesets may be either the REST OTA format (list of dicts) or the internal
-        format (dict of dicts, keyed by the geneset name).
-
-        Will return a modified genesets (eg, remove dups) of the same type as the
-        provided argument. Ie, dict->dict, list->list
-
-        Rules:
-        0. all geneset names must be unique.
-        1. All geneset names must be comprised of legal characters, meaning:
-            * no leading or trailing white space
-            * no multi-space runs
-            * no tab, vertical tab, newline or return
-           Where "space" means ASCII 32. Generates hard error.
-        2. Gene symbols must be part of the current var_index.  If symbol not in var_index,
-           will generate a warning and the symbol removed.
-        3. Duplicate gene symbols are silently de-duped.
-        """
-        messagefn = context["messagefn"] if context else (lambda x: None)
-
-        # accept genesets args as either the internal (dict) or REST (list) format,
-        # as they are identical except for the dict being keyed by geneset_name.
-        if not isinstance(genesets, dict) and not isinstance(genesets, list):
-            raise ValueError("Genesets must be either dict or list.")
-        genesets_iterable = genesets if isinstance(genesets, list) else genesets.values()
-
-        # 0. check for uniqueness of geneset names
-        geneset_names = [gs["geneset_name"] for gs in genesets_iterable]
-        if len(set(geneset_names)) != len(geneset_names):
-            raise KeyError("All geneset names must be unique.")
-
-        # 1. check gene set character set and format
-        illegal_name = re.compile(r"^\s|  |[\v\t\r\n]|\s$")
-        for name in geneset_names:
-            if type(name) != str or len(name) == 0:
-                raise KeyError("Geneset names must be non-null string.")
-            if illegal_name.search(name):
-                messagefn(
-                    "Error: "
-                    f"Geneset name {name} "
-                    "is not valid. Leading, trailing, and multiple spaces within a name are not allowed."
-                )
-                raise KeyError(
-                    "Geneset name is not valid. Leading, trailing, and multiple spaces within a name are not allowed."
-                )
-
-        # 2. & 3. check for duplicate gene symbols, and those not present in the dataset. They will
-        # generate a warning and be removed.
         var_names = set(self.query_var_array(self.parameters.get("var_names")))
-        for geneset in genesets_iterable:
-            if not isinstance(geneset, dict):
-                raise ValueError("Each geneset must be a dict.")
-            geneset_name = geneset["geneset_name"]
-            genes = geneset["genes"]
-            if not isinstance(genes, list):
-                raise ValueError("Geneset genes field must be a list")
-            geneset.setdefault("geneset_description", "")
-            gene_symbol_already_seen = set()
-            new_genes = []
-            for gene in genes:
-                gene_symbol = gene["gene_symbol"]
-                if not isinstance(gene_symbol, str) or len(gene_symbol) == 0:
-                    raise ValueError("Gene symbol must be non-null string.")
-                if gene_symbol in gene_symbol_already_seen:
-                    # duplicate check
-                    messagefn(
-                        f"Warning: a duplicate of gene {gene_symbol} was found in geneset {geneset_name}, "
-                        "and will be ignored."
-                    )
-                    continue
-
-                if gene_symbol not in var_names:
-                    messagefn(
-                        f"Warning: {gene_symbol}, used in geneset {geneset_name}, "
-                        "was not found in the dataset and will be ignored."
-                    )
-                    continue
-
-                gene_symbol_already_seen.add(gene_symbol)
-                gene.setdefault("gene_description", "")
-                new_genes.append(gene)
-
-            geneset["genes"] = new_genes
-
-        return genesets
+        return validate_gene_sets(genesets, var_names)
 
     def data_frame_to_fbs_matrix(self, filter, axis):
         """

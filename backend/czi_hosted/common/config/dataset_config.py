@@ -1,6 +1,7 @@
 import os
 from os.path import splitext, isdir
 
+from backend.czi_hosted.common.annotations.annotations import Annotations
 from backend.czi_hosted.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
 from backend.czi_hosted.common.annotations.local_file_csv import AnnotationsLocalFile
 from backend.czi_hosted.common.config.base_config import BaseConfig
@@ -53,8 +54,10 @@ class DatasetConfig(BaseConfig):
         except KeyError as e:
             raise ConfigurationError(f"Unexpected config: {str(e)}")
 
-        # The annotation object is created during complete_config and stored here.
-        self.user_annotations = None
+        # Create the default annotation, which supports gene set reading without
+        # further configuration. Depending on configuration options, `complete_config` 
+        # may create a more specialized annotation object and replace this default.
+        self.user_annotations = Annotations()
 
     def complete_config(self, context):
         self.handle_app()
@@ -147,7 +150,11 @@ class DatasetConfig(BaseConfig):
             except OSError:
                 raise ConfigurationError("Unable to create directory specified by --annotations-dir")
 
-        self.user_annotations = AnnotationsLocalFile(dirname, filename)
+        anno_config = {
+            "user-annotations": self.user_annotations__enable,
+            "genesets-save": False,
+        }
+        self.user_annotations = AnnotationsLocalFile(anno_config, dirname, filename)
 
         # if the user has specified a fixed label file, go ahead and validate it
         # so that we can remove errors early in the process.
@@ -163,7 +170,12 @@ class DatasetConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__hosted_tiledb_array__hosted_file_directory", str
         )
+        anno_config = {
+            "user-annotations": self.user_annotations__enable,
+            "genesets-save": False,
+        }
         self.user_annotations = AnnotationsHostedTileDB(
+            anno_config,
             directory_path=self.user_annotations__hosted_tiledb_array__hosted_file_directory,
             db=DbUtils(self.user_annotations__hosted_tiledb_array__db_uri),
         )
