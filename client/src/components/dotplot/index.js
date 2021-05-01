@@ -5,7 +5,9 @@ import Async from "react-async";
 import memoize from "memoize-one";
 // import * as d3 from "d3";
 
-import * as globals from "../../globals";
+import ErrorLoading from "./err";
+import StillLoading from "./load";
+
 import { createCategorySummaryFromDfCol } from "../../util/stateManager/controlsHelpers";
 
 import {
@@ -233,109 +235,64 @@ class Dotplot extends React.Component {
           left: 0,
         }}
       >
-        <Async
-          watchFn={Dotplot.watchAsync}
-          promiseFn={this.fetchAsyncProps}
-          watchProps={{
-            annoMatrix,
-            pointDilation,
-            colors,
-            viewport,
+        <svg
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            zIndex: 1,
           }}
+          width={viewport.width}
+          height={viewport.height}
         >
-          <Async.Pending initial>
-            <StillLoading width={viewport.width} height={viewport.height} />
-          </Async.Pending>
-          <Async.Rejected>
-            {(error) => (
-              <ErrorLoading
-                width={viewport.width}
-                height={viewport.height}
-                error={error}
-              />
-            )}
-          </Async.Rejected>
-          <Async.Fulfilled persist>
-            {(asyncProps) => {
-              const {
-                colorAccessor,
-                categoryData,
-                width,
-                height,
-                categorySummary,
-                colorData,
-              } = asyncProps;
-              return (
-                <svg
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    zIndex: 1,
-                  }}
+          <Async
+            watchFn={Dotplot.watchAsync}
+            promiseFn={this.fetchAsyncProps}
+            watchProps={{
+              annoMatrix,
+              pointDilation,
+              colors,
+              viewport,
+            }}
+          >
+            <Async.Pending initial>
+              <StillLoading width={viewport.width} height={viewport.height} />
+            </Async.Pending>
+            <Async.Rejected>
+              {(error) => (
+                <ErrorLoading
                   width={viewport.width}
                   height={viewport.height}
-                >
-                  {this.dotplot(
-                    "tissue",
-                    categoryData,
-                    categorySummary,
-                    colorAccessor,
-                    colorData,
-                    width,
-                    height
-                  )}
-                </svg>
-              );
-            }}
-          </Async.Fulfilled>
-        </Async>
+                  error={error}
+                />
+              )}
+            </Async.Rejected>
+            <Async.Fulfilled persist>
+              {(asyncProps) => {
+                const {
+                  colorAccessor,
+                  categoryData,
+                  width,
+                  height,
+                  categorySummary,
+                  colorData,
+                } = asyncProps;
+                return this.dotplot(
+                  "tissue",
+                  categoryData,
+                  categorySummary,
+                  colorAccessor,
+                  colorData,
+                  width,
+                  height
+                );
+              }}
+            </Async.Fulfilled>
+          </Async>
+        </svg>
       </div>
     );
   }
 }
-
-const ErrorLoading = ({ error, width, height }) => {
-  console.log(error); // log to console as this is an unepected error
-  return (
-    <div
-      style={{
-        position: "fixed",
-        fontWeight: 500,
-        top: height / 2,
-        left: globals.leftSidebarWidth + width / 2 - 50,
-      }}
-    >
-      <span>Failure loading dotplot</span>
-    </div>
-  );
-};
-
-const StillLoading = ({ width, height }) => {
-  /*
-    Render a busy/loading indicator
-    */
-  return (
-    <div
-      style={{
-        position: "fixed",
-        fontWeight: 500,
-        top: height / 2,
-        width,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          justifyItems: "center",
-          alignItems: "center",
-        }}
-      >
-        <span style={{ fontStyle: "italic" }}>Loading dotplot</span>
-      </div>
-    </div>
-  );
-};
 
 export default Dotplot;
