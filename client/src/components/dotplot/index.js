@@ -3,6 +3,7 @@ import { connect, shallowEqual } from "react-redux";
 // import _regl from "regl";
 import Async from "react-async";
 import memoize from "memoize-one";
+// import * as d3 from "d3";
 
 import * as globals from "../../globals";
 import { createCategorySummaryFromDfCol } from "../../util/stateManager/controlsHelpers";
@@ -30,6 +31,8 @@ class Dotplot extends React.Component {
   constructor(props) {
     super(props);
     const viewport = this.getViewportDimensions();
+    this.dotplotTopPadding = 150;
+    this.dotplotLeftPadding = 200;
 
     this.state = {
       viewport,
@@ -54,54 +57,45 @@ class Dotplot extends React.Component {
     };
   };
 
-  createDot = (
+  createRow = (
     metadataField,
     categoryData,
-    // colorAccessor,
+    colorAccessor,
     colorData,
-    categoryValue
-    // width,
-    // height
+    categoryValue,
+    width,
+    height,
+    index,
+    histogramMap
   ) => {
-    /*
-      Knowing that colorScale is based off continuous data,
-      createHistogramBins fetches the continuous data in relation to the cells relevant to the category value.
-      It then separates that data into 50 bins for drawing the mini-histogram
-    */
-    // const groupBy = categoryData.col(metadataField);
-    const col = colorData.icol(0);
-    const mean = this.average(col.asArray());
+    const bins = histogramMap.has(categoryValue)
+      ? histogramMap.get(categoryValue)
+      : new Array(100).fill(0);
 
-    console.log(
-      categoryValue,
-      mean
-    ); /* 
+    const zeros = bins.shift(); /* MUTATES, REMOVES FIRST ELEMENT */
+    const rest = bins.reduce(
+      (acc, current) => acc + current
+    ); /* SUM REMAINING ELEMENTS */
 
-    // const histogramMap = col.histogram(
-    //   50,
-    //   [range.min, range.max],
-    //   groupBy
-    // ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
-
-    // const bins = histogramMap.has(categoryValue)
-    //   ? histogramMap.get(categoryValue)
-    //   : new Array(50).fill(0);
-
-    // const xScale = d3.scaleLinear().domain([0, bins.length]).range([0, width]);
-
-    // const largestBin = Math.max(...bins);
-
-    // const yScale = d3.scaleLinear().domain([0, largestBin]).range([0, height]);
-
-    // return {
-    //   xScale,
-    //   yScale,
-    //   bins,
-    // };
-    return null;
+    return (
+      <g
+        key={`${index}_${categoryValue}`}
+        transform={`translate(${this.dotplotLeftPadding}, ${
+          index * 15 + this.dotplotTopPadding
+        })`}
+      >
+        <text textAnchor="end">{categoryValue}</text>
+        <circle
+          r={(rest / zeros) * 10}
+          cx="11"
+          cy="-4"
+          style={{ fill: "rgba(70,130,180,.3)", stroke: "none" }}
+        />
+      </g>
+    );
   };
 
-  createDots = (
+  dotplot = (
     metadataField,
     categoryData,
     categorySummary,
@@ -110,22 +104,28 @@ class Dotplot extends React.Component {
     width,
     height
   ) => {
-    if (!colorData) return null;
+    if (!colorAccessor || !colorData) return null;
 
-    return categorySummary.categoryValues.map((val) => {
-      return this.createDot(
+    const groupBy = categoryData.col(metadataField);
+    const col = colorData.icol(0);
+    const range = col.summarize();
+
+    const histogramMap = col.histogram(100, [range.min, range.max], groupBy);
+
+    return categorySummary.categoryValues.map((val, index) => {
+      return this.createRow(
         metadataField,
         categoryData,
         colorAccessor,
         colorData,
         val,
         width,
-        height
+        height,
+        index,
+        histogramMap
       );
     });
   };
-
-  average = (array) => array.reduce((a, b) => a + b) / array.length;
 
   fetchAsyncProps = async (props) => {
     const { viewport, annoMatrix, colors } = props.watchProps;
@@ -276,8 +276,7 @@ class Dotplot extends React.Component {
                   width={viewport.width}
                   height={viewport.height}
                 >
-                  <circle r="5" cx="20" cy="20" />
-                  {this.createDots(
+                  {this.dotplot(
                     "tissue",
                     categoryData,
                     categorySummary,
