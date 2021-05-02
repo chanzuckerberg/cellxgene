@@ -48,6 +48,7 @@ import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
     tosURL: state.config?.parameters?.about_legal_tos,
     privacyURL: state.config?.parameters?.about_legal_privacy,
     categoricalSelection: state.categoricalSelection,
+    dotplotEnabled: true /* TODO(colinmegill) #632 wire dotplot*/,
   };
 })
 class MenuBar extends React.PureComponent {
@@ -194,6 +195,8 @@ class MenuBar extends React.PureComponent {
     dispatch(actions.resetSubsetAction());
   };
 
+  handleDotplotToggle = () => {};
+
   render() {
     const {
       dispatch,
@@ -211,6 +214,7 @@ class MenuBar extends React.PureComponent {
       subsetResetPossible,
       userInfo,
       auth,
+      dotplotEnabled,
     } = this.props;
     const { pendingClipPercentiles } = this.state;
 
@@ -258,6 +262,26 @@ class MenuBar extends React.PureComponent {
             this.handleClipPercentileMinValueChange
           }
         />
+        <Tooltip
+          content="Enable dotplot mode (hides embedding)"
+          position="bottom"
+          disabled={
+            false /* TODO(colinmegill) #632 if no genesets or categories*/
+          }
+        >
+          <AnchorButton
+            className={styles.menubarButton}
+            type="button"
+            data-testid="dotplot-toggle"
+            icon="layout-grid"
+            onClick={this.handleDotplotToggle}
+            active={dotplotEnabled}
+            intent={dotplotEnabled ? "primary" : "none"}
+            disabled={
+              false /* TODO(colinmegill) #632 if no genesets or categories*/
+            }
+          />
+        </Tooltip>
         <Tooltip
           content="When a category is colored by, show labels on the graph"
           position="bottom"
