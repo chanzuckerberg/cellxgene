@@ -129,6 +129,17 @@ class Dotplot extends React.Component {
     });
   };
 
+  dotplotColumns = () => {
+    const { genesets } = this.props;
+    /* TODO(colinmegill) #632 wire to dotplot reducer */
+    if (genesets && genesets.get("bladder urothelial")) {
+      const _geneset = genesets.get("bladder urothelial");
+      _geneset.genes.forEach((a, b) => {
+        console.log("bladder u", b);
+      });
+    }
+  };
+
   fetchAsyncProps = async (props) => {
     const { viewport, annoMatrix, colors } = props.watchProps;
 
@@ -245,6 +256,7 @@ class Dotplot extends React.Component {
           width={viewport.width}
           height={viewport.height}
         >
+          {this.dotplotColumns()}
           <Async
             watchFn={Dotplot.watchAsync}
             promiseFn={this.fetchAsyncProps}
