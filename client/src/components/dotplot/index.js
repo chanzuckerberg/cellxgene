@@ -42,6 +42,7 @@ class Dotplot extends React.Component {
     const { genesets } = this.props;
 
     const _TESTgeneset = genesets.get("bladder urothelial");
+    const _TESTmetadatField = "cell_ontology_class";
 
     /* TODO(colinmegill) #632 componetize */
     if (!_TESTgeneset) return null;
@@ -100,6 +101,7 @@ class Dotplot extends React.Component {
                     _geneIndex={_geneIndexInGeneset}
                     viewport={viewport}
                     rowColumnSize={this.rowColumnSize}
+                    metadataField={_TESTmetadatField}
                   />
                 );
               })}

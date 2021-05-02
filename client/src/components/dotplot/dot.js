@@ -19,7 +19,10 @@ const Dot = (props) => {
     (acc, current) => acc + current
   ); /* SUM REMAINING ELEMENTS */
 
-  /* TODO(colinmegill) #632 colorscale */
+  /* TODO(colinmegill) #632 scale between correct dimensions */
+  const _maxSize = rowColumnSize;
+  const _radius =
+    (rest / zeros) * 10 > _maxSize ? _maxSize : (rest / zeros) * 10;
 
   return (
     <g
@@ -38,7 +41,7 @@ const Dot = (props) => {
         </text>
       )}
       <circle
-        r={(rest / zeros) * 10 > 20 ? 20 : (rest / zeros) * 10}
+        r={_radius}
         cx="11"
         cy="-3.5"
         style={{

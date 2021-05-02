@@ -30,11 +30,17 @@ class Column extends React.Component {
   createCategorySummaryFromDfCol = memoize(createCategorySummaryFromDfCol);
 
   fetchAsyncProps = async (props) => {
-    const { annoMatrix, colors, _geneSymbol, _geneIndex } = props.watchProps;
+    const {
+      annoMatrix,
+      colors,
+      _geneSymbol,
+      _geneIndex,
+      metadataField,
+    } = props.watchProps;
 
     const [categoryData, categorySummary, colorData] = await this.fetchData(
       annoMatrix,
-      "tissue",
+      metadataField,
       colors,
       _geneSymbol,
       _geneIndex
@@ -131,6 +137,7 @@ class Column extends React.Component {
       _geneSymbol,
       _geneIndex,
       rowColumnSize,
+      metadataField,
     } = this.props;
 
     return (
@@ -145,6 +152,7 @@ class Column extends React.Component {
             viewport,
             _geneSymbol,
             _geneIndex,
+            metadataField,
           }}
         >
           <Async.Pending initial>
@@ -172,8 +180,6 @@ class Column extends React.Component {
               if (!_geneSymbol || !colorData) return null;
 
               /* TODO(colinmegill) #632 wire to dotplot */
-
-              const metadataField = "tissue";
 
               const groupBy = categoryData.col(metadataField);
               const col = colorData.icol(0);
