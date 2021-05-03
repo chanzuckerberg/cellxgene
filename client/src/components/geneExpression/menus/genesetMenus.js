@@ -61,20 +61,9 @@ class GenesetMenus extends React.PureComponent {
   };
 
   render() {
-    const {
-      geneset,
-      genesetsEditable,
-      createText,
-      colorAccessor,
-      isOpen,
-      toggleSummaryHisto,
-    } = this.props;
+    const { geneset, genesetsEditable, createText, colorAccessor } = this.props;
 
     const isColorBy = geneset === colorAccessor;
-    const genesetClosed = !isOpen;
-    const showingAllGenes = !toggleSummaryHisto;
-
-    const notShowingSummary = genesetClosed || showingAllGenes;
 
     return (
       <>
@@ -130,12 +119,11 @@ class GenesetMenus extends React.PureComponent {
               />
             </Popover>
             <Tooltip2
-              content={`Color by gene set ${geneset} mean (gene set must be open, and toggled to mean expression histogram)`}
+              content={`Color by gene set ${geneset} mean`}
               position={Position.BOTTOM}
               hoverOpenDelay={globals.tooltipHoverOpenDelay}
             >
               <AnchorButton
-                disabled={notShowingSummary && !isColorBy}
                 active={isColorBy}
                 intent={isColorBy ? "primary" : "none"}
                 style={{ marginLeft: 0 }}

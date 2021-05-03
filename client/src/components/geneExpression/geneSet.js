@@ -1,7 +1,5 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Position, Switch } from "@blueprintjs/core";
-import { Tooltip2 } from "@blueprintjs/popover2";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
 import actions from "../../actions";
 import Gene from "./gene";
@@ -27,7 +25,6 @@ class GeneSet extends React.Component {
     super(props);
     this.state = {
       isOpen: false,
-      toggleSummaryHisto: false,
     };
   }
 
@@ -81,11 +78,6 @@ class GeneSet extends React.Component {
     //   });
   };
 
-  toggleSummaryHisto = () => {
-    const { toggleSummaryHisto } = this.state;
-    this.setState({ toggleSummaryHisto: !toggleSummaryHisto });
-  };
-
   renderGenes() {
     const {
       setName,
@@ -130,7 +122,7 @@ class GeneSet extends React.Component {
 
   render() {
     const { setName, setGenes, genesetDescription } = this.props;
-    const { isOpen, toggleSummaryHisto } = this.state;
+    const { isOpen } = this.state;
     const genesetNameLengthVisible = 120; /* this magic number determines how much of a long geneset name we see */
     const genesetIsEmpty = setGenes.length === 0;
 
@@ -184,55 +176,25 @@ class GeneSet extends React.Component {
             )}
           </span>
           <div>
-            <GenesetMenus
-              isOpen={isOpen}
-              toggleSummaryHisto={toggleSummaryHisto}
-              genesetsEditable
-              geneset={setName}
-            />
+            <GenesetMenus isOpen={isOpen} genesetsEditable geneset={setName} />
           </div>
         </div>
 
         <div style={{ marginLeft: 15, marginTop: 5, marginRight: 0 }}>
-          {isOpen && !genesetIsEmpty && (
-            <Tooltip2
-              content="Aggregate all genes in this geneset, and allow coloring by and selecting on the entire set."
-              position={Position.BOTTOM_RIGHT}
-              usePortal
-              hoverOpenDelay={globals.tooltipHoverOpenDelay}
-              modifiers={{
-                preventOverflow: { enabled: false },
-                hide: { enabled: false },
-              }}
-            >
-              <Switch
-                style={{ fontStyle: "italic" }}
-                checked={toggleSummaryHisto}
-                label="Show mean expression across entire set"
-                alignIndicator="left"
-                innerLabel="off"
-                innerLabelChecked="on"
-                onChange={this.toggleSummaryHisto}
-              />
-            </Tooltip2>
-          )}
-
           {isOpen && genesetIsEmpty && (
             <p style={{ fontStyle: "italic", color: "lightgrey" }}>
               No genes to display
             </p>
           )}
         </div>
-        {isOpen &&
-          (!toggleSummaryHisto && !genesetIsEmpty
-            ? this.renderGenes()
-            : setGenes.length > 0 && (
-                <HistogramBrush
-                  isGeneSetSummary
-                  field={setName}
-                  setGenes={setGenes}
-                />
-              ))}
+        {isOpen && !genesetIsEmpty && setGenes.length > 0 && (
+          <HistogramBrush
+            isGeneSetSummary
+            field={setName}
+            setGenes={setGenes}
+          />
+        )}
+        {isOpen && !genesetIsEmpty && this.renderGenes()}
         <EditGenesetNameDialogue
           parentGeneset={setName}
           parentGenesetDescription={genesetDescription}
