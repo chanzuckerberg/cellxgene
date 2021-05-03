@@ -1,4 +1,5 @@
 import React from "react";
+import * as d3 from "d3";
 
 const Dot = (props) => {
   const {
@@ -14,15 +15,21 @@ const Dot = (props) => {
     ? histogramMap.get(categoryValue)
     : new Array(100).fill(0);
 
-  const zeros = bins.shift(); /* MUTATES, REMOVES FIRST ELEMENT */
-  const rest = bins.reduce(
+  const totalCells = bins.reduce(
+    (acc, current) => acc + current
+  ); /* SUM REMAINING ELEMENTS */
+  bins.shift(); /* MUTATES, REMOVES FIRST ELEMENT */
+  const expressing = bins.reduce(
     (acc, current) => acc + current
   ); /* SUM REMAINING ELEMENTS */
 
   /* TODO(colinmegill) #632 scale between correct dimensions */
-  const _maxSize = rowColumnSize;
-  const _radius =
-    (rest / zeros) * 10 > _maxSize ? _maxSize : (rest / zeros) * 10;
+  const paddingEquivalentToRowColumnIndexOffset = 0;
+  const dotscale = d3
+    .scaleLinear()
+    .domain([0, 1])
+    .range([0, rowColumnSize - paddingEquivalentToRowColumnIndexOffset]);
+  const _radius = dotscale(expressing / totalCells);
 
   return (
     <g
@@ -46,7 +53,7 @@ const Dot = (props) => {
         cy="-3.5"
         style={{
           fill: "steelblue",
-          fillOpacity: 0.3,
+          fillOpacity: 0.5,
           stroke: "none",
         }}
       />
