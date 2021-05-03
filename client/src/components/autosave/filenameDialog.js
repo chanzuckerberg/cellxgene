@@ -11,16 +11,19 @@ import {
   Tooltip,
 } from "@blueprintjs/core";
 
-@connect((state) => ({
-  idhash: state.config?.parameters?.["annotations-user-data-idhash"] ?? null,
-  annotations: state.annotations,
-  auth: state.config?.authentication,
-  userInfo: state.userInfo,
-  writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
-  writableGenesetsEnabled: !(
-    state.config?.parameters?.annotations_genesets_readonly ?? true
-  ),
-}))
+@connect((state) => {
+  console.log(state.config);
+  return {
+    idhash: state.config?.parameters?.["annotations-user-data-idhash"] ?? null,
+    annotations: state.annotations,
+    auth: state.config?.authentication,
+    userInfo: state.userInfo,
+    writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
+    writableGenesetsEnabled: !(
+      state.config?.parameters?.annotations_genesets_readonly ?? true
+    ),
+  };
+})
 class FilenameDialog extends React.Component {
   constructor(props) {
     super(props);
@@ -112,7 +115,7 @@ class FilenameDialog extends React.Component {
       userInfo.is_authenticated ? (
       <Dialog
         icon="tag"
-        title="Annotations Collection"
+        title="User Generated Data Directory"
         isOpen={!annotations.dataCollectionName}
         onClose={this.dismissFilenameDialog}
       >
@@ -124,7 +127,7 @@ class FilenameDialog extends React.Component {
         >
           <div className={Classes.DIALOG_BODY} data-testid="annotation-dialog">
             <div style={{ marginBottom: 20 }}>
-              <p>Name your annotations collection:</p>
+              <p>Name your user generated data directory:</p>
               <InputGroup
                 autoFocus
                 value={filenameText}
@@ -154,6 +157,12 @@ class FilenameDialog extends React.Component {
                   {filenameText}-{idhash}.csv
                 </Code>
               </p>
+              <p>
+                Your genesets are stored in this file:
+                <Code>
+                  {filenameText}-{idhash}.csv
+                </Code>
+              </p>
               <p style={{ fontStyle: "italic" }}>
                 (We added a unique ID to your filename)
               </p>
@@ -171,7 +180,7 @@ class FilenameDialog extends React.Component {
                 type="submit"
                 data-testid="submit-annotation"
               >
-                Create annotations collection
+                Create user generated data directory
               </Button>
             </div>
           </div>
