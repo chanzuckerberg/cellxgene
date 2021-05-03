@@ -48,7 +48,14 @@ def data_with_tmp_tiledb_annotations(ext: MatrixDataType):
     config.complete_config()
 
     data = MatrixDataLoader(data_locator.abspath()).open(config)
-    annotations = AnnotationsHostedTileDB(tmp_dir, DbUtils("postgresql://postgres:test_pw@localhost:5432"),)
+    annotations = AnnotationsHostedTileDB(
+        {
+            "user-annotations": True,
+            "genesets-save": False,
+        },
+        tmp_dir,
+        DbUtils("postgresql://postgres:test_pw@localhost:5432"),
+    )
     return data, tmp_dir, annotations
 
 
@@ -70,12 +77,21 @@ def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
         single_dataset__datapath=data_locator.path,
     )
     config.update_default_dataset_config(
-        embeddings__names=["umap"], presentation__max_categories=100, diffexp__lfc_cutoff=0.01,
+        embeddings__names=["umap"],
+        presentation__max_categories=100,
+        diffexp__lfc_cutoff=0.01,
     )
 
     config.complete_config()
     data = MatrixDataLoader(data_locator.abspath()).open(config)
-    annotations = AnnotationsLocalFile(None, annotations_file)
+    annotations = AnnotationsLocalFile(
+        {
+            "user-annotations": True,
+            "genesets-save": False,
+        },
+        None,
+        annotations_file,
+    )
     return data, tmp_dir, annotations
 
 

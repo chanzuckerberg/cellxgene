@@ -318,6 +318,25 @@ class LayoutObsAPI(DatasetResource):
         return common_rest.layout_obs_put(request, data_adaptor)
 
 
+class GenesetsAPI(DatasetResource):
+    @cache_control(public=True, max_age=ONE_WEEK)
+    @rest_get_data_adaptor
+    def get(self, data_adaptor):
+        return common_rest.genesets_get(request, data_adaptor)
+
+
+class SummarizeVarAPI(DatasetResource):
+    @rest_get_data_adaptor
+    @cache_control(public=True, max_age=ONE_WEEK)
+    def get(self, data_adaptor):
+        return common_rest.summarize_var_get(request, data_adaptor)
+
+    @rest_get_data_adaptor
+    @cache_control(no_store=True)
+    def post(self, data_adaptor):
+        return common_rest.summarize_var_post(request, data_adaptor)
+
+
 def get_api_base_resources(bp_base):
     """Add resources that are accessed from the api_base_url"""
     api = Api(bp_base)
@@ -343,6 +362,8 @@ def get_api_dataroot_resources(bp_dataroot, url_dataroot=None):
     add_resource(AnnotationsObsAPI, "/annotations/obs")
     add_resource(AnnotationsVarAPI, "/annotations/var")
     add_resource(DataVarAPI, "/data/var")
+    add_resource(GenesetsAPI, "/genesets")
+    add_resource(SummarizeVarAPI, "/summarize/var")
     # Display routes
     add_resource(ColorsAPI, "/colors")
     # Computation routes

@@ -3,11 +3,12 @@ from os.path import basename, splitext
 
 import numpy as np
 import pandas as pd
+from scipy import sparse
 from server_timing import Timing as ServerTiming
 
 from backend.czi_hosted.common.config.app_config import AppConfig
 from backend.common.constants import Axis
-from backend.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError
+from backend.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError, UnsupportedSummaryMethod
 from backend.common.utils.utils import jsonify_numpy
 from backend.common.fbs.matrix import encode_matrix_fbs
 
@@ -338,7 +339,7 @@ class DataAdaptor(metaclass=ABCMeta):
     @staticmethod
     def normalize_embedding(embedding):
         """Normalize embedding layout to meet client assumptions.
-           Embedding is an ndarray, shape (n_obs, n)., where n is normally 2
+        Embedding is an ndarray, shape (n_obs, n)., where n is normally 2
         """
 
         # scale isotropically
@@ -394,3 +395,26 @@ class DataAdaptor(metaclass=ABCMeta):
         except RuntimeError:
             lastmod = None
         return lastmod
+
+    def summarize_var(self, method, filter, query_hash):
+        if method != "mean":
+            raise UnsupportedSummaryMethod("Unknown gene set summary method.")
+
+        obs_selector, var_selector = self._filter_to_mask(filter)
+        if obs_selector is not None:
+            raise FilterError("filtering on obs unsupported")
+
+        # if no filter, just return zeros.  We don't have a use case
+        # for summarizing the entire X without a filter, and it would
+        # potentially be quite compute / memory intensive.
+        if var_selector is None or np.count_nonzero(var_selector) == 0:
+            mean = np.zeros((self.get_shape()[0], 1), dtype=np.float32)
+        else:
+            X = self.get_X_array(obs_selector, var_selector)
+            if sparse.issparse(X):
+                mean = X.mean(axis=1)
+            else:
+                mean = X.mean(axis=1, keepdims=True)
+
+        col_idx = pd.Index([query_hash])
+        return encode_matrix_fbs(mean, col_idx=col_idx, row_idx=None)

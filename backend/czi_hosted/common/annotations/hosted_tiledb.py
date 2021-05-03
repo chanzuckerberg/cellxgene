@@ -17,8 +17,8 @@ from backend.czi_hosted.db.cellxgene_orm import Annotation
 class AnnotationsHostedTileDB(Annotations):
     CXG_ANNO_COLLECTION = "cxg_anno_collection"
 
-    def __init__(self, directory_path, db):
-        super().__init__()
+    def __init__(self, config, directory_path, db):
+        super().__init__(config)
         self.db = db
         if directory_path[-1] == "/":
             self.directory_path = directory_path
@@ -158,6 +158,8 @@ class AnnotationsHostedTileDB(Annotations):
         self.db.session.commit()
 
     def update_parameters(self, parameters, data_adaptor):
+        super().update_parameters(parameters, data_adaptor)
+
         params = {}
         params["annotations"] = True
         params["user_annotation_collection_name_enabled"] = False

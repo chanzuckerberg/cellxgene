@@ -560,7 +560,7 @@ class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
                 "genesets": [
                     {
                         "genes": [
-                            {"gene_description": "a gene_description", "gene_symbol": "F5"},
+                            {"gene_description": " a gene_description", "gene_symbol": "F5"},
                             {"gene_description": "", "gene_symbol": "SUMO3"},
                             {"gene_description": "", "gene_symbol": "SRM"},
                         ],
@@ -602,7 +602,7 @@ class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
         self.assertEqual(
             result.text,
             """gene_set_name,gene_set_description,gene_symbol,gene_description\r
-first gene set name,a description,F5,a gene_description\r
+first gene set name,a description,F5, a gene_description\r
 first gene set name,a description,SUMO3,\r
 first gene set name,a description,SRM,\r
 second gene set,,RER1,\r
