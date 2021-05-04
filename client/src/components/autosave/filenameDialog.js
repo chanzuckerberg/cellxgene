@@ -158,9 +158,9 @@ class FilenameDialog extends React.Component {
                 </Code>
               </p>
               <p>
-                Your genesets are stored in this file:
+                Your gene sets are stored in this file:
                 <Code>
-                  {filenameText}-{idhash}.csv
+                  {filenameText}-gene-sets-{idhash}.csv
                 </Code>
               </p>
               <p style={{ fontStyle: "italic" }}>
