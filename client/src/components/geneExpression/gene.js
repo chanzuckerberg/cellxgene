@@ -106,7 +106,9 @@ class Gene extends React.Component {
                   top: -1,
                 }}
               />
-              <Truncate tooltipAddendum={`: ${geneDescription}`}>
+              <Truncate
+                tooltipAddendum={geneDescription && `: ${geneDescription}`}
+              >
                 <span
                   style={{
                     width: globals.leftSidebarWidth - genesetNameLengthVisible,
