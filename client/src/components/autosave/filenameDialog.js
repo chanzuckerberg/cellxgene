@@ -151,7 +151,7 @@ class FilenameDialog extends React.Component {
               <p>
                 Your annotations are stored in this file:
                 <Code>
-                  {filenameText}-{idhash}.csv
+                  {filenameText}-celllabels-{idhash}.csv
                 </Code>
               </p>
               <p>
