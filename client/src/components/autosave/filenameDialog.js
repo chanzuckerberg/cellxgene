@@ -11,19 +11,16 @@ import {
   Tooltip,
 } from "@blueprintjs/core";
 
-@connect((state) => {
-  console.log(state.config);
-  return {
-    idhash: state.config?.parameters?.["annotations-user-data-idhash"] ?? null,
-    annotations: state.annotations,
-    auth: state.config?.authentication,
-    userInfo: state.userInfo,
-    writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
-    writableGenesetsEnabled: !(
-      state.config?.parameters?.annotations_genesets_readonly ?? true
-    ),
-  };
-})
+@connect((state) => ({
+  idhash: state.config?.parameters?.["annotations-user-data-idhash"] ?? null,
+  annotations: state.annotations,
+  auth: state.config?.authentication,
+  userInfo: state.userInfo,
+  writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
+  writableGenesetsEnabled: !(
+    state.config?.parameters?.annotations_genesets_readonly ?? true
+  ),
+}))
 class FilenameDialog extends React.Component {
   constructor(props) {
     super(props);
