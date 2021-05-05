@@ -11,6 +11,7 @@ const HistogramFooter = React.memo(
     logFoldChange,
     pvalAdj,
     isObs,
+    isGeneSetSummary,
   }) => {
     /*
     Footer of each histogram.  Will render range, title, and optionally 
@@ -44,7 +45,8 @@ const HistogramFooter = React.memo(
             data-testclass="brushable-histogram-field-name"
             style={{ fontStyle: "italic" }}
           >
-            {isObs ? displayName : null}
+            {isObs && displayName}
+            {isGeneSetSummary && "set mean expression"}
           </span>
           <div style={{ display: hideRanges ? "block" : "none" }}>
             : {rangeMin}

@@ -123,7 +123,7 @@ class GeneSet extends React.Component {
   render() {
     const { setName, setGenes, genesetDescription } = this.props;
     const { isOpen } = this.state;
-    const genesetNameLengthVisible = 120; /* this magic number determines how much of a long geneset name we see */
+    const genesetNameLengthVisible = 150; /* this magic number determines how much of a long geneset name we see */
     const genesetIsEmpty = setGenes.length === 0;
 
     return (
