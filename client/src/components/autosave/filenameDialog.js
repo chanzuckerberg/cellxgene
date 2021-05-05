@@ -151,11 +151,11 @@ class FilenameDialog extends React.Component {
               <p>
                 Your annotations are stored in this file:
                 <Code>
-                  {filenameText}-celllabels-{idhash}.csv
+                  {filenameText}-cell-labels-{idhash}.csv
                 </Code>
               </p>
               <p>
-                Your gene sets are stored in this file:
+                {"Your gene sets are stored in this file: "}
                 <Code>
                   {filenameText}-gene-sets-{idhash}.csv
                 </Code>
