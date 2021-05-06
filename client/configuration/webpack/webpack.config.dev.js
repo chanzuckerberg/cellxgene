@@ -4,18 +4,20 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
 const ScriptExtHtmlWebpackPlugin = require("script-ext-html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 
 const { merge } = require("webpack-merge");
 
 const sharedConfig = require("./webpack.config.shared");
 const babelOptions = require("../babel/babel.dev");
 
+const jsonPath = path.resolve("src/json");
 const fonts = path.resolve("src/fonts");
 const nodeModules = path.resolve("node_modules");
 
 const devConfig = {
   mode: "development",
-  devtool: "eval",
+  devtool: "source-map",
   output: {
     pathinfo: true,
     filename: "static/js/bundle.js",
@@ -75,6 +77,15 @@ const devConfig = {
     }),
     new ScriptExtHtmlWebpackPlugin({
       async: "obsolete",
+    }),
+    // TODO(cc) added collections.json as static asset, remove copy-webpack-plugin on update to config response
+    new CopyPlugin({
+      patterns: [
+        {
+          from: jsonPath,
+          to: "static/assets",
+        },
+      ],
     }),
   ],
   infrastructureLogging: {
