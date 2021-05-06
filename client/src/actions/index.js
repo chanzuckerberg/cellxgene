@@ -8,7 +8,10 @@ import {
 import {
   requestReembed /* , reembedResetWorldToUniverse -- disabled temporarily, TODO issue #1606 */,
 } from "./reembed";
-import { keyCollectionsByDatasetId } from "../util/stateManager/collectionsHelpers";
+import {
+  lookupDatasetIdByPath,
+  keyCollectionsByDatasetId,
+} from "../util/stateManager/collectionsHelpers";
 import { loadUserColorConfig } from "../util/stateManager/colorHelpers";
 import * as selnActions from "./selection";
 import * as annoActions from "./annotation";
@@ -32,19 +35,6 @@ async function schemaFetch() {
   return fetchJson("schema");
 }
 
-async function collectionsFetchAndDeserialize(dispatch) {
-  /*
-  fetch collections from static file and map to select-optimized view model
-   */
-  fetchStaticJson("collections.json").then((collections) => {
-    const collectionsByDatasetId = keyCollectionsByDatasetId(collections);
-    dispatch({
-      type: "collections load complete",
-      collectionsByDatasetId,
-    });
-  });
-}
-
 async function configFetch(dispatch) {
   return fetchJson("config").then((response) => {
     const config = { ...globals.configDefaults, ...response.config };
@@ -53,6 +43,26 @@ async function configFetch(dispatch) {
       config,
     });
     return config;
+  });
+}
+
+async function doCollectionsDataLoad(dispatch) {
+  /*
+  - fetch collections from static file and map to select-optimized view model
+  - determine selected dataset from the current URL.
+   */
+  fetchStaticJson("collections.json").then((collections) => {
+    const collectionsByDatasetId = keyCollectionsByDatasetId(collections);
+    const datasetId = lookupDatasetIdByPath(
+      window.location.pathname,
+      collections
+    );
+    dispatch({
+      type: "collections load complete",
+      collectionsByDatasetId,
+      datasetId,
+    });
+    return collections;
   });
 }
 
@@ -110,7 +120,7 @@ const doInitialDataLoad = () =>
         schemaFetch(dispatch),
         userColorsFetchAndLoad(dispatch),
         userInfoFetch(dispatch),
-        collectionsFetchAndDeserialize(dispatch),
+        doCollectionsDataLoad(dispatch),
       ]);
 
       genesetsFetch(dispatch, config);
@@ -255,7 +265,7 @@ function fetchStaticJson(fileName) {
   read JSON file from static assets folder
   TODO(cc) remove on update to config response
    */
-  return doJsonRequest(`/static/assets/${fileName}`);
+  return doJsonRequest(`static/assets/${fileName}`);
 }
 
 export default {
