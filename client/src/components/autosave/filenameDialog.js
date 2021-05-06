@@ -25,8 +25,9 @@ class FilenameDialog extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      filenameText: "",
+      filenameText: "foo", // TODO(cc) revert
     };
+    this.handleCreateFilename(); // TODO(cc) revert
   }
 
   dismissFilenameDialog = () => {};
