@@ -8,6 +8,7 @@ import {
 import {
   requestReembed /* , reembedResetWorldToUniverse -- disabled temporarily, TODO issue #1606 */,
 } from "./reembed";
+import { keyCollectionsByDatasetId } from "../util/stateManager/collectionsHelpers";
 import { loadUserColorConfig } from "../util/stateManager/colorHelpers";
 import * as selnActions from "./selection";
 import * as annoActions from "./annotation";
@@ -29,6 +30,19 @@ async function userColorsFetchAndLoad(dispatch) {
 
 async function schemaFetch() {
   return fetchJson("schema");
+}
+
+async function collectionsFetchAndDeserialize(dispatch) {
+  /*
+  fetch collections from static file and map to select-optimized view model
+   */
+  fetchStaticJson("collections.json").then((collections) => {
+    const collectionsByDatasetId = keyCollectionsByDatasetId(collections);
+    dispatch({
+      type: "collections load complete",
+      collectionsByDatasetId,
+    });
+  });
 }
 
 async function configFetch(dispatch) {
@@ -96,6 +110,7 @@ const doInitialDataLoad = () =>
         schemaFetch(dispatch),
         userColorsFetchAndLoad(dispatch),
         userInfoFetch(dispatch),
+        collectionsFetchAndDeserialize(dispatch),
       ]);
 
       genesetsFetch(dispatch, config);
@@ -236,6 +251,14 @@ function fetchJson(pathAndQuery) {
   return doJsonRequest(
     `${globals.API.prefix}${globals.API.version}${pathAndQuery}`
   );
+}
+
+function fetchStaticJson(fileName) {
+  /*
+  read JSON file from static assets folder
+  TODO(cc) remove on update to config response
+   */
+  return doJsonRequest(`/static/assets/${fileName}`);
 }
 
 export default {
