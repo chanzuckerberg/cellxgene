@@ -24,6 +24,7 @@ const Collections = (
         loading: false,
         error: null,
         collectionsByDatasetId: action.collectionsByDatasetId,
+        datasetId: action.datasetId,
       };
     case "initial data load error":
       return {
