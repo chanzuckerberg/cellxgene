@@ -364,6 +364,7 @@ class HistogramBrush extends React.PureComponent {
       isUserDefined,
       isDiffExp,
       logFoldChange,
+      isGeneSetSummary,
       pvalAdj,
       isScatterplotXXaccessor,
       isScatterplotYYaccessor,
@@ -449,8 +450,9 @@ class HistogramBrush extends React.PureComponent {
                   selectionRange={continuousSelectionRange}
                   mini={mini}
                 />
-                {!mini ? (
+                {!mini && (
                   <HistogramFooter
+                    isGeneSetSummary={isGeneSetSummary}
                     isObs={isObs}
                     isDiffExp={isDiffExp}
                     displayName={field}
@@ -462,7 +464,7 @@ class HistogramBrush extends React.PureComponent {
                     logFoldChange={logFoldChange}
                     pvalAdj={pvalAdj}
                   />
-                ) : null}
+                )}
               </div>
             ) : null
           }
