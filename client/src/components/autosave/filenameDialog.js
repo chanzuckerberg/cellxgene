@@ -112,7 +112,7 @@ class FilenameDialog extends React.Component {
       userInfo.is_authenticated ? (
       <Dialog
         icon="tag"
-        title="Annotations Collection"
+        title="User Generated Data Directory"
         isOpen={!annotations.dataCollectionName}
         onClose={this.dismissFilenameDialog}
       >
@@ -124,7 +124,7 @@ class FilenameDialog extends React.Component {
         >
           <div className={Classes.DIALOG_BODY} data-testid="annotation-dialog">
             <div style={{ marginBottom: 20 }}>
-              <p>Name your annotations collection:</p>
+              <p>Name your user generated data directory:</p>
               <InputGroup
                 autoFocus
                 value={filenameText}
@@ -149,9 +149,15 @@ class FilenameDialog extends React.Component {
             </div>
             <div>
               <p>
-                Your annotations are stored in this file:
+                {"Your annotations are stored in this file: "}
                 <Code>
-                  {filenameText}-{idhash}.csv
+                  {filenameText}-cell-labels-{idhash}.csv
+                </Code>
+              </p>
+              <p>
+                {"Your gene sets are stored in this file: "}
+                <Code>
+                  {filenameText}-gene-sets-{idhash}.csv
                 </Code>
               </p>
               <p style={{ fontStyle: "italic" }}>
@@ -171,7 +177,7 @@ class FilenameDialog extends React.Component {
                 type="submit"
                 data-testid="submit-annotation"
               >
-                Create annotations collection
+                Create user generated data directory
               </Button>
             </div>
           </div>

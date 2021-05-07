@@ -197,14 +197,14 @@ class AnnotationsLocalFile(Annotations):
         if self.label_output_file:
             return self.label_output_file
 
-        return self._get_filename(data_adaptor, "celllabels")
+        return self._get_filename(data_adaptor, "cell-labels")
 
     def _get_genesets_filename(self, data_adaptor):
         """ return the current gene sets file name """
         if self.gene_sets_output_file:
             return self.gene_sets_output_file
 
-        return self._get_filename(data_adaptor, "genesets")
+        return self._get_filename(data_adaptor, "gene-sets")
 
     def _get_filename(self, data_adaptor, anno_name):
         # we need to generate a file name, which we can only do if we have a UID and collection name
