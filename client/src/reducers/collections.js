@@ -8,6 +8,7 @@ const Collections = (
     error: null,
 
     collectionsByDatasetId: null,
+    selectedDatasetId: null,
   },
   action
 ) => {
@@ -24,7 +25,7 @@ const Collections = (
         loading: false,
         error: null,
         collectionsByDatasetId: action.collectionsByDatasetId,
-        datasetId: action.datasetId,
+        selectedDatasetId: action.selectedDatasetId,
       };
     case "initial data load error":
       return {

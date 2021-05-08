@@ -9,6 +9,7 @@ import {
   requestReembed /* , reembedResetWorldToUniverse -- disabled temporarily, TODO issue #1606 */,
 } from "./reembed";
 import {
+  createCollectionsViewModel,
   lookupDatasetIdByPath,
   keyCollectionsByDatasetId,
 } from "../util/stateManager/collectionsHelpers";
@@ -51,16 +52,17 @@ async function doCollectionsDataLoad(dispatch) {
   - fetch collections from static file and map to select-optimized view model
   - determine selected dataset from the current URL.
    */
-  fetchStaticJson("collections.json").then((collections) => {
-    const collectionsByDatasetId = keyCollectionsByDatasetId(collections);
-    const datasetId = lookupDatasetIdByPath(
+  return fetchStaticJson("collections.json").then((collections) => {
+    const collectionViews = createCollectionsViewModel(collections);
+    const collectionsByDatasetId = keyCollectionsByDatasetId(collectionViews);
+    const selectedDatasetId = lookupDatasetIdByPath(
       window.location.pathname,
       collections
     );
     dispatch({
       type: "collections load complete",
       collectionsByDatasetId,
-      datasetId,
+      selectedDatasetId,
     });
     return collections;
   });
