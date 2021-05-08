@@ -209,7 +209,7 @@ dev-env-server:
 	pip install -r backend/server/requirements-dev.txt
 
 .PHONY: dev-env-czi-hosted
-dev-env-czi-hosted:
+dev-env-czi-hosted: dev-env-client
 	pip install -r backend/czi_hosted/requirements-dev.txt
 # Set PART=[major, minor, patch] as param to make bump.
 # This will create a release candidate. (i.e. 0.16.1 -> 0.16.2-rc.0 for a patch bump)
