@@ -8,6 +8,7 @@
                 "id": "b07e5164-baf6-43d2-bdba-5a249d0da879",
                 "name": "A Single-Cell Transcriptome Atlas of the Human Pancreas",
                 "cellCount": 2126,
+                "createdAt": 1620227067.221111,
                 "url": "https://cellxgene.cziscience.com/e/b07e5164-baf6-43d2-bdba-5a249d0da879.cxg/"
             }
         ]
@@ -20,16 +21,19 @@
             {
                 "id": "fe2479fd-daff-41a8-97dc-a50457ab1871",
                 "name": "Massively multiplex chemical transcriptomics at single-cell resolution - MCF7",
+                "createdAt": 1598533300.153625,
                 "url": "https://cellxgene.cziscience.com/e/Single_cell_drug_screening_mcf7-44-remixed.cxg/"
             },
             {
                 "id": "108c2b65-4ea9-4792-8b5b-451842faf35b",
                 "name": "Massively multiplex chemical transcriptomics at single-cell resolution - A549",
+                "createdAt": 1598483751.637126,
                 "url": "https://cellxgene.cziscience.com/e/Single_cell_drug_screening_a549-42-remixed.cxg/"
             },
             {
                 "id": "38a78e91-e361-45c8-bae3-1d6d5108d18e",
                 "name": "Massively multiplex chemical transcriptomics at single-cell resolution - K562",
+                "createdAt": 1598483759.986738,
                 "url": "https://cellxgene.cziscience.com/e/Single_cell_drug_screening_k562-43-remixed.cxg/"
             }
         ]
@@ -42,11 +46,13 @@
             {
                 "id": "4b9e0a15-c006-45d9-860f-b8a43ccf7d9d",
                 "name": "Single-cell gene expression profiling of SARS-CoV-2 infected human cell lines - Calu-3",
+                "createdAt": 1598483753.065372,
                 "url": "https://cellxgene.cziscience.com/e/Single_cell_gene_expression_profiling_of_SARS_CoV_2_infected_human_cell_lines_Calu_3-28-remixed.cxg/"
             },
             {
                 "id": "ca421096-6240-4cee-8c12-d20899b3e005",
                 "name": "Single-cell gene expression profiling of SARS-CoV-2 infected human cell lines - H1299",
+                "createdAt": 1598483756.965343,
                 "url": "https://cellxgene.cziscience.com/e/Single_cell_gene_expression_profiling_of_SARS_CoV_2_infected_human_cell_lines_H1299-27-remixed.cxg/"
             }
         ]
@@ -59,6 +65,7 @@
             {
                 "id": "030faa69-ff79-4d85-8630-7c874a114c19",
                 "name": "Single-cell longitudinal analysis of SARS-CoV-2 infection in human bronchial epithelial cells",
+                "createdAt": 1598483754.832291,
                 "url": "https://cellxgene.cziscience.com/e/Single_cell_longitudinal_analysis_of_SARS_CoV_2_infection_in_human_bronchial_epithelial_cells-29-remixed.cxg/"
             }
         ]
@@ -71,11 +78,13 @@
             {
                 "id": "8c42cfd0-0b0a-46d5-910c-fc833d83c45e",
                 "name": "Krasnow Lab Human Lung Cell Atlas, 10X",
+                "createdAt": 1598483758.536012,
                 "url": "https://cellxgene.cziscience.com/e/krasnow_lab_human_lung_cell_atlas_10x-1-remixed.cxg/"
             },
             {
                 "id": "e04daea4-4412-45b5-989e-76a9be070a89",
                 "name": "Krasnow Lab Human Lung Cell Atlas, Smart-seq2",
+                "createdAt": 1598483761.678821,
                 "url": "https://cellxgene.cziscience.com/e/krasnow_lab_human_lung_cell_atlas_smartseq2-2-remixed.cxg/"
             }
         ]
@@ -88,6 +97,7 @@
             {
                 "id": "2adb1f8a-a6b1-4909-8ee8-484814e2d4bf",
                 "name": "Construction of a human cell landscape at single-cell level",
+                "createdAt": 1601311857.456154,
                 "url": " https://cellxgene.cziscience.com/e/human_cell_landscape.cxg/"
             }
         ]
@@ -100,6 +110,7 @@
             {
                 "id": "456e8b9b-f872-488b-871d-94534090a865",
                 "name": "Single-cell atlas of peripheral immune response to SARS-CoV-2 infection",
+                "createdAt": 1601315303.831203,
                 "url": "https://cellxgene.cziscience.com/e/Single_cell_atlas_of_peripheral_immune_response_to_SARS_CoV_2_infection.cxg/"
             }
         ]
@@ -112,61 +123,73 @@
             {
                 "id": "1492eb6b-7d50-4c4d-94ac-c801a7d5555c",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: SFG inhibitory neurons",
+                "createdAt": 1605879579.50838,
                 "url": "https://cellxgene.cziscience.com/e/kampmann_SFG_Inh.cxg/"
             },
             {
                 "id": "75a881cf-5d88-46e2-bf9b-97e5cbc1bd56",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: EC inhibitory neurons",
+                "createdAt": 1605879581.021314,
                 "url": "https://cellxgene.cziscience.com/e/kampmann_EC_Inh.cxg/"
             },
             {
                 "id": "06b91002-4d3d-4d2e-8484-20c3b31e232c",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: EC astrocytes",
+                "createdAt": 1605879580.010648,
                 "url": "https://cellxgene.cziscience.com/e/kampmann_EC_Astro.cxg/"
             },
             {
                 "id": "f9ad5649-f372-43e1-a3a8-423383e5a8a2",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: EC oligodendrocyte",
+                "createdAt": 1605879578.462828,
                 "url": "https://cellxgene.cziscience.com/e/kampmann_EC_Oligo.cxg/"
             },
             {
                 "id": "9f1049ac-f8b7-45ad-8e31-6e96c3e5058f",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: EC microglia",
+                "createdAt": 1605879578.984484,
                 "url": "https://cellxgene.cziscience.com/e/kampmann_EC_Micro.cxg/"
             },
             {
                 "id": "cd77258f-b08b-4c89-b93f-6e6f146b1a4d",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: EC excitatory neurons",
+                "createdAt": 1605879580.522766,
                 "url": "https://cellxgene.cziscience.com/e/kampmann_EC_Exc.cxg/"
             },
             {
                 "id": "b94e3bdf-a385-49cc-b312-7a63cc28b77a",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: SFG astrocytes",
+                "createdAt": 1605879581.526881,
                 "url": "https://cellxgene.cziscience.com/e/kampmann_SFG_Astro.cxg/"
             },
             {
                 "id": "2727d83a-0af0-443a-bff8-58dc7028289a",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: caudal entorhinal cortex",
+                "createdAt": 1605879582.032221,
                 "url": "https://cellxgene.cziscience.com/e/kampmann_EC_all.cxg/"
             },
             {
                 "id": "873ff933-4fda-4936-9a70-67df11af90ac",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: SFG excitatory neurons",
+                "createdAt": 1605879582.533505,
                 "url": "https://cellxgene.cziscience.com/e/kampmann_SFG_Exc.cxg/"
             },
             {
                 "id": "24066994-8183-488d-b037-ef6bb524af39",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: SFG oligodendrocyte",
+                "createdAt": 1605879583.032505,
                 "url": "https://cellxgene.cziscience.com/e/kampmann_SFG_Oligo.cxg/"
             },
             {
                 "id": "bdacc907-7c26-419f-8808-969eab3ca2e8",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: SFG microglia",
+                "createdAt": 1605879583.538066,
                 "url": "https://cellxgene.cziscience.com/e/kampmann_SFG_Micro.cxg/"
             },
             {
                 "id": "6c600df6-ddca-4628-a8bb-1d6de1e3f9b4",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: superior frontal gyrus",
+                "createdAt": 1605879584.056298,
                 "url": "https://cellxgene.cziscience.com/e/kampmann_SFG_all.cxg/"
             }
         ]
@@ -180,24 +203,28 @@
                 "id": "9b686bb6-1427-4e13-b451-7ee961115cf9",
                 "name": "Evolution of cellular diversity in primary motor cortex of human, marmoset monkey, and mouse 3-species integration non-nuerons",
                 "cellCount": 10739,
+                "createdAt": 1613586706.260798,
                 "url": "https://cellxgene.cziscience.com/e/9b686bb6-1427-4e13-b451-7ee961115cf9.cxg/"
             },
             {
                 "id": "6acb6637-ac08-4a65-b2d1-581e51dc7ccf",
                 "name": "Evolution of cellular diversity in primary motor cortex of human, marmoset monkey, and mouse 4-species integration excitory neurons",
                 "cellCount": 29050,
+                "createdAt": 1613586654.419616,
                 "url": "https://cellxgene.cziscience.com/e/6acb6637-ac08-4a65-b2d1-581e51dc7ccf.cxg/"
             },
             {
                 "id": "b6203114-e133-458a-aed5-eed1028378b4",
                 "name": "Evolution of cellular diversity in primary motor cortex of human, marmoset monkey, and mouse 3-species integration excitory neurons",
                 "cellCount": 24213,
+                "createdAt": 1613586676.321175,
                 "url": "https://cellxgene.cziscience.com/e/b6203114-e133-458a-aed5-eed1028378b4.cxg/"
             },
             {
                 "id": "f7a068f1-0fdb-48e8-8029-db870ff11d9e",
                 "name": "Evolution of cellular diversity in primary motor cortex of human, marmoset monkey, and mouse 3-species integration inhibitory neurons",
                 "cellCount": 29486,
+                "createdAt": 1613586727.045192,
                 "url": "https://cellxgene.cziscience.com/e/f7a068f1-0fdb-48e8-8029-db870ff11d9e.cxg/"
             }
         ]
@@ -211,12 +238,14 @@
                 "id": "9df60c57-fdf3-4e93-828e-fe9303f20438",
                 "name": "Single cell transcriptional and chromatin accessibility profiling redefine cellular heterogeneity in the adult human kidney - RNAseq",
                 "cellCount": 19985,
+                "createdAt": 1614455232.885436,
                 "url": "https://cellxgene.cziscience.com/e/9df60c57-fdf3-4e93-828e-fe9303f20438.cxg/"
             },
             {
                 "id": "13a027de-ea3e-432b-9a5e-6bc7048498fc",
                 "name": "Single cell transcriptional and chromatin accessibility profiling redefine cellular heterogeneity in the adult human kidney - ATACseq",
                 "cellCount": 27034,
+                "createdAt": 1614639950.815506,
                 "url": "https://cellxgene.cziscience.com/e/13a027de-ea3e-432b-9a5e-6bc7048498fc.cxg/"
             }
         ]
@@ -230,6 +259,7 @@
                 "id": "01209dce-3575-4bed-b1df-129f57fbc031",
                 "name": "Single-cell transcriptomics of human T cells reveals tissue and activation signatures in health and disease",
                 "cellCount": 51876,
+                "createdAt": 1615417964.171039,
                 "url": "https://cellxgene.cziscience.com/e/01209dce-3575-4bed-b1df-129f57fbc031.cxg/"
             }
         ]
@@ -243,60 +273,70 @@
                 "id": "c88e2a9c-72b8-4a88-a2f6-e428eada0c86",
                 "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: 10X_cells_v2_AIBS",
                 "cellCount": 122641,
+                "createdAt": 1615242744.355233,
                 "url": "https://cellxgene.cziscience.com/e/c88e2a9c-72b8-4a88-a2f6-e428eada0c86.cxg/"
             },
             {
                 "id": "5e765f97-1cf1-407e-a86c-e28701f4749d",
                 "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: 10X_cells_v3_AIBS",
                 "cellCount": 71183,
+                "createdAt": 1615242750.576417,
                 "url": "https://cellxgene.cziscience.com/e/5e765f97-1cf1-407e-a86c-e28701f4749d.cxg/"
             },
             {
                 "id": "1304e107-0f06-4d33-b634-d95ed986d02b",
                 "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: SMARTer_nuclei_MOp",
                 "cellCount": 6171,
+                "createdAt": 1615242833.606595,
                 "url": "https://cellxgene.cziscience.com/e/1304e107-0f06-4d33-b634-d95ed986d02b.cxg/"
             },
             {
                 "id": "31dd355c-3140-4558-a648-7e1e5f00480b",
                 "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: chromatin accessibility",
                 "cellCount": 68394,
+                "createdAt": 1615581059.998475,
                 "url": "https://cellxgene.cziscience.com/e/31dd355c-3140-4558-a648-7e1e5f00480b.cxg/"
             },
             {
                 "id": "35081d47-99bf-4507-9541-735428df9a9f",
                 "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types",
                 "cellCount": 406187,
+                "createdAt": 1615246835.562319,
                 "url": "https://cellxgene.cziscience.com/e/35081d47-99bf-4507-9541-735428df9a9f.cxg/"
             },
             {
                 "id": "50d79de5-bd17-4d14-a295-199d71ff56be",
                 "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: 10X_nuclei_v3_AIBS",
                 "cellCount": 40166,
+                "createdAt": 1615242778.691554,
                 "url": "https://cellxgene.cziscience.com/e/50d79de5-bd17-4d14-a295-199d71ff56be.cxg/"
             },
             {
                 "id": "85d7145c-0aea-494c-ab44-87a327edd7b2",
                 "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: DNA methylation (CHN)",
                 "cellCount": 9876,
+                "createdAt": 1615578832.321001,
                 "url": "https://cellxgene.cziscience.com/e/85d7145c-0aea-494c-ab44-87a327edd7b2.cxg/"
             },
             {
                 "id": "a9affc92-a291-4eb9-996f-147392132323",
                 "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: 10X_nuclei_v3_Broad",
                 "cellCount": 159738,
+                "createdAt": 1615242793.676303,
                 "url": "https://cellxgene.cziscience.com/e/a9affc92-a291-4eb9-996f-147392132323.cxg/"
             },
             {
                 "id": "ad5cd6ca-06c0-41cb-9b18-4638a05a0990",
                 "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: DNA methylation (CGN)",
                 "cellCount": 9876,
+                "createdAt": 1615578824.58593,
                 "url": "https://cellxgene.cziscience.com/e/ad5cd6ca-06c0-41cb-9b18-4638a05a0990.cxg/"
             },
             {
                 "id": "d622cee4-56e1-44ba-8b05-fd2f0f2032e6",
                 "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: SMARTer_cells_MOp",
                 "cellCount": 6288,
+                "createdAt": 1615242805.109766,
                 "url": "https://cellxgene.cziscience.com/e/d622cee4-56e1-44ba-8b05-fd2f0f2032e6.cxg/"
             }
         ]
@@ -310,6 +350,7 @@
                 "id": "3a15ab1c-c36c-4842-9a3e-47e6ffd0ba6f",
                 "name": "Adult mouse cortical cell taxonomy revealed by single cell transcriptomics",
                 "cellCount": 1679,
+                "createdAt": 1615242519.11404,
                 "url": "https://cellxgene.cziscience.com/e/3a15ab1c-c36c-4842-9a3e-47e6ffd0ba6f.cxg/"
             }
         ]
@@ -323,6 +364,7 @@
                 "id": "e0ed3c55-aff6-4bb7-b6ff-98a2d90b890c",
                 "name": "A transcriptomic atlas of the mouse cerebellum",
                 "cellCount": 611034,
+                "createdAt": 1615241500.30999,
                 "url": "https://cellxgene.cziscience.com/e/e0ed3c55-aff6-4bb7-b6ff-98a2d90b890c.cxg/"
             }
         ]
@@ -336,6 +378,7 @@
                 "id": "28c696bb-9549-434b-9340-dc745a846f9a",
                 "name": "Adult mouse cortical cell taxonomy revealed by single cell transcriptomics",
                 "cellCount": 22375,
+                "createdAt": 1615234239.508447,
                 "url": "https://cellxgene.cziscience.com/e/28c696bb-9549-434b-9340-dc745a846f9a.cxg/"
             }
         ]
@@ -349,246 +392,287 @@
                 "id": "ec6c52b8-3368-4f72-a416-1ade0dab97bf",
                 "name": "Limb muscle — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 3855,
+                "createdAt": 1615413499.744011,
                 "url": "https://cellxgene.cziscience.com/e/ec6c52b8-3368-4f72-a416-1ade0dab97bf.cxg/"
             },
             {
                 "id": "0fb7916e-7a68-4a4c-a441-3ab3989f29a7",
                 "name": "Lung — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 24540,
+                "createdAt": 1615413277.555143,
                 "url": "https://cellxgene.cziscience.com/e/0fb7916e-7a68-4a4c-a441-3ab3989f29a7.cxg/"
             },
             {
                 "id": "0380ddce-c31b-422a-88fe-34a1945bd949",
                 "name": "Aorta — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 906,
+                "createdAt": 1615413382.174221,
                 "url": "https://cellxgene.cziscience.com/e/0380ddce-c31b-422a-88fe-34a1945bd949.cxg/"
             },
             {
                 "id": "1a0610d8-1339-479b-b261-7fb586c3dab9",
                 "name": "Trachea — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 7976,
+                "createdAt": 1615413364.339268,
                 "url": "https://cellxgene.cziscience.com/e/1a0610d8-1339-479b-b261-7fb586c3dab9.cxg/"
             },
             {
                 "id": "48b37086-25f7-4ecd-be66-f5bb378e3aea",
                 "name": "All — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 245389,
+                "createdAt": 1615423647.494106,
                 "url": "https://cellxgene.cziscience.com/e/48b37086-25f7-4ecd-be66-f5bb378e3aea.cxg/"
             },
             {
                 "id": "05e6f6e3-0473-4b85-9f94-bcc5f1b5e04b",
                 "name": "Lung — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 5218,
+                "createdAt": 1615419877.252031,
                 "url": "https://cellxgene.cziscience.com/e/05e6f6e3-0473-4b85-9f94-bcc5f1b5e04b.cxg/"
             },
             {
                 "id": "0bd1a1de-3aee-40e0-b2ec-86c7a30c7149",
                 "name": "Bone marrow — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 40220,
+                "createdAt": 1615421753.61598,
                 "url": "https://cellxgene.cziscience.com/e/0bd1a1de-3aee-40e0-b2ec-86c7a30c7149.cxg/"
             },
             {
                 "id": "170ce19f-7a2f-4926-a1cc-adcad99e7474",
                 "name": "Thymus — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 4047,
+                "createdAt": 1615423388.877982,
                 "url": "https://cellxgene.cziscience.com/e/170ce19f-7a2f-4926-a1cc-adcad99e7474.cxg/"
             },
             {
                 "id": "1d29fd10-c8b3-4611-b0ac-3c578125adbf",
                 "name": "Skin of body — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 4860,
+                "createdAt": 1615423367.691986,
                 "url": "https://cellxgene.cziscience.com/e/1d29fd10-c8b3-4611-b0ac-3c578125adbf.cxg/"
             },
             {
                 "id": "1efd4700-87dd-4b45-8762-11ba3fea7a65",
                 "name": "Heart — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 9669,
+                "createdAt": 1615419802.346019,
                 "url": "https://cellxgene.cziscience.com/e/1efd4700-87dd-4b45-8762-11ba3fea7a65.cxg/"
             },
             {
                 "id": "1fe63353-9e75-4824-aa30-ed8d84be748c",
                 "name": "Heart — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 8613,
+                "createdAt": 1615413230.493441,
                 "url": "https://cellxgene.cziscience.com/e/1fe63353-9e75-4824-aa30-ed8d84be748c.cxg/"
             },
             {
                 "id": "2491629a-bde0-46ad-a073-e34fcb516857",
                 "name": "Large intestine — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 8311,
+                "createdAt": 1615419842.799123,
                 "url": "https://cellxgene.cziscience.com/e/2491629a-bde0-46ad-a073-e34fcb516857.cxg/"
             },
             {
                 "id": "3f4fe86f-aced-4d10-b174-ee35b9f46b9d",
                 "name": "Trachea — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 3160,
+                "createdAt": 1615423415.124611,
                 "url": "https://cellxgene.cziscience.com/e/3f4fe86f-aced-4d10-b174-ee35b9f46b9d.cxg/"
             },
             {
                 "id": "4546e757-34d0-4d17-be06-538318925fcd",
                 "name": "Liver — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 2859,
+                "createdAt": 1615419853.210637,
                 "url": "https://cellxgene.cziscience.com/e/4546e757-34d0-4d17-be06-538318925fcd.cxg/"
             },
             {
                 "id": "4fa55ee5-8da4-4d42-9525-1c52d4ce50bf",
                 "name": "Skin of body — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 4454,
+                "createdAt": 1615413324.477089,
                 "url": "https://cellxgene.cziscience.com/e/4fa55ee5-8da4-4d42-9525-1c52d4ce50bf.cxg/"
             },
             {
                 "id": "524179b0-b406-4723-9c46-293ffa77ca81",
                 "name": "Kidney — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 1833,
+                "createdAt": 1615413475.036917,
                 "url": "https://cellxgene.cziscience.com/e/524179b0-b406-4723-9c46-293ffa77ca81.cxg/"
             },
             {
                 "id": "6202a243-b713-4e12-9ced-c387f8483dea",
                 "name": "Liver — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 7294,
+                "createdAt": 1615413267.311307,
                 "url": "https://cellxgene.cziscience.com/e/6202a243-b713-4e12-9ced-c387f8483dea.cxg/"
             },
             {
                 "id": "66ff82b4-9380-469c-bc4b-cfa08eacd325",
                 "name": "Brain — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 7249,
+                "createdAt": 1615418842.717376,
                 "url": "https://cellxgene.cziscience.com/e/66ff82b4-9380-469c-bc4b-cfa08eacd325.cxg/"
             },
             {
                 "id": "6e4f871d-fd7c-4909-8c14-e4c9957c2e8f",
                 "name": "Thymus — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 9275,
+                "createdAt": 1615413343.453985,
                 "url": "https://cellxgene.cziscience.com/e/6e4f871d-fd7c-4909-8c14-e4c9957c2e8f.cxg/"
             },
             {
                 "id": "76544818-bc5b-4a0d-87d4-40dde89545cb",
                 "name": "Adipose tissue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 6777,
+                "createdAt": 1615413223.017164,
                 "url": "https://cellxgene.cziscience.com/e/76544818-bc5b-4a0d-87d4-40dde89545cb.cxg/"
             },
             {
                 "id": "7c6091da-4606-44c7-a2c4-ef896de09e28",
                 "name": "Mammary gland — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 12295,
+                "createdAt": 1615413290.314927,
                 "url": "https://cellxgene.cziscience.com/e/7c6091da-4606-44c7-a2c4-ef896de09e28.cxg/"
             },
             {
                 "id": "821c79aa-044e-40cf-b331-0fe3edd48019",
                 "name": "Mesenteric fat pad — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 3014,
+                "createdAt": 1615421770.085897,
                 "url": "https://cellxgene.cziscience.com/e/821c79aa-044e-40cf-b331-0fe3edd48019.cxg/"
             },
             {
                 "id": "8f1bc86b-7976-4826-8602-f5266160ad86",
                 "name": "Brown adipose tissue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 2223,
+                "createdAt": 1615413390.234481,
                 "url": "https://cellxgene.cziscience.com/e/8f1bc86b-7976-4826-8602-f5266160ad86.cxg/"
             },
             {
                 "id": "93966790-bbfa-420f-aa85-bc5ca51d9c96",
                 "name": "Bladder lumen — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 8945,
+                "createdAt": 1615413206.257926,
                 "url": "https://cellxgene.cziscience.com/e/93966790-bbfa-420f-aa85-bc5ca51d9c96.cxg/"
             },
             {
                 "id": "98ad5247-68f8-42f8-b8e5-7938cb373a91",
                 "name": "Tongue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 20680,
+                "createdAt": 1615413353.681805,
                 "url": "https://cellxgene.cziscience.com/e/98ad5247-68f8-42f8-b8e5-7938cb373a91.cxg/"
             },
             {
                 "id": "98e5ea9f-16d6-47ec-a529-686e76515e39",
                 "name": "All — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 110824,
+                "createdAt": 1615423655.935265,
                 "url": "https://cellxgene.cziscience.com/e/98e5ea9f-16d6-47ec-a529-686e76515e39.cxg/"
             },
             {
                 "id": "a6626b73-a0de-4dee-99aa-2559ab05af11",
                 "name": "Gonadal fat pad — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 3406,
+                "createdAt": 1615419790.886587,
                 "url": "https://cellxgene.cziscience.com/e/a6626b73-a0de-4dee-99aa-2559ab05af11.cxg/"
             },
             {
                 "id": "a7ace090-1ba1-47f2-8def-6e11298b7816",
                 "name": "Limb muscle — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 28867,
+                "createdAt": 1615413255.353925,
                 "url": "https://cellxgene.cziscience.com/e/a7ace090-1ba1-47f2-8def-6e11298b7816.cxg/"
             },
             {
                 "id": "b8c618e5-4b3d-4566-8a3f-7e40047f5c54",
                 "name": "Kidney — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 21647,
+                "createdAt": 1615413238.793447,
                 "url": "https://cellxgene.cziscience.com/e/b8c618e5-4b3d-4566-8a3f-7e40047f5c54.cxg/"
             },
             {
                 "id": "bc7466d7-ff13-4ff2-9c3d-7a1d208bd492",
                 "name": "Mammary gland — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 3282,
+                "createdAt": 1615421745.574863,
                 "url": "https://cellxgene.cziscience.com/e/bc7466d7-ff13-4ff2-9c3d-7a1d208bd492.cxg/"
             },
             {
                 "id": "bf12f9c6-4211-4c91-9c71-22019f29f516",
                 "name": "Bladder lumen — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 2432,
+                "createdAt": 1615413400.348582,
                 "url": "https://cellxgene.cziscience.com/e/bf12f9c6-4211-4c91-9c71-22019f29f516.cxg/"
             },
             {
                 "id": "c08f8441-4a10-4748-872a-e70c0bcccdba",
                 "name": "Brain — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 13417,
+                "createdAt": 1615418820.475159,
                 "url": "https://cellxgene.cziscience.com/e/c08f8441-4a10-4748-872a-e70c0bcccdba.cxg/"
             },
             {
                 "id": "c2878000-d3f0-4d30-9a8a-2139a13c72f8",
                 "name": "Subcutaneous adipose tissue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 3755,
+                "createdAt": 1615421806.161207,
                 "url": "https://cellxgene.cziscience.com/e/c2878000-d3f0-4d30-9a8a-2139a13c72f8.cxg/"
             },
             {
                 "id": "c9096ac4-ea44-4cf9-82f4-af05cb83eb24",
                 "name": "Tongue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 3735,
+                "createdAt": 1615423403.517854,
                 "url": "https://cellxgene.cziscience.com/e/c9096ac4-ea44-4cf9-82f4-af05cb83eb24.cxg/"
             },
             {
                 "id": "cbd62079-bed8-4aa1-9659-670f9cb51f9d",
                 "name": "Diaphragm — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 1858,
+                "createdAt": 1615413438.2694,
                 "url": "https://cellxgene.cziscience.com/e/cbd62079-bed8-4aa1-9659-670f9cb51f9d.cxg/"
             },
             {
                 "id": "db55b719-6102-493a-9251-404bc501d0de",
                 "name": "Bone marrow — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 40220,
+                "createdAt": 1615413302.832977,
                 "url": "https://cellxgene.cziscience.com/e/db55b719-6102-493a-9251-404bc501d0de.cxg/"
             },
             {
                 "id": "de4e7a0c-91b2-44e4-b382-87da74c9efb6",
                 "name": "Large intestine — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 1887,
+                "createdAt": 1615413248.413182,
                 "url": "https://cellxgene.cziscience.com/e/de4e7a0c-91b2-44e4-b382-87da74c9efb6.cxg/"
             },
             {
                 "id": "e2b469d4-b5c3-4a35-9d19-ee71ce61cae0",
                 "name": "Spleen — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 35718,
+                "createdAt": 1615413334.177976,
                 "url": "https://cellxgene.cziscience.com/e/e2b469d4-b5c3-4a35-9d19-ee71ce61cae0.cxg/"
             },
             {
                 "id": "e3b8c485-7811-407e-99ed-c7d574be9d7c",
                 "name": "Pancreas — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 3384,
+                "createdAt": 1615421788.160175,
                 "url": "https://cellxgene.cziscience.com/e/e3b8c485-7811-407e-99ed-c7d574be9d7c.cxg/"
             },
             {
                 "id": "e80d4e1c-672f-496a-8f32-37eab34f727d",
                 "name": "Spleen — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 3834,
+                "createdAt": 1615423375.940415,
                 "url": "https://cellxgene.cziscience.com/e/e80d4e1c-672f-496a-8f32-37eab34f727d.cxg/"
             },
             {
                 "id": "ef47280b-3e68-4188-a49a-7b8374c8a6f2",
                 "name": "Pancreas — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
                 "cellCount": 6201,
+                "createdAt": 1615413314.773602,
                 "url": "https://cellxgene.cziscience.com/e/ef47280b-3e68-4188-a49a-7b8374c8a6f2.cxg/"
             }
         ]
@@ -602,6 +686,7 @@
                 "id": "257adc73-8152-414b-a2c7-73861b8e0c0a",
                 "name": "Molecular, spatial and projection diversity of neurons in primary motor cortex revealed by in situ single-cell transcriptomics",
                 "cellCount": 276556,
+                "createdAt": 1615591651.004997,
                 "url": "https://cellxgene.cziscience.com/e/257adc73-8152-414b-a2c7-73861b8e0c0a.cxg/"
             }
         ]
@@ -615,6 +700,7 @@
                 "id": "774c18c5-efa1-4dc5-9e5e-2c824bab2e34",
                 "name": "Infiltrating Neoplastic Cells Human Glioblastoma",
                 "cellCount": 3589,
+                "createdAt": 1615931597.025383,
                 "url": "https://cellxgene.cziscience.com/e/774c18c5-efa1-4dc5-9e5e-2c824bab2e34.cxg/"
             }
         ]
@@ -628,18 +714,21 @@
                 "id": "b22a3a55-9a35-434e-93e1-f2483037f33c",
                 "name": "Non-neuronal cells — An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum.",
                 "cellCount": 259558,
+                "createdAt": 1616011201.778035,
                 "url": "https://cellxgene.cziscience.com/e/b22a3a55-9a35-434e-93e1-f2483037f33c.cxg/"
             },
             {
                 "id": "ca3790f0-c6a6-41b1-b532-61f9b86d346a",
                 "name": "GABAergic neurons — An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum.",
                 "cellCount": 167181,
+                "createdAt": 1616011190.759371,
                 "url": "https://cellxgene.cziscience.com/e/ca3790f0-c6a6-41b1-b532-61f9b86d346a.cxg/"
             },
             {
                 "id": "d33814fc-31e8-4f39-a200-a0ca21a9b134",
                 "name": "Glutamatergic neurons — An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum.",
                 "cellCount": 387060,
+                "createdAt": 1616104445.502767,
                 "url": "https://cellxgene.cziscience.com/e/d33814fc-31e8-4f39-a200-a0ca21a9b134.cxg/"
             }
         ]
@@ -653,12 +742,14 @@
                 "id": "26ae14da-9e5f-4d18-abae-18a5a328feef",
                 "name": "A Single-Cell Transcriptional Roadmap of the Mouse and Human Lymph Node Lymphatic Vasculature",
                 "cellCount": 5625,
+                "createdAt": 1616438886.906302,
                 "url": "https://cellxgene.cziscience.com/e/26ae14da-9e5f-4d18-abae-18a5a328feef.cxg/"
             },
             {
                 "id": "cfa3c355-ee77-4fc8-9a00-78e61d23024c",
                 "name": "A Single-Cell Transcriptional Roadmap of the Mouse and Human Lymph Node Lymphatic Vasculature",
                 "cellCount": 4355,
+                "createdAt": 1616438875.381961,
                 "url": "https://cellxgene.cziscience.com/e/cfa3c355-ee77-4fc8-9a00-78e61d23024c.cxg/"
             }
         ]
@@ -672,6 +763,7 @@
                 "id": "37b21763-7f0f-41ae-9001-60bad6e2841d",
                 "name": "Multiomics single-cell analysis of human pancreatic islets reveals novel cellular states in health and type 1 diabetes",
                 "cellCount": 69645,
+                "createdAt": 1615862943.719328,
                 "url": "https://cellxgene.cziscience.com/e/37b21763-7f0f-41ae-9001-60bad6e2841d.cxg/"
             }
         ]
@@ -685,12 +777,14 @@
                 "id": "21d3e683-80a4-4d9b-bc89-ebb2df513dde",
                 "name": "Time-resolved Systems Immunology Reveals a Late Juncture Linked to Fatal COVID-19: Adaptive Cells",
                 "cellCount": 246964,
+                "createdAt": 1616172797.420506,
                 "url": "https://cellxgene.cziscience.com/e/21d3e683-80a4-4d9b-bc89-ebb2df513dde.cxg/"
             },
             {
                 "id": "30cd5311-6c09-46c9-94f1-71fe4b91813c",
                 "name": "Time-resolved Systems Immunology Reveals a Late Juncture Linked to Fatal COVID-19: Innate Cells",
                 "cellCount": 125117,
+                "createdAt": 1616172813.719481,
                 "url": "https://cellxgene.cziscience.com/e/30cd5311-6c09-46c9-94f1-71fe4b91813c.cxg/"
             }
         ]
@@ -704,48 +798,56 @@
                 "id": "1009f384-b12d-448e-ba9f-1b7d2ecfbb4e",
                 "name": "Neuronal — Cells of the adult human heart",
                 "cellCount": 3961,
+                "createdAt": 1617746933.623842,
                 "url": "https://cellxgene.cziscience.com/e/1009f384-b12d-448e-ba9f-1b7d2ecfbb4e.cxg/"
             },
             {
                 "id": "572f3f3e-d3e4-4d13-8e2b-88215e508481",
                 "name": "Vascular — Cells of the adult human heart",
                 "cellCount": 195395,
+                "createdAt": 1617746940.676077,
                 "url": "https://cellxgene.cziscience.com/e/572f3f3e-d3e4-4d13-8e2b-88215e508481.cxg/"
             },
             {
                 "id": "78fd69d2-75e4-4207-819a-563139f273c6",
                 "name": "Ventricular cardiomyocytes — Cells of the adult human heart",
                 "cellCount": 125289,
+                "createdAt": 1617746880.071121,
                 "url": "https://cellxgene.cziscience.com/e/78fd69d2-75e4-4207-819a-563139f273c6.cxg/"
             },
             {
                 "id": "84f1a631-910b-4fbb-9f76-d915a07316d2",
                 "name": "Atrial cardiomyocytes — Cells of the adult human heart",
                 "cellCount": 23483,
+                "createdAt": 1617746868.291982,
                 "url": "https://cellxgene.cziscience.com/e/84f1a631-910b-4fbb-9f76-d915a07316d2.cxg/"
             },
             {
                 "id": "9d584fcb-a28a-4b91-a886-ceb66a88ef81",
                 "name": "Fibroblasts — Cells of the adult human heart",
                 "cellCount": 59341,
+                "createdAt": 1617746890.093482,
                 "url": "https://cellxgene.cziscience.com/e/9d584fcb-a28a-4b91-a886-ceb66a88ef81.cxg/"
             },
             {
                 "id": "d4e69e01-3ba2-4d6b-a15d-e7048f78f22e",
                 "name": "All — Cells of the adult human heart",
                 "cellCount": 486134,
+                "createdAt": 1617319340.173896,
                 "url": "https://cellxgene.cziscience.com/e/d4e69e01-3ba2-4d6b-a15d-e7048f78f22e.cxg/"
             },
             {
                 "id": "ed852810-a003-4386-9846-1638362cee39",
                 "name": "Immune — Cells of the adult human heart",
                 "cellCount": 40868,
+                "createdAt": 1617746898.168706,
                 "url": "https://cellxgene.cziscience.com/e/ed852810-a003-4386-9846-1638362cee39.cxg/"
             },
             {
                 "id": "f75f2ff4-2884-4c2d-b375-70de37a34507",
                 "name": "Adipocytes — Cells of the adult human heart",
                 "cellCount": 3799,
+                "createdAt": 1617739319.906348,
                 "url": "https://cellxgene.cziscience.com/e/f75f2ff4-2884-4c2d-b375-70de37a34507.cxg/"
             }
         ]
@@ -759,6 +861,7 @@
                 "id": "077b0429-0f47-48e0-879a-39eaae531d42",
                 "name": "Direct Exposure to SARS-CoV-2 and Cigarette Smoke Increases Infection Severity and Alters the Stem Cell-Derived Airway Repair Response",
                 "cellCount": 19361,
+                "createdAt": 1617746834.011976,
                 "url": "https://cellxgene.cziscience.com/e/077b0429-0f47-48e0-879a-39eaae531d42.cxg/"
             }
         ]
@@ -772,102 +875,119 @@
                 "id": "bbd16004-09e8-4b6c-b465-73ff83a52837",
                 "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Neural",
                 "cellCount": 4144,
+                "createdAt": 1617915902.07257,
                 "url": "https://cellxgene.cziscience.com/e/bbd16004-09e8-4b6c-b465-73ff83a52837.cxg/"
             },
             {
                 "id": "aa0b5adb-957d-4f15-ab83-2c5cc2843f77",
                 "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Fetal A6",
                 "cellCount": 346,
+                "createdAt": 1617908757.628912,
                 "url": "https://cellxgene.cziscience.com/e/aa0b5adb-957d-4f15-ab83-2c5cc2843f77.cxg/"
             },
             {
                 "id": "9d5df009-eb76-43a3-b6cd-22017cc53700",
                 "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: All cells",
                 "cellCount": 76592,
+                "createdAt": 1617915701.435553,
                 "url": "https://cellxgene.cziscience.com/e/9d5df009-eb76-43a3-b6cd-22017cc53700.cxg/"
             },
             {
                 "id": "04b0eb97-d816-44bb-93a5-8b2968791aa0",
                 "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Pericytes",
                 "cellCount": 4163,
+                "createdAt": 1617915921.243066,
                 "url": "https://cellxgene.cziscience.com/e/04b0eb97-d816-44bb-93a5-8b2968791aa0.cxg/"
             },
             {
                 "id": "fd89be61-2869-4342-a86e-e1fce3a8f269",
                 "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Epithelium",
                 "cellCount": 17622,
+                "createdAt": 1617915741.150312,
                 "url": "https://cellxgene.cziscience.com/e/fd89be61-2869-4342-a86e-e1fce3a8f269.cxg/"
             },
             {
                 "id": "08e94873-c2a6-4f7d-ab72-aeaff3e3f929",
                 "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Fetal A7",
                 "cellCount": 344,
+                "createdAt": 1617908769.419015,
                 "url": "https://cellxgene.cziscience.com/e/08e94873-c2a6-4f7d-ab72-aeaff3e3f929.cxg/"
             },
             {
                 "id": "2d66790a-6621-4a49-8f0d-4002db5cc98d",
                 "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Fetal A8",
                 "cellCount": 709,
+                "createdAt": 1617908798.448876,
                 "url": "https://cellxgene.cziscience.com/e/2d66790a-6621-4a49-8f0d-4002db5cc98d.cxg/"
             },
             {
                 "id": "4269074c-f2c1-4d88-b2c3-0946f59d5449",
                 "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Immune",
                 "cellCount": 2199,
+                "createdAt": 1617915828.965023,
                 "url": "https://cellxgene.cziscience.com/e/4269074c-f2c1-4d88-b2c3-0946f59d5449.cxg/"
             },
             {
                 "id": "4d2e0563-cf4a-48bd-aa7f-efc26025b53a",
                 "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Fibroblasts",
                 "cellCount": 24081,
+                "createdAt": 1617915811.848907,
                 "url": "https://cellxgene.cziscience.com/e/4d2e0563-cf4a-48bd-aa7f-efc26025b53a.cxg/"
             },
             {
                 "id": "58679288-9ecc-4647-9781-12a3a8f8c6fd",
                 "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Myofibroblasts and Mesothelium",
                 "cellCount": 2833,
+                "createdAt": 1617915867.376692,
                 "url": "https://cellxgene.cziscience.com/e/58679288-9ecc-4647-9781-12a3a8f8c6fd.cxg/"
             },
             {
                 "id": "b9b4cf27-9c22-410d-8bd8-5d43e379485b",
                 "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Fetal A9",
                 "cellCount": 644,
+                "createdAt": 1617908808.805061,
                 "url": "https://cellxgene.cziscience.com/e/b9b4cf27-9c22-410d-8bd8-5d43e379485b.cxg/"
             },
             {
                 "id": "4506d9e3-4543-4464-aeae-b0b04eee1cea",
                 "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Adult A1",
                 "cellCount": 2649,
+                "createdAt": 1617908710.619989,
                 "url": "https://cellxgene.cziscience.com/e/4506d9e3-4543-4464-aeae-b0b04eee1cea.cxg/"
             },
             {
                 "id": "9dfd2243-74d6-4924-86bd-c206ca9287b1",
                 "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Adult A2",
                 "cellCount": 2316,
+                "createdAt": 1617908722.651247,
                 "url": "https://cellxgene.cziscience.com/e/9dfd2243-74d6-4924-86bd-c206ca9287b1.cxg/"
             },
             {
                 "id": "774de9c6-9752-4e39-89a9-2a88c869d52a",
                 "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Fetal A3",
                 "cellCount": 1080,
+                "createdAt": 1617908735.257033,
                 "url": "https://cellxgene.cziscience.com/e/774de9c6-9752-4e39-89a9-2a88c869d52a.cxg/"
             },
             {
                 "id": "c42c8ad3-9761-49e5-b9bf-ee8ebd50416f",
                 "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Endothelium",
                 "cellCount": 4154,
+                "createdAt": 1617915732.434266,
                 "url": "https://cellxgene.cziscience.com/e/c42c8ad3-9761-49e5-b9bf-ee8ebd50416f.cxg/"
             },
             {
                 "id": "abd889c6-f60a-4fbd-924e-ee1e9dcf909b",
                 "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Fetal A4",
                 "cellCount": 1242,
+                "createdAt": 1617908746.101606,
                 "url": "https://cellxgene.cziscience.com/e/abd889c6-f60a-4fbd-924e-ee1e9dcf909b.cxg/"
             },
             {
                 "id": "e006d4e3-35fa-44b4-9981-09a66c4322e5",
                 "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Muscularis",
                 "cellCount": 4211,
+                "createdAt": 1617915849.644498,
                 "url": "https://cellxgene.cziscience.com/e/e006d4e3-35fa-44b4-9981-09a66c4322e5.cxg/"
             }
         ]
@@ -881,6 +1001,7 @@
                 "id": "de985818-285f-4f59-9dbd-d74968fddba3",
                 "name": "A single-cell atlas of the healthy breast tissues reveals clinically relevant clusters of breast epithelial cells",
                 "cellCount": 31696,
+                "createdAt": 1618346494.933269,
                 "url": "https://cellxgene.cziscience.com/e/de985818-285f-4f59-9dbd-d74968fddba3.cxg/"
             }
         ]
@@ -894,6 +1015,7 @@
                 "id": "b83559d1-156f-4ba9-9f6a-b165f83ef43f",
                 "name": "Single-cell RNA-Seq Investigation of Foveal and Peripheral Expression in the Human Retina",
                 "cellCount": 8217,
+                "createdAt": 1618873643.014243,
                 "url": "https://cellxgene.cziscience.com/e/b83559d1-156f-4ba9-9f6a-b165f83ef43f.cxg/"
             }
         ]

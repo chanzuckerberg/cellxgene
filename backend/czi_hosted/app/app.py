@@ -205,7 +205,7 @@ def dataroot_test_index():
     data += "<ul>"
     datasets.sort()
     for url_dataroot, dataset in datasets:
-        data += f"<li><a href={url_dataroot}/{dataset}>{dataset}</a></li>"
+        data += f"<li><a href={url_dataroot}/{dataset}/>{dataset}</a></li>"
     data += "</ul>"
     data += "</body></html>"
 

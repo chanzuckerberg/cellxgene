@@ -2,6 +2,7 @@ import React from "react";
 import Helmet from "react-helmet";
 import { connect } from "react-redux";
 
+import DatasetSelector from "./datasetSelector/datasetSelector";
 import Container from "./framework/container";
 import Layout from "./framework/layout";
 import LeftSideBar from "./leftSidebar";
@@ -72,7 +73,20 @@ class App extends React.Component {
             <LeftSideBar />
             {(viewportRef) => (
               <>
-                <MenuBar />
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    left: 8,
+                    position: "absolute",
+                    right: 8,
+                    top: 0,
+                    zIndex: 3,
+                  }}
+                >
+                  <DatasetSelector />
+                  <MenuBar />
+                </div>
                 <Embedding />
                 <Autosave />
                 <TermsOfServicePrompt />

@@ -233,15 +233,11 @@ class MenuBar extends React.PureComponent {
     return (
       <div
         style={{
-          position: "absolute",
-          right: 8,
-          top: 0,
           display: "flex",
           flexDirection: "row-reverse",
           alignItems: "flex-start",
           flexWrap: "wrap",
           justifyContent: "flex-start",
-          zIndex: 3,
         }}
       >
         <AuthButtons {...{ auth, userInfo }} />
