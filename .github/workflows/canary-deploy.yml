@@ -1,4 +1,4 @@
-name: Deploy via single cell infra repo
+name: Deploy canary via single cell infra repo
 
 on:
   push:
