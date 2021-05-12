@@ -2,13 +2,13 @@ anndata>=0.7.0
 boto3>=1.12.18
 click>=7.1.2
 fastobo>=0.6.1
-Flask>=1.0.2
+Flask==1.1.2
 Flask-Compress>=1.4.0
 Flask-Cors>=3.0.6
 Flask-RESTful>=0.3.6
 flask-server-timing>=0.1.2
 flask-talisman>=0.7.0
-flatbuffers>=1.11.0
+flatbuffers==1.12
 flatten-dict>=0.2.0
 fsspec>=0.4.4,<0.8.0
 gunicorn>=20.0.4
