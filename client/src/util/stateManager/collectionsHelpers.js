@@ -2,6 +2,9 @@
 Helper functions for querying and binding Portal collections.
 */
 
+/* app dependencies */
+import * as globals from "../../globals";
+
 const LOCATION_ORIGIN = window.location.origin;
 
 export function createCollectionsViewModel(collections) {
@@ -40,6 +43,19 @@ export function keyCollectionsByDatasetId(collections) {
   }, new Map());
 }
 
+function bindDataRoot(pathOrUrl) {
+  /*
+  read dataroot from path. given "protocol://hostname/x/any-alpha-numeric.cxg/", match on "/x/",
+  group on "x".
+   */
+  const matches = pathOrUrl.match(/\/([a-z0-9_.-]*)\/[a-z0-9_.-]*\.cxg\//i);
+  if (!matches || matches.length < 2) {
+    // Expecting at least match and one capturing group
+    throw new Error(`Unable to bind data root from "${pathOrUrl}"`);
+  }
+  return matches[1];
+}
+
 function bindDeploymentId(pathOrUrl) {
   /*
   read name of cxg from path. given "protocol://hostname/x/any-alpha-numeric.cxg/", match on "/any-alpha-numeric.cxg/",
@@ -51,15 +67,22 @@ function bindDeploymentId(pathOrUrl) {
     throw new Error(`Unable to bind deployment ID from "${pathOrUrl}"`);
   }
   return matches[1];
+  // return "93966790-bbfa-420f-aa85-bc5ca51d9c96.cxg"; // TODO(cc) enable for single mode locally
 }
 
 function switchUrlOriginToCurrent(url) {
   /*
   swap out origin in the given URL to the current origin.
-  TODO(cc) generalize data root per environment, use /\/[a-z0-9_.-]*\/[a-z0-9_.-]*\.cxg\//i to match data root and deployment ID.
    */
+  let dataRoot;
+  if (globals.API.local) {
+    // explicitly set data root for local
+    dataRoot = "d";
+  } else {
+    dataRoot = bindDataRoot(url);
+  }
   const deploymentId = bindDeploymentId(url);
-  return `${LOCATION_ORIGIN}/d/${deploymentId}/`;
+  return `${LOCATION_ORIGIN}/${dataRoot}/${deploymentId}/`;
 }
 
 function findDatasetIdByDeploymentId(deploymentId, collections) {

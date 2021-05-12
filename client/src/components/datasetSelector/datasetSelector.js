@@ -10,7 +10,7 @@ import DatasetMenu from "./datasetMenu";
 app-level collection and dataset breadcrumbs.
  */
 @connect((state) => {
-  const selectedDatasetId = state.collections?.datasetId;
+  const selectedDatasetId = state.collections?.selectedDatasetId;
   const collection = state.collections?.collectionsByDatasetId?.get(
     selectedDatasetId
   );
