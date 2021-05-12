@@ -1,3 +1,14 @@
+# Temporary Warning (May 12th, 2021)
+
+New versions of two cellxgene dependecies (`flask` and `flatbuffers`) have resulted in errors when doing a new install of cellxgene. Described in further detail [here](https://github.com/chanzuckerberg/cellxgene/issues/2197)
+
+The temporary solution to this issue is to downgrade these two packages manually via:
+
+`pip install -U flask==1.1.2 flatbuffers==1.12`
+
+The cellxgene team aims to have a patch available to fix these errors by May 17th, 2021 and thanks you for your patience!
+
+
 <img src="./docs/cellxgene-logo.png" width="300">
 
 _an interactive explorer for single-cell transcriptomics data_
