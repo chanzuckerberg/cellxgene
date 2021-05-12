@@ -106,4 +106,7 @@ if (window.CELLXGENE && window.CELLXGENE.API) {
   };
 }
 
+// TODO(cc) temp set local flag to handle differences between local and deployed environments
+_API.local = window.location.hostname === "localhost";
+
 export const API = _API;
