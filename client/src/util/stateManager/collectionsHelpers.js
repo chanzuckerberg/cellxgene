@@ -63,11 +63,13 @@ function bindDeploymentId(pathOrUrl) {
    */
   const matches = pathOrUrl.match(/\/([a-z0-9_.-]*\.cxg)\//i);
   if (!matches || matches.length < 2) {
+    if (globals.API.local) {
+      return "93966790-bbfa-420f-aa85-bc5ca51d9c96.cxg"; // TODO(cc) default dataset for local (single mode)
+    }
     // Expecting at least match and one capturing group
     throw new Error(`Unable to bind deployment ID from "${pathOrUrl}"`);
   }
   return matches[1];
-  // return "93966790-bbfa-420f-aa85-bc5ca51d9c96.cxg"; // TODO(cc) enable for single mode locally
 }
 
 function switchUrlOriginToCurrent(url) {
