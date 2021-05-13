@@ -6,7 +6,7 @@ The temporary solution to this issue is to downgrade these two packages manually
 
 `pip install -U flask==1.1.2 flatbuffers==1.12`
 
-The cellxgene team aims to have a patch available to fix these errors by May 17th, 2021 and thanks you for your patience!
+The cellxgene team aims to have a patch available to fix these errors by May 21st, 2021 and thanks you for your patience!
 
 
 <img src="./docs/cellxgene-logo.png" width="300">
