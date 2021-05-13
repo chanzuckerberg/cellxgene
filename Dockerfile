@@ -8,4 +8,8 @@ RUN apt-get update && \
     python3 -m pip install --upgrade pip && \
     pip3 install cellxgene
 
+# Temporary workaround for dependency issue. See:
+# https://github.com/chanzuckerberg/cellxgene/issues/2197
+RUN pip3 install -U flask==1.1.2 flatbuffers==1.12
+
 ENTRYPOINT ["cellxgene"]
