@@ -7,8 +7,10 @@ const { setup } = require("jest-environment-puppeteer");
 
 const client = new SecretsManagerClient({ region: "us-west-2" });
 
+const deploymentStage = process.env.DEPLOYMENT_STAGE || "test";
+
 const secretValueRequest = {
-  SecretId: "corpora/backend/dev/auth0-secret",
+  SecretId: `corpora/backend/${deploymentStage}/auth0-secret`,
 };
 
 const command = new GetSecretValueCommand(secretValueRequest);
@@ -21,5 +23,4 @@ module.exports = async () => {
   } catch (error) {
     console.error(error);
   }
-  console.log(process.env.TEST_ACCOUNT_PASS);
 };
