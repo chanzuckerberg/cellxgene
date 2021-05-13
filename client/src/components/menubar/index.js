@@ -1,6 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import { ButtonGroup, AnchorButton, Tooltip } from "@blueprintjs/core";
+import { IconNames } from "@blueprintjs/icons";
 
 import * as globals from "../../globals";
 import styles from "./menubar.css";
@@ -8,6 +9,7 @@ import actions from "../../actions";
 import Clip from "./clip";
 
 import AuthButtons from "./authButtons";
+import InfoDrawer from "../infoDrawer/infoDrawer";
 import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
 import DiffexpButtons from "./diffexpButtons";
@@ -241,6 +243,19 @@ class MenuBar extends React.PureComponent {
         }}
       >
         <AuthButtons {...{ auth, userInfo }} />
+        <ButtonGroup className={styles.menubarButton}>
+          <AnchorButton
+            type="button"
+            icon={IconNames.INFO_SIGN}
+            onClick={() => {
+              dispatch({ type: "toggle dataset drawer" });
+            }}
+            style={{
+              cursor: "pointer",
+            }}
+            data-testid="drawer"
+          />
+        </ButtonGroup>
         <UndoRedoReset
           dispatch={dispatch}
           undoDisabled={undoDisabled}
@@ -324,6 +339,7 @@ class MenuBar extends React.PureComponent {
           handleSubsetReset={this.handleSubsetReset}
         />
         {disableDiffexp ? null : <DiffexpButtons />}
+        <InfoDrawer />
       </div>
     );
   }
