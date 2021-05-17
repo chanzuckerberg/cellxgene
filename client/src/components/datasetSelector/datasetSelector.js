@@ -6,6 +6,9 @@ import { connect } from "react-redux";
 /* app dependencies */
 import DatasetMenu from "./datasetMenu";
 
+/* styles */
+import styles from "./datasetSelector.css";
+
 /*
 app-level collection and dataset breadcrumbs.
  */
@@ -20,24 +23,28 @@ app-level collection and dataset breadcrumbs.
   };
 })
 class DatasetSelector extends PureComponent {
+  buildBreadcrumbProp = (breadcrumbProp) => {
+    return { ...breadcrumbProp, className: styles.datasetBreadcrumb };
+  };
+
   buildBreadcrumbProps = (collection, selectedDatasetId) => {
     /*
     create the set of breadcrumbs elements, home > collection name > dataset name, where dataset name reveals the
     dataset menu
      */
     const origin = "https://cellxgene.cziscience.com/"; // TODO(cc) update to ux-dev URL
-    const homeProp = {
+    const homeProp = this.buildBreadcrumbProp({
       href: origin,
       text: "Home",
-    };
-    const collectionProp = {
+    });
+    const collectionProp = this.buildBreadcrumbProp({
       href: `${origin}collections/${collection.id}`,
       text: collection.name,
-    };
-    const datasetProp = {
+    });
+    const datasetProp = this.buildBreadcrumbProp({
       datasets: collection.datasets,
       selectedDatasetId,
-    };
+    });
     return [homeProp, collectionProp, datasetProp];
   };
 

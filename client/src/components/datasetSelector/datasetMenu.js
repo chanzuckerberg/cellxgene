@@ -1,12 +1,17 @@
 /* core dependencies */
 import {
   Breadcrumb,
+  Colors,
+  Icon,
   Menu,
   MenuItem,
   Popover,
   Position,
 } from "@blueprintjs/core";
 import React from "react";
+
+/* styles */
+import styles from "./datasetSelector.css";
 
 const buildDatasetMenuItems = (datasets) => {
   /*
@@ -23,15 +28,24 @@ const DatasetMenu = React.memo(({ datasets, selectedDatasetName }) => {
   return (
     <Popover
       content={
-        <Menu style={{ maxHeight: 305, overflow: "scroll" }}>
+        <Menu style={{ color: Colors.BLACK }}>
           {buildDatasetMenuItems(datasets)}
         </Menu>
       }
+      minimal
+      modifiers={{ offset: { offset: "0, 10" } }}
+      popoverClassName={styles.datasetPopover}
       position={Position.BOTTOM_LEFT}
+      targetClassName={styles.datasetPopoverTarget}
     >
-      <Breadcrumb>{selectedDatasetName}</Breadcrumb>
+      <Breadcrumb className={styles.datasetBreadcrumb}>
+        {selectedDatasetName}
+        <Icon
+          icon="chevron-down"
+          style={{ marginLeft: "5px", marginRight: 0 }}
+        />
+      </Breadcrumb>
     </Popover>
   );
 });
-
 export default DatasetMenu;
