@@ -2,6 +2,10 @@
     {
         "id": "6e8c5415-302c-492a-a5f9-f29c57ff18fb",
         "name": "Muraro Pancreas",
+        "contact": {
+            "name": "Alexander van Oudenaarden",
+            "email": "a.vanoudenaarden@hubrecht.edu"
+        },
         "description": "A Single-Cell Transcriptome Atlas of the Human Pancreas",
         "datasets": [
             {
@@ -11,11 +15,29 @@
                 "createdAt": 1620227067.221111,
                 "url": "https://cellxgene.cziscience.com/e/b07e5164-baf6-43d2-bdba-5a249d0da879.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "LAB_WEBSITE",
+                "url": "https://www.hubrecht.eu/research-groups/van-oudenaarden-group/"
+            },
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1016/j.cels.2016.09.002"
+            },
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE85241"
+            }
         ]
     },
     {
         "id": "00109df5-7810-4542-8db5-2288c46e0424",
         "name": "Massively multiplex chemical transcriptomics at single-cell resolution",
+        "contact": {},
         "description": "High-throughput chemical screens typically use coarse assays such as cell survival,  limiting what can be learned about mechanisms of action, off-target effects, and  heterogeneous responses. Here, we introduce sci-Plex, which uses nuclear hashing to  quantify global transcriptional responses to thousands of independent perturbations at  single-cell resolution. As a proof of concept, we applied sci-Plex to screen three  cancer cell lines exposed to 188 compounds. In total, we profiled ~650,000 single-cell  transcriptomes across ~5000 independent samples in one experiment. Our results reveal  substantial intercellular heterogeneity in response to specific compounds, commonalities  in response to families of compounds, and insight into differential properties within  families. In particular, our results with histone deacetylase inhibitors support the  view that chromatin acts as an important reservoir of acetate in cancer cells.\n",
         "datasets": [
             {
@@ -36,11 +58,24 @@
                 "createdAt": 1598483759.986738,
                 "url": "https://cellxgene.cziscience.com/e/Single_cell_drug_screening_k562-43-remixed.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "GEO",
+                "type": "RAW_DATA",
+                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE139944"
+            },
+            {
+                "name": "Sci-plex GitHub",
+                "type": "OTHER",
+                "url": "https://github.com/cole-trapnell-lab/sci-plex"
+            }
         ]
     },
     {
         "id": "d0e9c47b-4ce7-4f84-b182-eddcfa0b2658",
         "name": "Single-cell gene expression profiling of SARS-CoV-2 infected human cell lines",
+        "contact": {},
         "description": "The coronavirus disease 2019 (COVID-19) pandemic, caused by the novel severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2), is an ongoing global health threat with more than two million infected people since its emergence in late 2019. Detailed knowledge of the molecular biology of the infection is indispensable for understanding of the viral replication, host responses, and disease progression. We provide gene expression profiles of SARS-CoV and SARS-CoV-2 infections in three human cell lines (H1299, Caco-2 and Calu-3 cells), using bulk and single-cell transcriptomics. Small RNA profiling showed strong expression of the immunity and inflammation-associated microRNA miRNA-155 upon infection with both viruses. SARS-CoV-2 elicited approximately two-fold higher stimulation of the interferon response compared to SARS-CoV in the permissive human epithelial cell line Calu-3, and induction of cytokines such as CXCL10 or IL6. Single cell RNA sequencing data showed that canonical interferon stimulated genes such as IFIT2 or OAS2 were broadly induced, whereas interferon beta (IFNB1) and lambda (IFNL1-4) were expressed only in a subset of infected cells. In addition, temporal resolution of transcriptional responses suggested interferon regulatory factors (IRFs) activities precede that of nuclear factor-κB (NF-κB). Lastly, we identified heat shock proin 90 (HSP90) as a protein relevant for the infection. Inhibition of the HSP90 charperone activity by Tanespimycin/17-N-allylamino-17-demethoxygeldanamycin (17-AAG) resulted in a reduction of viral replication, and of TNF and IL1B mRNA levels. In summary, our study established in vitro cell culture models to study SARS-CoV-2 infection and identified HSP90 protein as potential drug target for therapeutic intervention of SARS-CoV-2 infection.\n",
         "datasets": [
             {
@@ -55,11 +90,24 @@
                 "createdAt": 1598483756.965343,
                 "url": "https://cellxgene.cziscience.com/e/Single_cell_gene_expression_profiling_of_SARS_CoV_2_infected_human_cell_lines_H1299-27-remixed.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "GEO",
+                "type": "RAW_DATA",
+                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE148729"
+            },
+            {
+                "name": "Landthaler Lab",
+                "type": "OTHER",
+                "url": "http://www.mdc-berlin.de/singlecell-SARSCoV2"
+            }
         ]
     },
     {
         "id": "2a79d190-a41e-4408-88c8-ac5c4d03c0fc",
         "name": "Single-cell longitudinal analysis of SARS-CoV-2 infection in human bronchial epithelial cells",
+        "contact": {},
         "description": "Single-cell RNA sequencing of experimentally infected human bronchial epithelial cells (HBECs) in air-liquid interface cultures over a time-course.\n",
         "datasets": [
             {
@@ -68,11 +116,19 @@
                 "createdAt": 1598483754.832291,
                 "url": "https://cellxgene.cziscience.com/e/Single_cell_longitudinal_analysis_of_SARS_CoV_2_infection_in_human_bronchial_epithelial_cells-29-remixed.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "GitHub Supplement",
+                "type": "OTHER",
+                "url": "https://github.com/vandijklab/HBEC_SARS-CoV-2_scRNA-seq"
+            }
         ]
     },
     {
         "id": "5d445965-6f1a-4b68-ba3a-b8f765155d3a",
         "name": "A molecular cell atlas of the human lung from single cell RNA sequencing",
+        "contact": {},
         "description": "Droplet- and plate-based single cell RNA sequencing applied to ~75,000 human lung and blood cells, combined with a multi-pronged cell annotation approach, which have allowed us to define the gene expression profiles and anatomical locations of 58 cell populations in the human lung, including 41 of 45 previously known cell types or subtypes and 14 new ones.\n",
         "datasets": [
             {
@@ -87,11 +143,34 @@
                 "createdAt": 1598483761.678821,
                 "url": "https://cellxgene.cziscience.com/e/krasnow_lab_human_lung_cell_atlas_smartseq2-2-remixed.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "Human Lung Cell Atlas",
+                "type": "OTHER",
+                "url": "https://hlca.ds.czbiohub.org/"
+            },
+            {
+                "name": "HLCA Github",
+                "type": "OTHER",
+                "url": "https://github.com/krasnowlab/HLCA"
+            },
+            {
+                "name": "Synapse",
+                "type": "RAW_DATA",
+                "url": "https://www.synapse.org/#!Synapse:syn21041850/wiki/600865"
+            },
+            {
+                "name": "EGA",
+                "type": "RAW_DATA",
+                "url": "https://www.ebi.ac.uk/ega/studies/EGAS00001004344"
+            }
         ]
     },
     {
         "id": "38833785-fac5-48fd-944a-0f62a4c23ed1",
         "name": "Construction of a human cell landscape at single-cell level",
+        "contact": {},
         "description": "Single-cell analysis is a valuable tool for dissecting cellular heterogeneity in complex systems. However, a comprehensive single-cell atlas has not been achieved for humans. Here we use single-cell mRNA sequencing to determine the cell-type composition of all major human organs and construct a scheme for the human cell landscape (HCL). We have uncovered a single-cell hierarchy for many tissues that have not been well characterized. We established a 'single-cell HCL analysis' pipeline that helps to define human cell identity. Finally, we performed a single-cell comparative analysis of landscapes from human and mouse to identify conserved genetic networks. We found that stem and progenitor cells exhibit strong transcriptomic stochasticity, whereas diferentiated cells are more distinct. Our results provide a useful resource for the study of human biology.\n",
         "datasets": [
             {
@@ -100,11 +179,29 @@
                 "createdAt": 1601311857.456154,
                 "url": " https://cellxgene.cziscience.com/e/human_cell_landscape.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "figshare Raw Data",
+                "type": "RAW_DATA",
+                "url": "https://figshare.com/articles/HCL_DGE_Data/7235471"
+            },
+            {
+                "name": "HCL Github",
+                "type": "OTHER",
+                "url": "https://github.com/ggjlab/HCL/"
+            },
+            {
+                "name": "Human Cell Landscape",
+                "type": "OTHER",
+                "url": "https://db.cngb.org/HCL/"
+            }
         ]
     },
     {
         "id": "a72afd53-ab92-4511-88da-252fb0e26b9a",
         "name": "Single-cell atlas of peripheral immune response to SARS-CoV-2 infection",
+        "contact": {},
         "description": "There is an urgent need to better understand the pathophysiology of Coronavirus disease 2019 (COVID-19), the global pandemic caused by SARS-CoV-2, which has infected more than three million people worldwide. Approximately 20% of patients with COVID-19 develop severe disease and 5% of patients require intensive care. Severe disease has been associated with changes in peripheral immune activity, including increased levels of pro-inflammatory cytokines that may be produced by a subset of inflammatory monocytes, lymphopenia, and T cell exhaustion. To elucidate pathways in peripheral immune cells that might lead to immunopathology or protective immunity in severe COVID-19, we applied single-cell RNA sequencing (scRNA-seq) to profile peripheral blood mononuclear cells (PBMCs) from seven patients hospitalized for COVID-19, four of whom had acute respiratory distress syndrome, and six healthy controls. We identify reconfiguration of peripheral immune cell phenotype in COVID-19, including a heterogeneous interferon-stimulated gene signature, HLA class II downregulation and a developing neutrophil population that appears closely related to plasmablasts appearing in patients with acute respiratory failure requiring mechanical ventilation. Importantly, we found that peripheral monocytes and lymphocytes do not express substantial amounts of pro-inflammatory cytokines. Collectively, we provide a cell atlas of the peripheral immune response to severe COVID-19.\n",
         "datasets": [
             {
@@ -113,11 +210,27 @@
                 "createdAt": 1601315303.831203,
                 "url": "https://cellxgene.cziscience.com/e/Single_cell_atlas_of_peripheral_immune_response_to_SARS_CoV_2_infection.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "GEO",
+                "type": "RAW_DATA",
+                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE150728"
+            },
+            {
+                "name": "Blish Lab",
+                "type": "OTHER",
+                "url": "https://blishlab.sites.stanford.edu/"
+            }
         ]
     },
     {
         "id": "180bff9c-c8a5-4539-b13b-ddbc00d643e6",
         "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease",
+        "contact": {
+            "name": "Martin Kampmann",
+            "email": "Martin.Kampmann@ucsf.edu"
+        },
         "description": "Single-nuclei RNA sequencing of caudal entorhinal cortex and superior frontal gyrus from individuals spanning the neuropathological progression of AD",
         "datasets": [
             {
@@ -192,11 +305,69 @@
                 "createdAt": 1605879584.056298,
                 "url": "https://cellxgene.cziscience.com/e/kampmann_SFG_all.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "GEO",
+                "type": "RAW_DATA",
+                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE147528"
+            },
+            {
+                "name": "Synapse",
+                "type": "OTHER",
+                "url": "https://www.synapse.org/#!Synapse:syn21788402/wiki/601825"
+            }
+        ]
+    },
+    {
+        "id": "db468083-041c-41ca-8f6f-bf991a070adf",
+        "name": "Stress-induced RNA–chromatin interactions promote endothelial dysfunction",
+        "contact": {
+            "name": "Sheng Zhong",
+            "email": "szhong@eng.ucsd.edu"
+        },
+        "description": "Chromatin-associated RNA (caRNA) has been proposed as a type of epigenomic modifier. Here, we test whether environmental stress can induce cellular dysfunction through modulating RNA-chromatin interactions. We induce endothelial cell (EC) dysfunction with high glucose and TNFα (H + T), that mimic the common stress in diabetes mellitus. We characterize the H + T-induced changes in gene expression by single cell (sc)RNA-seq, DNA interactions by Hi-C, and RNA-chromatin interactions by iMARGI. H + T induce inter-chromosomal RNA-chromatin interactions, particularly among the super enhancers. To test the causal relationship between H + T-induced RNA-chromatin interactions and the expression of EC dysfunction-related genes, we suppress the LINC00607 RNA. This suppression attenuates the expression of SERPINE1, a critical pro-inflammatory and pro-fibrotic gene. Furthermore, the changes of the co-expression gene network between diabetic and healthy donor-derived ECs corroborate the H + T-induced RNA-chromatin interactions. Taken together, caRNA-mediated dysregulation of gene expression modulates EC dysfunction, a crucial mechanism underlying numerous diseases.",
+        "datasets": [
+            {
+                "id": "6cda3b13-7257-45b9-ac20-0a7e6697e4f2",
+                "name": "scRNA-seq data analysis of HUVECs treated with high glucose and TNFα",
+                "cellCount": 59605,
+                "createdAt": 1620328675.15541,
+                "url": "https://cellxgene.cziscience.com/e/6cda3b13-7257-45b9-ac20-0a7e6697e4f2.cxg/"
+            },
+            {
+                "id": "42b6a476-c51d-4f8b-b68b-44941b3a11bf",
+                "name": "scRNA-seq data analysis of endothelium-enriched mesenteric arterial tissues from human donors",
+                "cellCount": 11243,
+                "createdAt": 1620690899.442465,
+                "url": "https://cellxgene.cziscience.com/e/42b6a476-c51d-4f8b-b68b-44941b3a11bf.cxg/"
+            }
+        ],
+        "links": [
+            {
+                "name": "Zhong Lab Github",
+                "type": "OTHER",
+                "url": "https://github.com/Zhong-Lab-UCSD/NCOMMS-19-24818"
+            },
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1038/s41467-020-18957-w"
+            },
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE135357"
+            }
         ]
     },
     {
         "id": "367d95c0-0eb0-4dae-8276-9407239421ee",
         "name": "Evolution of cellular diversity in primary motor cortex of human, marmoset monkey, and mouse",
+        "contact": {
+            "name": "Ed S. Lein",
+            "email": "edl@alleninstitute.org"
+        },
         "description": "High-throughput transcriptomic and epigenomic profiling of over 450,000 single nuclei in human, marmoset monkey, and mouse primary motor cortex (M1)",
         "datasets": [
             {
@@ -227,11 +398,22 @@
                 "createdAt": 1613586727.045192,
                 "url": "https://cellxgene.cziscience.com/e/f7a068f1-0fdb-48e8-8029-db870ff11d9e.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "DOI",
+                "url": " https://doi.org/10.1101/2020.03.31.016972"
+            }
         ]
     },
     {
         "id": "9b02383a-9358-4f0f-9795-a891ec523bcc",
         "name": "Single cell transcriptional and chromatin accessibility profiling redefine cellular heterogeneity in the adult human kidney",
+        "contact": {
+            "name": "Parker Wilson",
+            "email": "parkerw@wustl.edu"
+        },
         "description": "In this study, single nucleus ATAC (snATAC-seq) and RNA (snRNA-seq) sequencing was performed to generate paired (5 donors), cell-type-specific chromatin accessibility and transcriptional profiles of the adult human kidney. The integration of single cell transcriptome and chromatin accessibility datasets enables a deeper understanding of cell heterogeneity.",
         "datasets": [
             {
@@ -248,11 +430,37 @@
                 "createdAt": 1614639950.815506,
                 "url": "https://cellxgene.cziscience.com/e/13a027de-ea3e-432b-9a5e-6bc7048498fc.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "PROTOCOL",
+                "url": "https://www.protocols.io/view/nuclei-isolation-from-human-kidney-for-single-nucl-nahdab6"
+            },
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1101/2020.06.14.151167"
+            },
+            {
+                "name": "",
+                "type": "LAB_WEBSITE",
+                "url": "http://humphreyslab.com/SingleCell/"
+            },
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE151302"
+            }
         ]
     },
     {
         "id": "24d42e5e-ce6d-45ff-a66b-a3b3b715deaf",
         "name": "Single-cell transcriptomics of human T cells reveals tissue and activation signatures in health and disease",
+        "contact": {
+            "name": "Peter A. Sims",
+            "email": "pas2182@columbia.edu"
+        },
         "description": "Human T cells coordinate adaptive immunity in diverse anatomic compartments through production of cytokines and effector molecules, but it is unclear how tissue site influences T cell persistence and function. Here, we use single cell RNA-sequencing (scRNA-seq) to define the heterogeneity of human T cells isolated from lungs, lymph nodes, bone marrow and blood, and their functional responses following stimulation. Through analysis of >50,000 resting and activated T cells, we reveal tissue T cell signatures in mucosal and lymphoid sites, and lineage-specific activation states across all sites including distinct effector states for CD8+ T cells and an interferon-response state for CD4+ T cells. Comparing scRNA-seq profiles of tumor-associated T cells to our dataset reveals predominant activated CD8+ compared to CD4+ T cell states within multiple tumor types. Our results therefore establish a high dimensional reference map of human T cell activation in health for analyzing T cells in disease.",
         "datasets": [
             {
@@ -262,11 +470,32 @@
                 "createdAt": 1615417964.171039,
                 "url": "https://cellxgene.cziscience.com/e/01209dce-3575-4bed-b1df-129f57fbc031.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE126030"
+            },
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1038/s41467-019-12464-3"
+            },
+            {
+                "name": "",
+                "type": "LAB_WEBSITE",
+                "url": "http://www.columbia.edu/~pas2182/index.php/home-top.html"
+            }
         ]
     },
     {
         "id": "ae1420fe-6630-46ed-8b3d-cc6056a66467",
         "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types",
+        "contact": {
+            "name": "Eran Mukamel",
+            "email": "emukamel@ucsd.edu"
+        },
         "description": "Single cell transcriptomics has transformed the characterization of brain cell identity by providing quantitative molecular signatures for large, unbiased samples of brain cell populations. With the proliferation of taxonomies based on individual datasets, a major challenge is to integrate and validate results toward defining biologically meaningful cell types. We used a battery of single-cell transcriptome and epigenome measurements generated by the BRAIN Initiative Cell Census Network (BICCN) to comprehensively assess the molecular signatures of cell types in the mouse primary motor cortex (MOp). We further developed computational and statistical methods to integrate these multimodal data and quantitatively validate the reproducibility of the cell types. The reference atlas, based on more than 600,000 high quality single-cell or -nucleus samples assayed by six molecular modalities, is a comprehensive molecular account of the diverse neuronal and non-neuronal cell types in MOp. Collectively, our study indicates that the mouse primary motor cortex contains over 55 neuronal cell types that are highly replicable across analysis methods, sequencing technologies, and modalities. We find many concordant multimodal markers for each cell type, as well as thousands of genes and gene regulatory elements with discrepant transcriptomic and epigenomic signatures. These data highlight the complex molecular regulation of brain cell types and will directly enable design of reagents to target specific MOp cell types for functional analysis.",
         "datasets": [
             {
@@ -339,11 +568,27 @@
                 "createdAt": 1615242805.109766,
                 "url": "https://cellxgene.cziscience.com/e/d622cee4-56e1-44ba-8b05-fd2f0f2032e6.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "https://assets.nemoarchive.org/dat-ch1nqb7"
+            },
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1101/2020.02.29.970558"
+            }
         ]
     },
     {
         "id": "a3c37598-b8e8-47db-92a9-eb91a77c9529",
         "name": "Adult mouse cortical cell taxonomy revealed by single cell transcriptomics",
+        "contact": {
+            "name": "Hongkui Zeng",
+            "email": "hongkuiz@alleninstitute.org"
+        },
         "description": "Nervous systems are composed of various cell types, but the extent of cell type diversity is poorly understood. We constructed a cellular taxonomy of one cortical region, primary visual cortex, in adult mice on the basis of single-cell RNA sequencing. We identified 49 transcriptomic cell types, including 23 GABAergic, 19 glutamatergic and 7 non-neuronal types. We also analyzed cell type–specific mRNA processing and characterized genetic access to these transcriptomic types by many transgenic Cre lines. Finally, we found that some of our transcriptomic cell types displayed specific and differential electrophysiological and axon projection properties, thereby confirming that the single-cell transcriptomic signatures can be associated with specific cellular properties.",
         "datasets": [
             {
@@ -353,11 +598,27 @@
                 "createdAt": 1615242519.11404,
                 "url": "https://cellxgene.cziscience.com/e/3a15ab1c-c36c-4842-9a3e-47e6ffd0ba6f.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1038/nn.4216"
+            },
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE71585"
+            }
         ]
     },
     {
         "id": "f70ebd97-b3bc-44fe-849d-c18e08fe773d",
         "name": "A transcriptomic atlas of the mouse cerebellum reveals regional specializations and novel cell types",
+        "contact": {
+            "name": "Evan Macosko",
+            "email": "emacosko@broadinstitute.org"
+        },
         "description": "The cerebellum is a well-studied brain structure with diverse roles in motor learning, coordination, cognition, and autonomic regulation. Nonetheless, a complete inventory of cerebellar cell types is presently lacking. We used high-throughput transcriptional profiling to molecularly define cell types across individual lobules of the adult mouse cerebellum. Purkinje and granule neurons showed considerable regional specialization, with the greatest diversity occurring in the posterior lobules. For multiple types of cerebellar interneurons, the molecular variation within each type was more continuous, rather than discrete. For the unipolar brush cells (UBCs)—an interneuron population previously subdivided into two discrete populations—the continuous variation in gene expression was associated with a graded continuum of electrophysiological properties. Most surprisingly, we found that molecular layer interneurons (MLIs) were composed of two molecularly and functionally distinct types. Both show a continuum of morphological variation through the thickness of the molecular layer, but electrophysiological recordings revealed marked differences between the two types in spontaneous firing, excitability, and electrical coupling. Together, these findings provide the first comprehensive cellular atlas of the cerebellar cortex, and outline a methodological and conceptual framework for the integration of molecular, morphological, and physiological ontologies for defining brain cell types.",
         "datasets": [
             {
@@ -367,11 +628,32 @@
                 "createdAt": 1615241500.30999,
                 "url": "https://cellxgene.cziscience.com/e/e0ed3c55-aff6-4bb7-b6ff-98a2d90b890c.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "LAB_WEBSITE",
+                "url": "https://macoskolab.com/"
+            },
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "https://nemoarchive.org/"
+            },
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1101/2020.03.04.976407"
+            }
         ]
     },
     {
         "id": "45f0f67d-4b69-4a3c-a4e8-a63b962e843f",
         "name": "Shared and distinct transcriptomic cell types across neocortical areas",
+        "contact": {
+            "name": "Bosiljka Tasic",
+            "email": "bosiljkat@alleninstitute.org"
+        },
         "description": "The neocortex contains a multitude of cell types that are segregated into layers and functionally distinct areas. To investigate the diversity of cell types across the mouse neocortex, here we analysed 23,822 cells from two areas at distant poles of the mouse neocortex: the primary visual cortex and the anterior lateral motor cortex. We define 133 transcriptomic cell types by deep, single-cell RNA sequencing. Nearly all types of GABA (γ-aminobutyric acid)-containing neurons are shared across both areas, whereas most types of glutamatergic neurons were found in one of the two areas. By combining single-cell RNA sequencing and retrograde labelling, we match transcriptomic types of glutamatergic neurons to their long-range projection specificity. Our study establishes a combined transcriptomic and projectional taxonomy of cortical cell types from functionally distinct areas of the adult mouse cortex. [Excerpt from publication's abstract]",
         "datasets": [
             {
@@ -381,11 +663,27 @@
                 "createdAt": 1615234239.508447,
                 "url": "https://cellxgene.cziscience.com/e/28c696bb-9549-434b-9340-dc745a846f9a.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE115746"
+            },
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1038/s41586-018-0654-5"
+            }
         ]
     },
     {
         "id": "0b9d8a04-bb9d-44da-aa27-705bb65b54eb",
         "name": "Tabula Muris Senis",
+        "contact": {
+            "name": " Spyros Darmanis",
+            "email": "spyros.darmanis@czbiohub.org"
+        },
         "description": "Ageing is characterized by a progressive loss of physiological integrity, leading to impaired function and increased vulnerability to death1. Despite rapid advances over recent years, many of the molecular and cellular processes that underlie the progressive loss of healthy physiology are poorly understood2. To gain a better insight into these processes, here we generate a single-cell transcriptomic atlas across the lifespan of Mus musculus that includes data from 23 tissues and organs. We found cell-specific changes occurring across multiple cell types and organs, as well as age-related changes in the cellular composition of different organs. Using single-cell transcriptomic data, we assessed cell-type-specific manifestations of different hallmarks of ageing—such as senescence3, genomic instability4 and changes in the immune system2. This transcriptomic atlas—which we denote Tabula Muris Senis, or ‘Mouse Ageing Cell Atlas’—provides molecular information about how the most important hallmarks of ageing are reflected in a broad range of tissues and cell types.",
         "datasets": [
             {
@@ -675,11 +973,27 @@
                 "createdAt": 1615413314.773602,
                 "url": "https://cellxgene.cziscience.com/e/ef47280b-3e68-4188-a49a-7b8374c8a6f2.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1038/s41586-020-2496-1"
+            },
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE132042"
+            }
         ]
     },
     {
         "id": "9132fae8-bdfe-480f-9e45-45bc77f320b3",
         "name": "Molecular, spatial and projection diversity of neurons in primary motor cortex revealed by in situ single-cell transcriptomics",
+        "contact": {
+            "name": "Xiaowei Zhuang",
+            "email": "zhuang@chemistry.harvard.edu"
+        },
         "description": "A mammalian brain is comprised of numerous cell types organized in an intricate manner to form functional neural circuits. Single-cell RNA sequencing provides a powerful approach to identify cell types based on their gene expression profiles and has revealed many distinct cell populations in the brain1-3. Single-cell epigenomic profiling4,5 further provides information on gene-regulatory signatures of different cell types. Understanding how different cell types contribute to brain function, however, requires knowledge of their spatial organization and connectivity, which is not preserved in sequencing-based methods that involve cell dissociation3,6. Here, we used an in situ single-cell transcriptome-imaging method, multiplexed error-robust fluorescence in situ hybridization (MERFISH)7, to generate a molecularly defined and spatially resolved cell atlas of the mouse primary motor cortex (MOp). We profiled ∼300,000 cells in the MOp, identified 95 neuronal and non-neuronal cell clusters, and revealed a complex spatial map in which not only excitatory neuronal clusters but also most inhibitory neuronal clusters adopted layered organizations. Notably, intratelencephalic (IT) cells, the largest branch of neurons in the MOp, formed a continuous spectrum of cells with gradual changes in both gene expression profiles and cortical depth positions in a highly correlated manner. Furthermore, we integrated MERFISH with retrograde tracing to probe the projection targets for different MOp neuronal cell types and found that projections of MOp neurons to other cortical regions formed a many-to-many network with each target region receiving input preferentially from a different composition of IT clusters. Overall, our results provide a high-resolution spatial and projection map of molecularly defined cell types in the MOp. We anticipate that the imaging platform described here can be broadly applied to create high-resolution cell atlases of a wide range of systems.",
         "datasets": [
             {
@@ -689,11 +1003,27 @@
                 "createdAt": 1615591651.004997,
                 "url": "https://cellxgene.cziscience.com/e/257adc73-8152-414b-a2c7-73861b8e0c0a.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "LAB_WEBSITE",
+                "url": "http://zhuang.harvard.edu/index.html"
+            },
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1101/2020.06.04.105700"
+            }
         ]
     },
     {
         "id": "558385a4-b7b7-4eca-af0c-9e54d010e8dc",
         "name": "Single-Cell RNAseq analysis of diffuse neoplastic infiltrating cells at the migrating front of human glioblastoma",
+        "contact": {
+            "name": "Spyros Darmanis",
+            "email": "spyros.darmanis@gmail.com"
+        },
         "description": "Glioblastoma (GBM) is the most common primary brain cancer in adults and is notoriously difficult to treat because of its diffuse nature. We performed single-cell RNA sequencing (RNA-seq) on 3,589 cells in a cohort of four patients. We obtained cells from the tumor core as well as surrounding peripheral tissue. Our analysis revealed cellular variation in the tumor's genome and transcriptome. We were also able to identify infiltrating neoplastic cells in regions peripheral to the core lesions. Despite the existence of significant heterogeneity among neoplastic cells, we found that infiltrating GBM cells share a consistent gene signature between patients, suggesting a common mechanism of infiltration. Additionally, in investigating the immunological response to the tumors, we found transcriptionally distinct myeloid cell populations residing in the tumor core and the surrounding peritumoral space. Our data provide a detailed dissection of GBM cell types, revealing an abundance of information about tumor formation and migration.",
         "datasets": [
             {
@@ -703,11 +1033,27 @@
                 "createdAt": 1615931597.025383,
                 "url": "https://cellxgene.cziscience.com/e/774c18c5-efa1-4dc5-9e5e-2c824bab2e34.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1016/j.celrep.2017.10.030"
+            },
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE84465"
+            }
         ]
     },
     {
         "id": "5e469121-c203-4775-962d-dcf2e5d6a472",
         "name": "An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum",
+        "contact": {
+            "name": "Bing Ren",
+            "email": "biren@ucsd.edu"
+        },
         "description": "The mammalian cerebrum performs high level sensory, motor control and cognitive functions through highly specialized cortical networks and subcortical nuclei. Recent surveys of mouse and human brains with single cell transcriptomics and high-throughput imaging technologies have uncovered hundreds of neuronal cell types and a variety of non-neuronal cell types distributed in different brain regions, but the cell-type-specific transcriptional regulatory programs responsible for the unique identity and function of each brain cell type have yet to be elucidated. Here, we probe the accessible chromatin in >800,000 individual nuclei from 45 regions spanning the adult mouse isocortex, olfactory bulb, hippocampus and cerebral nuclei, and use the resulting data to define 491,818 candidate cis regulatory DNA elements in 160 distinct sub-types. We link a significant fraction of them to putative target genes expressed in diverse cerebral cell types and uncover transcriptional regulators involved in a broad spectrum of molecular and cellular pathways in different neuronal and glial cell populations. Our results provide a foundation for comprehensive analysis of gene regulatory programs of the mammalian brain and assist in the interpretation of non-coding risk variants associated with various neurological disease and traits in humans. ",
         "datasets": [
             {
@@ -731,11 +1077,32 @@
                 "createdAt": 1616104445.502767,
                 "url": "https://cellxgene.cziscience.com/e/d33814fc-31e8-4f39-a200-a0ca21a9b134.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1101/2020.05.10.087585"
+            },
+            {
+                "name": "",
+                "type": "LAB_WEBSITE",
+                "url": "http://renlab.sdsc.edu/renlab_website/"
+            },
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "http://data.nemoarchive.org/biccn/grant/cemba/cemba/epigenome/sncell/"
+            }
         ]
     },
     {
         "id": "9c8808ce-1138-4dbe-818c-171cff10e650",
         "name": "A single-cell transcriptional roadmap of the mouse and human lymph node lymphatic vasculature",
+        "contact": {
+            "name": "Eugene Butcher",
+            "email": "ebutcher@stanford.edu"
+        },
         "description": "Single-cell transcriptomics promises to revolutionize our understanding of the vasculature. Emerging computational methods applied to high dimensional single cell data allow integration of results between samples and species, and illuminate the diversity and underlying developmental and architectural organization of cell populations. Here, we illustrate these methods in analysis of mouse lymph node (LN) lymphatic endothelial cells (LEC) at single cell resolution. Clustering identifies five well-delineated subsets, including two medullary sinus subsets not recognized previously as distinct. Nearest neighbor alignments in trajectory space position the major subsets in a sequence that recapitulates known and suggests novel features of LN lymphatic organization, providing a transcriptional map of the lymphatic endothelial niches and of the transitions between them. Differences in gene expression reveal specialized programs for (1) subcapsular ceiling endothelial interactions with the capsule connective tissue and cells, (2) subcapsular floor regulation of lymph borne cell entry into the LN parenchyma and antigen presentation, and (3) medullary subset specialization for pathogen interactions and LN remodeling. LEC of the subcapsular sinus floor and medulla, which represent major sites of cell entry and exit from the LN parenchyma respectively, respond robustly to oxazolone inflammation challenge with enriched signaling pathways that converge on both innate and adaptive immune responses. Integration of mouse and human single-cell profiles reveals a conserved cross-species pattern of lymphatic vascular niches and gene expression, as well as specialized human subsets and genes unique to each species. The examples provided demonstrate the power of single-cell analysis in elucidating endothelial cell heterogeneity, vascular organization and endothelial cell responses. We discuss the findings from the perspective of LEC functions in relation to niche formations in the unique stromal and highly immunological environment of the LN.",
         "datasets": [
             {
@@ -752,11 +1119,22 @@
                 "createdAt": 1616438875.381961,
                 "url": "https://cellxgene.cziscience.com/e/cfa3c355-ee77-4fc8-9a00-78e61d23024c.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1101/2019.12.31.892166"
+            }
         ]
     },
     {
         "id": "51544e44-293b-4c2b-8c26-560678423380",
         "name": "Multiomics single-cell analysis of human pancreatic islets reveals novel cellular states in health and type 1 diabetes",
+        "contact": {
+            "name": "Golnaz Vahedi, Ph.D.",
+            "email": "vahedi@pennmedicine.upenn.edu"
+        },
         "description": "Type 1 diabetes (T1D) is an autoimmune disease of only partially defined etiology in which immune cells destroy insulin-producing beta cells. Using single-cell transcriptomics and an advanced analytical strategy to assess pancreatic islets of T1D, autoantibody-positive, and non-diabetic organ donors, we identified both canonical cell types and rare insulin-expressing cells with a hybrid mixture of endocrine and exocrine gene signatures within all donors. We further found elevated expression of MHC Class II pathway genes in exocrine ductal cells of T1D donors, which we confirmed through CyTOF, in situ imaging mass cytometry, and immunofluorescence analysis. Taken together, our multimodal analyses identify novel cell types and processes that may contribute to T1D immunopathogenesis and provide new cellular and molecular insights into human pancreas function.",
         "datasets": [
             {
@@ -766,11 +1144,27 @@
                 "createdAt": 1615862943.719328,
                 "url": "https://cellxgene.cziscience.com/e/37b21763-7f0f-41ae-9001-60bad6e2841d.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "OTHER",
+                "url": "https://hpap.pmacs.upenn.edu/"
+            },
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1101/2021.01.28.428598"
+            }
         ]
     },
     {
         "id": "ed9185e3-5b82-40c7-9824-b2141590c7f0",
         "name": "Time-resolved Systems Immunology Reveals a Late Juncture Linked to Fatal COVID-19",
+        "contact": {
+            "name": "John Tsang",
+            "email": "john.tsang@nih.gov"
+        },
         "description": "COVID-19 exhibits extensive patient-to-patient heterogeneity. To link immune response variation to disease severity and outcome over time, we longitudinally assessed circulating proteins as well as 188 surface protein markers, transcriptome, and T cell receptor sequence simultaneously in single peripheral immune cells from COVID-19 patients. Conditional-independence network analysis revealed primary correlates of disease severity, including gene expression signatures of apoptosis in plasmacytoid dendritic cells and attenuated inflammation but increased fatty acid metabolism in CD56(dim)CD16(hi) NK cells linked positively to circulating interleukin (IL)-15. CD8+ T cell activation was apparent without signs of exhaustion. Although cellular inflammation was depressed in severe patients early after hospitalization, it became elevated by days 17–23 post symptom onset, suggestive of a late wave of inflammatory responses. Furthermore, circulating protein trajectories at this time were divergent between and predictive of recovery versus fatal outcomes. Our findings stress the importance of timing in the analysis, clinical monitoring, and therapeutic intervention of COVID-19",
         "datasets": [
             {
@@ -787,11 +1181,32 @@
                 "createdAt": 1616172813.719481,
                 "url": "https://cellxgene.cziscience.com/e/30cd5311-6c09-46c9-94f1-71fe4b91813c.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1016/j.cell.2021.02.018"
+            },
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE161918"
+            },
+            {
+                "name": "",
+                "type": "LAB_WEBSITE",
+                "url": "https://www.niaid.nih.gov/research/john-tsang-phd"
+            }
         ]
     },
     {
         "id": "b52eb423-5d0d-4645-b217-e1c6d38b2e72",
         "name": "Cells of the adult human heart",
+        "contact": {
+            "name": "Sarah Teichmann",
+            "email": "st9@sanger.ac.uk"
+        },
         "description": "Cardiovascular disease is the leading cause of death worldwide. Advanced insights into disease mechanisms and therapeutic strategies require deeper understanding of the healthy heart’s molecular processes. Knowledge of the full repertoire of cardiac cells and their gene expression profiles is a fundamental first step in this endeavor. Here, using state-of-the-art analyses of large-scale single-cell and nuclei transcriptomes, we characterise six anatomical adult heart regions (left/right atria and ventricles, apex, interventricular septum). Our results highlight the cellular heterogeneity of cardiomyocytes, pericytes and fibroblasts, revealing distinct atrial and ventricular subsets with diverse developmental origins and specialized properties. We define the complexity of the cardiac vasculature and its changes along the arterio-venous axis. In the immune compartment we identify cardiac resident macrophages with inflammatory and protective transcriptional signatures. Further, inference of cell-cell interactions highlight different macrophage-fibroblast-cardiomyocyte networks between atria and ventricles that are distinct from skeletal muscle. We expect this reference human cardiac cell atlas to advance mechanistic studies of heart homeostasis and disease.",
         "datasets": [
             {
@@ -850,11 +1265,32 @@
                 "createdAt": 1617739319.906348,
                 "url": "https://cellxgene.cziscience.com/e/f75f2ff4-2884-4c2d-b375-70de37a34507.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1038/s41586-020-2797-4"
+            },
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "https://www.ebi.ac.uk/ena/browser/view/ERP123138"
+            },
+            {
+                "name": "",
+                "type": "LAB_WEBSITE",
+                "url": "http://www.teichlab.org/"
+            }
         ]
     },
     {
         "id": "cdfb9ead-cb58-4a53-879d-5e4ed5329e73",
         "name": "Direct Exposure to SARS-CoV-2 and Cigarette Smoke Increases Infection Severity and Alters the Stem Cell-Derived Airway Repair Response",
+        "contact": {
+            "name": "Justin Langerman",
+            "email": "shatteler@gmail.com"
+        },
         "description": "Current smoking is associated with increased risk of severe COVID-19, but it is not clear how cigarette smoke (CS) exposure affects SARS-CoV-2 airway cell infection. We directly exposed air-liquid interface (ALI) cultures derived from primary human nonsmoker airway basal stem cells (ABSCs) to short term CS and then infected them with SARS-CoV-2. We found an increase in the number of infected airway cells after CS exposure with a lack of ABSC proliferation. Single-cell profiling of the cultures showed that the normal interferon response was reduced after CS exposure with infection. Treatment of CS-exposed ALI cultures with interferon β-1 abrogated the viral infection, suggesting one potential mechanism for more severe viral infection. Our data show that acute CS exposure allows for more severe airway epithelial disease from SARS-CoV-2 by reducing the innate immune response and ABSC proliferation and has implications for disease spread and severity in people exposed to CS.",
         "datasets": [
             {
@@ -864,11 +1300,27 @@
                 "createdAt": 1617746834.011976,
                 "url": "https://cellxgene.cziscience.com/e/077b0429-0f47-48e0-879a-39eaae531d42.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE161089"
+            },
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1016/j.stem.2020.11.010"
+            }
         ]
     },
     {
         "id": "60358420-6055-411d-ba4f-e8ac80682a2e",
         "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution",
+        "contact": {
+            "name": "Alison Simmons",
+            "email": "alison.simmons@ndm.ox.ac.uk"
+        },
         "description": "Development of the human intestine is not well understood. Here, we link single-cell RNA sequencing and spatial transcriptomics to characterize intestinal morphogenesis through time. We identify 101 cell states including epithelial and mesenchymal progenitor populations and programs linked to key morphogenetic milestones. We describe principles of crypt-villus axis formation; neural, vascular, mesenchymal morphogenesis, and immune population of the developing gut. We identify the differentiation hierarchies of developing fibroblast and myofibroblast subtypes and describe diverse functions for these including as vascular niche cells. We pinpoint the origins of Peyer's patches and gut-associated lymphoid tissue (GALT) and describe location-specific immune programs. We use our resource to present an unbiased analysis of morphogen gradients that direct sequential waves of cellular differentiation and define cells and locations linked to rare developmental intestinal disorders. We compile a publicly available online resource, spatio-temporal analysis resource of fetal intestinal development (STAR-FINDer), to facilitate further work.",
         "datasets": [
             {
@@ -990,11 +1442,32 @@
                 "createdAt": 1617915849.644498,
                 "url": "https://cellxgene.cziscience.com/e/e006d4e3-35fa-44b4-9981-09a66c4322e5.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1016/j.cell.2020.12.016"
+            },
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "https://www.dropbox.com/sh/qmhdbqh56cp0t3n/AADR2cj522sh36R0luzxJJTOa?dl=0"
+            },
+            {
+                "name": "",
+                "type": "OTHER",
+                "url": "https://simmonslab.shinyapps.io/FetalAtlasDataPortal/"
+            }
         ]
     },
     {
         "id": "c9706a92-0e5f-46c1-96d8-20e42467f287",
         "name": "A single-cell atlas of the healthy breast tissues reveals clinically relevant clusters of breast epithelial cells",
+        "contact": {
+            "name": "Harikrishna Nakshatri",
+            "email": "hnakshat@iupui.edu"
+        },
         "description": "Single-cell RNA sequencing (scRNA-seq) is an evolving technology used to elucidate the cellular architecture of adult organs. Previous scRNA-seq on breast tissue utilized reduction mammoplasty samples, which are often histologically abnormal. We report a rapid tissue collection/processing protocol to perform scRNA-seq of breast biopsies of healthy women and identify 23 breast epithelial cell clusters. Putative cell-of-origin signatures derived from these clusters are applied to analyze transcriptomes of ~3,000 breast cancers. Gene signatures derived from mature luminal cell clusters are enriched in ~68% of breast cancers, whereas a signature from a luminal progenitor cluster is enriched in ~20% of breast cancers. Overexpression of luminal progenitor cluster-derived signatures in HER2+, but not in other subtypes, is associated with unfavorable outcome. We identify TBX3 and PDK4 as genes co-expressed with estrogen receptor (ER) in the normal breasts, and their expression analyses in >550 breast cancers enable prognostically relevant subclassification of ER+ breast cancers.",
         "datasets": [
             {
@@ -1004,11 +1477,27 @@
                 "createdAt": 1618346494.933269,
                 "url": "https://cellxgene.cziscience.com/e/de985818-285f-4f59-9dbd-d74968fddba3.cxg/"
             }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1016/j.xcrm.2021.100219"
+            },
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE164898"
+            }
         ]
     },
     {
         "id": "7edef704-f63a-462c-8636-4bc86a9472bd",
         "name": "Molecular characterization of foveal versus peripheral human retina by single-cell RNA sequencing.",
+        "contact": {
+            "name": "Andrew Voigt",
+            "email": "andrew-voigt@uiowa.edu"
+        },
         "description": "The human retina is a complex tissue responsible for detecting photons of light and converting information from these photons into the neurochemical signals interpreted as vision. Such visual signaling not only requires sophisticated interactions between multiple classes of neurons, but also spatially-dependent molecular specialization of individual cell types. In this study, we performed single-cell RNA sequencing on neural retina isolated from both the fovea and peripheral retina in three human donors. We recovered a total of 8,217 cells, with 3,578 cells originating from the fovea and 4,639 cells originating from the periphery. Expression profiles for all major retinal cell types were compiled, and differential expression analysis was performed between cells of foveal versus peripheral origin. Globally, mRNA for the serum iron binding protein transferrin (TF), which has been associated with age-related macular degeneration pathogenesis, was enriched in peripheral samples. Cone photoreceptor cells were of particular interest and formed two predominant clusters based on gene expression. One cone cluster had 96% of cells originating from foveal samples, while the second cone cluster consisted exclusively of peripherally isolated cells. A total of 148 genes were differentially expressed between cones from the fovea versus periphery. Interestingly, peripheral cones were enriched for the gene encoding Beta-Carotene Oxygenase 2 (BCO2). A relative deficiency of this enzyme may account for the accumulation of carotenoids responsible for yellow pigment deposition within the macula. Overall, this data set provides rich expression profiles of the major human retinal cell types and highlights transcriptomic features that distinguish foveal and peripheral cells.",
         "datasets": [
             {
@@ -1017,6 +1506,23 @@
                 "cellCount": 8217,
                 "createdAt": 1618873643.014243,
                 "url": "https://cellxgene.cziscience.com/e/b83559d1-156f-4ba9-9f6a-b165f83ef43f.cxg/"
+            }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE130636"
+            },
+            {
+                "name": "Analysis Portal",
+                "type": "OTHER",
+                "url": "https://singlecell-eye.org"
+            },
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1016/j.exer.2019.05.001"
             }
         ]
     }

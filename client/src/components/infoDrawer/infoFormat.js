@@ -1,172 +1,220 @@
-import { H3, H1, UL, HTMLTable, Classes } from "@blueprintjs/core";
+import { H3, HTMLTable, Classes, Tooltip } from "@blueprintjs/core";
 import React from "react";
 
-const renderContributors = (contributors, affiliations) => {
-  // eslint-disable-next-line no-constant-condition --  Temp removed contributor section to avoid publishing PII
-  if (!contributors || contributors.length === 0 || true) return null;
-  return (
-    <>
-      <H3>Contributors</H3>
-      <p>
-        {contributors.map((contributor) => {
-          const { email, name, institution } = contributor;
-
-          return (
-            <span key={name}>
-              {name}
-              {email && `(${email})`}
-              <sup>{affiliations.indexOf(institution) + 1}</sup>
-            </span>
-          );
-        })}
-      </p>
-      {renderAffiliations(affiliations)}
-    </>
-  );
-};
-
-// generates a list of unique institutions by order of appearance in contributors
-const buildAffiliations = (contributors = []) => {
-  const affiliations = [];
-  contributors.forEach((contributor) => {
-    const { institution } = contributor;
-    if (affiliations.indexOf(institution) === -1) {
-      affiliations.push(institution);
-    }
-  });
-  return affiliations;
-};
-
-const renderAffiliations = (affiliations) => {
-  if (affiliations.length === 0) return null;
-  return (
-    <>
-      <H3>Affiliations</H3>
-      <UL>
-        {affiliations.map((item, index) => (
-          <div key={item}>
-            <sup>{index + 1}</sup>
-            {"  "}
-            {item}
-          </div>
-        ))}
-      </UL>
-    </>
-  );
-};
-
-const renderDOILink = (type, doi) => {
-  if (!doi) return null;
-  return (
-    <>
-      <H3>{type}</H3>
-      <p>
-        <a href={doi} target="_blank" rel="noopener">
-          {doi}
-        </a>
-      </p>
-    </>
-  );
-};
-
 const ONTOLOGY_KEY = "ontology_term_id";
-// Render list of metadata attributes found in categorical field
-const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
-  if (singleValueCategories.size === 0) return null;
+const COLLECTION_LINK_ORDER_BY = [
+  "DOI",
+  "DATA_SOURCE",
+  "RAW_DATA",
+  "PROTOCOL",
+  "LAB_WEBSITE",
+  "OTHER",
+];
+
+const buildCollectionLinks = (links) => {
+  /*
+  sort links by custom sort order, create view-friendly model of link types.
+   */
+  const sortedLinks = [...links].sort(sortCollectionLinks);
+  return sortedLinks.map((link) => {
+    return {
+      name: buildLinkName(link),
+      type: transformLinkTypeToDisplay(link.type),
+      url: link.url,
+    };
+  });
+};
+
+const buildDatasetMetadata = (singleValueCategories, corporaMetadata) => {
+  /*
+  transform Corpora metadata and single value categories into sort and render-friendly format.
+  @returns [{key, value, tip}]
+   */
+  const metadata = [
+    ...transformCorporaMetadata(corporaMetadata),
+    ...transformSingleValueCategoriesMetadata(singleValueCategories),
+  ];
+  metadata.sort(sortDatasetMetadata);
+  return metadata;
+};
+
+const sortCollectionLinks = (l0, l1) => {
+  /*
+  sort collection links by custom order.
+  TODO(cc) revisit - improve readability here 
+   */
+  return (
+    COLLECTION_LINK_ORDER_BY.indexOf(l1.type) -
+    COLLECTION_LINK_ORDER_BY.indexOf(l0.type)
+  );
+};
+
+const buildLinkName = (link) => {
+  /*
+  determine name to display for collection link.
+  TODO(cc) error handling
+   */
+  if (link.name) {
+    return link.name;
+  }
+  if (link.type === "DOI") {
+    return new URL(link.url).pathname.substring(1);
+  }
+  return new URL(link.url).host;
+};
+
+const sortDatasetMetadata = (m0, m1) => {
+  /*
+  sort metadata key value pairs by key - alpha, ascending
+   */
+  if (m0.key < m1.key) {
+    return -1;
+  }
+  if (m0.key > m1.key) {
+    return 1;
+  }
+  return 0;
+};
+
+const transformCorporaMetadata = (corporaMetadata) => {
+  /*
+  build array of view model objects from given Corpora metadata object.
+  @returns [{key, value}] 
+   */
+  return Object.entries(corporaMetadata)
+    .filter(([, value]) => {
+      return value;
+    })
+    .map(([key, value]) => {
+      return {
+        key,
+        value,
+      };
+    });
+};
+
+const transformSingleValueCategoriesMetadata = (singleValueCategories) => {
+  /*
+  build array of view model objects from given single value categories map, ignoring ontology terms or metadata
+  without values. add ontology terms as tooltips of their corresponding values.
+  @returns [{key, value, tip}] where tip is an optional ontology term for the category
+   */
+  return Array.from(singleValueCategories.entries())
+    .filter(([key, value]) => {
+      if (key.indexOf(ONTOLOGY_KEY) >= 0) {
+        // skip ontology terms
+        return false;
+      }
+      // skip metadata without values
+      return value;
+    })
+    .map(([key, value]) => {
+      const viewModel = { key, value: String(value) };
+      // add ontology term as tool tip if specified
+      const tip = singleValueCategories.get(`${key}_${ONTOLOGY_KEY}`);
+      if (tip) {
+        viewModel.tip = tip;
+      }
+      return viewModel;
+    });
+};
+
+const transformLinkTypeToDisplay = (type) => {
+  /*
+  convert link type from upper snake case to title case
+  TODO(cc) revisit approach here, maybe create enum-type mapping to avoid string concat inside loop?
+   */
+  const tokens = type.split("_");
+  return tokens
+    .map((token) => {
+      return token.charAt(0) + token.slice(1).toLowerCase();
+    })
+    .join(" ");
+};
+
+const renderCollectionLinks = (collection) => {
+  /*
+  render collection contact and links.
+  TODO(cc) handle case where there is no contact and no links?
+   */
+  const links = buildCollectionLinks(collection.links);
   return (
     <>
-      <H3>Dataset Metadata</H3>
-      <HTMLTable
-        striped
-        condensed
-        style={{ display: "block", width: "100%", overflowX: "auto" }}
-      >
-        <thead>
-          <tr>
-            <th>Field</th>
-            <th>Label</th>
-            <th>Ontology ID</th>
-          </tr>
-        </thead>
+      <p>Collection</p>
+      <HTMLTable condensed>
         <tbody>
-          {Object.entries(corporaMetadata).map(([key, value]) => {
+          <tr>
+            <td>Contact</td>
+            <td>{renderCollectionContactLink(collection.contact)}</td>
+          </tr>
+          {links.map(({ name, type, url }, i) => {
             return (
-              <tr {...{ key }}>
-                <td>{`${key}:`}</td>
-                <td>{value}</td>
-                <td />
+              <tr {...{ key: i }}>
+                <td>{type}</td>
+                <td>
+                  <a href={url} target="_blank" rel="noopener">
+                    {name || "link"}
+                  </a>
+                </td>
               </tr>
             );
           })}
-          {Array.from(singleValueCategories).reduce((elems, pair) => {
-            const [category, value] = pair;
-            // If the value is empty skip it
-            if (!value) return elems;
-
-            // If this category is a ontology term, let's add its value to the previous node
-            if (String(category).includes(ONTOLOGY_KEY)) {
-              const prevElem = elems.pop();
-              const newChildren = [...prevElem.props.children];
-              newChildren.splice(2, 1, [<td key="ontology">{value}</td>]);
-              // Props aren't extensible so we must clone and alter the component to append the new child
-              elems.push(
-                React.cloneElement(prevElem, prevElem.props, newChildren)
-              );
-            } else {
-              // Create the list item
-              elems.push(
-                <tr key={category}>
-                  <td>{`${category}:`}</td>
-                  <td>{value}</td>
-                  <td />
-                </tr>
-              );
-            }
-            return elems;
-          }, [])}
         </tbody>
       </HTMLTable>
     </>
   );
 };
 
-// Renders any links found in the config where link_type is not "SUMMARY"
-// If there are no links in the config, render the aboutURL
-const renderLinks = (projectLinks, aboutURL) => {
-  if (!projectLinks && !aboutURL) return null;
-  if (projectLinks)
-    return (
-      <>
-        <H3>Project Links</H3>
-        <UL>
-          {projectLinks.map((link) => {
-            if (link.link_type === "SUMMARY") return null;
-            return (
-              <li key={link.link_name}>
-                <a href={link.link_url} target="_blank" rel="noopener">
-                  {link.link_name}
-                </a>
-              </li>
-            );
-          })}
-        </UL>
-      </>
-    );
+const renderCollectionContactLink = (contact) => {
+  /*
+  display collection contact's name with a link to their associated email.
+   */
+  if (!contact || (!contact.name && !contact.email)) {
+    return null;
+  }
+  const { name, email } = contact;
+  if (email) {
+    return <a href={`mailto:${email}`}>{name}</a>;
+  }
+  return name;
+};
 
+const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
+  /*
+  render dataset metadata, mix of meta from Corpora and attributes found in categorical field.
+   */
+  if (
+    singleValueCategories.size === 0 &&
+    Object.entries(corporaMetadata).length === 0
+  ) {
+    return null;
+  }
+  const metadata = buildDatasetMetadata(singleValueCategories, corporaMetadata);
   return (
     <>
-      <H3>More Info</H3>
-      <p>
-        <a href={aboutURL} target="_blank" rel="noopener">
-          {aboutURL}
-        </a>
-      </p>
+      <p>Dataset</p>
+      <HTMLTable condensed>
+        <tbody>
+          {metadata.map(({ key, value, tip }) => {
+            return (
+              <tr {...{ key }}>
+                <td>{key}</td>
+                <td>
+                  <Tooltip content={tip} minimal disabled={!tip}>
+                    {value}
+                  </Tooltip>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </HTMLTable>
     </>
   );
 };
 
 const InfoFormat = React.memo(
-  ({ datasetTitle, singleValueCategories, aboutURL, dataPortalProps = {} }) => {
+  ({ collection, singleValueCategories, dataPortalProps = {} }) => {
     if (
       ["1.0.0", "1.1.0"].indexOf(
         dataPortalProps.version?.corpora_schema_version
@@ -174,26 +222,15 @@ const InfoFormat = React.memo(
     ) {
       dataPortalProps = {};
     }
-    const {
-      title,
-      publication_doi: doi,
-      preprint_doi: preprintDOI,
-      organism,
-      contributors,
-      project_links: projectLinks,
-    } = dataPortalProps;
-
-    const affiliations = buildAffiliations(contributors);
+    const { organism } = dataPortalProps;
 
     return (
       <div className={Classes.DIALOG_BODY}>
         <div className={Classes.DIALOG_BODY}>
-          <H1>{title ?? datasetTitle}</H1>
-          {renderContributors(contributors, affiliations)}
+          <H3>{collection.name}</H3>
+          <p>{collection.description}</p>
+          {renderCollectionLinks(collection)}
           {renderDatasetMetadata(singleValueCategories, { organism })}
-          {renderLinks(projectLinks, aboutURL)}
-          {renderDOILink("DOI", doi)}
-          {renderDOILink("Preprint DOI", preprintDOI)}
         </div>
       </div>
     );
