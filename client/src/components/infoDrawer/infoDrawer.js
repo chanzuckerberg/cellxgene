@@ -6,10 +6,13 @@ import InfoFormat from "./infoFormat";
 import { selectableCategoryNames } from "../../util/stateManager/controlsHelpers";
 
 @connect((state) => {
+  const selectedDatasetId = state.collections?.selectedDatasetId;
+  const collection = state.collections?.collectionsByDatasetId?.get(
+    selectedDatasetId
+  );
   return {
+    collection,
     schema: state.annoMatrix.schema,
-    datasetTitle: state.config?.displayNames?.dataset ?? "",
-    aboutURL: state.config?.links?.["about-dataset"],
     isOpen: state.controls.datasetDrawer,
     dataPortalProps: state.config?.corpora_props,
   };
@@ -23,9 +26,8 @@ class InfoDrawer extends PureComponent {
 
   render() {
     const {
+      collection,
       position,
-      aboutURL,
-      datasetTitle,
       schema,
       isOpen,
       dataPortalProps,
@@ -43,15 +45,10 @@ class InfoDrawer extends PureComponent {
     });
 
     return (
-      <Drawer
-        title="Dataset Overview"
-        onClose={this.handleClose}
-        {...{ isOpen, position }}
-      >
+      <Drawer onClose={this.handleClose} {...{ isOpen, position }}>
         <InfoFormat
           {...{
-            datasetTitle,
-            aboutURL,
+            collection,
             singleValueCategories,
             dataPortalProps: dataPortalProps ?? {},
           }}
