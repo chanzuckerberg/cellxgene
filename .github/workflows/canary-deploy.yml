@@ -2,7 +2,7 @@ name: Deploy canary via single cell infra repo
 
 on:
   push:
-    branches: [main-canary, dunitz/canary-deploy]
+    branches: main-canary
 
 jobs:
   deploy:
