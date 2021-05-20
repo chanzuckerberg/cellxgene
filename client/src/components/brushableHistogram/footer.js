@@ -14,9 +14,9 @@ const HistogramFooter = React.memo(
     isGeneSetSummary,
   }) => {
     /*
-    Footer of each histogram.  Will render range, title, and optionally 
+    Footer of each histogram.  Will render range, title, and optionally
     differential expression info.
-  
+
     Required props:
       * displayName - the displayName, aka "n_genes", "FOXP2", etc.
       * hideRanges - true/false, enables/disable rendering of ranges
@@ -61,7 +61,7 @@ const HistogramFooter = React.memo(
           </span>
         </div>
 
-        {logFoldChange && pvalAdj ? (
+        {logFoldChange !== undefined && pvalAdj !== undefined ? (
           <div
             style={{
               display: "flex",
