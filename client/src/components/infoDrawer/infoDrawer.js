@@ -5,6 +5,9 @@ import { Drawer } from "@blueprintjs/core";
 import InfoFormat from "./infoFormat";
 import { selectableCategoryNames } from "../../util/stateManager/controlsHelpers";
 
+/* styles */
+import styles from "./infoDrawer.css";
+
 @connect((state) => {
   const selectedDatasetId = state.collections?.selectedDatasetId;
   const collection = state.collections?.collectionsByDatasetId?.get(
@@ -45,7 +48,16 @@ class InfoDrawer extends PureComponent {
     });
 
     return (
-      <Drawer onClose={this.handleClose} {...{ isOpen, position }}>
+      <Drawer
+        backdropClassName={styles.infoDrawerBackdrop}
+        onClose={this.handleClose}
+        size={480}
+        style={{
+          boxShadow:
+            "0 18px 46px 0 rgba(16, 22, 26, 0.2), 0 4px 8px 0 rgba(16, 22, 26, 0.2), 0 0 0 0 rgba(16, 22, 26, 0.1)",
+        }}
+        {...{ isOpen, position }}
+      >
         <InfoFormat
           {...{
             collection,
