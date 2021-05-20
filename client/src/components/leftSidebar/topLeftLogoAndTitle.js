@@ -6,9 +6,16 @@ import Logo from "../framework/logo";
 import InformationMenu from "./infoMenu";
 
 @connect((state) => {
+  const selectedDatasetId = state.collections?.selectedDatasetId;
+  const collection = state.collections?.collectionsByDatasetId?.get(
+    selectedDatasetId
+  );
   return {
     libraryVersions: state.config?.library_versions,
     aboutLink: state.config?.links?.["about-dataset"],
+    dataSourceLink: collection?.links.find(
+      (link) => link.type === "DATA_SOURCE" // TODO(cc) constants for link types, remove type from returned link prop?
+    ),
     tosURL: state.config?.parameters?.about_legal_tos,
     privacyURL: state.config?.parameters?.about_legal_privacy,
   };
