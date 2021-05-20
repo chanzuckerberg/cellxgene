@@ -69,6 +69,7 @@ const GeneSets = (
       }
 
       return {
+        ...state,
         initialized: true,
         lastTid,
         genesets,
@@ -350,6 +351,35 @@ const GeneSets = (
       return {
         ...state,
         lastTid: tid,
+      };
+    }
+
+    case "request differential expression success": {
+      // [ [gene, logfoldchange, pval, pval_adj], ...]
+      const { data } = action;
+
+      const genes = new Map(
+        data.map((diffExpGene) => [
+          diffExpGene[0],
+          {
+            geneSymbol: diffExpGene[0],
+            geneDescription: diffExpGene.slice(1).toString(),
+          },
+        ])
+      );
+
+      const genesetName = `DiffExp Set (${new Date().toLocaleString()})`;
+
+      const genesets = new Map(state.genesets); // clone
+      genesets.set(genesetName, {
+        genesetName,
+        genesetDescription: "",
+        genes,
+      });
+
+      return {
+        ...state,
+        genesets,
       };
     }
 

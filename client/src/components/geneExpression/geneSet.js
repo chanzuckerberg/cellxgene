@@ -84,14 +84,17 @@ class GeneSet extends React.Component {
       setGenes,
       setGenesWithDescriptions,
       isDiffExp,
-      diffExp,
     } = this.props;
 
     if (isDiffExp) {
-      // [ [gene, logfoldchange, pval, pval_adj], ...]
-      return setGenes.map((gene, idx) => {
-        const logFoldChange = diffExp[idx][1];
-        const pvalAdj = diffExp[idx][3];
+      // description: "logfoldchange, pval, pval_adj"
+      return setGenes.map((gene) => {
+        const diffExp = setGenesWithDescriptions
+          .get(gene)
+          .geneDescription.split(",");
+        const logFoldChange = Number(diffExp[0]);
+        const pvalAdj = Number(diffExp[2]);
+
         return (
           <Gene
             key={gene}
