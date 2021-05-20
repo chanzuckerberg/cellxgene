@@ -12,13 +12,7 @@ import { range } from "../range";
 given a color mode & accessor, generate an annoMatrix query that will
 fulfill it
 */
-export function createColorQuery(
-  colorMode,
-  colorByAccessor,
-  schema,
-  genesets,
-  diffExp
-) {
+export function createColorQuery(colorMode, colorByAccessor, schema, genesets) {
   if (!colorMode || !colorByAccessor || !schema || !genesets) return null;
 
   switch (colorMode) {
@@ -46,19 +40,8 @@ export function createColorQuery(
       if (!varIndex) return null;
       if (!genesets) return null;
 
-      let _geneset;
-      let _setGenes;
-
-      if (colorByAccessor === "Temp DiffExp Set") {
-        _geneset = diffExp;
-        _setGenes = _geneset.map((diffexpResultItem) => {
-          const geneName = diffexpResultItem[0];
-          return geneName;
-        });
-      } else {
-        _geneset = genesets.get(colorByAccessor);
-        _setGenes = [..._geneset.genes.keys()];
-      }
+      const _geneset = genesets.get(colorByAccessor);
+      const _setGenes = [..._geneset.genes.keys()];
 
       return [
         "X",

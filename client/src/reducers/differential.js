@@ -1,6 +1,5 @@
 const Differential = (
   state = {
-    diffExp: null,
     loading: null,
     error: null,
     celllist1: null,
@@ -20,7 +19,6 @@ const Differential = (
         ...state,
         error: null,
         loading: false,
-        diffExp: action.data,
       };
     case "request differential expression error":
       return {
@@ -38,18 +36,10 @@ const Differential = (
         ...state,
         celllist2: action.data,
       };
-    case "clear differential expression":
-      return {
-        ...state,
-        diffExp: null,
-        celllist1: null,
-        celllist2: null,
-      };
     case "reset subset":
     case "subset to selection":
       return {
         ...state,
-        diffExp: null,
         celllist1: null,
         celllist2: null,
       };

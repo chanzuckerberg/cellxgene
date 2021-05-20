@@ -785,17 +785,11 @@ class Graph extends React.Component {
   }
 
   createColorByQuery(colors) {
-    const { annoMatrix, genesets, differential } = this.props;
+    const { annoMatrix, genesets } = this.props;
     const { schema } = annoMatrix;
     const { colorMode, colorAccessor } = colors;
 
-    return createColorQuery(
-      colorMode,
-      colorAccessor,
-      schema,
-      genesets,
-      differential.diffExp
-    );
+    return createColorQuery(colorMode, colorAccessor, schema, genesets);
   }
 
   renderPoints(

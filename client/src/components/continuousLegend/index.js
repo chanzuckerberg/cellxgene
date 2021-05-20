@@ -111,7 +111,7 @@ const continuous = (selectorId, colorScale, colorAccessor) => {
 }))
 class ContinuousLegend extends React.Component {
   async componentDidUpdate(prevProps) {
-    const { annoMatrix, colors, genesets, differential } = this.props;
+    const { annoMatrix, colors, genesets } = this.props;
     if (!colors || !annoMatrix) return;
 
     if (colors !== prevProps?.colors || annoMatrix !== prevProps?.annoMatrix) {
@@ -122,8 +122,7 @@ class ContinuousLegend extends React.Component {
         colorMode,
         colorAccessor,
         schema,
-        genesets,
-        differential.diffExp
+        genesets
       );
 
       const colorDf = colorQuery ? await annoMatrix.fetch(...colorQuery) : null;

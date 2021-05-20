@@ -76,16 +76,10 @@ class CentroidLabels extends PureComponent {
   };
 
   colorByQuery() {
-    const { annoMatrix, colors, genesets, differential } = this.props;
+    const { annoMatrix, colors, genesets } = this.props;
     const { schema } = annoMatrix;
     const { colorMode, colorAccessor } = colors;
-    return createColorQuery(
-      colorMode,
-      colorAccessor,
-      schema,
-      genesets,
-      differential.diffExp
-    );
+    return createColorQuery(colorMode, colorAccessor, schema, genesets);
   }
 
   async fetchData() {

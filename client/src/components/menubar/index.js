@@ -34,7 +34,6 @@ import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
     clipPercentileMin: Math.round(100 * (annoMatrix?.clipRange?.[0] ?? 0)),
     clipPercentileMax: Math.round(100 * (annoMatrix?.clipRange?.[1] ?? 1)),
     userDefinedGenes: state.controls.userDefinedGenes,
-    diffexpGenes: state.controls.diffexpGenes,
     colorAccessor: state.colors.colorAccessor,
     scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
     scatterplotYYaccessor: state.controls.scatterplotYYaccessor,

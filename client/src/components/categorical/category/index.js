@@ -144,15 +144,14 @@ class Category extends React.PureComponent {
     */
     const { schema } = annoMatrix;
     const { colorAccessor, colorMode } = colors;
-    const { genesets, differential } = this.props;
+    const { genesets } = this.props;
     let colorDataPromise = Promise.resolve(null);
     if (colorAccessor) {
       const query = createColorQuery(
         colorMode,
         colorAccessor,
         schema,
-        genesets,
-        differential.diffExp
+        genesets
       );
       if (query) colorDataPromise = annoMatrix.fetch(...query);
     }

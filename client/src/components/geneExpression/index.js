@@ -17,35 +17,20 @@ class GeneExpression extends React.Component {
     const { genesets } = this.props;
 
     for (const [name, geneset] of genesets) {
+      const isDiffExp = geneset.genesetName.includes("DiffExp Set");
+
       sets.push(
         <GeneSet
           key={name}
           setGenes={Array.from(geneset.genes.keys())}
           setGenesWithDescriptions={geneset.genes}
+          isDiffExp={isDiffExp}
           setName={name}
           genesetDescription={geneset.genesetDescription}
         />
       );
     }
     return sets;
-  };
-
-  renderDiffexpGeneSets = () => {
-    const { differential } = this.props;
-    const { diffExp } = differential;
-    if (!diffExp) return null;
-
-    // [ [gene, logfoldchange, pval, pval_adj], ...]
-    const setGenes = diffExp.map((diffExpGene) => diffExpGene[0]);
-    return (
-      <GeneSet
-        key="Temp DiffExp Set"
-        setGenes={setGenes}
-        isDiffExp
-        diffExp={diffExp}
-        setName="Temp DiffExp Set"
-      />
-    );
   };
 
   handleActivateCreateGenesetMode = () => {
@@ -68,7 +53,6 @@ class GeneExpression extends React.Component {
           </div>
           <CreateGenesetDialogue />
         </div>
-        <div>{this.renderDiffexpGeneSets()}</div>
         <div>{this.renderGeneSets()}</div>
       </div>
     );
