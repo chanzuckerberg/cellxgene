@@ -1,3 +1,4 @@
+import * as globals from "../globals";
 /**
  * Gene set state. Geneset UI state is in a different reducer.
  *
@@ -373,7 +374,7 @@ const GeneSets = (
       const genesets = new Map(state.genesets); // clone
       genesets.set(genesetName, {
         genesetName,
-        genesetDescription: "",
+        genesetDescription: globals.DIFF_EXP_GENESET_DESCRIPTION,
         genes,
       });
 

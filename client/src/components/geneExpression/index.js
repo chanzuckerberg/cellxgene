@@ -2,6 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Button } from "@blueprintjs/core";
 import GeneSet from "./geneSet";
+import * as globals from "../../globals";
 
 import CreateGenesetDialogue from "./menus/createGenesetDialogue";
 
@@ -17,7 +18,8 @@ class GeneExpression extends React.Component {
     const { genesets } = this.props;
 
     for (const [name, geneset] of genesets) {
-      const isDiffExp = geneset.genesetName.includes("DiffExp Set");
+      const isDiffExp =
+        geneset.genesetDescription === globals.DIFF_EXP_GENESET_DESCRIPTION;
 
       sets.push(
         <GeneSet
