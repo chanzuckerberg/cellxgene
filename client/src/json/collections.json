@@ -455,6 +455,31 @@
         ]
     },
     {
+        "id": "a238e9fa-2bdf-41df-8522-69046f99baff",
+        "name": "Single-Cell Analysis of Human Pancreas Reveals Transcriptional Signatures of Aging and Somatic Mutation Patterns",
+        "contact": {
+            "name": "Martin Enge",
+            "email": "martin.enge@gmail.com"
+        },
+        "description": "As organisms age, cells accumulate genetic and epigenetic errors that eventually lead to impaired organ function or catastrophic transformation such as cancer. Because aging reflects a stochastic process of increas ing disorder, cells in an organ will be individually affected in different ways, thus rendering bulk analyses of postmitotic adult cells difficult to interpret. Here, we directly measure the effects of aging in human tissue by performing single-cell transcriptome analysis of 2,544 human pancreas cells from eight donors spanning six decades of life. We find that islet endocrine cells from older donors display increased levels of transcriptional noise and potential fate drift. By determining the mutational history of individual cells, we uncover a novel mutational signature in healthy aging endocrine cells. Our results demonstrate the feasibility of using single-cell RNA sequencing (RNA-seq) data from primary cells to derive insights into genetic and transcriptional processes that operate on aging human tissue.",
+        "datasets": [
+            {
+                "id": "66d15835-5dc8-4e96-b0eb-f48971cb65e8",
+                "name": "Single cell transcriptome analysis of human pancreas reveals transcriptional signatures of aging and somatic mutation patterns",
+                "cellCount": 2541,
+                "createdAt": 1621465418.93329,
+                "url": "https://cellxgene.cziscience.com/e/66d15835-5dc8-4e96-b0eb-f48971cb65e8.cxg/"
+            }
+        ],
+        "links": [
+            {
+                "name": "GEO",
+                "type": "OTHER",
+                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE81547"
+            }
+        ]
+    },
+    {
         "id": "24d42e5e-ce6d-45ff-a66b-a3b3b715deaf",
         "name": "Single-cell transcriptomics of human T cells reveals tissue and activation signatures in health and disease",
         "contact": {
@@ -984,6 +1009,11 @@
                 "name": "",
                 "type": "RAW_DATA",
                 "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE132042"
+            },
+            {
+                "name": "Tabula Muris Senis",
+                "type": "DATA_SOURCE",
+                "url": "https://tabula-muris-senis.ds.czbiohub.org/"
             }
         ]
     },
