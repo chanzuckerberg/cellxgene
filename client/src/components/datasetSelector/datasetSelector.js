@@ -1,5 +1,5 @@
 /* core dependencies */
-import { Breadcrumbs } from "@blueprintjs/core";
+import { Breadcrumb, Breadcrumbs, Icon } from "@blueprintjs/core";
 import React, { PureComponent } from "react";
 import { connect } from "react-redux";
 
@@ -48,22 +48,51 @@ class DatasetSelector extends PureComponent {
     return [homeProp, collectionProp, datasetProp];
   };
 
-  renderBreadcrumbMenu = ({ datasets, selectedDatasetId }) => {
+  renderBreadcrumb = (selectedDatasetName, renderAsMenu) => {
     /*
-    clicking on dataset name opens menu containing all dataset names for the current collection
+    collection name rendered as the last breadcrumb
+     */
+    const className = renderAsMenu
+      ? styles.datasetBreadcrumb
+      : styles.datasetDisabledBreadcrumb; /* no sibling datasets */
+    return (
+      <Breadcrumb className={className}>
+        {selectedDatasetName}
+        <Icon
+          icon="chevron-down"
+          style={{ marginLeft: "5px", marginRight: 0 }}
+        />
+      </Breadcrumb>
+    );
+  };
+
+  renderBreadcrumbMenu = (datasetsExceptSelected, selectedDatasetName) => {
+    /*
+    clicking on dataset name opens menu containing all dataset names except the current dataset name for the current
+    collection
+     */
+    return (
+      <DatasetMenu datasets={datasetsExceptSelected}>
+        {this.renderBreadcrumb(selectedDatasetName, true)}
+      </DatasetMenu>
+    );
+  };
+
+  renderDatasetBreadcrumb = ({ datasets, selectedDatasetId }) => {
+    /*
+    renders the final dataset breadcrumb; where sibling datasets are selectable by a breadcrumb menu
      */
     const selectedDataset = datasets.find(
       (dataset) => dataset.id === selectedDatasetId
     );
-    const datasetsExceptSelected = datasets.filter(
+    const siblingDatasets = datasets.filter(
       (dataset) => dataset !== selectedDataset
     );
-    return (
-      <DatasetMenu
-        datasets={datasetsExceptSelected}
-        selectedDatasetName={selectedDataset.name}
-      />
-    );
+    const selectedDatasetName = selectedDataset?.name;
+    const renderMenu = siblingDatasets.length > 0;
+    return renderMenu
+      ? this.renderBreadcrumbMenu(siblingDatasets, selectedDatasetName)
+      : this.renderBreadcrumb(selectedDatasetName);
   };
 
   render() {
@@ -79,7 +108,7 @@ class DatasetSelector extends PureComponent {
       >
         <Breadcrumbs
           items={this.buildBreadcrumbProps(collection, selectedDatasetId)}
-          currentBreadcrumbRenderer={this.renderBreadcrumbMenu}
+          currentBreadcrumbRenderer={this.renderDatasetBreadcrumb}
         />
       </div>
     );

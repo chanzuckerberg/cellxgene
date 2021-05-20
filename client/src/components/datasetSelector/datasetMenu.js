@@ -1,13 +1,5 @@
 /* core dependencies */
-import {
-  Breadcrumb,
-  Colors,
-  Icon,
-  Menu,
-  MenuItem,
-  Popover,
-  Position,
-} from "@blueprintjs/core";
+import { Colors, Menu, MenuItem, Popover, Position } from "@blueprintjs/core";
 import React from "react";
 
 /* styles */
@@ -24,27 +16,35 @@ const buildDatasetMenuItems = (datasets) => {
 /*
  dataset menu, toggled from dataset name in app-level breadcrumbs
  */
-const DatasetMenu = React.memo(({ datasets, selectedDatasetName }) => {
+const DatasetMenu = React.memo(({ children, datasets }) => {
+  const menuScrollable = datasets.length > 9; /* scrollable at 10 datasets */
   return (
     <Popover
       content={
-        <Menu style={{ color: Colors.BLACK }}>
+        <Menu
+          className={menuScrollable ? styles.datasetMenuScrollable : null}
+          style={{
+            color: Colors.BLACK,
+            maxHeight:
+              "290px" /* show 9.5 datasets at 30px height each, plus top padding of 5px */,
+            maxWidth: "680px" /* TODO(cc) revisit max-width versus width */,
+            overflow: "auto",
+            paddingRight: menuScrollable
+              ? 0 /* scrollbar adds padding to menu  */ /* TODO(cc) address ff requiring additional padding */
+              : null,
+          }}
+        >
           {buildDatasetMenuItems(datasets)}
         </Menu>
       }
+      hasBackdrop
       minimal
       modifiers={{ offset: { offset: "0, 10" } }}
       popoverClassName={styles.datasetPopover}
       position={Position.BOTTOM_LEFT}
       targetClassName={styles.datasetPopoverTarget}
     >
-      <Breadcrumb className={styles.datasetBreadcrumb}>
-        {selectedDatasetName}
-        <Icon
-          icon="chevron-down"
-          style={{ marginLeft: "5px", marginRight: 0 }}
-        />
-      </Breadcrumb>
+      {children}
     </Popover>
   );
 });

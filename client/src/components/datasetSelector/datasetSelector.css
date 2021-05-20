@@ -1,28 +1,32 @@
-:local(.datasetBreadcrumb) {
-    font-size: 14px;
+:local(.datasetBreadcrumb),
+:local(.datasetDisabledBreadcrumb) {
+  font-size: 14px;
 }
 
 :local(.datasetBreadcrumb):hover,
 :local(.datasetBreadcrumb):global(.bp3-active) {
-    color: #10161A; /* Colors.BLACK */ /* TODO(cc) revisit variable specification */
+  color: #10161A; /* Colors.BLACK */ /* TODO(cc) revisit variable specification */
+}
+
+:local(.datasetDisabledBreadcrumb) :global(.bp3-icon) {
+  display: none;
 }
 
 :local(.datasetPopoverTarget) {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 :local(.datasetPopover) {
-    box-shadow: 0 8px 24px 0 rgba(16, 22, 26, 0.2), 0 2px 4px 0 rgba(16, 22, 26, 0.2), 0 0 0 0 rgba(16, 22, 26, 0.1);
-    max-height: 290px; /* show 9.5 datasets at 30px height each, plus top padding of 8px */
-    overflow: auto;
-    width: 680px; /* TODO(cc) revisit max-width versus width */
+  box-shadow: 0 8px 24px 0 rgba(16, 22, 26, 0.2), 0 2px 4px 0 rgba(16, 22, 26, 0.2), 0 0 0 0 rgba(16, 22, 26, 0.1);
 }
 
-:local(.datasetPopover):global(::-webkit-scrollbar) {
-    width: 4px;
+:local(.datasetMenuScrollable):global(::-webkit-scrollbar) {
+  width: 14px; /* 5px left and right, 4px track */
 }
 
-:local(.datasetPopover):global(::-webkit-scrollbar-thumb) {
-    background-color: #CED9E0; /* Colors.LIGHT_GRAY1 */ /* TODO(cc) revisit variable specification */
-    border-radius: 4px;
+:local(.datasetMenuScrollable):global(::-webkit-scrollbar-thumb) {
+  background-clip: content-box;
+  background-color: #CED9E0; /* Colors.LIGHT_GRAY1 */ /* TODO(cc) revisit variable specification */
+  border: 5px solid transparent;
+  border-radius: 14px;
 }
