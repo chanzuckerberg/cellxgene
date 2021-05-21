@@ -66,13 +66,17 @@ def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp
     # logfoldchanges: log2(meanA / meanB)
     logfoldchanges = np.log2(np.abs((meanA + 1e-9) / (meanB + 1e-9)))
 
-    # find all with lfc > cutoff
-    lfc_above_cutoff_idx = np.nonzero(np.abs(logfoldchanges) > diffexp_lfc_cutoff)[0]
+    # find all with lfc > cutoff and all with lfc < -cutoff
+    lfc_above_cutoff_idx = np.nonzero(logfoldchanges > diffexp_lfc_cutoff)[0]
+    lfc_below_neg_cutoff_idx = np.nonzero(logfoldchanges < -diffexp_lfc_cutoff)[0]
+
     stats_to_sort = np.abs(tscores)
 
     # derive sort order
     if lfc_above_cutoff_idx.shape[0] > top_n:
         # partition top N
+        import pdb
+        pdb.set_trace()
         rel_t_partition = np.argpartition(stats_to_sort[lfc_above_cutoff_idx], -top_n)[-top_n:]
         t_partition = lfc_above_cutoff_idx[rel_t_partition]
         # sort the top N partition
