@@ -1,62 +1,222 @@
 [
     {
-        "id": "6e8c5415-302c-492a-a5f9-f29c57ff18fb",
-        "name": "Muraro Pancreas",
+        "id": "9f7ea04c-dafd-4f21-ba62-be1ee86138d0",
+        "name": "lots of cells",
         "contact": {
-            "name": "Alexander van Oudenaarden",
-            "email": "a.vanoudenaarden@hubrecht.edu"
+            "name": "Doctor Who",
+            "email": "person@random.com"
         },
-        "description": "A Single-Cell Transcriptome Atlas of the Human Pancreas",
-        "datasets": [
-            {
-                "id": "b07e5164-baf6-43d2-bdba-5a249d0da879",
-                "name": "A Single-Cell Transcriptome Atlas of the Human Pancreas",
-                "cellCount": 2126,
-                "createdAt": 1620227067.221111,
-                "url": "https://cellxgene.cziscience.com/e/b07e5164-baf6-43d2-bdba-5a249d0da879.cxg/"
-            }
-        ],
+        "description": "These are different words",
+        "datasets": [],
         "links": [
             {
-                "name": "",
-                "type": "LAB_WEBSITE",
-                "url": "https://www.hubrecht.eu/research-groups/van-oudenaarden-group/"
-            },
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1016/j.cels.2016.09.002"
-            },
-            {
-                "name": "",
-                "type": "RAW_DATA",
-                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE85241"
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
             }
         ]
     },
     {
-        "id": "00109df5-7810-4542-8db5-2288c46e0424",
+        "id": "734bf6ad-d141-4ef0-b0b6-4366ac3d702f",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "ab2a0784-16a2-4d75-9733-9f3edc5aacdd",
+        "name": "Test Mass Assignment",
+        "contact": {
+            "name": "Test Mass Assignment",
+            "email": "Test Mass Assignment"
+        },
+        "description": "Test Mass Assignment",
+        "datasets": [
+            {
+                "id": "575caf5d-9601-4ec5-ae4c-3e1eebd740e8",
+                "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer’s Disease: EC astrocytes",
+                "cellCount": 5500,
+                "createdAt": 1617123528.141098,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/575caf5d-9601-4ec5-ae4c-3e1eebd740e8.cxg/"
+            }
+        ],
+        "links": [
+            {
+                "name": "hello",
+                "type": "PROTOCOL",
+                "url": "javascript:test;"
+            }
+        ]
+    },
+    {
+        "id": "ecb203c7-6dd3-4aab-84fc-d3bdce58245a",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "8e1ea6d0-192a-42e3-913d-43ea2b00adc2",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "3c63c627-a3c4-4507-9e78-89fc8fe1aaf1",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "95d1c959-749d-4018-a49c-4edced37460a",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "f4b7f6ae-14c0-444b-bdfa-e1e4b97ac6ba",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "31ce2feb-29dd-48b1-ae44-be1d2170de52",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "68131ba1-19da-46ec-bcc2-07d0464e1e9d",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "ea6f5f5c-fbc6-4fa4-924a-24f2cf889b0d",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "169b39dd-c166-4177-b610-c5970a526b74",
         "name": "Massively multiplex chemical transcriptomics at single-cell resolution",
         "contact": {},
         "description": "High-throughput chemical screens typically use coarse assays such as cell survival,  limiting what can be learned about mechanisms of action, off-target effects, and  heterogeneous responses. Here, we introduce sci-Plex, which uses nuclear hashing to  quantify global transcriptional responses to thousands of independent perturbations at  single-cell resolution. As a proof of concept, we applied sci-Plex to screen three  cancer cell lines exposed to 188 compounds. In total, we profiled ~650,000 single-cell  transcriptomes across ~5000 independent samples in one experiment. Our results reveal  substantial intercellular heterogeneity in response to specific compounds, commonalities  in response to families of compounds, and insight into differential properties within  families. In particular, our results with histone deacetylase inhibitors support the  view that chromatin acts as an important reservoir of acetate in cancer cells.\n",
         "datasets": [
             {
-                "id": "fe2479fd-daff-41a8-97dc-a50457ab1871",
-                "name": "Massively multiplex chemical transcriptomics at single-cell resolution - MCF7",
-                "createdAt": 1598533300.153625,
-                "url": "https://cellxgene.cziscience.com/e/Single_cell_drug_screening_mcf7-44-remixed.cxg/"
-            },
-            {
-                "id": "108c2b65-4ea9-4792-8b5b-451842faf35b",
+                "id": "ce895741-bcfc-4037-a35f-f7d83631d523",
                 "name": "Massively multiplex chemical transcriptomics at single-cell resolution - A549",
-                "createdAt": 1598483751.637126,
-                "url": "https://cellxgene.cziscience.com/e/Single_cell_drug_screening_a549-42-remixed.cxg/"
+                "createdAt": 1598483092.290144,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/Single_cell_drug_screening_a549-42-remixed.cxg/"
             },
             {
-                "id": "38a78e91-e361-45c8-bae3-1d6d5108d18e",
+                "id": "4dee4aec-405f-4627-96fb-cafd994c58bf",
+                "name": "Massively multiplex chemical transcriptomics at single-cell resolution - MCF7",
+                "createdAt": 1598532922.685946,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/Single_cell_drug_screening_mcf7-44-remixed.cxg/"
+            },
+            {
+                "id": "f1e8a79f-8451-4ea5-a620-77135f570039",
                 "name": "Massively multiplex chemical transcriptomics at single-cell resolution - K562",
-                "createdAt": 1598483759.986738,
-                "url": "https://cellxgene.cziscience.com/e/Single_cell_drug_screening_k562-43-remixed.cxg/"
+                "createdAt": 1598483098.992071,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/Single_cell_drug_screening_k562-43-remixed.cxg/"
             }
         ],
         "links": [
@@ -73,22 +233,22 @@
         ]
     },
     {
-        "id": "d0e9c47b-4ce7-4f84-b182-eddcfa0b2658",
+        "id": "120c8261-a137-44ac-97ca-897eb8916894",
         "name": "Single-cell gene expression profiling of SARS-CoV-2 infected human cell lines",
         "contact": {},
         "description": "The coronavirus disease 2019 (COVID-19) pandemic, caused by the novel severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2), is an ongoing global health threat with more than two million infected people since its emergence in late 2019. Detailed knowledge of the molecular biology of the infection is indispensable for understanding of the viral replication, host responses, and disease progression. We provide gene expression profiles of SARS-CoV and SARS-CoV-2 infections in three human cell lines (H1299, Caco-2 and Calu-3 cells), using bulk and single-cell transcriptomics. Small RNA profiling showed strong expression of the immunity and inflammation-associated microRNA miRNA-155 upon infection with both viruses. SARS-CoV-2 elicited approximately two-fold higher stimulation of the interferon response compared to SARS-CoV in the permissive human epithelial cell line Calu-3, and induction of cytokines such as CXCL10 or IL6. Single cell RNA sequencing data showed that canonical interferon stimulated genes such as IFIT2 or OAS2 were broadly induced, whereas interferon beta (IFNB1) and lambda (IFNL1-4) were expressed only in a subset of infected cells. In addition, temporal resolution of transcriptional responses suggested interferon regulatory factors (IRFs) activities precede that of nuclear factor-κB (NF-κB). Lastly, we identified heat shock proin 90 (HSP90) as a protein relevant for the infection. Inhibition of the HSP90 charperone activity by Tanespimycin/17-N-allylamino-17-demethoxygeldanamycin (17-AAG) resulted in a reduction of viral replication, and of TNF and IL1B mRNA levels. In summary, our study established in vitro cell culture models to study SARS-CoV-2 infection and identified HSP90 protein as potential drug target for therapeutic intervention of SARS-CoV-2 infection.\n",
         "datasets": [
             {
-                "id": "4b9e0a15-c006-45d9-860f-b8a43ccf7d9d",
+                "id": "2c39eea7-7291-4145-b0bf-fd2b645658f8",
                 "name": "Single-cell gene expression profiling of SARS-CoV-2 infected human cell lines - Calu-3",
-                "createdAt": 1598483753.065372,
-                "url": "https://cellxgene.cziscience.com/e/Single_cell_gene_expression_profiling_of_SARS_CoV_2_infected_human_cell_lines_Calu_3-28-remixed.cxg/"
+                "createdAt": 1598483093.592519,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/Single_cell_gene_expression_profiling_of_SARS_CoV_2_infected_human_cell_lines_Calu_3-28-remixed.cxg/"
             },
             {
-                "id": "ca421096-6240-4cee-8c12-d20899b3e005",
+                "id": "d994bc25-b63e-41b4-a7cd-e02d533fb026",
                 "name": "Single-cell gene expression profiling of SARS-CoV-2 infected human cell lines - H1299",
-                "createdAt": 1598483756.965343,
-                "url": "https://cellxgene.cziscience.com/e/Single_cell_gene_expression_profiling_of_SARS_CoV_2_infected_human_cell_lines_H1299-27-remixed.cxg/"
+                "createdAt": 1598483096.463477,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/Single_cell_gene_expression_profiling_of_SARS_CoV_2_infected_human_cell_lines_H1299-27-remixed.cxg/"
             }
         ],
         "links": [
@@ -105,16 +265,16 @@
         ]
     },
     {
-        "id": "2a79d190-a41e-4408-88c8-ac5c4d03c0fc",
+        "id": "0e4d7bcc-0cfb-4a8c-98d6-c4966efd64a3",
         "name": "Single-cell longitudinal analysis of SARS-CoV-2 infection in human bronchial epithelial cells",
         "contact": {},
         "description": "Single-cell RNA sequencing of experimentally infected human bronchial epithelial cells (HBECs) in air-liquid interface cultures over a time-course.\n",
         "datasets": [
             {
-                "id": "030faa69-ff79-4d85-8630-7c874a114c19",
+                "id": "a53037cf-9164-4d0d-91e9-0f4e1ffad320",
                 "name": "Single-cell longitudinal analysis of SARS-CoV-2 infection in human bronchial epithelial cells",
-                "createdAt": 1598483754.832291,
-                "url": "https://cellxgene.cziscience.com/e/Single_cell_longitudinal_analysis_of_SARS_CoV_2_infection_in_human_bronchial_epithelial_cells-29-remixed.cxg/"
+                "createdAt": 1598483095.093335,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/Single_cell_longitudinal_analysis_of_SARS_CoV_2_infection_in_human_bronchial_epithelial_cells-29-remixed.cxg/"
             }
         ],
         "links": [
@@ -126,22 +286,22 @@
         ]
     },
     {
-        "id": "5d445965-6f1a-4b68-ba3a-b8f765155d3a",
+        "id": "1d3c79ed-0e4c-4f56-b7ce-c037989fa457",
         "name": "A molecular cell atlas of the human lung from single cell RNA sequencing",
         "contact": {},
         "description": "Droplet- and plate-based single cell RNA sequencing applied to ~75,000 human lung and blood cells, combined with a multi-pronged cell annotation approach, which have allowed us to define the gene expression profiles and anatomical locations of 58 cell populations in the human lung, including 41 of 45 previously known cell types or subtypes and 14 new ones.\n",
         "datasets": [
             {
-                "id": "8c42cfd0-0b0a-46d5-910c-fc833d83c45e",
+                "id": "4d86d629-f3ca-4e98-b594-1ccb4ecb82c1",
                 "name": "Krasnow Lab Human Lung Cell Atlas, 10X",
-                "createdAt": 1598483758.536012,
-                "url": "https://cellxgene.cziscience.com/e/krasnow_lab_human_lung_cell_atlas_10x-1-remixed.cxg/"
+                "createdAt": 1598483097.613339,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/krasnow_lab_human_lung_cell_atlas_10x-1-remixed.cxg/"
             },
             {
-                "id": "e04daea4-4412-45b5-989e-76a9be070a89",
+                "id": "e389a1d0-f1e5-4ef7-8760-37453e75f8bf",
                 "name": "Krasnow Lab Human Lung Cell Atlas, Smart-seq2",
-                "createdAt": 1598483761.678821,
-                "url": "https://cellxgene.cziscience.com/e/krasnow_lab_human_lung_cell_atlas_smartseq2-2-remixed.cxg/"
+                "createdAt": 1598483099.99435,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/krasnow_lab_human_lung_cell_atlas_smartseq2-2-remixed.cxg/"
             }
         ],
         "links": [
@@ -168,16 +328,174 @@
         ]
     },
     {
-        "id": "38833785-fac5-48fd-944a-0f62a4c23ed1",
+        "id": "0209f698-df98-4df8-af5b-3e871fe4da06",
+        "name": "Fabulous collection",
+        "contact": {
+            "name": "Arathi",
+            "email": "arathi.mani@chanzuckerberg.com"
+        },
+        "description": "Arathi's fabulous collection",
+        "datasets": [
+            {
+                "id": "b54146b9-ec99-40e5-9e02-1595e2ce12cd",
+                "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer’s Disease: EC astrocytes",
+                "cellCount": 5500,
+                "createdAt": 1611208845.000292,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/b54146b9-ec99-40e5-9e02-1595e2ce12cd.cxg/"
+            }
+        ],
+        "links": []
+    },
+    {
+        "id": "0e1620bf-3682-4391-9b38-235b89cad187",
+        "name": "1",
+        "contact": {
+            "name": "1",
+            "email": "1"
+        },
+        "description": "1",
+        "datasets": [
+            {
+                "id": "b584d184-be52-4dfd-bb86-fc50ab3772fa",
+                "name": "Test PBMC 3k dataset",
+                "cellCount": 2638,
+                "createdAt": 1620770676.022873,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/b584d184-be52-4dfd-bb86-fc50ab3772fa.cxg/"
+            },
+            {
+                "id": "c46cf813-d243-4b0b-b2e6-b9bd9c8000be",
+                "name": "Test PBMC 3k dataset",
+                "cellCount": 2638,
+                "createdAt": 1620930753.786189,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/c46cf813-d243-4b0b-b2e6-b9bd9c8000be.cxg/"
+            }
+        ],
+        "links": []
+    },
+    {
+        "id": "ada84bde-93a0-480d-954c-2f428e44aadf",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "d7c43972-ce3d-4301-ade4-8832c682a0fe",
+        "name": "trent collection 3",
+        "contact": {
+            "name": "Trent Smith",
+            "email": "trent.smith@chanzuckerberg.com"
+        },
+        "description": "a test collection for publishing",
+        "datasets": [],
+        "links": []
+    },
+    {
+        "id": "66535cd3-3cf2-404f-94ec-2e68eef32780",
+        "name": "Test Mass Assignment",
+        "contact": {
+            "name": "Test Mass Assignment",
+            "email": "Test Mass Assignment"
+        },
+        "description": "Test Mass Assignment",
+        "datasets": [
+            {
+                "id": "0b197d11-60da-4d87-abaa-d1555824f429",
+                "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer’s Disease: EC astrocytes",
+                "cellCount": 5500,
+                "createdAt": 1617189804.384488,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/0b197d11-60da-4d87-abaa-d1555824f429.cxg/"
+            }
+        ],
+        "links": [
+            {
+                "name": "hello",
+                "type": "PROTOCOL",
+                "url": "javascript:test;"
+            }
+        ]
+    },
+    {
+        "id": "7e67edc1-2f97-43e5-8d08-f09e93db8224",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "3ece0fca-fde2-4c8c-96f9-157d548133ed",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "46cc77f7-2814-44dd-9c74-17d6769707c9",
+        "name": "Single-cell atlas of peripheral immune response to SARS-CoV-2 infection",
+        "contact": {},
+        "description": "There is an urgent need to better understand the pathophysiology of Coronavirus disease 2019 (COVID-19), the global pandemic caused by SARS-CoV-2, which has infected more than three million people worldwide. Approximately 20% of patients with COVID-19 develop severe disease and 5% of patients require intensive care. Severe disease has been associated with changes in peripheral immune activity, including increased levels of pro-inflammatory cytokines that may be produced by a subset of inflammatory monocytes, lymphopenia, and T cell exhaustion. To elucidate pathways in peripheral immune cells that might lead to immunopathology or protective immunity in severe COVID-19, we applied single-cell RNA sequencing (scRNA-seq) to profile peripheral blood mononuclear cells (PBMCs) from seven patients hospitalized for COVID-19, four of whom had acute respiratory distress syndrome, and six healthy controls. We identify reconfiguration of peripheral immune cell phenotype in COVID-19, including a heterogeneous interferon-stimulated gene signature, HLA class II downregulation and a developing neutrophil population that appears closely related to plasmablasts appearing in patients with acute respiratory failure requiring mechanical ventilation. Importantly, we found that peripheral monocytes and lymphocytes do not express substantial amounts of pro-inflammatory cytokines. Collectively, we provide a cell atlas of the peripheral immune response to severe COVID-19.\n",
+        "datasets": [
+            {
+                "id": "924056ec-046a-4d08-a2a2-f7e8a1e3d8d4",
+                "name": "Single-cell atlas of peripheral immune response to SARS-CoV-2 infection",
+                "createdAt": 1600920030.249869,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/Single_cell_atlas_of_peripheral_immune_response_to_SARS_CoV_2_infection.cxg/"
+            }
+        ],
+        "links": [
+            {
+                "name": "GEO",
+                "type": "RAW_DATA",
+                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE150728"
+            },
+            {
+                "name": "Blish Lab",
+                "type": "OTHER",
+                "url": "https://blishlab.sites.stanford.edu/"
+            }
+        ]
+    },
+    {
+        "id": "6bcda94e-8988-49a6-8b7c-cbd1a211bdd0",
         "name": "Construction of a human cell landscape at single-cell level",
         "contact": {},
         "description": "Single-cell analysis is a valuable tool for dissecting cellular heterogeneity in complex systems. However, a comprehensive single-cell atlas has not been achieved for humans. Here we use single-cell mRNA sequencing to determine the cell-type composition of all major human organs and construct a scheme for the human cell landscape (HCL). We have uncovered a single-cell hierarchy for many tissues that have not been well characterized. We established a 'single-cell HCL analysis' pipeline that helps to define human cell identity. Finally, we performed a single-cell comparative analysis of landscapes from human and mouse to identify conserved genetic networks. We found that stem and progenitor cells exhibit strong transcriptomic stochasticity, whereas diferentiated cells are more distinct. Our results provide a useful resource for the study of human biology.\n",
         "datasets": [
             {
-                "id": "2adb1f8a-a6b1-4909-8ee8-484814e2d4bf",
+                "id": "add760f8-25b9-40c9-b716-2bc1349edf81",
                 "name": "Construction of a human cell landscape at single-cell level",
-                "createdAt": 1601311857.456154,
-                "url": " https://cellxgene.cziscience.com/e/human_cell_landscape.cxg/"
+                "createdAt": 1600958063.59244,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/human_cell_landscape.cxg/"
             }
         ],
         "links": [
@@ -199,33 +517,7 @@
         ]
     },
     {
-        "id": "a72afd53-ab92-4511-88da-252fb0e26b9a",
-        "name": "Single-cell atlas of peripheral immune response to SARS-CoV-2 infection",
-        "contact": {},
-        "description": "There is an urgent need to better understand the pathophysiology of Coronavirus disease 2019 (COVID-19), the global pandemic caused by SARS-CoV-2, which has infected more than three million people worldwide. Approximately 20% of patients with COVID-19 develop severe disease and 5% of patients require intensive care. Severe disease has been associated with changes in peripheral immune activity, including increased levels of pro-inflammatory cytokines that may be produced by a subset of inflammatory monocytes, lymphopenia, and T cell exhaustion. To elucidate pathways in peripheral immune cells that might lead to immunopathology or protective immunity in severe COVID-19, we applied single-cell RNA sequencing (scRNA-seq) to profile peripheral blood mononuclear cells (PBMCs) from seven patients hospitalized for COVID-19, four of whom had acute respiratory distress syndrome, and six healthy controls. We identify reconfiguration of peripheral immune cell phenotype in COVID-19, including a heterogeneous interferon-stimulated gene signature, HLA class II downregulation and a developing neutrophil population that appears closely related to plasmablasts appearing in patients with acute respiratory failure requiring mechanical ventilation. Importantly, we found that peripheral monocytes and lymphocytes do not express substantial amounts of pro-inflammatory cytokines. Collectively, we provide a cell atlas of the peripheral immune response to severe COVID-19.\n",
-        "datasets": [
-            {
-                "id": "456e8b9b-f872-488b-871d-94534090a865",
-                "name": "Single-cell atlas of peripheral immune response to SARS-CoV-2 infection",
-                "createdAt": 1601315303.831203,
-                "url": "https://cellxgene.cziscience.com/e/Single_cell_atlas_of_peripheral_immune_response_to_SARS_CoV_2_infection.cxg/"
-            }
-        ],
-        "links": [
-            {
-                "name": "GEO",
-                "type": "RAW_DATA",
-                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE150728"
-            },
-            {
-                "name": "Blish Lab",
-                "type": "OTHER",
-                "url": "https://blishlab.sites.stanford.edu/"
-            }
-        ]
-    },
-    {
-        "id": "180bff9c-c8a5-4539-b13b-ddbc00d643e6",
+        "id": "4902a82a-7acc-445c-8660-6418dcde6232",
         "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease",
         "contact": {
             "name": "Martin Kampmann",
@@ -234,76 +526,76 @@
         "description": "Single-nuclei RNA sequencing of caudal entorhinal cortex and superior frontal gyrus from individuals spanning the neuropathological progression of AD",
         "datasets": [
             {
-                "id": "1492eb6b-7d50-4c4d-94ac-c801a7d5555c",
-                "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: SFG inhibitory neurons",
-                "createdAt": 1605879579.50838,
-                "url": "https://cellxgene.cziscience.com/e/kampmann_SFG_Inh.cxg/"
-            },
-            {
-                "id": "75a881cf-5d88-46e2-bf9b-97e5cbc1bd56",
-                "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: EC inhibitory neurons",
-                "createdAt": 1605879581.021314,
-                "url": "https://cellxgene.cziscience.com/e/kampmann_EC_Inh.cxg/"
-            },
-            {
-                "id": "06b91002-4d3d-4d2e-8484-20c3b31e232c",
-                "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: EC astrocytes",
-                "createdAt": 1605879580.010648,
-                "url": "https://cellxgene.cziscience.com/e/kampmann_EC_Astro.cxg/"
-            },
-            {
-                "id": "f9ad5649-f372-43e1-a3a8-423383e5a8a2",
+                "id": "d34a3369-bb0b-4d82-961d-020d7785b5f6",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: EC oligodendrocyte",
-                "createdAt": 1605879578.462828,
-                "url": "https://cellxgene.cziscience.com/e/kampmann_EC_Oligo.cxg/"
+                "createdAt": 1605878083.386224,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/kampmann_EC_Oligo.cxg/"
             },
             {
-                "id": "9f1049ac-f8b7-45ad-8e31-6e96c3e5058f",
+                "id": "2f281208-d759-4544-b54f-86a416021dfd",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: EC microglia",
-                "createdAt": 1605879578.984484,
-                "url": "https://cellxgene.cziscience.com/e/kampmann_EC_Micro.cxg/"
+                "createdAt": 1605878083.901475,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/kampmann_EC_Micro.cxg/"
             },
             {
-                "id": "cd77258f-b08b-4c89-b93f-6e6f146b1a4d",
+                "id": "2ea864a4-0baf-4375-bffe-c75887611cac",
+                "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: SFG inhibitory neurons",
+                "createdAt": 1605878084.411252,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/kampmann_SFG_Inh.cxg/"
+            },
+            {
+                "id": "d6e7a584-d286-41b7-9705-42595af0de20",
+                "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: EC astrocytes",
+                "createdAt": 1605878084.914242,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/kampmann_EC_Astro.cxg/"
+            },
+            {
+                "id": "e4df7388-c776-4979-9c43-98a315445247",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: EC excitatory neurons",
-                "createdAt": 1605879580.522766,
-                "url": "https://cellxgene.cziscience.com/e/kampmann_EC_Exc.cxg/"
+                "createdAt": 1605878085.445614,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/kampmann_EC_Exc.cxg/"
             },
             {
-                "id": "b94e3bdf-a385-49cc-b312-7a63cc28b77a",
+                "id": "a103a7ac-2dd6-414d-a179-cb36be986629",
+                "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: EC inhibitory neurons",
+                "createdAt": 1605878085.95757,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/kampmann_EC_Inh.cxg/"
+            },
+            {
+                "id": "b212b513-6caf-46e3-aada-b9ac048b89ae",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: SFG astrocytes",
-                "createdAt": 1605879581.526881,
-                "url": "https://cellxgene.cziscience.com/e/kampmann_SFG_Astro.cxg/"
+                "createdAt": 1605878086.471471,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/kampmann_SFG_Astro.cxg/"
             },
             {
-                "id": "2727d83a-0af0-443a-bff8-58dc7028289a",
+                "id": "efa48b08-5e36-4a2f-a3b6-224c2c90a5c4",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: caudal entorhinal cortex",
-                "createdAt": 1605879582.032221,
-                "url": "https://cellxgene.cziscience.com/e/kampmann_EC_all.cxg/"
+                "createdAt": 1605878086.988476,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/kampmann_EC_all.cxg/"
             },
             {
-                "id": "873ff933-4fda-4936-9a70-67df11af90ac",
+                "id": "b17c2987-6e2c-44bd-b7a8-a29c60bd7208",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: SFG excitatory neurons",
-                "createdAt": 1605879582.533505,
-                "url": "https://cellxgene.cziscience.com/e/kampmann_SFG_Exc.cxg/"
+                "createdAt": 1605878087.504897,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/kampmann_SFG_Exc.cxg/"
             },
             {
-                "id": "24066994-8183-488d-b037-ef6bb524af39",
+                "id": "6e7fb93c-4fd6-4d71-8274-a70a2f4aae57",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: SFG oligodendrocyte",
-                "createdAt": 1605879583.032505,
-                "url": "https://cellxgene.cziscience.com/e/kampmann_SFG_Oligo.cxg/"
+                "createdAt": 1605878088.003424,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/kampmann_SFG_Oligo.cxg/"
             },
             {
-                "id": "bdacc907-7c26-419f-8808-969eab3ca2e8",
+                "id": "38bf7ffe-31e2-4d0f-9457-14a99b5b07b7",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: SFG microglia",
-                "createdAt": 1605879583.538066,
-                "url": "https://cellxgene.cziscience.com/e/kampmann_SFG_Micro.cxg/"
+                "createdAt": 1605878088.507128,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/kampmann_SFG_Micro.cxg/"
             },
             {
-                "id": "6c600df6-ddca-4628-a8bb-1d6de1e3f9b4",
+                "id": "e643b5f3-84d9-4d77-b874-fb9bc4ea6cf3",
                 "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer's Disease: superior frontal gyrus",
-                "createdAt": 1605879584.056298,
-                "url": "https://cellxgene.cziscience.com/e/kampmann_SFG_all.cxg/"
+                "createdAt": 1605878089.016173,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/kampmann_SFG_all.cxg/"
             }
         ],
         "links": [
@@ -320,49 +612,1709 @@
         ]
     },
     {
-        "id": "db468083-041c-41ca-8f6f-bf991a070adf",
-        "name": "Stress-induced RNA–chromatin interactions promote endothelial dysfunction",
+        "id": "01cdc0c6-dd01-4bc2-bf15-6d7a12aec9e6",
+        "name": "My dope collection",
         "contact": {
-            "name": "Sheng Zhong",
-            "email": "szhong@eng.ucsd.edu"
+            "name": "Arathi",
+            "email": "kdfadkfjd@kdljf.com"
         },
-        "description": "Chromatin-associated RNA (caRNA) has been proposed as a type of epigenomic modifier. Here, we test whether environmental stress can induce cellular dysfunction through modulating RNA-chromatin interactions. We induce endothelial cell (EC) dysfunction with high glucose and TNFα (H + T), that mimic the common stress in diabetes mellitus. We characterize the H + T-induced changes in gene expression by single cell (sc)RNA-seq, DNA interactions by Hi-C, and RNA-chromatin interactions by iMARGI. H + T induce inter-chromosomal RNA-chromatin interactions, particularly among the super enhancers. To test the causal relationship between H + T-induced RNA-chromatin interactions and the expression of EC dysfunction-related genes, we suppress the LINC00607 RNA. This suppression attenuates the expression of SERPINE1, a critical pro-inflammatory and pro-fibrotic gene. Furthermore, the changes of the co-expression gene network between diabetic and healthy donor-derived ECs corroborate the H + T-induced RNA-chromatin interactions. Taken together, caRNA-mediated dysregulation of gene expression modulates EC dysfunction, a crucial mechanism underlying numerous diseases.",
+        "description": "This collection is really dope",
         "datasets": [
             {
-                "id": "6cda3b13-7257-45b9-ac20-0a7e6697e4f2",
-                "name": "scRNA-seq data analysis of HUVECs treated with high glucose and TNFα",
-                "cellCount": 59605,
-                "createdAt": 1620328675.15541,
-                "url": "https://cellxgene.cziscience.com/e/6cda3b13-7257-45b9-ac20-0a7e6697e4f2.cxg/"
+                "id": "c990d9e2-869d-48f1-9bed-0d0e4219f977",
+                "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer’s Disease: EC astrocytes",
+                "cellCount": 5500,
+                "createdAt": 1613069321.614259,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/d701e99a-39aa-43dc-8987-baeb4712ee68.cxg/"
             },
             {
-                "id": "42b6a476-c51d-4f8b-b68b-44941b3a11bf",
-                "name": "scRNA-seq data analysis of endothelium-enriched mesenteric arterial tissues from human donors",
-                "cellCount": 11243,
-                "createdAt": 1620690899.442465,
-                "url": "https://cellxgene.cziscience.com/e/42b6a476-c51d-4f8b-b68b-44941b3a11bf.cxg/"
+                "id": "d701e99a-39aa-43dc-8987-baeb4712ee68",
+                "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer’s Disease: EC astrocytes",
+                "cellCount": 5500,
+                "createdAt": 1613069321.614259,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/d701e99a-39aa-43dc-8987-baeb4712ee68.cxg/"
             }
         ],
+        "links": []
+    },
+    {
+        "id": "97746f45-9736-4e61-9195-89fe31042432",
+        "name": "trent's collection",
+        "contact": {
+            "name": "trent",
+            "email": "trent.smith007@gmail.com"
+        },
+        "description": "a collection",
+        "datasets": [
+            {
+                "id": "7d6a5774-ee4d-4c9f-9d74-5611023b1ad6",
+                "name": "",
+                "createdAt": 1608320414.332214,
+                "url": ""
+            }
+        ],
+        "links": []
+    },
+    {
+        "id": "6fc431d7-2695-4640-9d82-ebfdf8cb03a5",
+        "name": "af",
+        "contact": {
+            "name": "asdf",
+            "email": "sdf"
+        },
+        "description": "fasdf",
+        "datasets": [
+            {
+                "id": "97e6274b-4d4c-4ab1-9575-22ced95277aa",
+                "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer’s Disease: EC astrocytes",
+                "cellCount": 5500,
+                "createdAt": 1610131717.834723,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/97e6274b-4d4c-4ab1-9575-22ced95277aa.cxg/"
+            }
+        ],
+        "links": []
+    },
+    {
+        "id": "acf6f3a2-91d8-48c6-9156-b44696e18d84",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
         "links": [
             {
-                "name": "Zhong Lab Github",
-                "type": "OTHER",
-                "url": "https://github.com/Zhong-Lab-UCSD/NCOMMS-19-24818"
-            },
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1038/s41467-020-18957-w"
-            },
-            {
-                "name": "",
-                "type": "RAW_DATA",
-                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE135357"
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
             }
         ]
     },
     {
-        "id": "367d95c0-0eb0-4dae-8276-9407239421ee",
+        "id": "2bd1c485-e526-492b-9cff-6fd1ba37f0bc",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "f8caaf25-29b8-4094-bd15-ff539f3933ca",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "144594f2-55ef-403b-8cf3-35b7ef64cb57",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "f4eb23b2-28f4-43bd-96ad-5210d6523da7",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "d3481b6e-4fbe-447c-bf5c-4a31af3e27c9",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "728f9f0a-34ca-40e9-98da-58cf141fd543",
+        "name": "Less Doomed collection",
+        "contact": {
+            "name": "Brian Raymor",
+            "email": "brianraymor@chanzuckerberg.com"
+        },
+        "description": "And this is a longer description",
+        "datasets": [
+            {
+                "id": "480d388b-1e8c-4460-951a-0eb4ddca53b8",
+                "name": "Test PBMC 3k dataset",
+                "cellCount": 2638,
+                "createdAt": 1618451230.04538,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/480d388b-1e8c-4460-951a-0eb4ddca53b8.cxg/"
+            }
+        ],
+        "links": [
+            {
+                "name": "Raw",
+                "type": "RAW_DATA",
+                "url": "https://cellxgene.com"
+            },
+            {
+                "name": "Lab",
+                "type": "LAB_WEBSITE",
+                "url": "https://cellxgene.com"
+            },
+            {
+                "name": "Protocol",
+                "type": "PROTOCOL",
+                "url": "https://cellxgene.com"
+            },
+            {
+                "name": "DOI",
+                "type": "DOI",
+                "url": "https://doi.org"
+            },
+            {
+                "name": "DOI2",
+                "type": "DOI",
+                "url": "https://doi.org"
+            },
+            {
+                "name": "My Portal",
+                "type": "DATA_SOURCE",
+                "url": "https://cellxgene.com"
+            },
+            {
+                "name": "Other",
+                "type": "OTHER",
+                "url": "https://cellxgene.com"
+            }
+        ]
+    },
+    {
+        "id": "50f1da8d-e8fc-4d77-9843-6794bfc17fc1",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "25e8d06f-a485-4a03-989e-03446007f3e4",
+        "name": "Staging Collection with Correct DOI",
+        "contact": {
+            "name": "Seve Badajoz (contact info?)",
+            "email": "contact@example.com"
+        },
+        "description": "desc",
+        "datasets": [
+            {
+                "id": "5e486133-cdc6-4da2-a46d-fadebbf45762",
+                "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer’s Disease: EC astrocytes",
+                "cellCount": 5500,
+                "createdAt": 1618601844.387608,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/5e486133-cdc6-4da2-a46d-fadebbf45762.cxg/"
+            }
+        ],
+        "links": [
+            {
+                "name": "This is a DOI Name",
+                "type": "DOI",
+                "url": "https://doi.org/10.1101/2021.01.28.428598"
+            }
+        ]
+    },
+    {
+        "id": "2112e800-8c44-485e-8b98-57a5385e4772",
+        "name": "x",
+        "contact": {
+            "name": "x",
+            "email": "x"
+        },
+        "description": "Updated description. ",
+        "datasets": [
+            {
+                "id": "6b9714bd-cd2b-4a23-ab17-4cfaddfef03d",
+                "name": "Test PBMC 3k dataset",
+                "cellCount": 2638,
+                "createdAt": 1618605826.127236,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/6b9714bd-cd2b-4a23-ab17-4cfaddfef03d.cxg/"
+            }
+        ],
+        "links": [
+            {
+                "name": "My DOI",
+                "type": "DOI",
+                "url": "https://doi.org/10.1016/j.stem.2020.11.010"
+            }
+        ]
+    },
+    {
+        "id": "d0de3ef7-22a3-4257-bc31-2daa9638f4a9",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "a191fa58-6d25-40a3-be3b-5ad72db351a4",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "82ab71cc-c627-48d0-9f7c-a2a220de9936",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "04b44d10-635a-4854-878b-f4888d7ff9cd",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "0b49cafd-b4de-45c2-94ca-c7e44fdbfc72",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "ba940d1b-d01a-4d08-b9cc-9334cc263144",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "38764c65-512e-4889-ac6c-76029ae7e280",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "969c5a5f-1c7d-4640-a8f8-e8f3d3a6434c",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "ce3c07e9-c70e-418b-b2ae-db15ccbd6d47",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "ed17a4bc-d647-4051-8698-97406c448173",
+        "name": "qq",
+        "contact": {
+            "name": "qq",
+            "email": "qq"
+        },
+        "description": "qq",
+        "datasets": [
+            {
+                "id": "09921c77-d955-4079-9917-e6463c73b350",
+                "name": "Test PBMC 3k dataset",
+                "cellCount": 2638,
+                "createdAt": 1617319885.45979,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/09921c77-d955-4079-9917-e6463c73b350.cxg/"
+            }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "DATA_SOURCE",
+                "url": "https://www.hi.com"
+            }
+        ]
+    },
+    {
+        "id": "774bdefc-bbb1-409f-814a-28807bad20ae",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "2fa04ff8-a780-41ae-8aa7-e1391b134e60",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "9069b351-c936-4c93-9570-f43595eb1428",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "56e5a731-b924-49c9-a5ae-012191f259d2",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "05e63a0e-0129-4bce-9ae0-1993ec208e3a",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "6dd11e64-bf58-475b-9f36-b21fd7a3444b",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "302f3614-e7f9-4d74-99ae-865cef35c8c0",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "26ed4278-f88a-4423-ae0a-ad4b90fbcf0d",
+        "name": "new staging collection for revision testing",
+        "contact": {
+            "name": "Seve",
+            "email": "sbadajoz@chanzuckerberg.com"
+        },
+        "description": "Description v1",
+        "datasets": [
+            {
+                "id": "65b2656d-9dbc-4f19-bd46-ce720034399e",
+                "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer’s Disease: EC astrocytes",
+                "cellCount": 5500,
+                "createdAt": 1619722267.86447,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/65b2656d-9dbc-4f19-bd46-ce720034399e.cxg/"
+            }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1086/323445"
+            }
+        ]
+    },
+    {
+        "id": "52c5b27f-379d-40eb-8c84-09332ae8e55e",
+        "name": "1",
+        "contact": {
+            "name": "1",
+            "email": "1"
+        },
+        "description": "1",
+        "datasets": [
+            {
+                "id": "2f717ab5-cab0-4414-a5bb-4c7cbe12c161",
+                "name": "Test PBMC 3k dataset",
+                "cellCount": 2638,
+                "createdAt": 1620666840.239729,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/2f717ab5-cab0-4414-a5bb-4c7cbe12c161.cxg/"
+            }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "http://doi.org/10.1056/NEJMoa2035389"
+            }
+        ]
+    },
+    {
+        "id": "a66fd730-20de-4327-be7e-8fa15cfac2c1",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "35ff767c-c97e-460f-ad62-41645e0ba846",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "ca4ef8ce-942c-4f35-8a5d-5b26986eed4d",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "82072acc-c8de-4b97-9e43-2e9a47edc971",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "e8f06fc1-99a0-4635-9842-91a3ac0957f1",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "5afb90bb-2e8b-4fbc-9fdc-cb4f404af7fa",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "7fcd6b16-2baf-4ce6-aa83-047c16203ed8",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "a36a948b-8cc6-4b63-be11-f8af1650416f",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "bf2b77e3-290a-42aa-a71e-d192e46b67d4",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "bff98dbe-0a97-4bc2-a1b9-5afb7bf7b42e",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "eff4deec-ad90-4439-b3dc-fcd693c016fd",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "ba4ed9ac-ce3a-4203-a4c8-cc2932e17f31",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "fa2405e5-79fe-4864-9128-a3ec727f458f",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "e1f16f65-da44-42bd-8f55-96785fae59cf",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "7a4d205a-320d-4cef-a70e-00e4c865a54c",
+        "name": "test dataset deletion",
+        "contact": {
+            "name": "Not Trent",
+            "email": "trent@email.com"
+        },
+        "description": "Trying to reproduce a 500 error from the functional tests",
+        "datasets": [
+            {
+                "id": "ee8d79e4-73bd-482a-bd1e-ffbe8ffb01a9",
+                "name": "Test PBMC 3k dataset",
+                "cellCount": 2638,
+                "createdAt": 1621017337.17326,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/7daef1b9-d7b1-4429-b25e-d51b02b56273.cxg/"
+            },
+            {
+                "id": "035ad4f9-aca9-4f94-bb26-ff81ea7e55fb",
+                "name": "Test PBMC 3k dataset",
+                "cellCount": 2638,
+                "createdAt": 1621017337.17326,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/7daef1b9-d7b1-4429-b25e-d51b02b56273.cxg/"
+            },
+            {
+                "id": "42c49baf-8844-4c42-a3b5-a636c5d24b30",
+                "name": "Test PBMC 3k dataset",
+                "cellCount": 2638,
+                "createdAt": 1621017337.17326,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/7daef1b9-d7b1-4429-b25e-d51b02b56273.cxg/"
+            },
+            {
+                "id": "7daef1b9-d7b1-4429-b25e-d51b02b56273",
+                "name": "Test PBMC 3k dataset",
+                "cellCount": 2638,
+                "createdAt": 1621017337.17326,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/7daef1b9-d7b1-4429-b25e-d51b02b56273.cxg/"
+            }
+        ],
+        "links": [
+            {
+                "name": "This data source",
+                "type": "DATA_SOURCE",
+                "url": "http://google.com"
+            },
+            {
+                "name": "This DOI Link",
+                "type": "DOI",
+                "url": "https://doi.org/someplace"
+            }
+        ]
+    },
+    {
+        "id": "fe5adb2d-97f9-4bae-9ee6-c2c91050f6f1",
+        "name": "demo May 2021",
+        "contact": {
+            "name": "Not Trent",
+            "email": "trent.smith@chanzuckerberg.com"
+        },
+        "description": "publish, update collection meta, data sources, and revision",
+        "datasets": [
+            {
+                "id": "dbb88a7f-5347-419d-8c82-89d4ff3b95e3",
+                "name": "Molecular characterization of selectively vulnerable neurons in Alzheimer’s Disease: EC astrocytes",
+                "cellCount": 5500,
+                "createdAt": 1621017516.519268,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/dbb88a7f-5347-419d-8c82-89d4ff3b95e3.cxg/"
+            },
+            {
+                "id": "e6263d24-d5c0-43cc-990d-84f456617280",
+                "name": "Test PBMC 3k dataset",
+                "cellCount": 2638,
+                "createdAt": 1621017510.328507,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/e6263d24-d5c0-43cc-990d-84f456617280.cxg/"
+            }
+        ],
+        "links": [
+            {
+                "name": "This data source",
+                "type": "DATA_SOURCE",
+                "url": "http://google.com"
+            }
+        ]
+    },
+    {
+        "id": "eacc1e65-4e9a-48b2-9db2-847ce0cbefe1",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "45281a26-4604-4bc5-a1c4-b0e6d825ee07",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "72c98b35-643b-44e5-82e4-feeba15b563b",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "cec1d842-072b-4c81-b6fa-d1b3ea21682e",
+        "name": "Tabula Muris Senis",
+        "contact": {
+            "name": " Spyros Darmanis",
+            "email": "spyros.darmanis@czbiohub.org"
+        },
+        "description": "Ageing is characterized by a progressive loss of physiological integrity, leading to impaired function and increased vulnerability to death1. Despite rapid advances over recent years, many of the molecular and cellular processes that underlie the progressive loss of healthy physiology are poorly understood2. To gain a better insight into these processes, here we generate a single-cell transcriptomic atlas across the lifespan of Mus musculus that includes data from 23 tissues and organs. We found cell-specific changes occurring across multiple cell types and organs, as well as age-related changes in the cellular composition of different organs. Using single-cell transcriptomic data, we assessed cell-type-specific manifestations of different hallmarks of ageing—such as senescence3, genomic instability4 and changes in the immune system2. This transcriptomic atlas—which we denote Tabula Muris Senis, or ‘Mouse Ageing Cell Atlas’—provides molecular information about how the most important hallmarks of ageing are reflected in a broad range of tissues and cell types.",
+        "datasets": [
+            {
+                "id": "5e407579-c0f3-4eac-ab5a-72ef5641ba98",
+                "name": "Lung — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 24540,
+                "createdAt": 1621383988.663366,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/5e407579-c0f3-4eac-ab5a-72ef5641ba98.cxg/"
+            },
+            {
+                "id": "86a5fbba-f026-46f4-9c96-439b0951e007",
+                "name": "Tongue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 20680,
+                "createdAt": 1621384009.261796,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/86a5fbba-f026-46f4-9c96-439b0951e007.cxg/"
+            },
+            {
+                "id": "b91dfe4a-741e-4d03-bef0-afc17c815c0c",
+                "name": "Bone marrow — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 40220,
+                "createdAt": 1621383993.470679,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/b91dfe4a-741e-4d03-bef0-afc17c815c0c.cxg/"
+            },
+            {
+                "id": "0418d6f0-2465-4f6d-9a8e-43aac4956bdb",
+                "name": "All — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 110824,
+                "createdAt": 1621384010.014374,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/0418d6f0-2465-4f6d-9a8e-43aac4956bdb.cxg/"
+            },
+            {
+                "id": "a1892744-e3ca-48a9-a97e-f6f50ebd5150",
+                "name": "Aorta — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 906,
+                "createdAt": 1621383989.601992,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/a1892744-e3ca-48a9-a97e-f6f50ebd5150.cxg/"
+            },
+            {
+                "id": "f5c1ce05-1c43-4480-95c0-c4bafa7ff4a7",
+                "name": "Thymus — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 4047,
+                "createdAt": 1621383994.39049,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/f5c1ce05-1c43-4480-95c0-c4bafa7ff4a7.cxg/"
+            },
+            {
+                "id": "b5222a00-9cf7-4277-9d2d-9dd8b0dd04de",
+                "name": "Lung — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 5218,
+                "createdAt": 1621383992.662156,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/b5222a00-9cf7-4277-9d2d-9dd8b0dd04de.cxg/"
+            },
+            {
+                "id": "a851ba80-3dd7-4aad-afa1-c8de54141879",
+                "name": "Skin of body — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 4860,
+                "createdAt": 1621383995.146884,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/a851ba80-3dd7-4aad-afa1-c8de54141879.cxg/"
+            },
+            {
+                "id": "a927fef3-c63e-44d1-a455-c3670138bf8c",
+                "name": "Gonadal fat pad — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 3406,
+                "createdAt": 1621384010.655245,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/a927fef3-c63e-44d1-a455-c3670138bf8c.cxg/"
+            },
+            {
+                "id": "53f38b22-e202-4399-8052-23bf0da1089e",
+                "name": "Heart — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 9669,
+                "createdAt": 1621383996.051499,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/53f38b22-e202-4399-8052-23bf0da1089e.cxg/"
+            },
+            {
+                "id": "27d506a1-5a29-48f5-91dc-f610b4bd1b58",
+                "name": "Limb muscle — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 28867,
+                "createdAt": 1621384011.279627,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/27d506a1-5a29-48f5-91dc-f610b4bd1b58.cxg/"
+            },
+            {
+                "id": "d2e5bcbb-0f2a-4e37-96b1-3b2b39af3b96",
+                "name": "Trachea — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 7976,
+                "createdAt": 1621383990.581157,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/d2e5bcbb-0f2a-4e37-96b1-3b2b39af3b96.cxg/"
+            },
+            {
+                "id": "49099738-2c78-491c-acaa-70198a1beee2",
+                "name": "Heart — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 8613,
+                "createdAt": 1621383997.029097,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/49099738-2c78-491c-acaa-70198a1beee2.cxg/"
+            },
+            {
+                "id": "c61964c7-6656-4be3-a7b9-79ba5d85ebf8",
+                "name": "Mesenteric fat pad — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 3014,
+                "createdAt": 1621384006.114325,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/c61964c7-6656-4be3-a7b9-79ba5d85ebf8.cxg/"
+            },
+            {
+                "id": "12ac3a01-845b-4809-b126-bc3cbaffb508",
+                "name": "Brown adipose tissue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 2223,
+                "createdAt": 1621384007.001975,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/12ac3a01-845b-4809-b126-bc3cbaffb508.cxg/"
+            },
+            {
+                "id": "7f903825-6c8a-4c02-b58f-8d54c81f0733",
+                "name": "Mammary gland — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 3282,
+                "createdAt": 1621384012.753691,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/7f903825-6c8a-4c02-b58f-8d54c81f0733.cxg/"
+            },
+            {
+                "id": "e6a11237-5fdf-436f-b556-9e2d4276cbb3",
+                "name": "Large intestine — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 8311,
+                "createdAt": 1621383997.935368,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/e6a11237-5fdf-436f-b556-9e2d4276cbb3.cxg/"
+            },
+            {
+                "id": "28ed0a7f-0ae0-4cde-a521-9fec57168aa4",
+                "name": "Mammary gland — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 12295,
+                "createdAt": 1621384005.375346,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/28ed0a7f-0ae0-4cde-a521-9fec57168aa4.cxg/"
+            },
+            {
+                "id": "4b0aad0e-1d69-4aeb-8e8a-e022467214e3",
+                "name": "Trachea — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 3160,
+                "createdAt": 1621383998.764659,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/4b0aad0e-1d69-4aeb-8e8a-e022467214e3.cxg/"
+            },
+            {
+                "id": "9283cada-3d29-4f64-a351-bb8926915415",
+                "name": "Bladder lumen — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 2432,
+                "createdAt": 1621384013.78927,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/9283cada-3d29-4f64-a351-bb8926915415.cxg/"
+            },
+            {
+                "id": "0859d82a-2a64-4aea-8903-63aedaf80ce3",
+                "name": "Bladder lumen — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 8945,
+                "createdAt": 1621384007.686512,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/0859d82a-2a64-4aea-8903-63aedaf80ce3.cxg/"
+            },
+            {
+                "id": "696d28dc-506b-4ba3-b7f6-8a1a4cbc7c37",
+                "name": "Liver — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 2859,
+                "createdAt": 1621383999.639829,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/696d28dc-506b-4ba3-b7f6-8a1a4cbc7c37.cxg/"
+            },
+            {
+                "id": "f5ca21e5-5d7c-41ab-a53b-84dd9ce1aa7e",
+                "name": "Brain — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 13417,
+                "createdAt": 1621384014.550702,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/f5ca21e5-5d7c-41ab-a53b-84dd9ce1aa7e.cxg/"
+            },
+            {
+                "id": "781a724d-b436-4eb2-aad0-1118730170f9",
+                "name": "Subcutaneous adipose tissue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 3755,
+                "createdAt": 1621384015.308488,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/781a724d-b436-4eb2-aad0-1118730170f9.cxg/"
+            },
+            {
+                "id": "bf0f8de2-8498-4380-89d2-1d215b6e10ee",
+                "name": "Skin of body — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 4454,
+                "createdAt": 1621384000.43592,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/bf0f8de2-8498-4380-89d2-1d215b6e10ee.cxg/"
+            },
+            {
+                "id": "2587e728-05f2-4c56-995c-f9f3b3ccab87",
+                "name": "Kidney — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 1833,
+                "createdAt": 1621384001.31992,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/2587e728-05f2-4c56-995c-f9f3b3ccab87.cxg/"
+            },
+            {
+                "id": "4706bb36-e393-43b1-bc5f-7e3654f6178b",
+                "name": "Tongue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 3735,
+                "createdAt": 1621384016.067424,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/4706bb36-e393-43b1-bc5f-7e3654f6178b.cxg/"
+            },
+            {
+                "id": "a2cafb09-013e-4c16-a115-eb4ea9a51644",
+                "name": "Liver — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 7294,
+                "createdAt": 1621384002.139431,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/a2cafb09-013e-4c16-a115-eb4ea9a51644.cxg/"
+            },
+            {
+                "id": "c69c6117-e65b-488f-9710-72a33fbe010d",
+                "name": "Diaphragm — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 1858,
+                "createdAt": 1621384017.152177,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/c69c6117-e65b-488f-9710-72a33fbe010d.cxg/"
+            },
+            {
+                "id": "1184ec76-be74-4719-85ca-aba1b97d266d",
+                "name": "All — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 245389,
+                "createdAt": 1621383991.835619,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/1184ec76-be74-4719-85ca-aba1b97d266d.cxg/"
+            },
+            {
+                "id": "131af4df-fb95-4897-827d-853bfa869f1f",
+                "name": "Spleen — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 3834,
+                "createdAt": 1621384020.836129,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/131af4df-fb95-4897-827d-853bfa869f1f.cxg/"
+            },
+            {
+                "id": "65bd91b3-e55e-4fd0-97d8-4ae61260c232",
+                "name": "Brain — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 7249,
+                "createdAt": 1621384002.916779,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/65bd91b3-e55e-4fd0-97d8-4ae61260c232.cxg/"
+            },
+            {
+                "id": "b7f4a2d9-4a5d-4b72-a00c-893c45415d1a",
+                "name": "Bone marrow — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 40220,
+                "createdAt": 1621384017.900396,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/b7f4a2d9-4a5d-4b72-a00c-893c45415d1a.cxg/"
+            },
+            {
+                "id": "d8afc9a0-0415-451a-af5d-b138e8d72f53",
+                "name": "Kidney — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 21647,
+                "createdAt": 1621384011.992812,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/d8afc9a0-0415-451a-af5d-b138e8d72f53.cxg/"
+            },
+            {
+                "id": "37c4a08a-b568-42d1-8e9e-94a9a62d9042",
+                "name": "Large intestine — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 1887,
+                "createdAt": 1621384018.517902,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/37c4a08a-b568-42d1-8e9e-94a9a62d9042.cxg/"
+            },
+            {
+                "id": "6a84e686-b9a5-481e-8d79-119daa5667a8",
+                "name": "Thymus — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 9275,
+                "createdAt": 1621384003.714848,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/6a84e686-b9a5-481e-8d79-119daa5667a8.cxg/"
+            },
+            {
+                "id": "dd47d104-fb48-491a-9315-3a59c8291ae7",
+                "name": "Pancreas — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 6201,
+                "createdAt": 1621384021.658802,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/dd47d104-fb48-491a-9315-3a59c8291ae7.cxg/"
+            },
+            {
+                "id": "f871a6c6-8225-4fc6-a0a1-dcdd2a59806b",
+                "name": "Pancreas — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 3384,
+                "createdAt": 1621384020.112492,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/f871a6c6-8225-4fc6-a0a1-dcdd2a59806b.cxg/"
+            },
+            {
+                "id": "189f7249-67d3-46ea-922c-6676a6aa03cb",
+                "name": "Limb muscle — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 3855,
+                "createdAt": 1621383987.102247,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/189f7249-67d3-46ea-922c-6676a6aa03cb.cxg/"
+            },
+            {
+                "id": "47611a95-1343-493b-91f0-a1cae8e3ac27",
+                "name": "Adipose tissue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 6777,
+                "createdAt": 1621384004.578525,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/47611a95-1343-493b-91f0-a1cae8e3ac27.cxg/"
+            },
+            {
+                "id": "e7ac4311-c2d9-45f7-8915-30ce5825ad70",
+                "name": "Spleen — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 35718,
+                "createdAt": 1621384019.191278,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/e7ac4311-c2d9-45f7-8915-30ce5825ad70.cxg/"
+            }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE132042"
+            },
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1038/s41586-020-2496-1"
+            },
+            {
+                "name": "Tabula Muris Senis",
+                "type": "DATA_SOURCE",
+                "url": "https://tabula-muris-senis.ds.czbiohub.org/",
+                "logo": ""
+            }
+        ]
+    },
+    {
+        "id": "acdfe08b-71b3-4ab1-bc21-a073fa4836f7",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "11d3b5d4-cc76-48e6-9a1a-510a42ffa30d",
+        "name": "lots of cells",
+        "contact": {
+            "name": "Doctor Who",
+            "email": "person@random.com"
+        },
+        "description": "These are different words",
+        "datasets": [],
+        "links": [
+            {
+                "name": "The Source",
+                "type": "DATA_SOURCE",
+                "url": "datasource.com"
+            }
+        ]
+    },
+    {
+        "id": "1a1a375e-71e3-49c0-9c82-9b5627cae2ab",
+        "name": "Tabula Muris Senis",
+        "contact": {
+            "name": " Spyros Darmanis",
+            "email": "spyros.darmanis@czbiohub.org"
+        },
+        "description": "Ageing is characterized by a progressive loss of physiological integrity, leading to impaired function and increased vulnerability to death1. Despite rapid advances over recent years, many of the molecular and cellular processes that underlie the progressive loss of healthy physiology are poorly understood2. To gain a better insight into these processes, here we generate a single-cell transcriptomic atlas across the lifespan of Mus musculus that includes data from 23 tissues and organs. We found cell-specific changes occurring across multiple cell types and organs, as well as age-related changes in the cellular composition of different organs. Using single-cell transcriptomic data, we assessed cell-type-specific manifestations of different hallmarks of ageing—such as senescence3, genomic instability4 and changes in the immune system2. This transcriptomic atlas—which we denote Tabula Muris Senis, or ‘Mouse Ageing Cell Atlas’—provides molecular information about how the most important hallmarks of ageing are reflected in a broad range of tissues and cell types.",
+        "datasets": [
+            {
+                "id": "1623bad4-6545-4820-a0cf-605d9f27b852",
+                "name": "Limb muscle — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 3855,
+                "createdAt": 1621619591.575756,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/1623bad4-6545-4820-a0cf-605d9f27b852.cxg/"
+            },
+            {
+                "id": "0026dc4f-a756-40c7-a89f-357115736ad9",
+                "name": "Thymus — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 9275,
+                "createdAt": 1621619607.194282,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/0026dc4f-a756-40c7-a89f-357115736ad9.cxg/"
+            },
+            {
+                "id": "4918a830-c0f4-48af-92f6-85201c237eb0",
+                "name": "Liver — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 2859,
+                "createdAt": 1621619602.72182,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/4918a830-c0f4-48af-92f6-85201c237eb0.cxg/"
+            },
+            {
+                "id": "23bc9456-a686-4f4b-ac58-70ce72f7baf2",
+                "name": "Skin of body — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 4860,
+                "createdAt": 1621619598.644476,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/23bc9456-a686-4f4b-ac58-70ce72f7baf2.cxg/"
+            },
+            {
+                "id": "25828c76-eda6-43e4-846b-4dcc282756fb",
+                "name": "Heart — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 8613,
+                "createdAt": 1621619600.311159,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/25828c76-eda6-43e4-846b-4dcc282756fb.cxg/"
+            },
+            {
+                "id": "eaf5ee4c-3568-4689-a0f2-e9b6449c83d3",
+                "name": "Limb muscle — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 28867,
+                "createdAt": 1621619613.178794,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/eaf5ee4c-3568-4689-a0f2-e9b6449c83d3.cxg/"
+            },
+            {
+                "id": "0e59f7cb-03de-4bd3-9709-322134af1b70",
+                "name": "Trachea — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 3160,
+                "createdAt": 1621619601.924555,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/0e59f7cb-03de-4bd3-9709-322134af1b70.cxg/"
+            },
+            {
+                "id": "2ca38c80-420e-4d1a-9da3-2cc02b68d33e",
+                "name": "Bladder lumen — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 2432,
+                "createdAt": 1621619615.735415,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/2ca38c80-420e-4d1a-9da3-2cc02b68d33e.cxg/"
+            },
+            {
+                "id": "03aa05fe-74dc-456f-ab2b-4b56d51f3ed0",
+                "name": "All — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 245389,
+                "createdAt": 1621619595.332638,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/03aa05fe-74dc-456f-ab2b-4b56d51f3ed0.cxg/"
+            },
+            {
+                "id": "07a40869-eeaf-4d79-957b-b52f51fdd1c5",
+                "name": "All — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 110824,
+                "createdAt": 1621619611.975805,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/07a40869-eeaf-4d79-957b-b52f51fdd1c5.cxg/"
+            },
+            {
+                "id": "14797081-62b4-465c-9575-71cabefab54b",
+                "name": "Aorta — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 906,
+                "createdAt": 1621619593.569734,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/14797081-62b4-465c-9575-71cabefab54b.cxg/"
+            },
+            {
+                "id": "1c1b99b9-f6dc-461c-b90a-ee03b2c99881",
+                "name": "Mammary gland — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 12295,
+                "createdAt": 1621619608.539413,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/1c1b99b9-f6dc-461c-b90a-ee03b2c99881.cxg/"
+            },
+            {
+                "id": "1c7c271d-bebf-4b44-bd6e-bfe87a51d718",
+                "name": "Gonadal fat pad — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 3406,
+                "createdAt": 1621619612.51473,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/1c7c271d-bebf-4b44-bd6e-bfe87a51d718.cxg/"
+            },
+            {
+                "id": "30b41ce6-b139-49f6-a451-c358f05049a6",
+                "name": "Kidney — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 21647,
+                "createdAt": 1621619614.012726,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/30b41ce6-b139-49f6-a451-c358f05049a6.cxg/"
+            },
+            {
+                "id": "39d2839b-8953-420a-8e0f-11779af2e442",
+                "name": "Subcutaneous adipose tissue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 3755,
+                "createdAt": 1621619617.508978,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/39d2839b-8953-420a-8e0f-11779af2e442.cxg/"
+            },
+            {
+                "id": "3b40ebd8-146e-4cd8-914d-7195dbbfeb73",
+                "name": "Lung — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 24540,
+                "createdAt": 1621619592.731324,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/3b40ebd8-146e-4cd8-914d-7195dbbfeb73.cxg/"
+            },
+            {
+                "id": "3f0f5a49-d468-4721-8d06-93ee552a319b",
+                "name": "Brain — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 13417,
+                "createdAt": 1621619616.558283,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/3f0f5a49-d468-4721-8d06-93ee552a319b.cxg/"
+            },
+            {
+                "id": "495af75f-0cdc-4d9c-a5c1-2e48e3bdd3c2",
+                "name": "Large intestine — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 8311,
+                "createdAt": 1621619601.179283,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/495af75f-0cdc-4d9c-a5c1-2e48e3bdd3c2.cxg/"
+            },
+            {
+                "id": "50593ba1-e3c1-4748-82c0-472bd81e7ab2",
+                "name": "Mesenteric fat pad — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 3014,
+                "createdAt": 1621619609.22929,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/50593ba1-e3c1-4748-82c0-472bd81e7ab2.cxg/"
+            },
+            {
+                "id": "53d3d84d-f886-4930-af0a-bf31766d628a",
+                "name": "Tongue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 20680,
+                "createdAt": 1621619611.240692,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/53d3d84d-f886-4930-af0a-bf31766d628a.cxg/"
+            },
+            {
+                "id": "582b5d7a-e604-491b-a6a9-2a643f333d6d",
+                "name": "Brown adipose tissue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 2223,
+                "createdAt": 1621619609.918209,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/582b5d7a-e604-491b-a6a9-2a643f333d6d.cxg/"
+            },
+            {
+                "id": "5b588416-b68d-4399-bf48-a58cddfeebe6",
+                "name": "Adipose tissue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 6777,
+                "createdAt": 1621619607.84002,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/5b588416-b68d-4399-bf48-a58cddfeebe6.cxg/"
+            },
+            {
+                "id": "5e01e65a-d6ea-42e5-9980-a5c93dd2797c",
+                "name": "Trachea — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 7976,
+                "createdAt": 1621619594.466234,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/5e01e65a-d6ea-42e5-9980-a5c93dd2797c.cxg/"
+            },
+            {
+                "id": "646a5444-4150-48da-a229-bdc7c0488c5e",
+                "name": "Skin of body — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 4454,
+                "createdAt": 1621619603.489822,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/646a5444-4150-48da-a229-bdc7c0488c5e.cxg/"
+            },
+            {
+                "id": "7a42488d-983d-4925-9708-4e05d4821e0f",
+                "name": "Tongue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 3735,
+                "createdAt": 1621619618.126729,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/7a42488d-983d-4925-9708-4e05d4821e0f.cxg/"
+            },
+            {
+                "id": "7c6c346e-ccab-400d-b478-1cb99038e964",
+                "name": "Diaphragm — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 1858,
+                "createdAt": 1621619618.981645,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/7c6c346e-ccab-400d-b478-1cb99038e964.cxg/"
+            },
+            {
+                "id": "8e4ec1da-22ab-4114-b6cf-3712253ad894",
+                "name": "Heart — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 9669,
+                "createdAt": 1621619599.401826,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/8e4ec1da-22ab-4114-b6cf-3712253ad894.cxg/"
+            },
+            {
+                "id": "97a01178-770a-4748-802a-3e8fc7026230",
+                "name": "Thymus — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 4047,
+                "createdAt": 1621619597.851253,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/97a01178-770a-4748-802a-3e8fc7026230.cxg/"
+            },
+            {
+                "id": "b83a8d47-fd7c-47f0-bda2-db571e3decaa",
+                "name": "Mammary gland — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 3282,
+                "createdAt": 1621619614.896925,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/b83a8d47-fd7c-47f0-bda2-db571e3decaa.cxg/"
+            },
+            {
+                "id": "bba22924-c085-4a3c-81c5-8dc7eec48854",
+                "name": "Spleen — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 35718,
+                "createdAt": 1621619621.284741,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/bba22924-c085-4a3c-81c5-8dc7eec48854.cxg/"
+            },
+            {
+                "id": "bc6e8b82-a2f9-4a71-9399-6a4047ce6ccb",
+                "name": "Lung — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 5218,
+                "createdAt": 1621619596.268252,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/bc6e8b82-a2f9-4a71-9399-6a4047ce6ccb.cxg/"
+            },
+            {
+                "id": "bf4bc181-27c0-4755-9393-eb54b35a93fb",
+                "name": "Liver — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 7294,
+                "createdAt": 1621619605.222272,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/bf4bc181-27c0-4755-9393-eb54b35a93fb.cxg/"
+            },
+            {
+                "id": "c09e4903-100a-4e5c-b5e2-5e4593292a34",
+                "name": "Bone marrow — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 40220,
+                "createdAt": 1621619596.990162,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/c09e4903-100a-4e5c-b5e2-5e4593292a34.cxg/"
+            },
+            {
+                "id": "ca55427c-a5fe-4708-b413-09909cde9fec",
+                "name": "Large intestine — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 1887,
+                "createdAt": 1621619620.419296,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/ca55427c-a5fe-4708-b413-09909cde9fec.cxg/"
+            },
+            {
+                "id": "ca8b488a-1b66-436d-ba00-1939340aa836",
+                "name": "Pancreas — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 3384,
+                "createdAt": 1621619621.999825,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/ca8b488a-1b66-436d-ba00-1939340aa836.cxg/"
+            },
+            {
+                "id": "d25fbe68-ddf5-4c56-96fc-9271888c8059",
+                "name": "Spleen — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 3834,
+                "createdAt": 1621619622.634363,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/d25fbe68-ddf5-4c56-96fc-9271888c8059.cxg/"
+            },
+            {
+                "id": "e8cfc890-d273-405e-a6df-4c20bae36f7c",
+                "name": "Pancreas — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 6201,
+                "createdAt": 1621619623.44356,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/e8cfc890-d273-405e-a6df-4c20bae36f7c.cxg/"
+            },
+            {
+                "id": "ed37d516-1ab0-409b-892d-368497615d8b",
+                "name": "Bone marrow — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 40220,
+                "createdAt": 1621619619.720503,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/ed37d516-1ab0-409b-892d-368497615d8b.cxg/"
+            },
+            {
+                "id": "f6828ef7-46bb-485e-9147-59b78e9b0faf",
+                "name": "Brain — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 7249,
+                "createdAt": 1621619606.24781,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/f6828ef7-46bb-485e-9147-59b78e9b0faf.cxg/"
+            },
+            {
+                "id": "faa976e0-150c-41e1-bdf7-206170f8ec80",
+                "name": "Bladder lumen — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 8945,
+                "createdAt": 1621619610.615622,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/faa976e0-150c-41e1-bdf7-206170f8ec80.cxg/"
+            },
+            {
+                "id": "fe95f0e3-52c2-4a3a-a6bb-46669175ae04",
+                "name": "Kidney — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
+                "cellCount": 1833,
+                "createdAt": 1621619604.345362,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/fe95f0e3-52c2-4a3a-a6bb-46669175ae04.cxg/"
+            }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE132042"
+            },
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1038/s41586-020-2496-1"
+            },
+            {
+                "name": "Tabula Muris Senis",
+                "type": "DATA_SOURCE",
+                "url": "https://tabula-muris-senis.ds.czbiohub.org/",
+                "logo": ""
+            }
+        ]
+    },
+    {
+        "id": "787d970b-7da8-452a-9048-2caae8cbff50",
+        "name": "Molecular, spatial and projection diversity of neurons in primary motor cortex revealed by in situ single-cell transcriptomics",
+        "contact": {
+            "name": "Xiaowei Zhuang",
+            "email": "zhuang@chemistry.harvard.edu"
+        },
+        "description": "A mammalian brain is comprised of numerous cell types organized in an intricate manner to form functional neural circuits. Single-cell RNA sequencing provides a powerful approach to identify cell types based on their gene expression profiles and has revealed many distinct cell populations in the brain1-3. Single-cell epigenomic profiling4,5 further provides information on gene-regulatory signatures of different cell types. Understanding how different cell types contribute to brain function, however, requires knowledge of their spatial organization and connectivity, which is not preserved in sequencing-based methods that involve cell dissociation3,6. Here, we used an in situ single-cell transcriptome-imaging method, multiplexed error-robust fluorescence in situ hybridization (MERFISH)7, to generate a molecularly defined and spatially resolved cell atlas of the mouse primary motor cortex (MOp). We profiled ∼300,000 cells in the MOp, identified 95 neuronal and non-neuronal cell clusters, and revealed a complex spatial map in which not only excitatory neuronal clusters but also most inhibitory neuronal clusters adopted layered organizations. Notably, intratelencephalic (IT) cells, the largest branch of neurons in the MOp, formed a continuous spectrum of cells with gradual changes in both gene expression profiles and cortical depth positions in a highly correlated manner. Furthermore, we integrated MERFISH with retrograde tracing to probe the projection targets for different MOp neuronal cell types and found that projections of MOp neurons to other cortical regions formed a many-to-many network with each target region receiving input preferentially from a different composition of IT clusters. Overall, our results provide a high-resolution spatial and projection map of molecularly defined cell types in the MOp. We anticipate that the imaging platform described here can be broadly applied to create high-resolution cell atlases of a wide range of systems.",
+        "datasets": [
+            {
+                "id": "8dc18651-eaae-42f3-ab2b-b6d09bbbecea",
+                "name": "Molecular, spatial and projection diversity of neurons in primary motor cortex revealed by in situ single-cell transcriptomics",
+                "cellCount": 276556,
+                "createdAt": 1621623518.674734,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/8dc18651-eaae-42f3-ab2b-b6d09bbbecea.cxg/"
+            }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1101/2020.06.04.105700"
+            },
+            {
+                "name": "",
+                "type": "LAB_WEBSITE",
+                "url": "http://zhuang.harvard.edu/index.html"
+            }
+        ]
+    },
+    {
+        "id": "94a4a251-49de-4cd9-a1df-8db8b6fd49f9",
         "name": "Evolution of cellular diversity in primary motor cortex of human, marmoset monkey, and mouse",
         "contact": {
             "name": "Ed S. Lein",
@@ -371,32 +2323,32 @@
         "description": "High-throughput transcriptomic and epigenomic profiling of over 450,000 single nuclei in human, marmoset monkey, and mouse primary motor cortex (M1)",
         "datasets": [
             {
-                "id": "9b686bb6-1427-4e13-b451-7ee961115cf9",
-                "name": "Evolution of cellular diversity in primary motor cortex of human, marmoset monkey, and mouse 3-species integration non-nuerons",
-                "cellCount": 10739,
-                "createdAt": 1613586706.260798,
-                "url": "https://cellxgene.cziscience.com/e/9b686bb6-1427-4e13-b451-7ee961115cf9.cxg/"
-            },
-            {
-                "id": "6acb6637-ac08-4a65-b2d1-581e51dc7ccf",
+                "id": "792d29b8-83d4-4e6e-b3ce-cad060d1a23b",
                 "name": "Evolution of cellular diversity in primary motor cortex of human, marmoset monkey, and mouse 4-species integration excitory neurons",
                 "cellCount": 29050,
-                "createdAt": 1613586654.419616,
-                "url": "https://cellxgene.cziscience.com/e/6acb6637-ac08-4a65-b2d1-581e51dc7ccf.cxg/"
+                "createdAt": 1621623489.183166,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/792d29b8-83d4-4e6e-b3ce-cad060d1a23b.cxg/"
             },
             {
-                "id": "b6203114-e133-458a-aed5-eed1028378b4",
+                "id": "02b9301b-a569-4632-96a4-e14aa586d274",
                 "name": "Evolution of cellular diversity in primary motor cortex of human, marmoset monkey, and mouse 3-species integration excitory neurons",
                 "cellCount": 24213,
-                "createdAt": 1613586676.321175,
-                "url": "https://cellxgene.cziscience.com/e/b6203114-e133-458a-aed5-eed1028378b4.cxg/"
+                "createdAt": 1621623490.549869,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/02b9301b-a569-4632-96a4-e14aa586d274.cxg/"
             },
             {
-                "id": "f7a068f1-0fdb-48e8-8029-db870ff11d9e",
+                "id": "b12faf30-4701-46d8-b52c-9f52f32044ce",
                 "name": "Evolution of cellular diversity in primary motor cortex of human, marmoset monkey, and mouse 3-species integration inhibitory neurons",
                 "cellCount": 29486,
-                "createdAt": 1613586727.045192,
-                "url": "https://cellxgene.cziscience.com/e/f7a068f1-0fdb-48e8-8029-db870ff11d9e.cxg/"
+                "createdAt": 1621623491.389937,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/b12faf30-4701-46d8-b52c-9f52f32044ce.cxg/"
+            },
+            {
+                "id": "4ab93d7c-2313-4439-a647-2bec366a0e4d",
+                "name": "Evolution of cellular diversity in primary motor cortex of human, marmoset monkey, and mouse 3-species integration non-nuerons",
+                "cellCount": 10739,
+                "createdAt": 1621623487.841217,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/4ab93d7c-2313-4439-a647-2bec366a0e4d.cxg/"
             }
         ],
         "links": [
@@ -408,677 +2360,24 @@
         ]
     },
     {
-        "id": "9b02383a-9358-4f0f-9795-a891ec523bcc",
-        "name": "Single cell transcriptional and chromatin accessibility profiling redefine cellular heterogeneity in the adult human kidney",
+        "id": "2beb4e4a-33ae-49f1-9b3e-56a452b097a7",
+        "name": "lots of cells",
         "contact": {
-            "name": "Parker Wilson",
-            "email": "parkerw@wustl.edu"
+            "name": "Doctor Who",
+            "email": "person@random.com"
         },
-        "description": "In this study, single nucleus ATAC (snATAC-seq) and RNA (snRNA-seq) sequencing was performed to generate paired (5 donors), cell-type-specific chromatin accessibility and transcriptional profiles of the adult human kidney. The integration of single cell transcriptome and chromatin accessibility datasets enables a deeper understanding of cell heterogeneity.",
-        "datasets": [
-            {
-                "id": "9df60c57-fdf3-4e93-828e-fe9303f20438",
-                "name": "Single cell transcriptional and chromatin accessibility profiling redefine cellular heterogeneity in the adult human kidney - RNAseq",
-                "cellCount": 19985,
-                "createdAt": 1614455232.885436,
-                "url": "https://cellxgene.cziscience.com/e/9df60c57-fdf3-4e93-828e-fe9303f20438.cxg/"
-            },
-            {
-                "id": "13a027de-ea3e-432b-9a5e-6bc7048498fc",
-                "name": "Single cell transcriptional and chromatin accessibility profiling redefine cellular heterogeneity in the adult human kidney - ATACseq",
-                "cellCount": 27034,
-                "createdAt": 1614639950.815506,
-                "url": "https://cellxgene.cziscience.com/e/13a027de-ea3e-432b-9a5e-6bc7048498fc.cxg/"
-            }
-        ],
+        "description": "These are different words",
+        "datasets": [],
         "links": [
             {
-                "name": "",
-                "type": "PROTOCOL",
-                "url": "https://www.protocols.io/view/nuclei-isolation-from-human-kidney-for-single-nucl-nahdab6"
-            },
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1101/2020.06.14.151167"
-            },
-            {
-                "name": "",
-                "type": "LAB_WEBSITE",
-                "url": "http://humphreyslab.com/SingleCell/"
-            },
-            {
-                "name": "",
-                "type": "RAW_DATA",
-                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE151302"
-            }
-        ]
-    },
-    {
-        "id": "a238e9fa-2bdf-41df-8522-69046f99baff",
-        "name": "Single-Cell Analysis of Human Pancreas Reveals Transcriptional Signatures of Aging and Somatic Mutation Patterns",
-        "contact": {
-            "name": "Martin Enge",
-            "email": "martin.enge@gmail.com"
-        },
-        "description": "As organisms age, cells accumulate genetic and epigenetic errors that eventually lead to impaired organ function or catastrophic transformation such as cancer. Because aging reflects a stochastic process of increas ing disorder, cells in an organ will be individually affected in different ways, thus rendering bulk analyses of postmitotic adult cells difficult to interpret. Here, we directly measure the effects of aging in human tissue by performing single-cell transcriptome analysis of 2,544 human pancreas cells from eight donors spanning six decades of life. We find that islet endocrine cells from older donors display increased levels of transcriptional noise and potential fate drift. By determining the mutational history of individual cells, we uncover a novel mutational signature in healthy aging endocrine cells. Our results demonstrate the feasibility of using single-cell RNA sequencing (RNA-seq) data from primary cells to derive insights into genetic and transcriptional processes that operate on aging human tissue.",
-        "datasets": [
-            {
-                "id": "66d15835-5dc8-4e96-b0eb-f48971cb65e8",
-                "name": "Single cell transcriptome analysis of human pancreas reveals transcriptional signatures of aging and somatic mutation patterns",
-                "cellCount": 2541,
-                "createdAt": 1621465418.93329,
-                "url": "https://cellxgene.cziscience.com/e/66d15835-5dc8-4e96-b0eb-f48971cb65e8.cxg/"
-            }
-        ],
-        "links": [
-            {
-                "name": "GEO",
-                "type": "OTHER",
-                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE81547"
-            }
-        ]
-    },
-    {
-        "id": "24d42e5e-ce6d-45ff-a66b-a3b3b715deaf",
-        "name": "Single-cell transcriptomics of human T cells reveals tissue and activation signatures in health and disease",
-        "contact": {
-            "name": "Peter A. Sims",
-            "email": "pas2182@columbia.edu"
-        },
-        "description": "Human T cells coordinate adaptive immunity in diverse anatomic compartments through production of cytokines and effector molecules, but it is unclear how tissue site influences T cell persistence and function. Here, we use single cell RNA-sequencing (scRNA-seq) to define the heterogeneity of human T cells isolated from lungs, lymph nodes, bone marrow and blood, and their functional responses following stimulation. Through analysis of >50,000 resting and activated T cells, we reveal tissue T cell signatures in mucosal and lymphoid sites, and lineage-specific activation states across all sites including distinct effector states for CD8+ T cells and an interferon-response state for CD4+ T cells. Comparing scRNA-seq profiles of tumor-associated T cells to our dataset reveals predominant activated CD8+ compared to CD4+ T cell states within multiple tumor types. Our results therefore establish a high dimensional reference map of human T cell activation in health for analyzing T cells in disease.",
-        "datasets": [
-            {
-                "id": "01209dce-3575-4bed-b1df-129f57fbc031",
-                "name": "Single-cell transcriptomics of human T cells reveals tissue and activation signatures in health and disease",
-                "cellCount": 51876,
-                "createdAt": 1615417964.171039,
-                "url": "https://cellxgene.cziscience.com/e/01209dce-3575-4bed-b1df-129f57fbc031.cxg/"
-            }
-        ],
-        "links": [
-            {
-                "name": "",
-                "type": "RAW_DATA",
-                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE126030"
-            },
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1038/s41467-019-12464-3"
-            },
-            {
-                "name": "",
-                "type": "LAB_WEBSITE",
-                "url": "http://www.columbia.edu/~pas2182/index.php/home-top.html"
-            }
-        ]
-    },
-    {
-        "id": "ae1420fe-6630-46ed-8b3d-cc6056a66467",
-        "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types",
-        "contact": {
-            "name": "Eran Mukamel",
-            "email": "emukamel@ucsd.edu"
-        },
-        "description": "Single cell transcriptomics has transformed the characterization of brain cell identity by providing quantitative molecular signatures for large, unbiased samples of brain cell populations. With the proliferation of taxonomies based on individual datasets, a major challenge is to integrate and validate results toward defining biologically meaningful cell types. We used a battery of single-cell transcriptome and epigenome measurements generated by the BRAIN Initiative Cell Census Network (BICCN) to comprehensively assess the molecular signatures of cell types in the mouse primary motor cortex (MOp). We further developed computational and statistical methods to integrate these multimodal data and quantitatively validate the reproducibility of the cell types. The reference atlas, based on more than 600,000 high quality single-cell or -nucleus samples assayed by six molecular modalities, is a comprehensive molecular account of the diverse neuronal and non-neuronal cell types in MOp. Collectively, our study indicates that the mouse primary motor cortex contains over 55 neuronal cell types that are highly replicable across analysis methods, sequencing technologies, and modalities. We find many concordant multimodal markers for each cell type, as well as thousands of genes and gene regulatory elements with discrepant transcriptomic and epigenomic signatures. These data highlight the complex molecular regulation of brain cell types and will directly enable design of reagents to target specific MOp cell types for functional analysis.",
-        "datasets": [
-            {
-                "id": "c88e2a9c-72b8-4a88-a2f6-e428eada0c86",
-                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: 10X_cells_v2_AIBS",
-                "cellCount": 122641,
-                "createdAt": 1615242744.355233,
-                "url": "https://cellxgene.cziscience.com/e/c88e2a9c-72b8-4a88-a2f6-e428eada0c86.cxg/"
-            },
-            {
-                "id": "5e765f97-1cf1-407e-a86c-e28701f4749d",
-                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: 10X_cells_v3_AIBS",
-                "cellCount": 71183,
-                "createdAt": 1615242750.576417,
-                "url": "https://cellxgene.cziscience.com/e/5e765f97-1cf1-407e-a86c-e28701f4749d.cxg/"
-            },
-            {
-                "id": "1304e107-0f06-4d33-b634-d95ed986d02b",
-                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: SMARTer_nuclei_MOp",
-                "cellCount": 6171,
-                "createdAt": 1615242833.606595,
-                "url": "https://cellxgene.cziscience.com/e/1304e107-0f06-4d33-b634-d95ed986d02b.cxg/"
-            },
-            {
-                "id": "31dd355c-3140-4558-a648-7e1e5f00480b",
-                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: chromatin accessibility",
-                "cellCount": 68394,
-                "createdAt": 1615581059.998475,
-                "url": "https://cellxgene.cziscience.com/e/31dd355c-3140-4558-a648-7e1e5f00480b.cxg/"
-            },
-            {
-                "id": "35081d47-99bf-4507-9541-735428df9a9f",
-                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types",
-                "cellCount": 406187,
-                "createdAt": 1615246835.562319,
-                "url": "https://cellxgene.cziscience.com/e/35081d47-99bf-4507-9541-735428df9a9f.cxg/"
-            },
-            {
-                "id": "50d79de5-bd17-4d14-a295-199d71ff56be",
-                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: 10X_nuclei_v3_AIBS",
-                "cellCount": 40166,
-                "createdAt": 1615242778.691554,
-                "url": "https://cellxgene.cziscience.com/e/50d79de5-bd17-4d14-a295-199d71ff56be.cxg/"
-            },
-            {
-                "id": "85d7145c-0aea-494c-ab44-87a327edd7b2",
-                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: DNA methylation (CHN)",
-                "cellCount": 9876,
-                "createdAt": 1615578832.321001,
-                "url": "https://cellxgene.cziscience.com/e/85d7145c-0aea-494c-ab44-87a327edd7b2.cxg/"
-            },
-            {
-                "id": "a9affc92-a291-4eb9-996f-147392132323",
-                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: 10X_nuclei_v3_Broad",
-                "cellCount": 159738,
-                "createdAt": 1615242793.676303,
-                "url": "https://cellxgene.cziscience.com/e/a9affc92-a291-4eb9-996f-147392132323.cxg/"
-            },
-            {
-                "id": "ad5cd6ca-06c0-41cb-9b18-4638a05a0990",
-                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: DNA methylation (CGN)",
-                "cellCount": 9876,
-                "createdAt": 1615578824.58593,
-                "url": "https://cellxgene.cziscience.com/e/ad5cd6ca-06c0-41cb-9b18-4638a05a0990.cxg/"
-            },
-            {
-                "id": "d622cee4-56e1-44ba-8b05-fd2f0f2032e6",
-                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: SMARTer_cells_MOp",
-                "cellCount": 6288,
-                "createdAt": 1615242805.109766,
-                "url": "https://cellxgene.cziscience.com/e/d622cee4-56e1-44ba-8b05-fd2f0f2032e6.cxg/"
-            }
-        ],
-        "links": [
-            {
-                "name": "",
-                "type": "RAW_DATA",
-                "url": "https://assets.nemoarchive.org/dat-ch1nqb7"
-            },
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1101/2020.02.29.970558"
-            }
-        ]
-    },
-    {
-        "id": "a3c37598-b8e8-47db-92a9-eb91a77c9529",
-        "name": "Adult mouse cortical cell taxonomy revealed by single cell transcriptomics",
-        "contact": {
-            "name": "Hongkui Zeng",
-            "email": "hongkuiz@alleninstitute.org"
-        },
-        "description": "Nervous systems are composed of various cell types, but the extent of cell type diversity is poorly understood. We constructed a cellular taxonomy of one cortical region, primary visual cortex, in adult mice on the basis of single-cell RNA sequencing. We identified 49 transcriptomic cell types, including 23 GABAergic, 19 glutamatergic and 7 non-neuronal types. We also analyzed cell type–specific mRNA processing and characterized genetic access to these transcriptomic types by many transgenic Cre lines. Finally, we found that some of our transcriptomic cell types displayed specific and differential electrophysiological and axon projection properties, thereby confirming that the single-cell transcriptomic signatures can be associated with specific cellular properties.",
-        "datasets": [
-            {
-                "id": "3a15ab1c-c36c-4842-9a3e-47e6ffd0ba6f",
-                "name": "Adult mouse cortical cell taxonomy revealed by single cell transcriptomics",
-                "cellCount": 1679,
-                "createdAt": 1615242519.11404,
-                "url": "https://cellxgene.cziscience.com/e/3a15ab1c-c36c-4842-9a3e-47e6ffd0ba6f.cxg/"
-            }
-        ],
-        "links": [
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1038/nn.4216"
-            },
-            {
-                "name": "",
-                "type": "RAW_DATA",
-                "url": "http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE71585"
-            }
-        ]
-    },
-    {
-        "id": "f70ebd97-b3bc-44fe-849d-c18e08fe773d",
-        "name": "A transcriptomic atlas of the mouse cerebellum reveals regional specializations and novel cell types",
-        "contact": {
-            "name": "Evan Macosko",
-            "email": "emacosko@broadinstitute.org"
-        },
-        "description": "The cerebellum is a well-studied brain structure with diverse roles in motor learning, coordination, cognition, and autonomic regulation. Nonetheless, a complete inventory of cerebellar cell types is presently lacking. We used high-throughput transcriptional profiling to molecularly define cell types across individual lobules of the adult mouse cerebellum. Purkinje and granule neurons showed considerable regional specialization, with the greatest diversity occurring in the posterior lobules. For multiple types of cerebellar interneurons, the molecular variation within each type was more continuous, rather than discrete. For the unipolar brush cells (UBCs)—an interneuron population previously subdivided into two discrete populations—the continuous variation in gene expression was associated with a graded continuum of electrophysiological properties. Most surprisingly, we found that molecular layer interneurons (MLIs) were composed of two molecularly and functionally distinct types. Both show a continuum of morphological variation through the thickness of the molecular layer, but electrophysiological recordings revealed marked differences between the two types in spontaneous firing, excitability, and electrical coupling. Together, these findings provide the first comprehensive cellular atlas of the cerebellar cortex, and outline a methodological and conceptual framework for the integration of molecular, morphological, and physiological ontologies for defining brain cell types.",
-        "datasets": [
-            {
-                "id": "e0ed3c55-aff6-4bb7-b6ff-98a2d90b890c",
-                "name": "A transcriptomic atlas of the mouse cerebellum",
-                "cellCount": 611034,
-                "createdAt": 1615241500.30999,
-                "url": "https://cellxgene.cziscience.com/e/e0ed3c55-aff6-4bb7-b6ff-98a2d90b890c.cxg/"
-            }
-        ],
-        "links": [
-            {
-                "name": "",
-                "type": "LAB_WEBSITE",
-                "url": "https://macoskolab.com/"
-            },
-            {
-                "name": "",
-                "type": "RAW_DATA",
-                "url": "https://nemoarchive.org/"
-            },
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1101/2020.03.04.976407"
-            }
-        ]
-    },
-    {
-        "id": "45f0f67d-4b69-4a3c-a4e8-a63b962e843f",
-        "name": "Shared and distinct transcriptomic cell types across neocortical areas",
-        "contact": {
-            "name": "Bosiljka Tasic",
-            "email": "bosiljkat@alleninstitute.org"
-        },
-        "description": "The neocortex contains a multitude of cell types that are segregated into layers and functionally distinct areas. To investigate the diversity of cell types across the mouse neocortex, here we analysed 23,822 cells from two areas at distant poles of the mouse neocortex: the primary visual cortex and the anterior lateral motor cortex. We define 133 transcriptomic cell types by deep, single-cell RNA sequencing. Nearly all types of GABA (γ-aminobutyric acid)-containing neurons are shared across both areas, whereas most types of glutamatergic neurons were found in one of the two areas. By combining single-cell RNA sequencing and retrograde labelling, we match transcriptomic types of glutamatergic neurons to their long-range projection specificity. Our study establishes a combined transcriptomic and projectional taxonomy of cortical cell types from functionally distinct areas of the adult mouse cortex. [Excerpt from publication's abstract]",
-        "datasets": [
-            {
-                "id": "28c696bb-9549-434b-9340-dc745a846f9a",
-                "name": "Adult mouse cortical cell taxonomy revealed by single cell transcriptomics",
-                "cellCount": 22375,
-                "createdAt": 1615234239.508447,
-                "url": "https://cellxgene.cziscience.com/e/28c696bb-9549-434b-9340-dc745a846f9a.cxg/"
-            }
-        ],
-        "links": [
-            {
-                "name": "",
-                "type": "RAW_DATA",
-                "url": "http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE115746"
-            },
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1038/s41586-018-0654-5"
-            }
-        ]
-    },
-    {
-        "id": "0b9d8a04-bb9d-44da-aa27-705bb65b54eb",
-        "name": "Tabula Muris Senis",
-        "contact": {
-            "name": " Spyros Darmanis",
-            "email": "spyros.darmanis@czbiohub.org"
-        },
-        "description": "Ageing is characterized by a progressive loss of physiological integrity, leading to impaired function and increased vulnerability to death1. Despite rapid advances over recent years, many of the molecular and cellular processes that underlie the progressive loss of healthy physiology are poorly understood2. To gain a better insight into these processes, here we generate a single-cell transcriptomic atlas across the lifespan of Mus musculus that includes data from 23 tissues and organs. We found cell-specific changes occurring across multiple cell types and organs, as well as age-related changes in the cellular composition of different organs. Using single-cell transcriptomic data, we assessed cell-type-specific manifestations of different hallmarks of ageing—such as senescence3, genomic instability4 and changes in the immune system2. This transcriptomic atlas—which we denote Tabula Muris Senis, or ‘Mouse Ageing Cell Atlas’—provides molecular information about how the most important hallmarks of ageing are reflected in a broad range of tissues and cell types.",
-        "datasets": [
-            {
-                "id": "ec6c52b8-3368-4f72-a416-1ade0dab97bf",
-                "name": "Limb muscle — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 3855,
-                "createdAt": 1615413499.744011,
-                "url": "https://cellxgene.cziscience.com/e/ec6c52b8-3368-4f72-a416-1ade0dab97bf.cxg/"
-            },
-            {
-                "id": "0fb7916e-7a68-4a4c-a441-3ab3989f29a7",
-                "name": "Lung — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 24540,
-                "createdAt": 1615413277.555143,
-                "url": "https://cellxgene.cziscience.com/e/0fb7916e-7a68-4a4c-a441-3ab3989f29a7.cxg/"
-            },
-            {
-                "id": "0380ddce-c31b-422a-88fe-34a1945bd949",
-                "name": "Aorta — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 906,
-                "createdAt": 1615413382.174221,
-                "url": "https://cellxgene.cziscience.com/e/0380ddce-c31b-422a-88fe-34a1945bd949.cxg/"
-            },
-            {
-                "id": "1a0610d8-1339-479b-b261-7fb586c3dab9",
-                "name": "Trachea — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 7976,
-                "createdAt": 1615413364.339268,
-                "url": "https://cellxgene.cziscience.com/e/1a0610d8-1339-479b-b261-7fb586c3dab9.cxg/"
-            },
-            {
-                "id": "48b37086-25f7-4ecd-be66-f5bb378e3aea",
-                "name": "All — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 245389,
-                "createdAt": 1615423647.494106,
-                "url": "https://cellxgene.cziscience.com/e/48b37086-25f7-4ecd-be66-f5bb378e3aea.cxg/"
-            },
-            {
-                "id": "05e6f6e3-0473-4b85-9f94-bcc5f1b5e04b",
-                "name": "Lung — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 5218,
-                "createdAt": 1615419877.252031,
-                "url": "https://cellxgene.cziscience.com/e/05e6f6e3-0473-4b85-9f94-bcc5f1b5e04b.cxg/"
-            },
-            {
-                "id": "0bd1a1de-3aee-40e0-b2ec-86c7a30c7149",
-                "name": "Bone marrow — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 40220,
-                "createdAt": 1615421753.61598,
-                "url": "https://cellxgene.cziscience.com/e/0bd1a1de-3aee-40e0-b2ec-86c7a30c7149.cxg/"
-            },
-            {
-                "id": "170ce19f-7a2f-4926-a1cc-adcad99e7474",
-                "name": "Thymus — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 4047,
-                "createdAt": 1615423388.877982,
-                "url": "https://cellxgene.cziscience.com/e/170ce19f-7a2f-4926-a1cc-adcad99e7474.cxg/"
-            },
-            {
-                "id": "1d29fd10-c8b3-4611-b0ac-3c578125adbf",
-                "name": "Skin of body — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 4860,
-                "createdAt": 1615423367.691986,
-                "url": "https://cellxgene.cziscience.com/e/1d29fd10-c8b3-4611-b0ac-3c578125adbf.cxg/"
-            },
-            {
-                "id": "1efd4700-87dd-4b45-8762-11ba3fea7a65",
-                "name": "Heart — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 9669,
-                "createdAt": 1615419802.346019,
-                "url": "https://cellxgene.cziscience.com/e/1efd4700-87dd-4b45-8762-11ba3fea7a65.cxg/"
-            },
-            {
-                "id": "1fe63353-9e75-4824-aa30-ed8d84be748c",
-                "name": "Heart — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 8613,
-                "createdAt": 1615413230.493441,
-                "url": "https://cellxgene.cziscience.com/e/1fe63353-9e75-4824-aa30-ed8d84be748c.cxg/"
-            },
-            {
-                "id": "2491629a-bde0-46ad-a073-e34fcb516857",
-                "name": "Large intestine — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 8311,
-                "createdAt": 1615419842.799123,
-                "url": "https://cellxgene.cziscience.com/e/2491629a-bde0-46ad-a073-e34fcb516857.cxg/"
-            },
-            {
-                "id": "3f4fe86f-aced-4d10-b174-ee35b9f46b9d",
-                "name": "Trachea — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 3160,
-                "createdAt": 1615423415.124611,
-                "url": "https://cellxgene.cziscience.com/e/3f4fe86f-aced-4d10-b174-ee35b9f46b9d.cxg/"
-            },
-            {
-                "id": "4546e757-34d0-4d17-be06-538318925fcd",
-                "name": "Liver — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 2859,
-                "createdAt": 1615419853.210637,
-                "url": "https://cellxgene.cziscience.com/e/4546e757-34d0-4d17-be06-538318925fcd.cxg/"
-            },
-            {
-                "id": "4fa55ee5-8da4-4d42-9525-1c52d4ce50bf",
-                "name": "Skin of body — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 4454,
-                "createdAt": 1615413324.477089,
-                "url": "https://cellxgene.cziscience.com/e/4fa55ee5-8da4-4d42-9525-1c52d4ce50bf.cxg/"
-            },
-            {
-                "id": "524179b0-b406-4723-9c46-293ffa77ca81",
-                "name": "Kidney — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 1833,
-                "createdAt": 1615413475.036917,
-                "url": "https://cellxgene.cziscience.com/e/524179b0-b406-4723-9c46-293ffa77ca81.cxg/"
-            },
-            {
-                "id": "6202a243-b713-4e12-9ced-c387f8483dea",
-                "name": "Liver — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 7294,
-                "createdAt": 1615413267.311307,
-                "url": "https://cellxgene.cziscience.com/e/6202a243-b713-4e12-9ced-c387f8483dea.cxg/"
-            },
-            {
-                "id": "66ff82b4-9380-469c-bc4b-cfa08eacd325",
-                "name": "Brain — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 7249,
-                "createdAt": 1615418842.717376,
-                "url": "https://cellxgene.cziscience.com/e/66ff82b4-9380-469c-bc4b-cfa08eacd325.cxg/"
-            },
-            {
-                "id": "6e4f871d-fd7c-4909-8c14-e4c9957c2e8f",
-                "name": "Thymus — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 9275,
-                "createdAt": 1615413343.453985,
-                "url": "https://cellxgene.cziscience.com/e/6e4f871d-fd7c-4909-8c14-e4c9957c2e8f.cxg/"
-            },
-            {
-                "id": "76544818-bc5b-4a0d-87d4-40dde89545cb",
-                "name": "Adipose tissue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 6777,
-                "createdAt": 1615413223.017164,
-                "url": "https://cellxgene.cziscience.com/e/76544818-bc5b-4a0d-87d4-40dde89545cb.cxg/"
-            },
-            {
-                "id": "7c6091da-4606-44c7-a2c4-ef896de09e28",
-                "name": "Mammary gland — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 12295,
-                "createdAt": 1615413290.314927,
-                "url": "https://cellxgene.cziscience.com/e/7c6091da-4606-44c7-a2c4-ef896de09e28.cxg/"
-            },
-            {
-                "id": "821c79aa-044e-40cf-b331-0fe3edd48019",
-                "name": "Mesenteric fat pad — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 3014,
-                "createdAt": 1615421770.085897,
-                "url": "https://cellxgene.cziscience.com/e/821c79aa-044e-40cf-b331-0fe3edd48019.cxg/"
-            },
-            {
-                "id": "8f1bc86b-7976-4826-8602-f5266160ad86",
-                "name": "Brown adipose tissue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 2223,
-                "createdAt": 1615413390.234481,
-                "url": "https://cellxgene.cziscience.com/e/8f1bc86b-7976-4826-8602-f5266160ad86.cxg/"
-            },
-            {
-                "id": "93966790-bbfa-420f-aa85-bc5ca51d9c96",
-                "name": "Bladder lumen — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 8945,
-                "createdAt": 1615413206.257926,
-                "url": "https://cellxgene.cziscience.com/e/93966790-bbfa-420f-aa85-bc5ca51d9c96.cxg/"
-            },
-            {
-                "id": "98ad5247-68f8-42f8-b8e5-7938cb373a91",
-                "name": "Tongue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 20680,
-                "createdAt": 1615413353.681805,
-                "url": "https://cellxgene.cziscience.com/e/98ad5247-68f8-42f8-b8e5-7938cb373a91.cxg/"
-            },
-            {
-                "id": "98e5ea9f-16d6-47ec-a529-686e76515e39",
-                "name": "All — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 110824,
-                "createdAt": 1615423655.935265,
-                "url": "https://cellxgene.cziscience.com/e/98e5ea9f-16d6-47ec-a529-686e76515e39.cxg/"
-            },
-            {
-                "id": "a6626b73-a0de-4dee-99aa-2559ab05af11",
-                "name": "Gonadal fat pad — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 3406,
-                "createdAt": 1615419790.886587,
-                "url": "https://cellxgene.cziscience.com/e/a6626b73-a0de-4dee-99aa-2559ab05af11.cxg/"
-            },
-            {
-                "id": "a7ace090-1ba1-47f2-8def-6e11298b7816",
-                "name": "Limb muscle — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 28867,
-                "createdAt": 1615413255.353925,
-                "url": "https://cellxgene.cziscience.com/e/a7ace090-1ba1-47f2-8def-6e11298b7816.cxg/"
-            },
-            {
-                "id": "b8c618e5-4b3d-4566-8a3f-7e40047f5c54",
-                "name": "Kidney — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 21647,
-                "createdAt": 1615413238.793447,
-                "url": "https://cellxgene.cziscience.com/e/b8c618e5-4b3d-4566-8a3f-7e40047f5c54.cxg/"
-            },
-            {
-                "id": "bc7466d7-ff13-4ff2-9c3d-7a1d208bd492",
-                "name": "Mammary gland — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 3282,
-                "createdAt": 1615421745.574863,
-                "url": "https://cellxgene.cziscience.com/e/bc7466d7-ff13-4ff2-9c3d-7a1d208bd492.cxg/"
-            },
-            {
-                "id": "bf12f9c6-4211-4c91-9c71-22019f29f516",
-                "name": "Bladder lumen — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 2432,
-                "createdAt": 1615413400.348582,
-                "url": "https://cellxgene.cziscience.com/e/bf12f9c6-4211-4c91-9c71-22019f29f516.cxg/"
-            },
-            {
-                "id": "c08f8441-4a10-4748-872a-e70c0bcccdba",
-                "name": "Brain — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 13417,
-                "createdAt": 1615418820.475159,
-                "url": "https://cellxgene.cziscience.com/e/c08f8441-4a10-4748-872a-e70c0bcccdba.cxg/"
-            },
-            {
-                "id": "c2878000-d3f0-4d30-9a8a-2139a13c72f8",
-                "name": "Subcutaneous adipose tissue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 3755,
-                "createdAt": 1615421806.161207,
-                "url": "https://cellxgene.cziscience.com/e/c2878000-d3f0-4d30-9a8a-2139a13c72f8.cxg/"
-            },
-            {
-                "id": "c9096ac4-ea44-4cf9-82f4-af05cb83eb24",
-                "name": "Tongue — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 3735,
-                "createdAt": 1615423403.517854,
-                "url": "https://cellxgene.cziscience.com/e/c9096ac4-ea44-4cf9-82f4-af05cb83eb24.cxg/"
-            },
-            {
-                "id": "cbd62079-bed8-4aa1-9659-670f9cb51f9d",
-                "name": "Diaphragm — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 1858,
-                "createdAt": 1615413438.2694,
-                "url": "https://cellxgene.cziscience.com/e/cbd62079-bed8-4aa1-9659-670f9cb51f9d.cxg/"
-            },
-            {
-                "id": "db55b719-6102-493a-9251-404bc501d0de",
-                "name": "Bone marrow — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 40220,
-                "createdAt": 1615413302.832977,
-                "url": "https://cellxgene.cziscience.com/e/db55b719-6102-493a-9251-404bc501d0de.cxg/"
-            },
-            {
-                "id": "de4e7a0c-91b2-44e4-b382-87da74c9efb6",
-                "name": "Large intestine — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 1887,
-                "createdAt": 1615413248.413182,
-                "url": "https://cellxgene.cziscience.com/e/de4e7a0c-91b2-44e4-b382-87da74c9efb6.cxg/"
-            },
-            {
-                "id": "e2b469d4-b5c3-4a35-9d19-ee71ce61cae0",
-                "name": "Spleen — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 35718,
-                "createdAt": 1615413334.177976,
-                "url": "https://cellxgene.cziscience.com/e/e2b469d4-b5c3-4a35-9d19-ee71ce61cae0.cxg/"
-            },
-            {
-                "id": "e3b8c485-7811-407e-99ed-c7d574be9d7c",
-                "name": "Pancreas — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 3384,
-                "createdAt": 1615421788.160175,
-                "url": "https://cellxgene.cziscience.com/e/e3b8c485-7811-407e-99ed-c7d574be9d7c.cxg/"
-            },
-            {
-                "id": "e80d4e1c-672f-496a-8f32-37eab34f727d",
-                "name": "Spleen — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 3834,
-                "createdAt": 1615423375.940415,
-                "url": "https://cellxgene.cziscience.com/e/e80d4e1c-672f-496a-8f32-37eab34f727d.cxg/"
-            },
-            {
-                "id": "ef47280b-3e68-4188-a49a-7b8374c8a6f2",
-                "name": "Pancreas — A single-cell transcriptomic atlas characterizes ageing tissues in the mouse",
-                "cellCount": 6201,
-                "createdAt": 1615413314.773602,
-                "url": "https://cellxgene.cziscience.com/e/ef47280b-3e68-4188-a49a-7b8374c8a6f2.cxg/"
-            }
-        ],
-        "links": [
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1038/s41586-020-2496-1"
-            },
-            {
-                "name": "",
-                "type": "RAW_DATA",
-                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE132042"
-            },
-            {
-                "name": "Tabula Muris Senis",
+                "name": "The Source",
                 "type": "DATA_SOURCE",
-                "url": "https://tabula-muris-senis.ds.czbiohub.org/"
+                "url": "datasource.com"
             }
         ]
     },
     {
-        "id": "9132fae8-bdfe-480f-9e45-45bc77f320b3",
-        "name": "Molecular, spatial and projection diversity of neurons in primary motor cortex revealed by in situ single-cell transcriptomics",
-        "contact": {
-            "name": "Xiaowei Zhuang",
-            "email": "zhuang@chemistry.harvard.edu"
-        },
-        "description": "A mammalian brain is comprised of numerous cell types organized in an intricate manner to form functional neural circuits. Single-cell RNA sequencing provides a powerful approach to identify cell types based on their gene expression profiles and has revealed many distinct cell populations in the brain1-3. Single-cell epigenomic profiling4,5 further provides information on gene-regulatory signatures of different cell types. Understanding how different cell types contribute to brain function, however, requires knowledge of their spatial organization and connectivity, which is not preserved in sequencing-based methods that involve cell dissociation3,6. Here, we used an in situ single-cell transcriptome-imaging method, multiplexed error-robust fluorescence in situ hybridization (MERFISH)7, to generate a molecularly defined and spatially resolved cell atlas of the mouse primary motor cortex (MOp). We profiled ∼300,000 cells in the MOp, identified 95 neuronal and non-neuronal cell clusters, and revealed a complex spatial map in which not only excitatory neuronal clusters but also most inhibitory neuronal clusters adopted layered organizations. Notably, intratelencephalic (IT) cells, the largest branch of neurons in the MOp, formed a continuous spectrum of cells with gradual changes in both gene expression profiles and cortical depth positions in a highly correlated manner. Furthermore, we integrated MERFISH with retrograde tracing to probe the projection targets for different MOp neuronal cell types and found that projections of MOp neurons to other cortical regions formed a many-to-many network with each target region receiving input preferentially from a different composition of IT clusters. Overall, our results provide a high-resolution spatial and projection map of molecularly defined cell types in the MOp. We anticipate that the imaging platform described here can be broadly applied to create high-resolution cell atlases of a wide range of systems.",
-        "datasets": [
-            {
-                "id": "257adc73-8152-414b-a2c7-73861b8e0c0a",
-                "name": "Molecular, spatial and projection diversity of neurons in primary motor cortex revealed by in situ single-cell transcriptomics",
-                "cellCount": 276556,
-                "createdAt": 1615591651.004997,
-                "url": "https://cellxgene.cziscience.com/e/257adc73-8152-414b-a2c7-73861b8e0c0a.cxg/"
-            }
-        ],
-        "links": [
-            {
-                "name": "",
-                "type": "LAB_WEBSITE",
-                "url": "http://zhuang.harvard.edu/index.html"
-            },
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1101/2020.06.04.105700"
-            }
-        ]
-    },
-    {
-        "id": "558385a4-b7b7-4eca-af0c-9e54d010e8dc",
-        "name": "Single-Cell RNAseq analysis of diffuse neoplastic infiltrating cells at the migrating front of human glioblastoma",
-        "contact": {
-            "name": "Spyros Darmanis",
-            "email": "spyros.darmanis@gmail.com"
-        },
-        "description": "Glioblastoma (GBM) is the most common primary brain cancer in adults and is notoriously difficult to treat because of its diffuse nature. We performed single-cell RNA sequencing (RNA-seq) on 3,589 cells in a cohort of four patients. We obtained cells from the tumor core as well as surrounding peripheral tissue. Our analysis revealed cellular variation in the tumor's genome and transcriptome. We were also able to identify infiltrating neoplastic cells in regions peripheral to the core lesions. Despite the existence of significant heterogeneity among neoplastic cells, we found that infiltrating GBM cells share a consistent gene signature between patients, suggesting a common mechanism of infiltration. Additionally, in investigating the immunological response to the tumors, we found transcriptionally distinct myeloid cell populations residing in the tumor core and the surrounding peritumoral space. Our data provide a detailed dissection of GBM cell types, revealing an abundance of information about tumor formation and migration.",
-        "datasets": [
-            {
-                "id": "774c18c5-efa1-4dc5-9e5e-2c824bab2e34",
-                "name": "Infiltrating Neoplastic Cells Human Glioblastoma",
-                "cellCount": 3589,
-                "createdAt": 1615931597.025383,
-                "url": "https://cellxgene.cziscience.com/e/774c18c5-efa1-4dc5-9e5e-2c824bab2e34.cxg/"
-            }
-        ],
-        "links": [
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1016/j.celrep.2017.10.030"
-            },
-            {
-                "name": "",
-                "type": "RAW_DATA",
-                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE84465"
-            }
-        ]
-    },
-    {
-        "id": "5e469121-c203-4775-962d-dcf2e5d6a472",
+        "id": "cdd3edff-095a-4890-aa8f-0734bb806f6f",
         "name": "An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum",
         "contact": {
             "name": "Bing Ren",
@@ -1087,33 +2386,28 @@
         "description": "The mammalian cerebrum performs high level sensory, motor control and cognitive functions through highly specialized cortical networks and subcortical nuclei. Recent surveys of mouse and human brains with single cell transcriptomics and high-throughput imaging technologies have uncovered hundreds of neuronal cell types and a variety of non-neuronal cell types distributed in different brain regions, but the cell-type-specific transcriptional regulatory programs responsible for the unique identity and function of each brain cell type have yet to be elucidated. Here, we probe the accessible chromatin in >800,000 individual nuclei from 45 regions spanning the adult mouse isocortex, olfactory bulb, hippocampus and cerebral nuclei, and use the resulting data to define 491,818 candidate cis regulatory DNA elements in 160 distinct sub-types. We link a significant fraction of them to putative target genes expressed in diverse cerebral cell types and uncover transcriptional regulators involved in a broad spectrum of molecular and cellular pathways in different neuronal and glial cell populations. Our results provide a foundation for comprehensive analysis of gene regulatory programs of the mammalian brain and assist in the interpretation of non-coding risk variants associated with various neurological disease and traits in humans. ",
         "datasets": [
             {
-                "id": "b22a3a55-9a35-434e-93e1-f2483037f33c",
-                "name": "Non-neuronal cells — An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum.",
-                "cellCount": 259558,
-                "createdAt": 1616011201.778035,
-                "url": "https://cellxgene.cziscience.com/e/b22a3a55-9a35-434e-93e1-f2483037f33c.cxg/"
-            },
-            {
-                "id": "ca3790f0-c6a6-41b1-b532-61f9b86d346a",
+                "id": "79449ba9-0a2b-40c7-8c38-d444bda51d1c",
                 "name": "GABAergic neurons — An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum.",
                 "cellCount": 167181,
-                "createdAt": 1616011190.759371,
-                "url": "https://cellxgene.cziscience.com/e/ca3790f0-c6a6-41b1-b532-61f9b86d346a.cxg/"
+                "createdAt": 1621623553.562329,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/79449ba9-0a2b-40c7-8c38-d444bda51d1c.cxg/"
             },
             {
-                "id": "d33814fc-31e8-4f39-a200-a0ca21a9b134",
+                "id": "825b10d1-b927-45dd-8502-309bfc6870ba",
                 "name": "Glutamatergic neurons — An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum.",
                 "cellCount": 387060,
-                "createdAt": 1616104445.502767,
-                "url": "https://cellxgene.cziscience.com/e/d33814fc-31e8-4f39-a200-a0ca21a9b134.cxg/"
+                "createdAt": 1621623554.347577,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/825b10d1-b927-45dd-8502-309bfc6870ba.cxg/"
+            },
+            {
+                "id": "c6c56b51-fb1e-4f36-b0c0-0b8b873fdf18",
+                "name": "Non-neuronal cells — An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum.",
+                "cellCount": 259558,
+                "createdAt": 1621623551.748112,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/c6c56b51-fb1e-4f36-b0c0-0b8b873fdf18.cxg/"
             }
         ],
         "links": [
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1101/2020.05.10.087585"
-            },
             {
                 "name": "",
                 "type": "LAB_WEBSITE",
@@ -1121,438 +2415,13 @@
             },
             {
                 "name": "",
-                "type": "RAW_DATA",
-                "url": "http://data.nemoarchive.org/biccn/grant/cemba/cemba/epigenome/sncell/"
-            }
-        ]
-    },
-    {
-        "id": "9c8808ce-1138-4dbe-818c-171cff10e650",
-        "name": "A single-cell transcriptional roadmap of the mouse and human lymph node lymphatic vasculature",
-        "contact": {
-            "name": "Eugene Butcher",
-            "email": "ebutcher@stanford.edu"
-        },
-        "description": "Single-cell transcriptomics promises to revolutionize our understanding of the vasculature. Emerging computational methods applied to high dimensional single cell data allow integration of results between samples and species, and illuminate the diversity and underlying developmental and architectural organization of cell populations. Here, we illustrate these methods in analysis of mouse lymph node (LN) lymphatic endothelial cells (LEC) at single cell resolution. Clustering identifies five well-delineated subsets, including two medullary sinus subsets not recognized previously as distinct. Nearest neighbor alignments in trajectory space position the major subsets in a sequence that recapitulates known and suggests novel features of LN lymphatic organization, providing a transcriptional map of the lymphatic endothelial niches and of the transitions between them. Differences in gene expression reveal specialized programs for (1) subcapsular ceiling endothelial interactions with the capsule connective tissue and cells, (2) subcapsular floor regulation of lymph borne cell entry into the LN parenchyma and antigen presentation, and (3) medullary subset specialization for pathogen interactions and LN remodeling. LEC of the subcapsular sinus floor and medulla, which represent major sites of cell entry and exit from the LN parenchyma respectively, respond robustly to oxazolone inflammation challenge with enriched signaling pathways that converge on both innate and adaptive immune responses. Integration of mouse and human single-cell profiles reveals a conserved cross-species pattern of lymphatic vascular niches and gene expression, as well as specialized human subsets and genes unique to each species. The examples provided demonstrate the power of single-cell analysis in elucidating endothelial cell heterogeneity, vascular organization and endothelial cell responses. We discuss the findings from the perspective of LEC functions in relation to niche formations in the unique stromal and highly immunological environment of the LN.",
-        "datasets": [
-            {
-                "id": "26ae14da-9e5f-4d18-abae-18a5a328feef",
-                "name": "A Single-Cell Transcriptional Roadmap of the Mouse and Human Lymph Node Lymphatic Vasculature",
-                "cellCount": 5625,
-                "createdAt": 1616438886.906302,
-                "url": "https://cellxgene.cziscience.com/e/26ae14da-9e5f-4d18-abae-18a5a328feef.cxg/"
-            },
-            {
-                "id": "cfa3c355-ee77-4fc8-9a00-78e61d23024c",
-                "name": "A Single-Cell Transcriptional Roadmap of the Mouse and Human Lymph Node Lymphatic Vasculature",
-                "cellCount": 4355,
-                "createdAt": 1616438875.381961,
-                "url": "https://cellxgene.cziscience.com/e/cfa3c355-ee77-4fc8-9a00-78e61d23024c.cxg/"
-            }
-        ],
-        "links": [
-            {
-                "name": "",
                 "type": "DOI",
-                "url": "https://doi.org/10.1101/2019.12.31.892166"
-            }
-        ]
-    },
-    {
-        "id": "51544e44-293b-4c2b-8c26-560678423380",
-        "name": "Multiomics single-cell analysis of human pancreatic islets reveals novel cellular states in health and type 1 diabetes",
-        "contact": {
-            "name": "Golnaz Vahedi, Ph.D.",
-            "email": "vahedi@pennmedicine.upenn.edu"
-        },
-        "description": "Type 1 diabetes (T1D) is an autoimmune disease of only partially defined etiology in which immune cells destroy insulin-producing beta cells. Using single-cell transcriptomics and an advanced analytical strategy to assess pancreatic islets of T1D, autoantibody-positive, and non-diabetic organ donors, we identified both canonical cell types and rare insulin-expressing cells with a hybrid mixture of endocrine and exocrine gene signatures within all donors. We further found elevated expression of MHC Class II pathway genes in exocrine ductal cells of T1D donors, which we confirmed through CyTOF, in situ imaging mass cytometry, and immunofluorescence analysis. Taken together, our multimodal analyses identify novel cell types and processes that may contribute to T1D immunopathogenesis and provide new cellular and molecular insights into human pancreas function.",
-        "datasets": [
-            {
-                "id": "37b21763-7f0f-41ae-9001-60bad6e2841d",
-                "name": "Multiomics single-cell analysis of human pancreatic islets reveals novel cellular states in health and type 1 diabetes",
-                "cellCount": 69645,
-                "createdAt": 1615862943.719328,
-                "url": "https://cellxgene.cziscience.com/e/37b21763-7f0f-41ae-9001-60bad6e2841d.cxg/"
-            }
-        ],
-        "links": [
-            {
-                "name": "",
-                "type": "OTHER",
-                "url": "https://hpap.pmacs.upenn.edu/"
-            },
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1101/2021.01.28.428598"
-            }
-        ]
-    },
-    {
-        "id": "ed9185e3-5b82-40c7-9824-b2141590c7f0",
-        "name": "Time-resolved Systems Immunology Reveals a Late Juncture Linked to Fatal COVID-19",
-        "contact": {
-            "name": "John Tsang",
-            "email": "john.tsang@nih.gov"
-        },
-        "description": "COVID-19 exhibits extensive patient-to-patient heterogeneity. To link immune response variation to disease severity and outcome over time, we longitudinally assessed circulating proteins as well as 188 surface protein markers, transcriptome, and T cell receptor sequence simultaneously in single peripheral immune cells from COVID-19 patients. Conditional-independence network analysis revealed primary correlates of disease severity, including gene expression signatures of apoptosis in plasmacytoid dendritic cells and attenuated inflammation but increased fatty acid metabolism in CD56(dim)CD16(hi) NK cells linked positively to circulating interleukin (IL)-15. CD8+ T cell activation was apparent without signs of exhaustion. Although cellular inflammation was depressed in severe patients early after hospitalization, it became elevated by days 17–23 post symptom onset, suggestive of a late wave of inflammatory responses. Furthermore, circulating protein trajectories at this time were divergent between and predictive of recovery versus fatal outcomes. Our findings stress the importance of timing in the analysis, clinical monitoring, and therapeutic intervention of COVID-19",
-        "datasets": [
-            {
-                "id": "21d3e683-80a4-4d9b-bc89-ebb2df513dde",
-                "name": "Time-resolved Systems Immunology Reveals a Late Juncture Linked to Fatal COVID-19: Adaptive Cells",
-                "cellCount": 246964,
-                "createdAt": 1616172797.420506,
-                "url": "https://cellxgene.cziscience.com/e/21d3e683-80a4-4d9b-bc89-ebb2df513dde.cxg/"
-            },
-            {
-                "id": "30cd5311-6c09-46c9-94f1-71fe4b91813c",
-                "name": "Time-resolved Systems Immunology Reveals a Late Juncture Linked to Fatal COVID-19: Innate Cells",
-                "cellCount": 125117,
-                "createdAt": 1616172813.719481,
-                "url": "https://cellxgene.cziscience.com/e/30cd5311-6c09-46c9-94f1-71fe4b91813c.cxg/"
-            }
-        ],
-        "links": [
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1016/j.cell.2021.02.018"
+                "url": "https://doi.org/10.1101/2020.05.10.087585"
             },
             {
                 "name": "",
                 "type": "RAW_DATA",
-                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE161918"
-            },
-            {
-                "name": "",
-                "type": "LAB_WEBSITE",
-                "url": "https://www.niaid.nih.gov/research/john-tsang-phd"
-            }
-        ]
-    },
-    {
-        "id": "b52eb423-5d0d-4645-b217-e1c6d38b2e72",
-        "name": "Cells of the adult human heart",
-        "contact": {
-            "name": "Sarah Teichmann",
-            "email": "st9@sanger.ac.uk"
-        },
-        "description": "Cardiovascular disease is the leading cause of death worldwide. Advanced insights into disease mechanisms and therapeutic strategies require deeper understanding of the healthy heart’s molecular processes. Knowledge of the full repertoire of cardiac cells and their gene expression profiles is a fundamental first step in this endeavor. Here, using state-of-the-art analyses of large-scale single-cell and nuclei transcriptomes, we characterise six anatomical adult heart regions (left/right atria and ventricles, apex, interventricular septum). Our results highlight the cellular heterogeneity of cardiomyocytes, pericytes and fibroblasts, revealing distinct atrial and ventricular subsets with diverse developmental origins and specialized properties. We define the complexity of the cardiac vasculature and its changes along the arterio-venous axis. In the immune compartment we identify cardiac resident macrophages with inflammatory and protective transcriptional signatures. Further, inference of cell-cell interactions highlight different macrophage-fibroblast-cardiomyocyte networks between atria and ventricles that are distinct from skeletal muscle. We expect this reference human cardiac cell atlas to advance mechanistic studies of heart homeostasis and disease.",
-        "datasets": [
-            {
-                "id": "1009f384-b12d-448e-ba9f-1b7d2ecfbb4e",
-                "name": "Neuronal — Cells of the adult human heart",
-                "cellCount": 3961,
-                "createdAt": 1617746933.623842,
-                "url": "https://cellxgene.cziscience.com/e/1009f384-b12d-448e-ba9f-1b7d2ecfbb4e.cxg/"
-            },
-            {
-                "id": "572f3f3e-d3e4-4d13-8e2b-88215e508481",
-                "name": "Vascular — Cells of the adult human heart",
-                "cellCount": 195395,
-                "createdAt": 1617746940.676077,
-                "url": "https://cellxgene.cziscience.com/e/572f3f3e-d3e4-4d13-8e2b-88215e508481.cxg/"
-            },
-            {
-                "id": "78fd69d2-75e4-4207-819a-563139f273c6",
-                "name": "Ventricular cardiomyocytes — Cells of the adult human heart",
-                "cellCount": 125289,
-                "createdAt": 1617746880.071121,
-                "url": "https://cellxgene.cziscience.com/e/78fd69d2-75e4-4207-819a-563139f273c6.cxg/"
-            },
-            {
-                "id": "84f1a631-910b-4fbb-9f76-d915a07316d2",
-                "name": "Atrial cardiomyocytes — Cells of the adult human heart",
-                "cellCount": 23483,
-                "createdAt": 1617746868.291982,
-                "url": "https://cellxgene.cziscience.com/e/84f1a631-910b-4fbb-9f76-d915a07316d2.cxg/"
-            },
-            {
-                "id": "9d584fcb-a28a-4b91-a886-ceb66a88ef81",
-                "name": "Fibroblasts — Cells of the adult human heart",
-                "cellCount": 59341,
-                "createdAt": 1617746890.093482,
-                "url": "https://cellxgene.cziscience.com/e/9d584fcb-a28a-4b91-a886-ceb66a88ef81.cxg/"
-            },
-            {
-                "id": "d4e69e01-3ba2-4d6b-a15d-e7048f78f22e",
-                "name": "All — Cells of the adult human heart",
-                "cellCount": 486134,
-                "createdAt": 1617319340.173896,
-                "url": "https://cellxgene.cziscience.com/e/d4e69e01-3ba2-4d6b-a15d-e7048f78f22e.cxg/"
-            },
-            {
-                "id": "ed852810-a003-4386-9846-1638362cee39",
-                "name": "Immune — Cells of the adult human heart",
-                "cellCount": 40868,
-                "createdAt": 1617746898.168706,
-                "url": "https://cellxgene.cziscience.com/e/ed852810-a003-4386-9846-1638362cee39.cxg/"
-            },
-            {
-                "id": "f75f2ff4-2884-4c2d-b375-70de37a34507",
-                "name": "Adipocytes — Cells of the adult human heart",
-                "cellCount": 3799,
-                "createdAt": 1617739319.906348,
-                "url": "https://cellxgene.cziscience.com/e/f75f2ff4-2884-4c2d-b375-70de37a34507.cxg/"
-            }
-        ],
-        "links": [
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1038/s41586-020-2797-4"
-            },
-            {
-                "name": "",
-                "type": "RAW_DATA",
-                "url": "https://www.ebi.ac.uk/ena/browser/view/ERP123138"
-            },
-            {
-                "name": "",
-                "type": "LAB_WEBSITE",
-                "url": "http://www.teichlab.org/"
-            }
-        ]
-    },
-    {
-        "id": "cdfb9ead-cb58-4a53-879d-5e4ed5329e73",
-        "name": "Direct Exposure to SARS-CoV-2 and Cigarette Smoke Increases Infection Severity and Alters the Stem Cell-Derived Airway Repair Response",
-        "contact": {
-            "name": "Justin Langerman",
-            "email": "shatteler@gmail.com"
-        },
-        "description": "Current smoking is associated with increased risk of severe COVID-19, but it is not clear how cigarette smoke (CS) exposure affects SARS-CoV-2 airway cell infection. We directly exposed air-liquid interface (ALI) cultures derived from primary human nonsmoker airway basal stem cells (ABSCs) to short term CS and then infected them with SARS-CoV-2. We found an increase in the number of infected airway cells after CS exposure with a lack of ABSC proliferation. Single-cell profiling of the cultures showed that the normal interferon response was reduced after CS exposure with infection. Treatment of CS-exposed ALI cultures with interferon β-1 abrogated the viral infection, suggesting one potential mechanism for more severe viral infection. Our data show that acute CS exposure allows for more severe airway epithelial disease from SARS-CoV-2 by reducing the innate immune response and ABSC proliferation and has implications for disease spread and severity in people exposed to CS.",
-        "datasets": [
-            {
-                "id": "077b0429-0f47-48e0-879a-39eaae531d42",
-                "name": "Direct Exposure to SARS-CoV-2 and Cigarette Smoke Increases Infection Severity and Alters the Stem Cell-Derived Airway Repair Response",
-                "cellCount": 19361,
-                "createdAt": 1617746834.011976,
-                "url": "https://cellxgene.cziscience.com/e/077b0429-0f47-48e0-879a-39eaae531d42.cxg/"
-            }
-        ],
-        "links": [
-            {
-                "name": "",
-                "type": "RAW_DATA",
-                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE161089"
-            },
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1016/j.stem.2020.11.010"
-            }
-        ]
-    },
-    {
-        "id": "60358420-6055-411d-ba4f-e8ac80682a2e",
-        "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution",
-        "contact": {
-            "name": "Alison Simmons",
-            "email": "alison.simmons@ndm.ox.ac.uk"
-        },
-        "description": "Development of the human intestine is not well understood. Here, we link single-cell RNA sequencing and spatial transcriptomics to characterize intestinal morphogenesis through time. We identify 101 cell states including epithelial and mesenchymal progenitor populations and programs linked to key morphogenetic milestones. We describe principles of crypt-villus axis formation; neural, vascular, mesenchymal morphogenesis, and immune population of the developing gut. We identify the differentiation hierarchies of developing fibroblast and myofibroblast subtypes and describe diverse functions for these including as vascular niche cells. We pinpoint the origins of Peyer's patches and gut-associated lymphoid tissue (GALT) and describe location-specific immune programs. We use our resource to present an unbiased analysis of morphogen gradients that direct sequential waves of cellular differentiation and define cells and locations linked to rare developmental intestinal disorders. We compile a publicly available online resource, spatio-temporal analysis resource of fetal intestinal development (STAR-FINDer), to facilitate further work.",
-        "datasets": [
-            {
-                "id": "bbd16004-09e8-4b6c-b465-73ff83a52837",
-                "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Neural",
-                "cellCount": 4144,
-                "createdAt": 1617915902.07257,
-                "url": "https://cellxgene.cziscience.com/e/bbd16004-09e8-4b6c-b465-73ff83a52837.cxg/"
-            },
-            {
-                "id": "aa0b5adb-957d-4f15-ab83-2c5cc2843f77",
-                "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Fetal A6",
-                "cellCount": 346,
-                "createdAt": 1617908757.628912,
-                "url": "https://cellxgene.cziscience.com/e/aa0b5adb-957d-4f15-ab83-2c5cc2843f77.cxg/"
-            },
-            {
-                "id": "9d5df009-eb76-43a3-b6cd-22017cc53700",
-                "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: All cells",
-                "cellCount": 76592,
-                "createdAt": 1617915701.435553,
-                "url": "https://cellxgene.cziscience.com/e/9d5df009-eb76-43a3-b6cd-22017cc53700.cxg/"
-            },
-            {
-                "id": "04b0eb97-d816-44bb-93a5-8b2968791aa0",
-                "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Pericytes",
-                "cellCount": 4163,
-                "createdAt": 1617915921.243066,
-                "url": "https://cellxgene.cziscience.com/e/04b0eb97-d816-44bb-93a5-8b2968791aa0.cxg/"
-            },
-            {
-                "id": "fd89be61-2869-4342-a86e-e1fce3a8f269",
-                "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Epithelium",
-                "cellCount": 17622,
-                "createdAt": 1617915741.150312,
-                "url": "https://cellxgene.cziscience.com/e/fd89be61-2869-4342-a86e-e1fce3a8f269.cxg/"
-            },
-            {
-                "id": "08e94873-c2a6-4f7d-ab72-aeaff3e3f929",
-                "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Fetal A7",
-                "cellCount": 344,
-                "createdAt": 1617908769.419015,
-                "url": "https://cellxgene.cziscience.com/e/08e94873-c2a6-4f7d-ab72-aeaff3e3f929.cxg/"
-            },
-            {
-                "id": "2d66790a-6621-4a49-8f0d-4002db5cc98d",
-                "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Fetal A8",
-                "cellCount": 709,
-                "createdAt": 1617908798.448876,
-                "url": "https://cellxgene.cziscience.com/e/2d66790a-6621-4a49-8f0d-4002db5cc98d.cxg/"
-            },
-            {
-                "id": "4269074c-f2c1-4d88-b2c3-0946f59d5449",
-                "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Immune",
-                "cellCount": 2199,
-                "createdAt": 1617915828.965023,
-                "url": "https://cellxgene.cziscience.com/e/4269074c-f2c1-4d88-b2c3-0946f59d5449.cxg/"
-            },
-            {
-                "id": "4d2e0563-cf4a-48bd-aa7f-efc26025b53a",
-                "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Fibroblasts",
-                "cellCount": 24081,
-                "createdAt": 1617915811.848907,
-                "url": "https://cellxgene.cziscience.com/e/4d2e0563-cf4a-48bd-aa7f-efc26025b53a.cxg/"
-            },
-            {
-                "id": "58679288-9ecc-4647-9781-12a3a8f8c6fd",
-                "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Myofibroblasts and Mesothelium",
-                "cellCount": 2833,
-                "createdAt": 1617915867.376692,
-                "url": "https://cellxgene.cziscience.com/e/58679288-9ecc-4647-9781-12a3a8f8c6fd.cxg/"
-            },
-            {
-                "id": "b9b4cf27-9c22-410d-8bd8-5d43e379485b",
-                "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Fetal A9",
-                "cellCount": 644,
-                "createdAt": 1617908808.805061,
-                "url": "https://cellxgene.cziscience.com/e/b9b4cf27-9c22-410d-8bd8-5d43e379485b.cxg/"
-            },
-            {
-                "id": "4506d9e3-4543-4464-aeae-b0b04eee1cea",
-                "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Adult A1",
-                "cellCount": 2649,
-                "createdAt": 1617908710.619989,
-                "url": "https://cellxgene.cziscience.com/e/4506d9e3-4543-4464-aeae-b0b04eee1cea.cxg/"
-            },
-            {
-                "id": "9dfd2243-74d6-4924-86bd-c206ca9287b1",
-                "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Adult A2",
-                "cellCount": 2316,
-                "createdAt": 1617908722.651247,
-                "url": "https://cellxgene.cziscience.com/e/9dfd2243-74d6-4924-86bd-c206ca9287b1.cxg/"
-            },
-            {
-                "id": "774de9c6-9752-4e39-89a9-2a88c869d52a",
-                "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Fetal A3",
-                "cellCount": 1080,
-                "createdAt": 1617908735.257033,
-                "url": "https://cellxgene.cziscience.com/e/774de9c6-9752-4e39-89a9-2a88c869d52a.cxg/"
-            },
-            {
-                "id": "c42c8ad3-9761-49e5-b9bf-ee8ebd50416f",
-                "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Endothelium",
-                "cellCount": 4154,
-                "createdAt": 1617915732.434266,
-                "url": "https://cellxgene.cziscience.com/e/c42c8ad3-9761-49e5-b9bf-ee8ebd50416f.cxg/"
-            },
-            {
-                "id": "abd889c6-f60a-4fbd-924e-ee1e9dcf909b",
-                "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Fetal A4",
-                "cellCount": 1242,
-                "createdAt": 1617908746.101606,
-                "url": "https://cellxgene.cziscience.com/e/abd889c6-f60a-4fbd-924e-ee1e9dcf909b.cxg/"
-            },
-            {
-                "id": "e006d4e3-35fa-44b4-9981-09a66c4322e5",
-                "name": "Spatiotemporal analysis of human intestinal development at single-cell resolution: Muscularis",
-                "cellCount": 4211,
-                "createdAt": 1617915849.644498,
-                "url": "https://cellxgene.cziscience.com/e/e006d4e3-35fa-44b4-9981-09a66c4322e5.cxg/"
-            }
-        ],
-        "links": [
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1016/j.cell.2020.12.016"
-            },
-            {
-                "name": "",
-                "type": "RAW_DATA",
-                "url": "https://www.dropbox.com/sh/qmhdbqh56cp0t3n/AADR2cj522sh36R0luzxJJTOa?dl=0"
-            },
-            {
-                "name": "",
-                "type": "OTHER",
-                "url": "https://simmonslab.shinyapps.io/FetalAtlasDataPortal/"
-            }
-        ]
-    },
-    {
-        "id": "c9706a92-0e5f-46c1-96d8-20e42467f287",
-        "name": "A single-cell atlas of the healthy breast tissues reveals clinically relevant clusters of breast epithelial cells",
-        "contact": {
-            "name": "Harikrishna Nakshatri",
-            "email": "hnakshat@iupui.edu"
-        },
-        "description": "Single-cell RNA sequencing (scRNA-seq) is an evolving technology used to elucidate the cellular architecture of adult organs. Previous scRNA-seq on breast tissue utilized reduction mammoplasty samples, which are often histologically abnormal. We report a rapid tissue collection/processing protocol to perform scRNA-seq of breast biopsies of healthy women and identify 23 breast epithelial cell clusters. Putative cell-of-origin signatures derived from these clusters are applied to analyze transcriptomes of ~3,000 breast cancers. Gene signatures derived from mature luminal cell clusters are enriched in ~68% of breast cancers, whereas a signature from a luminal progenitor cluster is enriched in ~20% of breast cancers. Overexpression of luminal progenitor cluster-derived signatures in HER2+, but not in other subtypes, is associated with unfavorable outcome. We identify TBX3 and PDK4 as genes co-expressed with estrogen receptor (ER) in the normal breasts, and their expression analyses in >550 breast cancers enable prognostically relevant subclassification of ER+ breast cancers.",
-        "datasets": [
-            {
-                "id": "de985818-285f-4f59-9dbd-d74968fddba3",
-                "name": "A single-cell atlas of the healthy breast tissues reveals clinically relevant clusters of breast epithelial cells",
-                "cellCount": 31696,
-                "createdAt": 1618346494.933269,
-                "url": "https://cellxgene.cziscience.com/e/de985818-285f-4f59-9dbd-d74968fddba3.cxg/"
-            }
-        ],
-        "links": [
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1016/j.xcrm.2021.100219"
-            },
-            {
-                "name": "",
-                "type": "RAW_DATA",
-                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE164898"
-            }
-        ]
-    },
-    {
-        "id": "7edef704-f63a-462c-8636-4bc86a9472bd",
-        "name": "Molecular characterization of foveal versus peripheral human retina by single-cell RNA sequencing.",
-        "contact": {
-            "name": "Andrew Voigt",
-            "email": "andrew-voigt@uiowa.edu"
-        },
-        "description": "The human retina is a complex tissue responsible for detecting photons of light and converting information from these photons into the neurochemical signals interpreted as vision. Such visual signaling not only requires sophisticated interactions between multiple classes of neurons, but also spatially-dependent molecular specialization of individual cell types. In this study, we performed single-cell RNA sequencing on neural retina isolated from both the fovea and peripheral retina in three human donors. We recovered a total of 8,217 cells, with 3,578 cells originating from the fovea and 4,639 cells originating from the periphery. Expression profiles for all major retinal cell types were compiled, and differential expression analysis was performed between cells of foveal versus peripheral origin. Globally, mRNA for the serum iron binding protein transferrin (TF), which has been associated with age-related macular degeneration pathogenesis, was enriched in peripheral samples. Cone photoreceptor cells were of particular interest and formed two predominant clusters based on gene expression. One cone cluster had 96% of cells originating from foveal samples, while the second cone cluster consisted exclusively of peripherally isolated cells. A total of 148 genes were differentially expressed between cones from the fovea versus periphery. Interestingly, peripheral cones were enriched for the gene encoding Beta-Carotene Oxygenase 2 (BCO2). A relative deficiency of this enzyme may account for the accumulation of carotenoids responsible for yellow pigment deposition within the macula. Overall, this data set provides rich expression profiles of the major human retinal cell types and highlights transcriptomic features that distinguish foveal and peripheral cells.",
-        "datasets": [
-            {
-                "id": "b83559d1-156f-4ba9-9f6a-b165f83ef43f",
-                "name": "Single-cell RNA-Seq Investigation of Foveal and Peripheral Expression in the Human Retina",
-                "cellCount": 8217,
-                "createdAt": 1618873643.014243,
-                "url": "https://cellxgene.cziscience.com/e/b83559d1-156f-4ba9-9f6a-b165f83ef43f.cxg/"
-            }
-        ],
-        "links": [
-            {
-                "name": "",
-                "type": "RAW_DATA",
-                "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE130636"
-            },
-            {
-                "name": "Analysis Portal",
-                "type": "OTHER",
-                "url": "https://singlecell-eye.org"
-            },
-            {
-                "name": "",
-                "type": "DOI",
-                "url": "https://doi.org/10.1016/j.exer.2019.05.001"
+                "url": "http://data.nemoarchive.org/biccn/grant/cemba/cemba/epigenome/sncell/"
             }
         ]
     }
