@@ -1,0 +1,8 @@
+:local(.infoMenuPopover),
+:local(.infoMenuPopover) :global(.bp3-submenu .bp3-popover-content) {
+  box-shadow: 0 8px 24px 0 rgba(16, 22, 26, 0.2), 0 2px 4px 0 rgba(16, 22, 26, 0.2), 0 0 0 0 rgba(16, 22, 26, 0.1);
+}
+
+:local(.infoMenuPopover) :global(.bp3-popover-arrow-border) {
+  fill-opacity: 0;
+}

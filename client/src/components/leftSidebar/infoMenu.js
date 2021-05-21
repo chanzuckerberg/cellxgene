@@ -1,68 +1,127 @@
 import React from "react";
-import { Button, Menu, MenuItem, Popover, Position } from "@blueprintjs/core";
+import {
+  Button,
+  Colors,
+  Menu,
+  MenuItem,
+  Popover,
+  Position,
+} from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 
+/* app dependencies */
+import IconAbout from "./iconAbout";
+import IconDocument from "./iconDocument";
+import IconGitHub from "./iconGitHub";
+import IconSlack from "./iconSlack";
+
+/* styles */
+import styles from "./infoMenu.css";
+
 const InformationMenu = React.memo((props) => {
-  const { libraryVersions, tosURL, privacyURL } = props;
+  const { dataSourceLink, libraryVersions, tosURL, privacyURL } = props;
   return (
     <Popover
       content={
-        <Menu>
+        <Menu style={{ color: Colors.BLACK }}>
           <MenuItem
             href="https://chanzuckerberg.github.io/cellxgene/"
-            target="_blank"
-            icon="book"
-            text="Documentation"
+            icon={<IconDocument />}
             rel="noopener"
+            style={{ borderRadius: 0 }}
+            target="_blank"
+            text="Documentation"
           />
           <MenuItem
+            icon={<IconSlack />}
             href="https://join-cellxgene-users.herokuapp.com/"
-            target="_blank"
-            icon="chat"
-            text="Chat"
             rel="noopener"
+            style={{ borderRadius: 0 }}
+            target="_blank"
+            text="Slack"
           />
           <MenuItem
             href="https://github.com/chanzuckerberg/cellxgene"
-            target="_blank"
-            icon="git-branch"
-            text="Github"
+            icon={<IconGitHub />}
             rel="noopener"
+            style={{ borderRadius: 0 }}
+            target="_blank"
+            text="GitHub"
           />
-          <MenuItem target="_blank" text={libraryVersions?.cellxgene || null} />
-          <MenuItem text="MIT License" />
-          {tosURL && (
+          {dataSourceLink?.url && (
             <MenuItem
-              href={tosURL}
-              target="_blank"
-              text="Terms of Service"
+              href={dataSourceLink?.url}
+              icon={<IconDocument />}
               rel="noopener"
+              style={{ borderRadius: 0 }}
+              target="_blank"
+              text={dataSourceLink?.name}
             />
           )}
-          {privacyURL && (
+          <MenuItem
+            icon={<IconAbout />}
+            popoverProps={{ openOnTargetFocus: false }}
+            style={{
+              borderRadius: 0,
+              padding:
+                "5px 4px 5px 7px" /* positions sub menu icon closer to menu item bounds */,
+            }}
+            text="About"
+          >
             <MenuItem
-              href={privacyURL}
-              target="_blank"
-              text="Privacy Policy"
-              rel="noopener"
+              style={{
+                borderRadius: 0,
+                pointerEvents:
+                  "none" /* remove hover from menu item without a link */,
+              }}
+              text={libraryVersions?.cellxgene || null}
             />
-          )}
+            <MenuItem
+              style={{
+                borderRadius: 0,
+                pointerEvents:
+                  "none" /* remove hover from menu item without a link */,
+              }}
+              text="MIT License"
+            />
+            {tosURL && (
+              <MenuItem
+                href={tosURL}
+                rel="noopener"
+                style={{ borderRadius: 0 }}
+                target="_blank"
+                text="Terms of Service"
+              />
+            )}
+            {privacyURL && (
+              <MenuItem
+                href={privacyURL}
+                rel="noopener"
+                style={{ borderRadius: 0 }}
+                target="_blank"
+                text="Privacy Policy"
+              />
+            )}
+          </MenuItem>
         </Menu>
       }
-      position={Position.BOTTOM_RIGHT}
+      popoverClassName={styles.infoMenuPopover}
+      position={Position.BOTTOM_LEFT}
       modifiers={{
-        preventOverflow: { enabled: false },
         hide: { enabled: false },
+        preventOverflow: { enabled: false },
       }}
     >
       <Button
         data-testid="menu"
-        type="button"
-        icon={IconNames.INFO_SIGN}
+        icon={IconNames.MENU}
+        minimal
         style={{
-          cursor: "pointer",
-          verticalAlign: "middle",
+          margin: "0 2px",
+          /* right padding centre aligns menu with category "color by" buttons */
+          /* left padding centre aligns popover arrow with target */
         }}
+        type="button"
       />
     </Popover>
   );
