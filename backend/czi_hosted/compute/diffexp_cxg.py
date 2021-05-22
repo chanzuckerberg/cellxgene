@@ -35,7 +35,7 @@ def get_thread_executor():
     return diffexp_thread_executor
 
 
-def diffexp_ttest(adaptor, maskA, maskB, two_lists, top_n=8, diffexp_lfc_cutoff=0.01):
+def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01, two_lists=False):
 
     matrix = adaptor.open_array("X")
     row_selector_A = np.where(maskA)[0]
@@ -115,15 +115,15 @@ def diffexp_ttest(adaptor, maskA, maskB, two_lists, top_n=8, diffexp_lfc_cutoff=
             meanB += X_col_shift
 
     r = diffexp_ttest_from_mean_var(
-        meanA.astype(dtype),
-        varA.astype(dtype),
-        nA,
-        meanB.astype(dtype),
-        varB.astype(dtype),
-        nB,
-        top_n,
-        diffexp_lfc_cutoff,
-        two_lists
+        meanA=meanA.astype(dtype),
+        varA=varA.astype(dtype),
+        nA=nA,
+        meanB=meanB.astype(dtype),
+        varB=varB.astype(dtype),
+        nB=nB,
+        top_n=top_n,
+        diffexp_lfc_cutoff=diffexp_lfc_cutoff,
+        two_lists=two_lists
     )
 
     return r
