@@ -39,7 +39,7 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     return res
 
 
-def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp_lfc_cutoff):
+def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp_lfc_cutoff, two_lists=False):
     n_var = meanA.shape[0]
     top_n = min(top_n, n_var)
 
@@ -65,20 +65,53 @@ def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp
 
     # logfoldchanges: log2(meanA / meanB)
     logfoldchanges = np.log2(np.abs((meanA + 1e-9) / (meanB + 1e-9)))
-
-    # find all with lfc > cutoff and all with lfc < -cutoff
-    lfc_above_cutoff_idx = np.nonzero(logfoldchanges > diffexp_lfc_cutoff)[0]
-    lfc_below_neg_cutoff_idx = np.nonzero(logfoldchanges < -diffexp_lfc_cutoff)[0]
-
     stats_to_sort = np.abs(tscores)
 
-    # derive sort order
-    if lfc_above_cutoff_idx.shape[0] > top_n:
+    # find all with lfc > cutoff
+    if two_lists:
+        lfc_above_cutoff_idx = np.nonzero(logfoldchanges > diffexp_lfc_cutoff)[0]
+        lfc_below_neg_cutoff_idx = np.nonzero(logfoldchanges < -diffexp_lfc_cutoff)[0]
+
+        above_cutoff_sort_order = derive_sort_order(lfc_above_cutoff_idx, top_n, stats_to_sort)
+        below_neg_cutoff_sort_order = derive_sort_order(lfc_below_neg_cutoff_idx, top_n, stats_to_sort)
+
+        # top n slice based upon sort order for lfc above cutoff
+        logfoldchanges_top_n = logfoldchanges[above_cutoff_sort_order]
+        pvals_top_n = pvals[above_cutoff_sort_order]
+        pvals_adj_top_n = pvals_adj[above_cutoff_sort_order]
+
+        # varIndex, logfoldchange, pval, pval_adj
+        pos_result = [[above_cutoff_sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]] for i in range(top_n)]
+
+        # top n slice based upon sort order for lfc below negative cutoff
+        logfoldchanges_top_n = logfoldchanges[below_neg_cutoff_sort_order]
+        pvals_top_n = pvals[below_neg_cutoff_sort_order]
+        pvals_adj_top_n = pvals_adj[below_neg_cutoff_sort_order]
+
+        # varIndex, logfoldchange, pval, pval_adj
+        neg_result = [[below_neg_cutoff_sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]] for i in range(top_n)]
+
+        result = {"postive": pos_result, "negative": neg_result}
+
+    else:
+        lfc_absval_above_cutoff_idx = np.nonzero(np.abs(logfoldchanges) > diffexp_lfc_cutoff)[0]
+        sort_order = derive_sort_order(lfc_absval_above_cutoff_idx, top_n, stats_to_sort)
+
+        # top n slice based upon sort order
+        logfoldchanges_top_n = logfoldchanges[sort_order]
+        pvals_top_n = pvals[sort_order]
+        pvals_adj_top_n = pvals_adj[sort_order]
+
+        # varIndex, logfoldchange, pval, pval_adj
+        result = [[sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]] for i in range(top_n)]
+    return result
+
+
+def derive_sort_order(lfc, top_n, stats_to_sort):
+    if lfc.shape[0] > top_n:
         # partition top N
-        import pdb
-        pdb.set_trace()
-        rel_t_partition = np.argpartition(stats_to_sort[lfc_above_cutoff_idx], -top_n)[-top_n:]
-        t_partition = lfc_above_cutoff_idx[rel_t_partition]
+        rel_t_partition = np.argpartition(stats_to_sort[lfc], -top_n)[-top_n:]
+        t_partition = lfc[rel_t_partition]
         # sort the top N partition
         rel_sort_order = np.argsort(stats_to_sort[t_partition])[::-1]
         sort_order = t_partition[rel_sort_order]
@@ -88,16 +121,7 @@ def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp
         rel_sort_order = np.argsort(stats_to_sort[partition])[::-1]
         indices = np.indices(stats_to_sort.shape)[0]
         sort_order = indices[partition][rel_sort_order]
-
-    # top n slice based upon sort order
-    logfoldchanges_top_n = logfoldchanges[sort_order]
-    pvals_top_n = pvals[sort_order]
-    pvals_adj_top_n = pvals_adj[sort_order]
-
-    # varIndex, logfoldchange, pval, pval_adj
-    result = [[sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]] for i in range(top_n)]
-    return result
-
+    return sort_order
 
 # Convenience function which handles sparse data
 def mean_var_n(X):

@@ -80,8 +80,7 @@ class DiffExpTest(unittest.TestCase):
         self.check_1_10_2_10(results)
 
         # run it directly
-        import pdb
-        pdb.set_trace()
+
         results = diffexp_ttest(adaptor, maskA, maskB, 10)
         self.check_1_10_2_10(results)
 
