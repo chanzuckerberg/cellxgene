@@ -262,7 +262,7 @@ def diffexp_obs_post(request, data_adaptor):
         mode = DiffExpMode(args["mode"])
         two_lists = False
         if "two_lists" in args:
-            two_lists = True
+            two_lists = args["two_lists"]
         if mode == DiffExpMode.VAR_FILTER or "varFilter" in args:
             return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, "varFilter not enabled")
 
