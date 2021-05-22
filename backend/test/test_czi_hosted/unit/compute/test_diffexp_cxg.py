@@ -61,7 +61,7 @@ class DiffExpTest(unittest.TestCase):
         varmask[cols] = True
         return adaptor.get_X_array(None, varmask)
 
-    def test_anndata_default(self):
+    def xtest_anndata_default(self):
         """Test an anndata adaptor with its default diffexp algorithm (diffexp_generic)"""
         adaptor = self.load_dataset(f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad")
         maskA = self.get_mask(adaptor, 1, 10)
@@ -84,7 +84,26 @@ class DiffExpTest(unittest.TestCase):
         results = diffexp_ttest(adaptor, maskA, maskB, 10)
         self.check_1_10_2_10(results)
 
-    def test_cxg_generic(self):
+    def test_cxg_default_return_two_lists(self):
+        """Test a cxg adaptor with its default diffexp algorithm (diffexp_cxg)"""
+        adaptor = self.load_dataset(f"{FIXTURES_ROOT}/pbmc3k.cxg")
+        maskA = self.get_mask(adaptor, 1, 10)
+        maskB = self.get_mask(adaptor, 2, 10)
+
+        # run it through the adaptor
+        results = adaptor.compute_diffexp_ttest(maskA, maskB, 10, True)
+        import pdb
+        pdb.set_trace()
+        self.check_1_10_2_10(results)
+
+        # run it directly
+
+        results = diffexp_ttest(adaptor, maskA, maskB, 10, True)
+        import pdb
+        pdb.set_trace()
+        self.check_1_10_2_10(results)
+
+    def xtest_cxg_generic(self):
         """Test a cxg adaptor with the generic adaptor"""
         adaptor = self.load_dataset(f"{FIXTURES_ROOT}/pbmc3k.cxg")
         maskA = self.get_mask(adaptor, 1, 10)
@@ -93,10 +112,10 @@ class DiffExpTest(unittest.TestCase):
         results = diffexp_generic.diffexp_ttest(adaptor, maskA, maskB, 10)
         self.check_1_10_2_10(results)
 
-    def test_cxg_sparse(self):
+    def xtest_cxg_sparse(self):
         self.sparse_diffexp(False)
 
-    def test_cxg_sparse_col_shift(self):
+    def xtest_cxg_sparse_col_shift(self):
         self.sparse_diffexp(True)
 
     def sparse_diffexp(self, apply_col_shift):

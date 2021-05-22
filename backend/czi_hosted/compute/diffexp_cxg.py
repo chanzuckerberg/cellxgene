@@ -35,7 +35,7 @@ def get_thread_executor():
     return diffexp_thread_executor
 
 
-def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
+def diffexp_ttest(adaptor, maskA, maskB, two_lists, top_n=8, diffexp_lfc_cutoff=0.01):
 
     matrix = adaptor.open_array("X")
     row_selector_A = np.where(maskA)[0]
@@ -123,6 +123,7 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
         nB,
         top_n,
         diffexp_lfc_cutoff,
+        two_lists
     )
 
     return r

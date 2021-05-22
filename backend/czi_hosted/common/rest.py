@@ -260,7 +260,9 @@ def diffexp_obs_post(request, data_adaptor):
     try:
         # TODO: implement varfilter mode
         mode = DiffExpMode(args["mode"])
-
+        two_lists = False
+        if "two_lists" in args:
+            two_lists = True
         if mode == DiffExpMode.VAR_FILTER or "varFilter" in args:
             return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, "varFilter not enabled")
 
@@ -277,7 +279,7 @@ def diffexp_obs_post(request, data_adaptor):
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
 
     try:
-        diffexp = data_adaptor.diffexp_topN(set1_filter, set2_filter, count)
+        diffexp = data_adaptor.diffexp_topN(set1_filter, set2_filter, count, two_lists)
         return make_response(diffexp, HTTPStatus.OK, {"Content-Type": "application/json"})
     except (ValueError, DisabledFeatureError, FilterError, ExceedsLimitError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
