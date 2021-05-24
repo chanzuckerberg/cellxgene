@@ -11,7 +11,6 @@ function IconSlack() {
       className={Classes.ICON}
       fill="none"
       height="16"
-      style={{ marginRight: "8px" }}
       viewBox="0 0 16 16"
       width="16"
       xmlns="http://www.w3.org/2000/svg"

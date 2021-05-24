@@ -30,19 +30,21 @@ class LeftSideBar extends React.Component {
       tosURL,
       dispatch,
     } = this.props;
+
     return (
       <div
         style={{
-          alignItems: "center",
+          paddingLeft: 8,
+          paddingTop: 8,
+          width: globals.leftSidebarWidth,
+          zIndex: 1,
           borderBottom: `1px solid ${globals.lighterGrey}`,
           display: "flex",
           justifyContent: "space-between",
-          padding: "8px",
-          width: globals.leftSidebarWidth,
-          zIndex: 1,
+          alignItems: "center",
         }}
       >
-        <div style={{ lineHeight: 0 }}>
+        <div>
           <Logo size={28} />
           <span
             style={{
@@ -69,16 +71,18 @@ class LeftSideBar extends React.Component {
             gene
           </span>
         </div>
-        <InformationMenu
-          {...{
-            libraryVersions,
-            aboutLink,
-            dataSourceLink,
-            tosURL,
-            privacyURL,
-            dispatch,
-          }}
-        />
+        <div style={{ marginRight: 5, height: "100%" }}>
+          <InformationMenu
+            {...{
+              libraryVersions,
+              aboutLink,
+              dataSourceLink,
+              tosURL,
+              privacyURL,
+              dispatch,
+            }}
+          />
+        </div>
       </div>
     );
   }
