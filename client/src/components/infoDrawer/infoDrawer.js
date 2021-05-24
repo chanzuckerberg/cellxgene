@@ -45,7 +45,7 @@ class InfoDrawer extends PureComponent {
     });
 
     return (
-      <Drawer onClose={this.handleClose} {...{ isOpen, position }}>
+      <Drawer onClose={this.handleClose} size={480} {...{ isOpen, position }}>
         <InfoFormat
           {...{
             collection,

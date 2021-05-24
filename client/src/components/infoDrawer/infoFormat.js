@@ -1,4 +1,4 @@
-import { H3, HTMLTable, Classes, Tooltip } from "@blueprintjs/core";
+import { Classes, H3, HTMLTable, Position, Tooltip } from "@blueprintjs/core";
 import React from "react";
 
 const ONTOLOGY_KEY = "ontology_term_id";
@@ -152,8 +152,8 @@ const renderCollectionLinks = (collection) => {
               <tr {...{ key: i }}>
                 <td>{type}</td>
                 <td>
-                  <a href={url} target="_blank" rel="noopener">
-                    {name || "link"}
+                  <a href={url} rel="noopener" target="_blank">
+                    {name}
                   </a>
                 </td>
               </tr>
@@ -200,7 +200,13 @@ const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
               <tr {...{ key }}>
                 <td>{key}</td>
                 <td>
-                  <Tooltip content={tip} minimal disabled={!tip}>
+                  <Tooltip
+                    content={tip}
+                    disabled={!tip}
+                    minimal
+                    modifiers={{ flip: { enabled: false } }}
+                    position={Position.TOP}
+                  >
                     {value}
                   </Tooltip>
                 </td>
@@ -225,7 +231,7 @@ const InfoFormat = React.memo(
     const { organism } = dataPortalProps;
 
     return (
-      <div className={Classes.DIALOG_BODY}>
+      <div className={Classes.DRAWER_BODY}>
         <div className={Classes.DIALOG_BODY}>
           <H3>{collection.name}</H3>
           <p>{collection.description}</p>
