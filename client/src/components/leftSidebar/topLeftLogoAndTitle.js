@@ -25,6 +25,7 @@ class LeftSideBar extends React.Component {
     const {
       libraryVersions,
       aboutLink,
+      dataSourceLink,
       privacyURL,
       tosURL,
       dispatch,
@@ -75,6 +76,7 @@ class LeftSideBar extends React.Component {
             {...{
               libraryVersions,
               aboutLink,
+              dataSourceLink,
               tosURL,
               privacyURL,
               dispatch,
