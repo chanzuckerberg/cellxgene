@@ -2,68 +2,81 @@ import React from "react";
 import { Button, Menu, MenuItem, Popover, Position } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 
+/* app dependencies */
+import IconAbout from "./iconAbout";
+import IconDocument from "./iconDocument";
+import IconGitHub from "./iconGitHub";
+import IconSlack from "./iconSlack";
+
 const InformationMenu = React.memo((props) => {
-  const { libraryVersions, tosURL, privacyURL } = props;
+  const { dataSourceLink, libraryVersions, tosURL, privacyURL } = props;
   return (
     <Popover
       content={
         <Menu>
           <MenuItem
             href="https://chanzuckerberg.github.io/cellxgene/"
-            target="_blank"
-            icon="book"
-            text="Documentation"
+            icon={<IconDocument />}
             rel="noopener"
+            target="_blank"
+            text="Documentation"
           />
           <MenuItem
             href="https://join-cellxgene-users.herokuapp.com/"
-            target="_blank"
-            icon="chat"
-            text="Chat"
+            icon={<IconSlack />}
             rel="noopener"
+            target="_blank"
+            text="Slack"
           />
           <MenuItem
             href="https://github.com/chanzuckerberg/cellxgene"
-            target="_blank"
-            icon="git-branch"
-            text="Github"
+            icon={<IconGitHub />}
             rel="noopener"
+            target="_blank"
+            text="GitHub"
           />
-          <MenuItem target="_blank" text={libraryVersions?.cellxgene || null} />
-          <MenuItem text="MIT License" />
-          {tosURL && (
+          {dataSourceLink?.url && (
             <MenuItem
-              href={tosURL}
-              target="_blank"
-              text="Terms of Service"
+              href={dataSourceLink?.url}
+              icon={<IconDocument />}
               rel="noopener"
+              target="_blank"
+              text={dataSourceLink?.name}
             />
           )}
-          {privacyURL && (
-            <MenuItem
-              href={privacyURL}
-              target="_blank"
-              text="Privacy Policy"
-              rel="noopener"
-            />
-          )}
+          <MenuItem
+            icon={<IconAbout />}
+            popoverProps={{ openOnTargetFocus: false }}
+            text="About"
+          >
+            <MenuItem text={libraryVersions?.cellxgene || null} />
+            <MenuItem text="MIT License" />
+            {tosURL && (
+              <MenuItem
+                href={tosURL}
+                rel="noopener"
+                target="_blank"
+                text="Terms of Service"
+              />
+            )}
+            {privacyURL && (
+              <MenuItem
+                href={privacyURL}
+                rel="noopener"
+                target="_blank"
+                text="Privacy Policy"
+              />
+            )}
+          </MenuItem>
         </Menu>
       }
-      position={Position.BOTTOM_RIGHT}
+      position={Position.BOTTOM_LEFT}
       modifiers={{
-        preventOverflow: { enabled: false },
         hide: { enabled: false },
+        preventOverflow: { enabled: false },
       }}
     >
-      <Button
-        data-testid="menu"
-        type="button"
-        icon={IconNames.INFO_SIGN}
-        style={{
-          cursor: "pointer",
-          verticalAlign: "middle",
-        }}
-      />
+      <Button data-testid="menu" icon={IconNames.MENU} minimal type="button" />
     </Popover>
   );
 });
