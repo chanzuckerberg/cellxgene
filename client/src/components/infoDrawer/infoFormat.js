@@ -1,15 +1,5 @@
-import {
-  Classes,
-  Colors,
-  H3,
-  HTMLTable,
-  Position,
-  Tooltip,
-} from "@blueprintjs/core";
+import { Classes, H3, HTMLTable, Position, Tooltip } from "@blueprintjs/core";
 import React from "react";
-
-/* styles */
-import styles from "./infoDrawer.css";
 
 const ONTOLOGY_KEY = "ontology_term_id";
 const COLLECTION_LINK_ORDER_BY = [
@@ -46,18 +36,6 @@ const buildDatasetMetadata = (singleValueCategories, corporaMetadata) => {
   ];
   metadata.sort(sortDatasetMetadata);
   return metadata;
-};
-
-const getTableCellKeyStyles = () => {
-  return { color: Colors.GRAY1, padding: "8px 8px 0 0" };
-};
-
-const getTableCellLinkStyles = () => {
-  return { color: "#007BF7" };
-};
-
-const getTableCellValueStyles = () => {
-  return { color: Colors.BLACK, padding: "8px 0 0 8px" };
 };
 
 const sortCollectionLinks = (l0, l1) => {
@@ -162,26 +140,19 @@ const renderCollectionLinks = (collection) => {
   const links = buildCollectionLinks(collection.links);
   return (
     <>
-      {renderSectionTitle("Collection")}
-      <HTMLTable style={{ tableLayout: "fixed", width: "100%" }}>
+      <p>Collection</p>
+      <HTMLTable condensed>
         <tbody>
           <tr>
-            <td style={getTableCellKeyStyles()}>Contact</td>
-            <td style={getTableCellValueStyles()}>
-              {renderCollectionContactLink(collection.contact)}
-            </td>
+            <td>Contact</td>
+            <td>{renderCollectionContactLink(collection.contact)}</td>
           </tr>
           {links.map(({ name, type, url }, i) => {
             return (
               <tr {...{ key: i }}>
-                <td style={getTableCellKeyStyles()}>{type}</td>
-                <td style={getTableCellValueStyles()}>
-                  <a
-                    href={url}
-                    rel="noopener"
-                    style={getTableCellLinkStyles()}
-                    target="_blank"
-                  >
+                <td>{type}</td>
+                <td>
+                  <a href={url} rel="noopener" target="_blank">
                     {name}
                   </a>
                 </td>
@@ -203,11 +174,7 @@ const renderCollectionContactLink = (contact) => {
   }
   const { name, email } = contact;
   if (email) {
-    return (
-      <a href={`mailto:${email}`} style={getTableCellLinkStyles()}>
-        {name}
-      </a>
-    );
+    return <a href={`mailto:${email}`}>{name}</a>;
   }
   return name;
 };
@@ -225,20 +192,19 @@ const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
   const metadata = buildDatasetMetadata(singleValueCategories, corporaMetadata);
   return (
     <>
-      {renderSectionTitle("Dataset")}
-      <HTMLTable style={{ tableLayout: "fixed", width: "100%" }}>
+      <p>Dataset</p>
+      <HTMLTable condensed>
         <tbody>
           {metadata.map(({ key, value, tip }) => {
             return (
               <tr {...{ key }}>
-                <td style={getTableCellKeyStyles()}>{key}</td>
-                <td style={getTableCellValueStyles()}>
+                <td>{key}</td>
+                <td>
                   <Tooltip
                     content={tip}
                     disabled={!tip}
                     minimal
                     modifiers={{ flip: { enabled: false } }}
-                    popoverClassName={styles.infoDrawerTooltip}
                     position={Position.TOP}
                   >
                     {value}
@@ -250,14 +216,6 @@ const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
         </tbody>
       </HTMLTable>
     </>
-  );
-};
-
-const renderSectionTitle = (title) => {
-  return (
-    <p style={{ margin: "24px 0 8px" }}>
-      <strong>{title}</strong>
-    </p>
   );
 };
 
@@ -274,13 +232,8 @@ const InfoFormat = React.memo(
 
     return (
       <div className={Classes.DRAWER_BODY}>
-        <div
-          className={Classes.DIALOG_BODY}
-          style={{ color: Colors.BLACK, margin: "24px 16px" }}
-        >
-          <H3 style={{ color: Colors.BLACK, margin: "0 0 8px" }}>
-            {collection.name}
-          </H3>
+        <div className={Classes.DIALOG_BODY}>
+          <H3>{collection.name}</H3>
           <p>{collection.description}</p>
           {renderCollectionLinks(collection)}
           {renderDatasetMetadata(singleValueCategories, { organism })}
