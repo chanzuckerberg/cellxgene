@@ -1,5 +1,6 @@
 /* core dependencies */
 import { Breadcrumb, Breadcrumbs, Icon } from "@blueprintjs/core";
+import { IconNames } from "@blueprintjs/icons";
 import React, { PureComponent } from "react";
 import { connect } from "react-redux";
 
@@ -59,7 +60,7 @@ class DatasetSelector extends PureComponent {
       <Breadcrumb className={className}>
         {selectedDatasetName}
         <Icon
-          icon="chevron-down"
+          icon={IconNames.CHEVRON_DOWN}
           style={{ marginLeft: "5px", marginRight: 0 }}
         />
       </Breadcrumb>
