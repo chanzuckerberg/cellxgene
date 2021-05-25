@@ -67,6 +67,7 @@ def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp
 
     # logfoldchanges: log2(meanA / meanB)
     logfoldchanges = np.log2(np.abs((meanA + 1e-9) / (meanB + 1e-9)))
+    stats_to_sort = np.abs(tscores)
 
     # find all with lfc > cutoff
 
@@ -101,7 +102,6 @@ def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp
         ]
 
         result = {"positive": pos_result, "negative": neg_result}
-
     else:
         lfc_absval_above_cutoff_idx = np.nonzero(np.abs(logfoldchanges) > diffexp_lfc_cutoff)[0]
         sort_order = derive_sort_order(lfc_absval_above_cutoff_idx, top_n, stats_to_sort)
