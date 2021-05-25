@@ -14,9 +14,9 @@ import StillLoading from "./loading";
 import ErrorLoading from "./error";
 
 @connect((state, ownProps) => {
-  const { isObs, isUserDefined, isDiffExp, isGeneSetSummary, field } = ownProps;
+  const { isObs, isUserDefined, isGeneSetSummary, field } = ownProps;
   const myName = makeContinuousDimensionName(
-    { isObs, isUserDefined, isDiffExp, isGeneSetSummary },
+    { isObs, isUserDefined, isGeneSetSummary },
     field
   );
   return {
@@ -80,7 +80,6 @@ class HistogramBrush extends React.PureComponent {
         field,
         isObs,
         isUserDefined,
-        isDiffExp,
         isGeneSetSummary,
       } = this.props;
 
@@ -98,7 +97,6 @@ class HistogramBrush extends React.PureComponent {
         continuousNamespace: {
           isObs,
           isUserDefined,
-          isDiffExp,
           isGeneSetSummary,
         },
       };
@@ -115,7 +113,6 @@ class HistogramBrush extends React.PureComponent {
         field,
         isObs,
         isUserDefined,
-        isDiffExp,
         isGeneSetSummary,
       } = this.props;
       const minAllowedBrushSize = 10;
@@ -156,7 +153,6 @@ class HistogramBrush extends React.PureComponent {
         continuousNamespace: {
           isObs,
           isUserDefined,
-          isDiffExp,
           isGeneSetSummary,
         },
       };
@@ -362,10 +358,7 @@ class HistogramBrush extends React.PureComponent {
       field,
       isColorAccessor,
       isUserDefined,
-      isDiffExp,
-      logFoldChange,
       isGeneSetSummary,
-      pvalAdj,
       isScatterplotXXaccessor,
       isScatterplotYYaccessor,
       zebra,
@@ -383,7 +376,7 @@ class HistogramBrush extends React.PureComponent {
       heightMini,
     } = this.state;
     const fieldForId = field.replace(/\s/g, "_");
-    const showScatterPlot = isDiffExp || isUserDefined;
+    const showScatterPlot = isUserDefined;
 
     return (
       <Async
@@ -406,9 +399,7 @@ class HistogramBrush extends React.PureComponent {
                 id={`histogram_${fieldForId}`}
                 data-testid={`histogram-${field}`}
                 data-testclass={
-                  isDiffExp
-                    ? "histogram-diffexp"
-                    : isUserDefined
+                  isUserDefined
                     ? "histogram-user-gene"
                     : "histogram-continuous-metadata"
                 }
@@ -454,15 +445,12 @@ class HistogramBrush extends React.PureComponent {
                   <HistogramFooter
                     isGeneSetSummary={isGeneSetSummary}
                     isObs={isObs}
-                    isDiffExp={isDiffExp}
                     displayName={field}
                     hideRanges={asyncProps.isSingleValue}
                     rangeMin={asyncProps.unclippedRange[0]}
                     rangeMax={asyncProps.unclippedRange[1]}
                     rangeColorMin={asyncProps.unclippedRangeColor[0]}
                     rangeColorMax={asyncProps.unclippedRangeColor[1]}
-                    logFoldChange={logFoldChange}
-                    pvalAdj={pvalAdj}
                   />
                 )}
               </div>

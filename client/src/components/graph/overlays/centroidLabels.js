@@ -15,7 +15,6 @@ export default
   categoricalSelection: state.categoricalSelection,
   showLabels: state.centroidLabels?.showLabels,
   genesets: state.genesets.genesets,
-  differential: state.differential,
 }))
 class CentroidLabels extends PureComponent {
   static watchAsync(props, prevProps) {
@@ -76,16 +75,10 @@ class CentroidLabels extends PureComponent {
   };
 
   colorByQuery() {
-    const { annoMatrix, colors, genesets, differential } = this.props;
+    const { annoMatrix, colors, genesets } = this.props;
     const { schema } = annoMatrix;
     const { colorMode, colorAccessor } = colors;
-    return createColorQuery(
-      colorMode,
-      colorAccessor,
-      schema,
-      genesets,
-      differential.diffExp
-    );
+    return createColorQuery(colorMode, colorAccessor, schema, genesets);
   }
 
   async fetchData() {

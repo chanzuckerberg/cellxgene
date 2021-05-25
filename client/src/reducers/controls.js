@@ -1,6 +1,5 @@
 import uniq from "lodash.uniq";
 import filter from "lodash.filter";
-import { subsetAndResetGeneLists } from "../util/stateManager/controlsHelpers";
 
 const Controls = (
   state = {
@@ -11,7 +10,6 @@ const Controls = (
     // all of the data + selection state
     userDefinedGenes: [],
     userDefinedGenesLoading: false,
-    diffexpGenes: [],
 
     resettingInterface: false,
     graphInteractionMode: "select",
@@ -45,26 +43,16 @@ const Controls = (
       };
     }
     case "reset subset": {
-      const [newUserDefinedGenes, newDiffExpGenes] = subsetAndResetGeneLists(
-        state
-      );
       return {
         ...state,
         resettingInterface: false,
-        userDefinedGenes: newUserDefinedGenes,
-        diffexpGenes: newDiffExpGenes,
       };
     }
     case "subset to selection": {
-      const [newUserDefinedGenes, newDiffExpGenes] = subsetAndResetGeneLists(
-        state
-      );
       return {
         ...state,
         loading: false,
         error: null,
-        userDefinedGenes: newUserDefinedGenes,
-        diffexpGenes: newDiffExpGenes,
       };
     }
     case "request user defined gene started": {
@@ -88,19 +76,6 @@ const Controls = (
         ...state,
         userDefinedGenes: _userDefinedGenes,
         userDefinedGenesLoading: false,
-      };
-    }
-    case "request differential expression success": {
-      const diffexpGenes = action.data.map((v) => v[0]);
-      return {
-        ...state,
-        diffexpGenes,
-      };
-    }
-    case "clear differential expression": {
-      return {
-        ...state,
-        diffexpGenes: [],
       };
     }
     case "clear user defined gene": {

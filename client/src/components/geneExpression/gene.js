@@ -63,9 +63,6 @@ class Gene extends React.Component {
       isColorAccessor,
       isScatterplotXXaccessor,
       isScatterplotYYaccessor,
-      isDiffExp,
-      pvalAdj,
-      logFoldChange,
     } = this.props;
     const { geneIsExpanded } = this.state;
     const genesetNameLengthVisible = 310; /* this magic number determines how much of a long geneset name we see */
@@ -120,25 +117,20 @@ class Gene extends React.Component {
               </Truncate>
             </div>
             {!geneIsExpanded ? (
-              isDiffExp ? (
-                <HistogramBrush isDiffExp field={gene} mini />
-              ) : (
-                <HistogramBrush isUserDefined field={gene} mini />
-              )
+              <HistogramBrush isUserDefined field={gene} mini />
             ) : null}
           </div>
           <div style={{ flexShrink: 0, marginLeft: 2 }}>
-            {!isDiffExp ? (
-              <AnchorButton
-                minimal
-                small
-                data-testid={`delete-from-geneset-${gene}`}
-                onClick={this.handleDeleteGeneFromSet}
-                intent="none"
-                style={{ fontWeight: 700, marginRight: 2 }}
-                icon={<Icon icon="trash" iconSize={10} />}
-              />
-            ) : null}
+            <AnchorButton
+              minimal
+              small
+              data-testid={`delete-from-geneset-${gene}`}
+              onClick={this.handleDeleteGeneFromSet}
+              intent="none"
+              style={{ fontWeight: 700, marginRight: 2 }}
+              icon={<Icon icon="trash" iconSize={10} />}
+            />
+            )
             <AnchorButton
               minimal
               small
@@ -184,17 +176,7 @@ class Gene extends React.Component {
             />
           </div>
         </div>
-        {geneIsExpanded &&
-          (isDiffExp ? (
-            <HistogramBrush
-              isDiffExp
-              field={gene}
-              pvalAdj={pvalAdj}
-              logFoldChange={logFoldChange}
-            />
-          ) : (
-            <HistogramBrush isUserDefined field={gene} />
-          ))}
+        {geneIsExpanded && <HistogramBrush isUserDefined field={gene} />}
       </div>
     );
   }

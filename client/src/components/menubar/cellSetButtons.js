@@ -9,12 +9,9 @@ import actions from "../../actions";
 }))
 class CellSetButton extends React.PureComponent {
   set() {
-    const { differential, dispatch, eitherCellSetOneOrTwo } = this.props;
+    const { dispatch, eitherCellSetOneOrTwo } = this.props;
 
-    if (!differential.diffExp) {
-      // disallow this action if the user has active differential expression results
-      dispatch(actions.setCellSetFromSelection(eitherCellSetOneOrTwo));
-    }
+    dispatch(actions.setCellSetFromSelection(eitherCellSetOneOrTwo));
   }
 
   render() {
@@ -31,7 +28,6 @@ class CellSetButton extends React.PureComponent {
       >
         <AnchorButton
           type="button"
-          disabled={differential.diffExp}
           onClick={() => {
             this.set();
           }}

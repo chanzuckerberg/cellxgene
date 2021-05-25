@@ -7,9 +7,7 @@ const ColorsReducer = (
     colorMode: null /* by continuous, by expression */,
     colorAccessor: null /* tissue, Apod */,
   },
-  action,
-  nextSharedState,
-  prevSharedState
+  action
 ) => {
   switch (action.type) {
     case "universe: user color load success": {
@@ -18,19 +16,6 @@ const ColorsReducer = (
         ...state,
         userColors,
       };
-    }
-
-    case "clear differential expression":
-    case "set clip quantiles":
-    case "subset to selection": {
-      const { controls: prevControls } = prevSharedState;
-      if (prevControls.diffexpGenes.includes(state.colorAccessor)) {
-        return {
-          colorMode: null,
-          colorAccessor: null,
-        };
-      }
-      return state;
     }
 
     case "annotation: category edited": {
