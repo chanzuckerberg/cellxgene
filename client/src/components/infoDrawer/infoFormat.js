@@ -38,6 +38,18 @@ const buildDatasetMetadata = (singleValueCategories, corporaMetadata) => {
   return metadata;
 };
 
+const getTableCellKeyStyles = () => {
+  return { padding: "8px 8px 0 0" };
+};
+
+const getTableCellValueStyles = () => {
+  return { padding: "8px 0 0 8px" };
+};
+
+const getTableStyles = () => {
+  return { tableLayout: "fixed", width: "100%" };
+};
+
 const sortCollectionLinks = (l0, l1) => {
   /*
   sort collection links by custom order.
@@ -140,18 +152,20 @@ const renderCollectionLinks = (collection) => {
   const links = buildCollectionLinks(collection.links);
   return (
     <>
-      <p>Collection</p>
-      <HTMLTable condensed>
+      {renderSectionTitle("Collection")}
+      <HTMLTable style={getTableStyles()}>
         <tbody>
           <tr>
-            <td>Contact</td>
-            <td>{renderCollectionContactLink(collection.contact)}</td>
+            <td style={getTableCellKeyStyles()}>Contact</td>
+            <td style={getTableCellValueStyles()}>
+              {renderCollectionContactLink(collection.contact)}
+            </td>
           </tr>
           {links.map(({ name, type, url }, i) => {
             return (
               <tr {...{ key: i }}>
-                <td>{type}</td>
-                <td>
+                <td style={getTableCellKeyStyles()}>{type}</td>
+                <td style={getTableCellValueStyles()}>
                   <a href={url} rel="noopener" target="_blank">
                     {name}
                   </a>
@@ -192,14 +206,14 @@ const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
   const metadata = buildDatasetMetadata(singleValueCategories, corporaMetadata);
   return (
     <>
-      <p>Dataset</p>
-      <HTMLTable condensed>
+      {renderSectionTitle("Dataset")}
+      <HTMLTable style={getTableStyles()}>
         <tbody>
           {metadata.map(({ key, value, tip }) => {
             return (
               <tr {...{ key }}>
-                <td>{key}</td>
-                <td>
+                <td style={getTableCellKeyStyles()}>{key}</td>
+                <td style={getTableCellValueStyles()}>
                   <Tooltip
                     content={tip}
                     disabled={!tip}
@@ -216,6 +230,14 @@ const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
         </tbody>
       </HTMLTable>
     </>
+  );
+};
+
+const renderSectionTitle = (title) => {
+  return (
+    <p style={{ margin: "24px 0 8px" }}>
+      <strong>{title}</strong>
+    </p>
   );
 };
 
