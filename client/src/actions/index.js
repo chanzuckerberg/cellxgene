@@ -197,6 +197,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 50) => async (
         }),
         body: JSON.stringify({
           mode: "topN",
+          two_lists: true,
           count: num_genes,
           set1: { filter: { obs: { index: set1 } } },
           set2: { filter: { obs: { index: set2 } } },
@@ -211,10 +212,13 @@ const requestDifferentialExpression = (set1, set2, num_genes = 50) => async (
 
     const response = await res.json();
     const varIndex = await annoMatrix.fetch("var", varIndexName);
-    const data = response.map((v) => [
-      varIndex.at(v[0], varIndexName),
-      ...v.slice(1),
-    ]);
+    const data = { negative: [], positive: [] };
+    for (const polarity of Object.keys(data)) {
+      data[polarity] = response[polarity].map((v) => [
+        varIndex.at(v[0], varIndexName),
+        ...v.slice(1),
+      ]);
+    }
 
     /* then send the success case action through */
     return dispatch({
