@@ -357,23 +357,30 @@ const GeneSets = (
     case "request differential expression success": {
       const { data } = action;
 
-      const genes = new Map(
-        data.map((diffExpGene) => [
-          diffExpGene[0],
-          {
-            geneSymbol: diffExpGene[0],
-          },
-        ])
-      );
+      const dateString = new Date().toLocaleString();
 
-      const genesetName = `DiffExp Set (${new Date().toLocaleString()})`;
+      const genesetNames = {
+        positive: `DiffExp Set A (${dateString})`,
+        negative: `DiffExp Set B (${dateString})`,
+      };
 
       const genesets = new Map(state.genesets); // clone
-      genesets.set(genesetName, {
-        genesetName,
-        genesetDescription: "",
-        genes,
-      });
+
+      for (const polarity of Object.keys(genesetNames)) {
+        const genes = new Map(
+          data[polarity].map((diffExpGene) => [
+            diffExpGene[0],
+            {
+              geneSymbol: diffExpGene[0],
+            },
+          ])
+        );
+        genesets.set(genesetNames[polarity], {
+          genesetName: genesetNames[polarity],
+          genesetDescription: "",
+          genes,
+        });
+      }
 
       return {
         ...state,
