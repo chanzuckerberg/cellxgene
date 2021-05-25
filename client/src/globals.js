@@ -107,6 +107,3 @@ if (window.CELLXGENE && window.CELLXGENE.API) {
 }
 
 export const API = _API;
-
-export const DIFF_EXP_GENESET_DESCRIPTION =
-  "This geneset was automatically generated via differential expression. Deleting or editing this description will remove differential expression related labels from expression histograms.";

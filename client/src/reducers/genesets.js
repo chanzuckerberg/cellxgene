@@ -1,4 +1,3 @@
-import * as globals from "../globals";
 /**
  * Gene set state. Geneset UI state is in a different reducer.
  *
@@ -356,7 +355,6 @@ const GeneSets = (
     }
 
     case "request differential expression success": {
-      // [ [gene, logfoldchange, pval, pval_adj], ...]
       const { data } = action;
 
       const genes = new Map(
@@ -364,7 +362,6 @@ const GeneSets = (
           diffExpGene[0],
           {
             geneSymbol: diffExpGene[0],
-            geneDescription: diffExpGene.slice(1).toString(),
           },
         ])
       );
@@ -374,7 +371,7 @@ const GeneSets = (
       const genesets = new Map(state.genesets); // clone
       genesets.set(genesetName, {
         genesetName,
-        genesetDescription: globals.DIFF_EXP_GENESET_DESCRIPTION,
+        genesetDescription: "",
         genes,
       });
 
