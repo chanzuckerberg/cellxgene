@@ -2,7 +2,6 @@
 Helper functions for the controls reducer
 */
 
-import uniq from "lodash.uniq";
 import difference from "lodash.difference";
 
 import * as globals from "../../globals";
@@ -157,13 +156,4 @@ export function pruneVarDataCache(varData, needed) {
     }
   }
   return varData;
-}
-
-export function subsetAndResetGeneLists(state) {
-  const { userDefinedGenes, diffexpGenes } = state;
-  const newUserDefinedGenes = uniq(
-    [].concat(userDefinedGenes, diffexpGenes)
-  ).slice(0, globals.maxGenes);
-  const newDiffExpGenes = [];
-  return [newUserDefinedGenes, newDiffExpGenes];
 }

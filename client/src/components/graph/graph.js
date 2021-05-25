@@ -77,7 +77,6 @@ function createModelTF() {
   colors: state.colors,
   pointDilation: state.pointDilation,
   genesets: state.genesets.genesets,
-  differential: state.differential,
 }))
 class Graph extends React.Component {
   static createReglState(canvas) {
@@ -785,17 +784,11 @@ class Graph extends React.Component {
   }
 
   createColorByQuery(colors) {
-    const { annoMatrix, genesets, differential } = this.props;
+    const { annoMatrix, genesets } = this.props;
     const { schema } = annoMatrix;
     const { colorMode, colorAccessor } = colors;
 
-    return createColorQuery(
-      colorMode,
-      colorAccessor,
-      schema,
-      genesets,
-      differential.diffExp
-    );
+    return createColorQuery(colorMode, colorAccessor, schema, genesets);
   }
 
   renderPoints(

@@ -7,7 +7,6 @@ import CreateGenesetDialogue from "./menus/createGenesetDialogue";
 
 @connect((state) => {
   return {
-    differential: state.differential,
     genesets: state.genesets.genesets,
   };
 })
@@ -30,24 +29,6 @@ class GeneExpression extends React.Component {
     return sets;
   };
 
-  renderDiffexpGeneSets = () => {
-    const { differential } = this.props;
-    const { diffExp } = differential;
-    if (!diffExp) return null;
-
-    // [ [gene, logfoldchange, pval, pval_adj], ...]
-    const setGenes = diffExp.map((diffExpGene) => diffExpGene[0]);
-    return (
-      <GeneSet
-        key="Temp DiffExp Set"
-        setGenes={setGenes}
-        isDiffExp
-        diffExp={diffExp}
-        setName="Temp DiffExp Set"
-      />
-    );
-  };
-
   handleActivateCreateGenesetMode = () => {
     const { dispatch } = this.props;
     dispatch({ type: "geneset: activate add new geneset mode" });
@@ -68,7 +49,6 @@ class GeneExpression extends React.Component {
           </div>
           <CreateGenesetDialogue />
         </div>
-        <div>{this.renderDiffexpGeneSets()}</div>
         <div>{this.renderGeneSets()}</div>
       </div>
     );

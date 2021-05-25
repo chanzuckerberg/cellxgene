@@ -8,22 +8,17 @@ const HistogramFooter = React.memo(
     rangeMax,
     rangeColorMin,
     rangeColorMax,
-    logFoldChange,
-    pvalAdj,
     isObs,
     isGeneSetSummary,
   }) => {
     /*
-    Footer of each histogram.  Will render range, title, and optionally 
-    differential expression info.
-  
+    Footer of each histogram.  Will render range and title.
+
     Required props:
       * displayName - the displayName, aka "n_genes", "FOXP2", etc.
       * hideRanges - true/false, enables/disable rendering of ranges
       * range - length two array, [min, max], containing the range values to display
       * rangeColor - length two array, [mincolor, maxcolor], each a CSS color
-      * logFoldChange - lfc to display, optional.
-      * pValue - pValue to display, optional.
     */
     return (
       <div>
@@ -60,30 +55,6 @@ const HistogramFooter = React.memo(
             max {rangeMax.toPrecision(4)}
           </span>
         </div>
-
-        {logFoldChange && pvalAdj ? (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "baseline",
-            }}
-          >
-            <span>
-              <strong>log fold change:</strong>
-              {` ${logFoldChange.toPrecision(4)}`}
-            </span>
-            <span
-              style={{
-                marginLeft: 7,
-                padding: 2,
-              }}
-            >
-              <strong>p-value (adj):</strong>
-              {pvalAdj < 0.0001 ? " < 0.0001" : ` ${pvalAdj.toFixed(4)}`}
-            </span>
-          </div>
-        ) : null}
       </div>
     );
   }
