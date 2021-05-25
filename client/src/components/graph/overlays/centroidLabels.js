@@ -15,7 +15,6 @@ export default
   categoricalSelection: state.categoricalSelection,
   showLabels: state.centroidLabels?.showLabels,
   genesets: state.genesets.genesets,
-  differential: state.differential,
 }))
 class CentroidLabels extends PureComponent {
   static watchAsync(props, prevProps) {

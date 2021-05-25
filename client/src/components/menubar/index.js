@@ -29,7 +29,6 @@ import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
   return {
     subsetPossible,
     subsetResetPossible,
-    differential: state.differential,
     graphInteractionMode: state.controls.graphInteractionMode,
     clipPercentileMin: Math.round(100 * (annoMatrix?.clipRange?.[0] ?? 0)),
     clipPercentileMax: Math.round(100 * (annoMatrix?.clipRange?.[1] ?? 1)),
@@ -37,8 +36,6 @@ import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
     colorAccessor: state.colors.colorAccessor,
     scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
     scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
-    celllist1: state.differential.celllist1,
-    celllist2: state.differential.celllist2,
     libraryVersions: state.config?.library_versions,
     auth: state.config?.authentication,
     userInfo: state.userInfo,

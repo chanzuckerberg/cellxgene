@@ -45,7 +45,6 @@ const LABEL_WIDTH_ANNO = LABEL_WIDTH - ANNO_BUTTON_WIDTH;
     crossfilter: state.obsCrossfilter,
     isUserAnno,
     genesets: state.genesets.genesets,
-    differential: state.differential,
   };
 })
 class Category extends React.PureComponent {

@@ -107,7 +107,6 @@ const continuous = (selectorId, colorScale, colorAccessor) => {
   annoMatrix: state.annoMatrix,
   colors: state.colors,
   genesets: state.genesets.genesets,
-  differential: state.differential,
 }))
 class ContinuousLegend extends React.Component {
   async componentDidUpdate(prevProps) {

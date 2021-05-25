@@ -54,7 +54,6 @@ const filterGenes = (query, genes) =>
     annoMatrix: state.annoMatrix,
     userDefinedGenes: state.controls.userDefinedGenes,
     userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
-    differential: state.differential,
   };
 })
 class AddGenes extends React.Component {

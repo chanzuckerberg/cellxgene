@@ -77,7 +77,6 @@ function createModelTF() {
   colors: state.colors,
   pointDilation: state.pointDilation,
   genesets: state.genesets.genesets,
-  differential: state.differential,
 }))
 class Graph extends React.Component {
   static createReglState(canvas) {
