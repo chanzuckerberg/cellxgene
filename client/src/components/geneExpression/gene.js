@@ -130,7 +130,6 @@ class Gene extends React.Component {
               style={{ fontWeight: 700, marginRight: 2 }}
               icon={<Icon icon="trash" iconSize={10} />}
             />
-            )
             <AnchorButton
               minimal
               small
