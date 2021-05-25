@@ -323,12 +323,12 @@ class AnndataAdaptor(DataAdaptor):
         self.data.obsm[f"X_{name}"] = X_umap
         return layout_schema
 
-    def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None):
+    def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None, two_lists=False):
         if top_n is None:
             top_n = self.dataset_config.diffexp__top_n
         if lfc_cutoff is None:
             lfc_cutoff = self.dataset_config.diffexp__lfc_cutoff
-        return diffexp_generic.diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff)
+        return diffexp_generic.diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff, two_lists)
 
     def get_colors(self):
         return convert_anndata_category_colors_to_cxg_category_colors(self.data)

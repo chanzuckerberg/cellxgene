@@ -163,7 +163,7 @@ class DataAdaptor(metaclass=ABCMeta):
         mask = np.zeros((count,), dtype=np.bool)
         for i in filter:
             if type(i) == list:
-                mask[i[0] : i[1]] = True
+                mask[i[0]: i[1]] = True
             else:
                 mask[i] = True
         return mask
@@ -297,7 +297,7 @@ class DataAdaptor(metaclass=ABCMeta):
         col_idx = np.nonzero([] if var_selector is None else var_selector)[0]
         return encode_matrix_fbs(X, col_idx=col_idx, row_idx=None)
 
-    def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None):
+    def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None, two_lists=False):
         """
         Computes the top N differentially expressed variables between two observation sets. If mode
         is "TOP_N", then stats for the top N
@@ -307,6 +307,7 @@ class DataAdaptor(metaclass=ABCMeta):
         :param obsFilterA: filter: dictionary with filter params for first set of observations
         :param obsFilterB: filter: dictionary with filter params for second set of observations
         :param top_n: Limit results to top N (Top var mode only)
+        :param two_lists: Boolean to indicate should return the top_n of the most positive and most negative genes (instead of one list of the top_n based on the absolute value)
         :return: top N genes and corresponding stats
         """
         if Axis.VAR in obsFilterA or Axis.VAR in obsFilterB:
@@ -321,11 +322,12 @@ class DataAdaptor(metaclass=ABCMeta):
             top_n = self.dataset_config.diffexp__top_n
 
         if self.server_config.exceeds_limit(
-            "diffexp_cellcount_max", np.count_nonzero(obs_mask_A) + np.count_nonzero(obs_mask_B)
+                "diffexp_cellcount_max", np.count_nonzero(obs_mask_A) + np.count_nonzero(obs_mask_B)
         ):
             raise ExceedsLimitError("Diffexp request exceeds max cell count limit")
 
-        result = self.compute_diffexp_ttest(obs_mask_A, obs_mask_B, top_n, self.dataset_config.diffexp__lfc_cutoff)
+        result = self.compute_diffexp_ttest(maskA=obs_mask_A, maskB=obs_mask_B, top_n=top_n,
+                                            lfc_cutoff=self.dataset_config.diffexp__lfc_cutoff, two_lists=two_lists)
 
         try:
             return jsonify_numpy(result)
@@ -333,7 +335,7 @@ class DataAdaptor(metaclass=ABCMeta):
             raise JSONEncodingValueError("Error encoding differential expression to JSON")
 
     @abstractmethod
-    def compute_diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff):
+    def compute_diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff, two_lists):
         pass
 
     @staticmethod
