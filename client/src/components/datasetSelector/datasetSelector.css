@@ -8,10 +8,6 @@
   color: #10161A; /* Colors.BLACK */ /* TODO(cc) revisit variable specification */
 }
 
-:local(.datasetDisabledBreadcrumb) :global(.bp3-icon) {
-  display: none;
-}
-
 :local(.datasetPopoverTarget) {
   cursor: pointer;
 }

@@ -75,20 +75,18 @@ class DatasetSelector extends PureComponent {
     return datasets.filter((dataset) => dataset !== selectedDataset);
   };
 
-  renderBreadcrumb = (item, renderAsMenu) => {
+  renderBreadcrumb = (item, disabled, renderAsMenu) => {
     /*
     Render BP Breadcrumb, adding menu-specific styles if necessary.
+    TODO(cc) split and simplify breadcrumb versus menu breadcrumb functionality.
      */
-    const className = renderAsMenu
-      ? styles.datasetBreadcrumb
-      : styles.datasetDisabledBreadcrumb; /* no sibling datasets */
+    const className = disabled
+      ? styles.datasetDisabledBreadcrumb /* no sibling datasets */
+      : styles.datasetBreadcrumb;
     return (
       <Breadcrumb href={item.href} className={className}>
         {item.displayText}
-        <Icon
-          icon={IconNames.CHEVRON_DOWN}
-          style={{ marginLeft: "5px", marginRight: 0 }}
-        />
+        {this.renderBreadcrumbMenuIcon(renderAsMenu)}
       </Breadcrumb>
     );
   };
@@ -100,9 +98,21 @@ class DatasetSelector extends PureComponent {
      */
     return (
       <DatasetMenu datasets={datasetsExceptSelected}>
-        {this.renderBreadcrumb(item, true)}
+        {this.renderBreadcrumb(item, false, true)}
       </DatasetMenu>
     );
+  };
+
+  renderBreadcrumbMenuIcon = (renderAsMenu) => {
+    /*
+    Render breadcrumb menu icon "chevron down".
+     */
+    return renderAsMenu ? (
+      <Icon
+        icon={IconNames.CHEVRON_DOWN}
+        style={{ marginLeft: "5px", marginRight: 0 }}
+      />
+    ) : null;
   };
 
   renderDatasetBreadcrumb = (item) => {
@@ -115,7 +125,7 @@ class DatasetSelector extends PureComponent {
     const renderMenu = siblingDatasets.length > 0;
     return renderMenu
       ? this.renderBreadcrumbMenu(item, siblingDatasets)
-      : this.renderBreadcrumb(item);
+      : this.renderBreadcrumb(item, true);
   };
 
   render() {
@@ -128,7 +138,7 @@ class DatasetSelector extends PureComponent {
         style={{
           marginTop: "8px", // Match margin on sibling menu buttons
           flexGrow: 1,
-          overflow: "scroll",
+          overflow: "scroll", // TODO(cc) Mim to revisit
           flex: 1,
         }}
       >
