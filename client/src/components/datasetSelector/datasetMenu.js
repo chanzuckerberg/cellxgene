@@ -20,6 +20,7 @@ const DatasetMenu = React.memo(({ children, datasets }) => {
   const menuScrollable = datasets.length > 9; /* scrollable at 10 datasets */
   return (
     <Popover
+      boundary="viewport"
       content={
         <Menu
           className={menuScrollable ? styles.datasetMenuScrollable : null}
