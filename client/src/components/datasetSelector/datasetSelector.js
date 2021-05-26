@@ -37,7 +37,7 @@ class DatasetSelector extends PureComponent {
     Create the set of breadcrumbs elements, home > collection name > dataset name, where dataset name reveals the
     dataset menu.
      */
-    const origin = "https://cellxgene.cziscience.com/"; // TODO(cc) update to ux-dev URL
+    const origin = "https://cellxgene.staging.single-cell.czi.technology/"; // TODO(cc) update to use global
     const homeProp = this.buildBreadcrumbProp({
       href: origin,
       shortText: "Home",
