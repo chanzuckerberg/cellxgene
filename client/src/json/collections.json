@@ -1,39 +1,5 @@
 [
     {
-        "id": "9f7ea04c-dafd-4f21-ba62-be1ee86138d0",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "734bf6ad-d141-4ef0-b0b6-4366ac3d702f",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
         "id": "ab2a0784-16a2-4d75-9733-9f3edc5aacdd",
         "name": "Test Mass Assignment",
         "contact": {
@@ -55,142 +21,6 @@
                 "name": "hello",
                 "type": "PROTOCOL",
                 "url": "javascript:test;"
-            }
-        ]
-    },
-    {
-        "id": "ecb203c7-6dd3-4aab-84fc-d3bdce58245a",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "8e1ea6d0-192a-42e3-913d-43ea2b00adc2",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "3c63c627-a3c4-4507-9e78-89fc8fe1aaf1",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "95d1c959-749d-4018-a49c-4edced37460a",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "f4b7f6ae-14c0-444b-bdfa-e1e4b97ac6ba",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "31ce2feb-29dd-48b1-ae44-be1d2170de52",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "68131ba1-19da-46ec-bcc2-07d0464e1e9d",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "ea6f5f5c-fbc6-4fa4-924a-24f2cf889b0d",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
             }
         ]
     },
@@ -373,34 +203,6 @@
         "links": []
     },
     {
-        "id": "ada84bde-93a0-480d-954c-2f428e44aadf",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "d7c43972-ce3d-4301-ade4-8832c682a0fe",
-        "name": "trent collection 3",
-        "contact": {
-            "name": "Trent Smith",
-            "email": "trent.smith@chanzuckerberg.com"
-        },
-        "description": "a test collection for publishing",
-        "datasets": [],
-        "links": []
-    },
-    {
         "id": "66535cd3-3cf2-404f-94ec-2e68eef32780",
         "name": "Test Mass Assignment",
         "contact": {
@@ -422,40 +224,6 @@
                 "name": "hello",
                 "type": "PROTOCOL",
                 "url": "javascript:test;"
-            }
-        ]
-    },
-    {
-        "id": "7e67edc1-2f97-43e5-8d08-f09e93db8224",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "3ece0fca-fde2-4c8c-96f9-157d548133ed",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
             }
         ]
     },
@@ -638,24 +406,6 @@
         "links": []
     },
     {
-        "id": "97746f45-9736-4e61-9195-89fe31042432",
-        "name": "trent's collection",
-        "contact": {
-            "name": "trent",
-            "email": "trent.smith007@gmail.com"
-        },
-        "description": "a collection",
-        "datasets": [
-            {
-                "id": "7d6a5774-ee4d-4c9f-9d74-5611023b1ad6",
-                "name": "",
-                "createdAt": 1608320414.332214,
-                "url": ""
-            }
-        ],
-        "links": []
-    },
-    {
         "id": "6fc431d7-2695-4640-9d82-ebfdf8cb03a5",
         "name": "af",
         "contact": {
@@ -673,108 +423,6 @@
             }
         ],
         "links": []
-    },
-    {
-        "id": "acf6f3a2-91d8-48c6-9156-b44696e18d84",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "2bd1c485-e526-492b-9cff-6fd1ba37f0bc",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "f8caaf25-29b8-4094-bd15-ff539f3933ca",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "144594f2-55ef-403b-8cf3-35b7ef64cb57",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "f4eb23b2-28f4-43bd-96ad-5210d6523da7",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "d3481b6e-4fbe-447c-bf5c-4a31af3e27c9",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
     },
     {
         "id": "728f9f0a-34ca-40e9-98da-58cf141fd543",
@@ -832,23 +480,6 @@
         ]
     },
     {
-        "id": "50f1da8d-e8fc-4d77-9843-6794bfc17fc1",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
         "id": "25e8d06f-a485-4a03-989e-03446007f3e4",
         "name": "Staging Collection with Correct DOI",
         "contact": {
@@ -899,159 +530,6 @@
         ]
     },
     {
-        "id": "d0de3ef7-22a3-4257-bc31-2daa9638f4a9",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "a191fa58-6d25-40a3-be3b-5ad72db351a4",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "82ab71cc-c627-48d0-9f7c-a2a220de9936",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "04b44d10-635a-4854-878b-f4888d7ff9cd",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "0b49cafd-b4de-45c2-94ca-c7e44fdbfc72",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "ba940d1b-d01a-4d08-b9cc-9334cc263144",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "38764c65-512e-4889-ac6c-76029ae7e280",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "969c5a5f-1c7d-4640-a8f8-e8f3d3a6434c",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "ce3c07e9-c70e-418b-b2ae-db15ccbd6d47",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
         "id": "ed17a4bc-d647-4051-8698-97406c448173",
         "name": "qq",
         "contact": {
@@ -1073,125 +551,6 @@
                 "name": "",
                 "type": "DATA_SOURCE",
                 "url": "https://www.hi.com"
-            }
-        ]
-    },
-    {
-        "id": "774bdefc-bbb1-409f-814a-28807bad20ae",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "2fa04ff8-a780-41ae-8aa7-e1391b134e60",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "9069b351-c936-4c93-9570-f43595eb1428",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "56e5a731-b924-49c9-a5ae-012191f259d2",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "05e63a0e-0129-4bce-9ae0-1993ec208e3a",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "6dd11e64-bf58-475b-9f36-b21fd7a3444b",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "302f3614-e7f9-4d74-99ae-865cef35c8c0",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
             }
         ]
     },
@@ -1242,244 +601,6 @@
                 "name": "",
                 "type": "DOI",
                 "url": "http://doi.org/10.1056/NEJMoa2035389"
-            }
-        ]
-    },
-    {
-        "id": "a66fd730-20de-4327-be7e-8fa15cfac2c1",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "35ff767c-c97e-460f-ad62-41645e0ba846",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "ca4ef8ce-942c-4f35-8a5d-5b26986eed4d",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "82072acc-c8de-4b97-9e43-2e9a47edc971",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "e8f06fc1-99a0-4635-9842-91a3ac0957f1",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "5afb90bb-2e8b-4fbc-9fdc-cb4f404af7fa",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "7fcd6b16-2baf-4ce6-aa83-047c16203ed8",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "a36a948b-8cc6-4b63-be11-f8af1650416f",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "bf2b77e3-290a-42aa-a71e-d192e46b67d4",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "bff98dbe-0a97-4bc2-a1b9-5afb7bf7b42e",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "eff4deec-ad90-4439-b3dc-fcd693c016fd",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "ba4ed9ac-ce3a-4203-a4c8-cc2932e17f31",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "fa2405e5-79fe-4864-9128-a3ec727f458f",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "e1f16f65-da44-42bd-8f55-96785fae59cf",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
             }
         ]
     },
@@ -1563,57 +684,6 @@
                 "name": "This data source",
                 "type": "DATA_SOURCE",
                 "url": "http://google.com"
-            }
-        ]
-    },
-    {
-        "id": "eacc1e65-4e9a-48b2-9db2-847ce0cbefe1",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "45281a26-4604-4bc5-a1c4-b0e6d825ee07",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "72c98b35-643b-44e5-82e4-feeba15b563b",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
             }
         ]
     },
@@ -1928,42 +998,7 @@
             {
                 "name": "Tabula Muris Senis",
                 "type": "DATA_SOURCE",
-                "url": "https://tabula-muris-senis.ds.czbiohub.org/",
-                "logo": ""
-            }
-        ]
-    },
-    {
-        "id": "acdfe08b-71b3-4ab1-bc21-a073fa4836f7",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
-        "id": "11d3b5d4-cc76-48e6-9a1a-510a42ffa30d",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
+                "url": "https://tabula-muris-senis.ds.czbiohub.org/"
             }
         ]
     },
@@ -2278,8 +1313,7 @@
             {
                 "name": "Tabula Muris Senis",
                 "type": "DATA_SOURCE",
-                "url": "https://tabula-muris-senis.ds.czbiohub.org/",
-                "logo": ""
+                "url": "https://tabula-muris-senis.ds.czbiohub.org/"
             }
         ]
     },
@@ -2360,23 +1394,6 @@
         ]
     },
     {
-        "id": "2beb4e4a-33ae-49f1-9b3e-56a452b097a7",
-        "name": "lots of cells",
-        "contact": {
-            "name": "Doctor Who",
-            "email": "person@random.com"
-        },
-        "description": "These are different words",
-        "datasets": [],
-        "links": [
-            {
-                "name": "The Source",
-                "type": "DATA_SOURCE",
-                "url": "datasource.com"
-            }
-        ]
-    },
-    {
         "id": "cdd3edff-095a-4890-aa8f-0734bb806f6f",
         "name": "An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum",
         "contact": {
@@ -2422,6 +1439,99 @@
                 "name": "",
                 "type": "RAW_DATA",
                 "url": "http://data.nemoarchive.org/biccn/grant/cemba/cemba/epigenome/sncell/"
+            }
+        ]
+    },
+    {
+        "id": "4e3a3744-24e4-4092-b060-d1d43e5ae1bc",
+        "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types",
+        "contact": {
+            "name": "Eran Mukamel",
+            "email": "emukamel@ucsd.edu"
+        },
+        "description": "Single cell transcriptomics has transformed the characterization of brain cell identity by providing quantitative molecular signatures for large, unbiased samples of brain cell populations. With the proliferation of taxonomies based on individual datasets, a major challenge is to integrate and validate results toward defining biologically meaningful cell types. We used a battery of single-cell transcriptome and epigenome measurements generated by the BRAIN Initiative Cell Census Network (BICCN) to comprehensively assess the molecular signatures of cell types in the mouse primary motor cortex (MOp). We further developed computational and statistical methods to integrate these multimodal data and quantitatively validate the reproducibility of the cell types. The reference atlas, based on more than 600,000 high quality single-cell or -nucleus samples assayed by six molecular modalities, is a comprehensive molecular account of the diverse neuronal and non-neuronal cell types in MOp. Collectively, our study indicates that the mouse primary motor cortex contains over 55 neuronal cell types that are highly replicable across analysis methods, sequencing technologies, and modalities. We find many concordant multimodal markers for each cell type, as well as thousands of genes and gene regulatory elements with discrepant transcriptomic and epigenomic signatures. These data highlight the complex molecular regulation of brain cell types and will directly enable design of reagents to target specific MOp cell types for functional analysis.",
+        "datasets": [
+            {
+                "id": "d52466d7-bece-4dff-a803-9f22eb623a9e",
+                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: 10X_cells_v2_AIBS",
+                "cellCount": 122641,
+                "createdAt": 1621630923.423627,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/d52466d7-bece-4dff-a803-9f22eb623a9e.cxg/"
+            },
+            {
+                "id": "bce6a715-a701-4df8-b0e7-24d082906879",
+                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: DNA methylation (CGN)",
+                "cellCount": 9876,
+                "createdAt": 1621630930.621398,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/bce6a715-a701-4df8-b0e7-24d082906879.cxg/"
+            },
+            {
+                "id": "a4bbd3d4-de35-435a-bd5f-ec9302663400",
+                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: SMARTer_cells_MOp",
+                "cellCount": 6288,
+                "createdAt": 1621630931.997398,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/a4bbd3d4-de35-435a-bd5f-ec9302663400.cxg/"
+            },
+            {
+                "id": "3a6c5459-4a0a-438c-883f-fc04441c3b27",
+                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: 10X_nuclei_v3_Broad",
+                "cellCount": 159738,
+                "createdAt": 1621630929.676311,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/3a6c5459-4a0a-438c-883f-fc04441c3b27.cxg/"
+            },
+            {
+                "id": "c8010c73-a1d3-4a37-927a-20da1271c627",
+                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: SMARTer_nuclei_MOp",
+                "cellCount": 6171,
+                "createdAt": 1621630925.406077,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/c8010c73-a1d3-4a37-927a-20da1271c627.cxg/"
+            },
+            {
+                "id": "434aeae4-eff1-4555-8e1e-15ab0f3745d8",
+                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: 10X_cells_v3_AIBS",
+                "cellCount": 71183,
+                "createdAt": 1621630924.408945,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/434aeae4-eff1-4555-8e1e-15ab0f3745d8.cxg/"
+            },
+            {
+                "id": "7bfeb640-82c1-4102-9d02-a622d8dd7a0d",
+                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: chromatin accessibility",
+                "cellCount": 68394,
+                "createdAt": 1621630926.34107,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/7bfeb640-82c1-4102-9d02-a622d8dd7a0d.cxg/"
+            },
+            {
+                "id": "8df1a064-c743-43be-a083-9b4d338d3763",
+                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types",
+                "cellCount": 406187,
+                "createdAt": 1621630927.16489,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/8df1a064-c743-43be-a083-9b4d338d3763.cxg/"
+            },
+            {
+                "id": "b69ee316-b936-46eb-8516-6e8a9590b514",
+                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: 10X_nuclei_v3_AIBS",
+                "cellCount": 40166,
+                "createdAt": 1621630928.000601,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/b69ee316-b936-46eb-8516-6e8a9590b514.cxg/"
+            },
+            {
+                "id": "94a54c2a-91fb-4209-a32c-651d39e4cef7",
+                "name": "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types: DNA methylation (CHN)",
+                "cellCount": 9876,
+                "createdAt": 1621630928.734541,
+                "url": "https://cellxgene.staging.single-cell.czi.technology/e/94a54c2a-91fb-4209-a32c-651d39e4cef7.cxg/"
+            }
+        ],
+        "links": [
+            {
+                "name": "",
+                "type": "DOI",
+                "url": "https://doi.org/10.1101/2020.02.29.970558"
+            },
+            {
+                "name": "",
+                "type": "RAW_DATA",
+                "url": "https://assets.nemoarchive.org/dat-ch1nqb7"
             }
         ]
     }
