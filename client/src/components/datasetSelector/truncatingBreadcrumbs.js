@@ -108,7 +108,7 @@ const getItemsStateForAvailableWidth = (items, availableWidth) => {
       return itemsState;
     }
   }
-  return STATES[0]; // There's a problem, default to full state. TODO(cc) revisit error case here.
+  return STATES[STATES.length - 1]; // There's a problem, default to smallest state. TODO(cc) revisit error case here.
 };
 
 const initItems = (items) => {
