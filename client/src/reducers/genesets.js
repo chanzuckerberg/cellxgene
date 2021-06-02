@@ -360,8 +360,8 @@ const GeneSets = (
       const dateString = new Date().toLocaleString();
 
       const genesetNames = {
-        positive: `DiffExp Set A (${dateString})`,
-        negative: `DiffExp Set B (${dateString})`,
+        positive: `Pop1 high (${dateString})`,
+        negative: `Pop2 high (${dateString})`,
       };
 
       const genesets = new Map(state.genesets); // clone
