@@ -10,7 +10,13 @@ const buildDatasetMenuItems = (datasets) => {
   map dataset to menu item
    */
   return datasets.map((dataset) => {
-    return <MenuItem key={dataset.id} href={dataset.url} text={dataset.name} />;
+    return (
+      <MenuItem
+        key={dataset.id}
+        onClick={dataset.onClick}
+        text={dataset.name}
+      />
+    );
   });
 };
 /*
