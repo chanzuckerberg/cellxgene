@@ -27,12 +27,17 @@ import {
   renameLabel,
   subset,
   duplicateCategory,
+  createGeneset,
+  deleteGeneset,
+  assertGenesetExists,
+  assertGenesetDoesNotExist,
 } from "./cellxgeneActions";
 
 const data = datasets[DATASET];
 
 const perTestCategoryName = "TEST-CATEGORY";
 const perTestLabelName = "TEST-LABEL";
+const perTestGenesetName = "TEST-GENESET";
 
 async function setup(config) {
   await goToPage(appUrlBase);
@@ -40,6 +45,7 @@ async function setup(config) {
   // setup the test fixtures
   await createCategory(perTestCategoryName);
   await createLabel(perTestCategoryName, perTestLabelName);
+  await createGeneset(perTestGenesetName);
 
   if (config.withSubset) {
     await subset({ x1: 0.1, y1: 0.1, x2: 0.8, y2: 0.8 });
@@ -47,6 +53,32 @@ async function setup(config) {
 
   await waitByClass("autosave-complete");
 }
+
+describe("geneSET crud operations and interactions", (config = {}) => {
+  // test("static pre existing genesets load from csv, expand", async () => {});
+  // test("color by geneset", async () => {});
+  // test("brush on geneset mean", async () => {});
+  test("create a new geneset", async () => {
+    await setup(config);
+
+    const genesetName = `test-geneset-foo-123`;
+    await assertGenesetDoesNotExist(genesetName);
+    await createGeneset(genesetName);
+    /* note: as of June 2021, the aria label is in the truncate component which clones the element */
+    await assertGenesetExists(genesetName);
+  });
+  // test("edit geneset description", async () => {});
+  test("delete a geneset", async () => {
+    await deleteGeneset(perTestGenesetName);
+  });
+});
+
+// describe("GENE crud operations and interactions", () => {
+//   test("add a gene to geneset", async () => {});
+//   test("color by gene", async () => {});
+//   test("expand gene and brush", async () => {});
+//   test("delete gene from geneset", async () => {});
+// });
 
 describe.each([
   { withSubset: true, tag: "subset" },

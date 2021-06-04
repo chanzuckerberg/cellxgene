@@ -133,7 +133,7 @@ class GeneSet extends React.Component {
                 style={{
                   maxWidth: globals.leftSidebarWidth - genesetNameLengthVisible,
                 }}
-                data-testid={`${setName}:geneset-label`}
+                data-testid={`${setName}:geneset-name`}
               >
                 {setName}
               </span>

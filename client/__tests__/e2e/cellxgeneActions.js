@@ -176,6 +176,46 @@ export async function createCategory(categoryName) {
   await clickOn("submit-category");
 }
 
+export async function createGeneset(genesetName) {
+  await clickOnUntil("open-create-geneset-dialog", async () => {
+    await expect(page).toMatchElement(getTestId("create-geneset-input"));
+  });
+
+  await typeInto("create-geneset-input", genesetName);
+  await clickOn("submit-geneset");
+  await waitByClass("autosave-complete");
+}
+
+export async function deleteGeneset(genesetName) {
+  const targetId = `${genesetName}:delete-category`;
+
+  await clickOnUntil(`${genesetName}:see-actions`, async () => {
+    await expect(page).toMatchElement(getTestId(targetId));
+  });
+
+  await clickOn(targetId);
+
+  await assertGenesetDoesNotExist(genesetName);
+  await waitByClass("autosave-complete");
+}
+
+export async function assertGenesetDoesNotExist(genesetName) {
+  const result = await isElementPresent(
+    getTestId(`${genesetName}:geneset-name`)
+  );
+  await expect(result).toBe(false);
+}
+
+export async function assertGenesetExists(genesetName) {
+  const handle = await waitByID(`${genesetName}:geneset-name`);
+
+  const result = await handle.evaluate((node) => {
+    return node.getAttribute("aria-label");
+  });
+
+  return expect(result).toBe(genesetName);
+}
+
 export async function duplicateCategory(categoryName) {
   await clickOn("open-annotation-dialog");
 

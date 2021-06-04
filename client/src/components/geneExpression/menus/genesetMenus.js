@@ -55,7 +55,7 @@ class GenesetMenus extends React.PureComponent {
     });
   };
 
-  handleDeleteCategory = () => {
+  handleDeleteGeneset = () => {
     const { dispatch, geneset } = this.props;
     dispatch(actions.genesetDelete(geneset));
   };
@@ -101,9 +101,9 @@ class GenesetMenus extends React.PureComponent {
                   <MenuItem
                     icon="trash"
                     intent="danger"
-                    data-testclass="handleDeleteCategory"
-                    data-testid={`${geneset}:delete-category`}
-                    onClick={this.handleDeleteCategory}
+                    data-testclass="handleDeleteGeneset"
+                    data-testid={`${geneset}:delete-geneset`}
+                    onClick={this.handleDeleteGeneset}
                     text="Delete this gene set (destructive, will remove set and collection of genes)"
                   />
                 </Menu>
