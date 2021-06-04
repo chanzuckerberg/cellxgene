@@ -449,6 +449,10 @@ class Graph extends React.Component {
   }
 
   setReglCanvas = (canvas) => {
+    // Ignore null canvas on unmount
+    if (!canvas) {
+      return;
+    }
     this.reglCanvas = canvas;
     this.setState({
       ...Graph.createReglState(canvas),

@@ -5,7 +5,9 @@ import React, { PureComponent } from "react";
 import { connect } from "react-redux";
 
 /* app dependencies */
+import actions from "../../actions";
 import DatasetMenu from "./datasetMenu";
+import * as globals from "../../globals";
 
 /* styles */
 import styles from "./datasetSelector.css";
@@ -32,7 +34,7 @@ class DatasetSelector extends PureComponent {
     return { ...breadcrumbProp, className: styles.datasetBreadcrumb };
   };
 
-  buildBreadcrumbProps = (collection, selectedDatasetId) => {
+  buildBreadcrumbProps = (dispatch, collection, selectedDatasetId) => {
     /*
     Create the set of breadcrumbs elements, home > collection name > dataset name, where dataset name reveals the
     dataset menu.
@@ -55,7 +57,15 @@ class DatasetSelector extends PureComponent {
     const datasetProp = this.buildBreadcrumbProp({
       shortText: "Dataset",
       text: selectedDataset.name,
-      datasets: collection.datasets,
+      datasets: collection.datasets.map((dataset) => ({
+        ...dataset,
+        onClick: () => {
+          // TODO(cc) review responsibilities (eg dispatch action to update URL and trigger reload) as well as update of global
+          window.history.pushState(null, "cellxgene", dataset.url);
+          globals.API.prefix = `${window.location.origin}${window.location.pathname}api/`;
+          dispatch(actions.doInitialDataLoad(window.location.search));
+        },
+      })),
       selectedDatasetId,
     });
     return [homeProp, collectionProp, datasetProp];
@@ -129,7 +139,7 @@ class DatasetSelector extends PureComponent {
   };
 
   render() {
-    const { collection, selectedDatasetId } = this.props;
+    const { collection, dispatch, selectedDatasetId } = this.props;
     if (!collection) {
       return null;
     }
@@ -145,7 +155,11 @@ class DatasetSelector extends PureComponent {
         <TruncatingBreadcrumbs
           breadcrumbRenderer={this.renderBreadcrumb}
           currentBreadcrumbRenderer={this.renderDatasetBreadcrumb}
-          items={this.buildBreadcrumbProps(collection, selectedDatasetId)}
+          items={this.buildBreadcrumbProps(
+            dispatch,
+            collection,
+            selectedDatasetId
+          )}
         />
       </div>
     );
