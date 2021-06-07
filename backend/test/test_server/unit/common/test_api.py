@@ -414,7 +414,8 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
-        self.assertEqual(len(result_data), 7)
+        self.assertEqual(len(result_data['positive']), 7)
+        self.assertEqual(len(result_data['negative']), 7)
 
     def test_diff_exp_indices(self):
         endpoint = "diffexp/obs"
@@ -429,7 +430,8 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
-        self.assertEqual(len(result_data), 10)
+        self.assertEqual(len(result_data['positive']), 10)
+        self.assertEqual(len(result_data['negative']), 10)
 
     def test_get_summaryvar(self):
         index_col_name = self.schema["schema"]["annotations"]["var"]["index"]

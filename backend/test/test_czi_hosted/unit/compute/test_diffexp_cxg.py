@@ -41,6 +41,7 @@ class DiffExpTest(unittest.TestCase):
             self.assertTrue(np.isclose(result[2], expect[2], 1e-6, 1e-4))
             self.assertTrue(np.isclose(result[3], expect[3], 1e-6, 1e-4))
 
+
     def check_1_10_2_10(self, results):
         """Checks the results for a specific set of rows selections"""
 
@@ -145,15 +146,22 @@ class DiffExpTest(unittest.TestCase):
             diffexp_results_sparse = diffexp_cxg.diffexp_ttest(adaptor_sparse, maskA, maskB, 10)
             diffexp_results_dense = diffexp_cxg.diffexp_ttest(adaptor_dense, maskA, maskB, 10)
 
-            self.compare_diffexp_results(diffexp_results_anndata, diffexp_results_sparse)
-            self.compare_diffexp_results(diffexp_results_anndata, diffexp_results_dense)
+            self.compare_diffexp_results(diffexp_results_anndata['positive'], diffexp_results_sparse['positive'])
+            self.compare_diffexp_results(diffexp_results_anndata['negative'], diffexp_results_sparse['negative'])
 
-            topcols = np.array([x[0] for x in diffexp_results_anndata])
+            self.compare_diffexp_results(diffexp_results_anndata['positive'], diffexp_results_dense['positive'])
+            self.compare_diffexp_results(diffexp_results_anndata['negative'], diffexp_results_dense['negative'])
+
+            topcols_pos = np.array([x[0] for x in diffexp_results_anndata['positive']])
+            topcols_neg = np.array([x[0] for x in diffexp_results_anndata['negative']])
+            topcols = np.concatenate((topcols_pos, topcols_neg))
+
             cols_anndata = self.get_X_col(adaptor_anndata, topcols)
             cols_sparse = self.get_X_col(adaptor_sparse, topcols)
             cols_dense = self.get_X_col(adaptor_dense, topcols)
+
             assert cols_anndata.shape[0] == adaptor_sparse.get_shape()[0]
-            assert cols_anndata.shape[1] == len(diffexp_results_anndata)
+            assert cols_anndata.shape[1] == len(diffexp_results_anndata['positive']) + len(diffexp_results_anndata['negative'])
 
             def convert(mat, cols):
                 return decode_matrix_fbs(encode_matrix_fbs(mat, col_idx=cols)).to_numpy()
