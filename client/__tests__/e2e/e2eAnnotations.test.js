@@ -37,7 +37,7 @@ const data = datasets[DATASET];
 
 const perTestCategoryName = "TEST-CATEGORY";
 const perTestLabelName = "TEST-LABEL";
-const perTestGenesetName = "TEST-GENESET";
+const genesetToDeleteName = "geneset_to_delete";
 
 async function setup(config) {
   await goToPage(appUrlBase);
@@ -45,7 +45,6 @@ async function setup(config) {
   // setup the test fixtures
   await createCategory(perTestCategoryName);
   await createLabel(perTestCategoryName, perTestLabelName);
-  await createGeneset(perTestGenesetName);
 
   if (config.withSubset) {
     await subset({ x1: 0.1, y1: 0.1, x2: 0.8, y2: 0.8 });
@@ -69,7 +68,8 @@ describe("geneSET crud operations and interactions", (config = {}) => {
   });
   // test("edit geneset description", async () => {});
   test("delete a geneset", async () => {
-    await deleteGeneset(perTestGenesetName);
+    await setup(config);
+    await deleteGeneset(genesetToDeleteName);
   });
 });
 

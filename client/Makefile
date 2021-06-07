@@ -1,6 +1,6 @@
 include ../common.mk
 
-ANNOTATIONS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../backend/test/fixtures/pbmc3k-annotations.csv)
+TEST_CSVS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../backend/test/fixtures/{pbmc3k-annotations.csv, pbmc3k-genesets.csv})
 ANNOTATIONS_FILENAME := $(shell basename $(ANNOTATIONS))
 
 CXG_CONFIG := $(if $(CXG_CONFIG), $(CXG_CONFIG), ./__tests__/e2e/test_config.yaml)
@@ -41,7 +41,7 @@ smoke-test:
 .PHONY: smoke-test-annotations
 smoke-test-annotations:
 	$(eval TMP_DIR := $(shell  mktemp -d /tmp/cellxgene_XXXXXX))
-	cp $(ANNOTATIONS) $(TMP_DIR)/ && \
+	cp $(TEST_CSVS) $(TMP_DIR)/ && \
 	start_server_and_test \
 		'CXG_OPTIONS="--annotations-file $(TMP_DIR)/$(ANNOTATIONS_FILENAME)" $(MAKE) start-server' \
 		$(CXG_SERVER_PORT) \

@@ -187,7 +187,7 @@ export async function createGeneset(genesetName) {
 }
 
 export async function deleteGeneset(genesetName) {
-  const targetId = `${genesetName}:delete-category`;
+  const targetId = `${genesetName}:delete-geneset`;
 
   await clickOnUntil(`${genesetName}:see-actions`, async () => {
     await expect(page).toMatchElement(getTestId(targetId));
