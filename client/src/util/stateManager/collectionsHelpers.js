@@ -43,9 +43,24 @@ export function keyCollectionsByDatasetId(collections) {
   }, new Map());
 }
 
+export function replaceDataRootAndDeploymentId(url, replaceWithUrl) {
+  /*
+  Replace the data root and deployment ID in the given URL with the new data root and deployment ID values from the
+  replace with URL.
+  TODO(cc) required for updating API prefix locally, ideally should be read from back end.
+   */
+  const newDataRootAndDeploymentId = bindDataRootAndDeploymentId(
+    replaceWithUrl
+  );
+  return url.replace(
+    /(\/[a-z0-9_.-]*\/[a-z0-9_.-]*\.cxg\/)/i,
+    newDataRootAndDeploymentId
+  );
+}
+
 function bindDataRoot(pathOrUrl) {
   /*
-  read dataroot from path. given "protocol://hostname/x/any-alpha-numeric.cxg/", match on "/x/",
+  read data root from path. given "protocol://origin/x/any-alpha-numeric.cxg/", match on "/x/",
   group on "x".
    */
   const matches = pathOrUrl.match(/\/([a-z0-9_.-]*)\/[a-z0-9_.-]*\.cxg\//i);
@@ -56,9 +71,22 @@ function bindDataRoot(pathOrUrl) {
   return matches[1];
 }
 
+function bindDataRootAndDeploymentId(pathOrUrl) {
+  /*
+  Read data root and deployment ID from path. given "protocol://origin/x/any-alpha-numeric.cxg/", match and group on
+  "/x/any-alpha-numeric.cxg/".
+   */
+  const matches = pathOrUrl.match(/(\/[a-z0-9_.-]*\/[a-z0-9_.-]*\.cxg\/)/i);
+  if (!matches || matches.length < 2) {
+    // Expecting at least match and one capturing group
+    throw new Error(`Unable to bind data root from "${pathOrUrl}"`);
+  }
+  return matches[1];
+}
+
 function bindDeploymentId(pathOrUrl) {
   /*
-  read name of cxg from path. given "protocol://hostname/x/any-alpha-numeric.cxg/", match on "/any-alpha-numeric.cxg/",
+  read name of cxg from path. given "protocol://origin/x/any-alpha-numeric.cxg/", match on "/any-alpha-numeric.cxg/",
   group on "any-alpha-numeric.cxg".
    */
   const matches = pathOrUrl.match(/\/([a-z0-9_.-]*\.cxg)\//i);
