@@ -197,7 +197,6 @@ const requestDifferentialExpression = (set1, set2, num_genes = 50) => async (
         }),
         body: JSON.stringify({
           mode: "topN",
-          two_lists: true,
           count: num_genes,
           set1: { filter: { obs: { index: set1 } } },
           set2: { filter: { obs: { index: set2 } } },

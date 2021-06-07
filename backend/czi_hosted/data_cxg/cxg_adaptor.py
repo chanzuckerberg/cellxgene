@@ -202,13 +202,13 @@ class CxgAdaptor(DataAdaptor):
     def compute_embedding(self, method, filter):
         raise NotImplementedError("CXG does not yet support re-embedding")
 
-    def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None, two_lists=False):
+    def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None):
         if top_n is None:
             top_n = self.dataset_config.diffexp__top_n
         if lfc_cutoff is None:
             lfc_cutoff = self.dataset_config.diffexp__lfc_cutoff
         return diffexp_cxg.diffexp_ttest(
-            adaptor=self, maskA=maskA, maskB=maskB, top_n=top_n, diffexp_lfc_cutoff=lfc_cutoff, two_lists=two_lists)
+            adaptor=self, maskA=maskA, maskB=maskB, top_n=top_n, diffexp_lfc_cutoff=lfc_cutoff)
 
     def get_colors(self):
         if self.cxg_version == "0.0":

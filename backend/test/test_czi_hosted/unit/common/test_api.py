@@ -382,6 +382,7 @@ class EndPoints(object):
         query_hash = hashlib.sha1(query.encode()).hexdigest()
         url = f"{self.URL_BASE}{endpoint}?key={query_hash}"
         result = self.session.post(url, headers=headers, data=query)
+
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
         df = decode_fbs.decode_matrix_FBS(result.content)

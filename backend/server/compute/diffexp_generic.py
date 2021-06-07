@@ -2,7 +2,7 @@ import numpy as np
 from scipy import sparse, stats
 
 
-def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01, two_lists=False):
+def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     """
     Return differential expression statistics for top N variables.
 
@@ -25,9 +25,7 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01, two_l
     :param maskB: observation selection mask for set 2
     :param top_n: number of variables to return stats for
     :param diffexp_lfc_cutoff: minimum
-    :param two_lists: if true return a dict containing lists of max and min (most negative) values, default is false, return max based on
-    absolute value returning [ varindex, logfoldchange, pval, pval_adj ] for top N genes
-    :return:  for top N genes, [ varindex, logfoldchange, pval, pval_adj ]
+    :return:  {"positive": for top N genes, [ varindex, logfoldchange, pval, pval_adj ], "negative": for top N genes, [ varindex, logfoldchange, pval, pval_adj ]}
     """
 
     dataA = adaptor.get_X_array(maskA, None)
@@ -36,12 +34,12 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01, two_l
     # mean, variance, N - calculate for both selections
     meanA, vA, nA = mean_var_n(dataA)
     meanB, vB, nB = mean_var_n(dataB)
-    res = diffexp_ttest_from_mean_var(meanA, vA, nA, meanB, vB, nB, top_n, diffexp_lfc_cutoff, two_lists)
+    res = diffexp_ttest_from_mean_var(meanA, vA, nA, meanB, vB, nB, top_n, diffexp_lfc_cutoff)
 
     return res
 
 
-def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp_lfc_cutoff, two_lists):
+def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp_lfc_cutoff):
     n_var = meanA.shape[0]
     top_n = min(top_n, n_var)
 
@@ -71,50 +69,36 @@ def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp
 
     # find all with lfc > cutoff
 
-    if two_lists:
-        lfc_above_cutoff_idx = np.nonzero(logfoldchanges > diffexp_lfc_cutoff)[0]
-        lfc_below_neg_cutoff_idx = np.nonzero(logfoldchanges < -diffexp_lfc_cutoff)[0]
+    lfc_above_cutoff_idx = np.nonzero(logfoldchanges > diffexp_lfc_cutoff)[0]
+    lfc_below_neg_cutoff_idx = np.nonzero(logfoldchanges < -diffexp_lfc_cutoff)[0]
 
-        above_cutoff_sort_order = derive_sort_order(lfc_above_cutoff_idx, top_n, stats_to_sort)
+    above_cutoff_sort_order = derive_sort_order(lfc_above_cutoff_idx, top_n, stats_to_sort)
 
-        below_neg_cutoff_sort_order = derive_sort_order(lfc_below_neg_cutoff_idx, top_n, stats_to_sort)
+    below_neg_cutoff_sort_order = derive_sort_order(lfc_below_neg_cutoff_idx, top_n, stats_to_sort)
 
-        # top n slice based upon sort order for lfc above cutoff
-        logfoldchanges_top_n = logfoldchanges[above_cutoff_sort_order]
-        pvals_top_n = pvals[above_cutoff_sort_order]
-        pvals_adj_top_n = pvals_adj[above_cutoff_sort_order]
+    # top n slice based upon sort order for lfc above cutoff
+    logfoldchanges_top_n = logfoldchanges[above_cutoff_sort_order]
+    pvals_top_n = pvals[above_cutoff_sort_order]
+    pvals_adj_top_n = pvals_adj[above_cutoff_sort_order]
 
-        # varIndex, logfoldchange, pval, pval_adj
-        pos_result = [
-            [above_cutoff_sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]]
-            for i in range(top_n)
-        ]
+    # varIndex, logfoldchange, pval, pval_adj
+    pos_result = [
+        [above_cutoff_sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]]
+        for i in range(top_n)
+    ]
 
-        # top n slice based upon sort order for lfc below negative cutoff
-        logfoldchanges_top_n = logfoldchanges[below_neg_cutoff_sort_order]
-        pvals_top_n = pvals[below_neg_cutoff_sort_order]
-        pvals_adj_top_n = pvals_adj[below_neg_cutoff_sort_order]
+    # top n slice based upon sort order for lfc below negative cutoff
+    logfoldchanges_top_n = logfoldchanges[below_neg_cutoff_sort_order]
+    pvals_top_n = pvals[below_neg_cutoff_sort_order]
+    pvals_adj_top_n = pvals_adj[below_neg_cutoff_sort_order]
 
-        # varIndex, logfoldchange, pval, pval_adj
-        neg_result = [
-            [below_neg_cutoff_sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]]
-            for i in range(top_n)
-        ]
+    # varIndex, logfoldchange, pval, pval_adj
+    neg_result = [
+        [below_neg_cutoff_sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]]
+        for i in range(top_n)
+    ]
 
-        result = {"positive": pos_result, "negative": neg_result}
-    else:
-        lfc_absval_above_cutoff_idx = np.nonzero(np.abs(logfoldchanges) > diffexp_lfc_cutoff)[0]
-        sort_order = derive_sort_order(lfc_absval_above_cutoff_idx, top_n, stats_to_sort)
-
-        # top n slice based upon sort order
-        logfoldchanges_top_n = logfoldchanges[sort_order]
-        pvals_top_n = pvals[sort_order]
-        pvals_adj_top_n = pvals_adj[sort_order]
-
-        # varIndex, logfoldchange, pval, pval_adj
-        result = [[sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]] for i in range(top_n)]
-
-    return result
+    return {"positive": pos_result, "negative": neg_result}
 
 
 def derive_sort_order(lfc, top_n, stats_to_sort):

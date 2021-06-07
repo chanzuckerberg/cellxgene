@@ -97,27 +97,27 @@ class DiffExpTest(unittest.TestCase):
         self.check_1_10_2_10(results)
 
 
-def test_cxg_default_return_two_lists(self):
+def test_cxg_default(self):
     """Test a cxg adaptor with its default diffexp algorithm (diffexp_cxg)"""
     adaptor = self.load_dataset(f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad")
     maskA = self.get_mask(adaptor, 1, 10)
     maskB = self.get_mask(adaptor, 2, 10)
 
     # run it through the adaptor
-    results = adaptor.compute_diffexp_ttest(maskA, maskB, 10, two_lists=True)
-    self.check_two_list_results(results)
+    results = adaptor.compute_diffexp_ttest(maskA, maskB, 10)
+    self.check_1_10_2_10(results)
 
     # run it directly
 
-    results = diffexp_generic.diffexp_ttest(adaptor, maskA, maskB, 10, two_lists=True)
-    self.check_two_list_results(results)
+    results = diffexp_generic.diffexp_ttest(adaptor, maskA, maskB, 10)
+    self.check_1_10_2_10(results)
 
 
-def test_cxg_generic_returns_two_lists(self):
+def test_cxg_generic(self):
     """Test a cxg adaptor with the generic adaptor"""
     adaptor = self.load_dataset(f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad")
     maskA = self.get_mask(adaptor, 1, 10)
     maskB = self.get_mask(adaptor, 2, 10)
     # run it directly
-    results = diffexp_generic.diffexp_ttest(adaptor, maskA, maskB, 10, two_lists=True)
-    self.check_two_list_results(results)
+    results = diffexp_generic.diffexp_ttest(adaptor, maskA, maskB, 10)
+    self.check_1_10_2_10(results)
