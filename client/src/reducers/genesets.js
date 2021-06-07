@@ -96,12 +96,17 @@ const GeneSets = (
       if (state.genesets.has(genesetName))
         throw new Error("geneset: create -- name already defined.");
 
-      const genesets = new Map(state.genesets); // clone
-      genesets.set(genesetName, {
-        genesetName,
-        genesetDescription,
-        genes: new Map(),
-      });
+      const genesets = new Map([
+        [
+          genesetName,
+          {
+            genesetName,
+            genesetDescription,
+            genes: new Map(),
+          },
+        ],
+        ...state.genesets,
+      ]); // clone and add new geneset to beginning
 
       return {
         ...state,
@@ -364,8 +369,7 @@ const GeneSets = (
         negative: `Pop2 high (${dateString})`,
       };
 
-      const genesets = new Map(state.genesets); // clone
-
+      const diffExpGeneSets = [];
       for (const polarity of Object.keys(genesetNames)) {
         const genes = new Map(
           data[polarity].map((diffExpGene) => [
@@ -375,12 +379,17 @@ const GeneSets = (
             },
           ])
         );
-        genesets.set(genesetNames[polarity], {
-          genesetName: genesetNames[polarity],
-          genesetDescription: "",
-          genes,
-        });
+        diffExpGeneSets.push([
+          genesetNames[polarity],
+          {
+            genesetName: genesetNames[polarity],
+            genesetDescription: "",
+            genes,
+          },
+        ]);
       }
+
+      const genesets = new Map([...diffExpGeneSets, ...state.genesets]); // clone
 
       return {
         ...state,
