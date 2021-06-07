@@ -4,7 +4,8 @@ import unittest
 
 import numpy as np
 
-from backend.czi_hosted.compute import diffexp_generic, diffexp_cxg
+from backend.czi_hosted.compute import diffexp_cxg
+from backend.common.compute import diffexp_generic
 from backend.czi_hosted.compute.diffexp_cxg import diffexp_ttest
 from backend.czi_hosted.converters.h5ad_data_file import H5ADDataFile
 from backend.common.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
@@ -92,8 +93,6 @@ class DiffExpTest(unittest.TestCase):
 
         # run it through the adaptor
         results = adaptor.compute_diffexp_ttest(maskA, maskB, 10)
-        import pdb
-        pdb.set_trace()
         self.check_1_10_2_10(results)
 
         # run it directly
