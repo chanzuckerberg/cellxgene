@@ -26,7 +26,7 @@ const Histogram = ({
     /*
       Create the d3 histogram
       */
-    //  This is just a constant that's flipped by an `isMini` boolean
+    //  This is just a constant that's flipped by parent's `mini` boolean
     const {
       LEFT: marginLeft,
       RIGHT: marginRight,
