@@ -31,6 +31,9 @@ import {
   deleteGeneset,
   assertGenesetExists,
   assertGenesetDoesNotExist,
+  getCellSetCount,
+  expandGeneset,
+  editGenesetName,
 } from "./cellxgeneActions";
 
 const data = datasets[DATASET];
@@ -38,6 +41,13 @@ const data = datasets[DATASET];
 const perTestCategoryName = "TEST-CATEGORY";
 const perTestLabelName = "TEST-LABEL";
 const genesetToDeleteName = "geneset_to_delete";
+const preExistingGenesetName = "fifth_dataset";
+const meanExpressionBrushGenesetName = "second_gene_set";
+const meanExpressionBrushCellsSelected = "557";
+// initial text, the text we type in, the result
+const editableGenesetName = "geneset_to_edit";
+const editText = "_111";
+const newGenesetName = "geneset_to_edit_111";
 
 async function setup(config) {
   await goToPage(appUrlBase);
@@ -54,9 +64,29 @@ async function setup(config) {
 }
 
 describe("geneSET crud operations and interactions", (config = {}) => {
-  // test("static pre existing genesets load from csv, expand", async () => {});
-  // test("color by geneset", async () => {});
-  // test("brush on geneset mean", async () => {});
+  test("static pre existing genesets load from csv, expand", async () => {
+    await setup(config);
+    await assertGenesetExists(preExistingGenesetName);
+  });
+  test("brush on geneset mean", async () => {
+    await setup(config);
+    await expandGeneset(meanExpressionBrushGenesetName);
+
+    const histBrushableAreaId = `histogram-${meanExpressionBrushGenesetName}-plot-brushable-area`;
+
+    const coords = await calcDragCoordinates(histBrushableAreaId, {
+      x1: 0.25,
+      y1: 0.5,
+      x2: 0.55,
+      y2: 0.5,
+    });
+
+    await drag(histBrushableAreaId, coords.start, coords.end);
+
+    const cellCount = await getCellSetCount(1);
+
+    expect(cellCount).toBe(meanExpressionBrushCellsSelected);
+  });
   test("create a new geneset", async () => {
     await setup(config);
 
@@ -66,7 +96,11 @@ describe("geneSET crud operations and interactions", (config = {}) => {
     /* note: as of June 2021, the aria label is in the truncate component which clones the element */
     await assertGenesetExists(genesetName);
   });
-  // test("edit geneset description", async () => {});
+  test("edit geneset name", async () => {
+    await setup(config);
+    await editGenesetName(editableGenesetName, editText);
+    await assertGenesetExists(newGenesetName);
+  });
   test("delete a geneset", async () => {
     await setup(config);
     await deleteGeneset(genesetToDeleteName);

@@ -160,6 +160,14 @@ export async function expandCategory(category) {
   if (notExpanded) await clickOn(`${category}:category-expand`);
 }
 
+export async function expandGeneset(genesetName) {
+  const expand = await waitByID(`${genesetName}:geneset-expand`);
+  const notExpanded = await expand.$(
+    "[data-testclass='geneset-expand-is-not-expanded']"
+  );
+  if (notExpanded) await clickOn(`${genesetName}:geneset-expand`);
+}
+
 export async function clip(min = 0, max = 100) {
   await clickOn("visualization-settings");
   await clearInputAndTypeInto("clip-min-input", min);
@@ -184,6 +192,17 @@ export async function createGeneset(genesetName) {
   await typeInto("create-geneset-input", genesetName);
   await clickOn("submit-geneset");
   await waitByClass("autosave-complete");
+}
+
+export async function editGenesetName(genesetName, editText) {
+  const editButton = `${genesetName}:edit-genesetName-mode`;
+  const submitButton = `${genesetName}:submit-geneset`;
+  await clickOnUntil(`${genesetName}:see-actions`, async () => {
+    await expect(page).toMatchElement(getTestId(editButton));
+  });
+  await clickOn(editButton);
+  await typeInto("rename-geneset-modal", editText);
+  await clickOn(submitButton);
 }
 
 export async function deleteGeneset(genesetName) {
