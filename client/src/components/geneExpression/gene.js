@@ -1,12 +1,13 @@
 import React from "react";
 import { connect } from "react-redux";
 
-import { AnchorButton, Icon } from "@blueprintjs/core";
+import { Button, Icon } from "@blueprintjs/core";
 import Truncate from "../util/truncate";
 import HistogramBrush from "../brushableHistogram";
 
-import * as globals from "../../globals";
 import actions from "../../actions";
+
+const MINI_HISTOGRAM_WIDTH = 110;
 
 @connect((state, ownProps) => {
   const { gene } = ownProps;
@@ -65,7 +66,7 @@ class Gene extends React.Component {
       isScatterplotYYaccessor,
     } = this.props;
     const { geneIsExpanded } = this.state;
-    const genesetNameLengthVisible = 310; /* this magic number determines how much of a long geneset name we see */
+    const geneSymbolWidth = 60 + (geneIsExpanded ? MINI_HISTOGRAM_WIDTH : 0);
 
     return (
       <div>
@@ -108,7 +109,8 @@ class Gene extends React.Component {
               >
                 <span
                   style={{
-                    width: globals.leftSidebarWidth - genesetNameLengthVisible,
+                    width: geneSymbolWidth,
+                    display: "inline-block",
                   }}
                   data-testid={`${gene}:gene-label`}
                 >
@@ -117,11 +119,16 @@ class Gene extends React.Component {
               </Truncate>
             </div>
             {!geneIsExpanded ? (
-              <HistogramBrush isUserDefined field={gene} mini />
+              <HistogramBrush
+                isUserDefined
+                field={gene}
+                mini
+                width={MINI_HISTOGRAM_WIDTH}
+              />
             ) : null}
           </div>
           <div style={{ flexShrink: 0, marginLeft: 2 }}>
-            <AnchorButton
+            <Button
               minimal
               small
               data-testid={`delete-from-geneset-${gene}`}
@@ -130,8 +137,7 @@ class Gene extends React.Component {
               style={{ fontWeight: 700, marginRight: 2 }}
               icon={<Icon icon="trash" iconSize={10} />}
             />
-            )
-            <AnchorButton
+            <Button
               minimal
               small
               data-testid={`plot-x-${gene}`}
@@ -141,8 +147,8 @@ class Gene extends React.Component {
               style={{ fontWeight: 700, marginRight: 2 }}
             >
               x
-            </AnchorButton>
-            <AnchorButton
+            </Button>
+            <Button
               minimal
               small
               data-testid={`plot-y-${gene}`}
@@ -152,8 +158,8 @@ class Gene extends React.Component {
               style={{ fontWeight: 700, marginRight: 2 }}
             >
               y
-            </AnchorButton>
-            <AnchorButton
+            </Button>
+            <Button
               minimal
               small
               data-testclass="maximize"
@@ -164,7 +170,7 @@ class Gene extends React.Component {
               icon={<Icon icon="maximize" iconSize={10} />}
               style={{ marginRight: 2 }}
             />
-            <AnchorButton
+            <Button
               minimal
               small
               data-testclass="colorby"
