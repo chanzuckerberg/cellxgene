@@ -68,7 +68,7 @@ class DataAdaptor(metaclass=ABCMeta):
 
     @abstractmethod
     def compute_embedding(self, method, filter):
-        """compute a new embedding on the specified obs subset, and return the embedding schema. """
+        """compute a new embedding on the specified obs subset, and return the embedding schema."""
         pass
 
     @abstractmethod
@@ -324,7 +324,12 @@ class DataAdaptor(metaclass=ABCMeta):
         ):
             raise ExceedsLimitError("Diffexp request exceeds max cell count limit")
 
-        result = self.compute_diffexp_ttest(obs_mask_A, obs_mask_B, top_n, self.dataset_config.diffexp__lfc_cutoff)
+        result = self.compute_diffexp_ttest(
+            maskA=obs_mask_A,
+            maskB=obs_mask_B,
+            top_n=top_n,
+            lfc_cutoff=self.dataset_config.diffexp__lfc_cutoff,
+        )
 
         try:
             return jsonify_numpy(result)

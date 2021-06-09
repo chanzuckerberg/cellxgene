@@ -96,12 +96,17 @@ const GeneSets = (
       if (state.genesets.has(genesetName))
         throw new Error("geneset: create -- name already defined.");
 
-      const genesets = new Map(state.genesets); // clone
-      genesets.set(genesetName, {
-        genesetName,
-        genesetDescription,
-        genes: new Map(),
-      });
+      const genesets = new Map([
+        [
+          genesetName,
+          {
+            genesetName,
+            genesetDescription,
+            genes: new Map(),
+          },
+        ],
+        ...state.genesets,
+      ]); // clone and add new geneset to beginning
 
       return {
         ...state,
@@ -357,23 +362,34 @@ const GeneSets = (
     case "request differential expression success": {
       const { data } = action;
 
-      const genes = new Map(
-        data.map((diffExpGene) => [
-          diffExpGene[0],
+      const dateString = new Date().toLocaleString();
+
+      const genesetNames = {
+        positive: `Pop1 high (${dateString})`,
+        negative: `Pop2 high (${dateString})`,
+      };
+
+      const diffExpGeneSets = [];
+      for (const polarity of Object.keys(genesetNames)) {
+        const genes = new Map(
+          data[polarity].map((diffExpGene) => [
+            diffExpGene[0],
+            {
+              geneSymbol: diffExpGene[0],
+            },
+          ])
+        );
+        diffExpGeneSets.push([
+          genesetNames[polarity],
           {
-            geneSymbol: diffExpGene[0],
+            genesetName: genesetNames[polarity],
+            genesetDescription: "",
+            genes,
           },
-        ])
-      );
+        ]);
+      }
 
-      const genesetName = `DiffExp Set (${new Date().toLocaleString()})`;
-
-      const genesets = new Map(state.genesets); // clone
-      genesets.set(genesetName, {
-        genesetName,
-        genesetDescription: "",
-        genes,
-      });
+      const genesets = new Map([...diffExpGeneSets, ...state.genesets]); // clone
 
       return {
         ...state,

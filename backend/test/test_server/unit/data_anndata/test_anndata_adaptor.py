@@ -153,9 +153,12 @@ class AdaptorTest(unittest.TestCase):
         f1 = {"filter": {"obs": {"index": [[0, 500]]}}}
         f2 = {"filter": {"obs": {"index": [[500, 1000]]}}}
         result = json.loads(self.data.diffexp_topN(f1["filter"], f2["filter"]))
-        self.assertEqual(len(result), 10)
+        self.assertEqual(len(result['positive']), 10)
+        self.assertEqual(len(result['negative']), 10)
+
         result = json.loads(self.data.diffexp_topN(f1["filter"], f2["filter"], 20))
-        self.assertEqual(len(result), 20)
+        self.assertEqual(len(result['positive']), 20)
+        self.assertEqual(len(result['negative']), 20)
 
     def test_data_frame(self):
         f1 = {"var": {"index": [[0, 10]]}}

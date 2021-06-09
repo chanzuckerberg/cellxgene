@@ -5,7 +5,8 @@ import time
 import numpy as np
 
 from backend.czi_hosted.common.config.app_config import AppConfig
-from backend.czi_hosted.compute import diffexp_generic, diffexp_cxg
+from backend.czi_hosted.compute import diffexp_cxg
+from backend.common.compute import diffexp_generic
 from backend.czi_hosted.data_common.matrix_loader import MatrixDataLoader
 from backend.czi_hosted.data_cxg.cxg_adaptor import CxgAdaptor
 

@@ -8,7 +8,7 @@ from pandas.core.dtypes.dtypes import CategoricalDtype
 from scipy import sparse
 from server_timing import Timing as ServerTiming
 
-import backend.server.compute.diffexp_generic as diffexp_generic
+import backend.common.compute.diffexp_generic as diffexp_generic
 from backend.common.colors import convert_anndata_category_colors_to_cxg_category_colors
 from backend.common.constants import Axis, MAX_LAYOUTS
 from backend.server.common.corpora import corpora_get_props_from_anndata
