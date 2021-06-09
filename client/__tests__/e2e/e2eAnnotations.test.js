@@ -34,20 +34,41 @@ import {
   getCellSetCount,
   expandGeneset,
   editGenesetName,
+  addGeneToSet,
+  assertGeneExistsInGeneset,
+  removeGene,
+  assertGeneDoesNotExist,
+  expandGene,
 } from "./cellxgeneActions";
 
 const data = datasets[DATASET];
 
 const perTestCategoryName = "TEST-CATEGORY";
 const perTestLabelName = "TEST-LABEL";
+
+// geneset CRUD
 const genesetToDeleteName = "geneset_to_delete";
 const preExistingGenesetName = "fifth_dataset";
 const meanExpressionBrushGenesetName = "second_gene_set";
 const meanExpressionBrushCellsSelected = "557";
+
 // initial text, the text we type in, the result
 const editableGenesetName = "geneset_to_edit";
 const editText = "_111";
 const newGenesetName = "geneset_to_edit_111";
+
+// add gene to set
+const geneToAddToSet = "RER1";
+const setToAddGeneTo = "fill_this_geneset";
+
+// remove gene from set
+const geneToRemove = "SIK1";
+const setToRemoveFrom = "empty_this_geneset";
+
+// brush a gene
+const geneToBrush = "SIK1";
+const brushThisGeneGeneset = "brush_this_gene";
+const geneBrushedCellCount = "109";
 
 async function setup(config) {
   await goToPage(appUrlBase);
@@ -63,13 +84,15 @@ async function setup(config) {
   await waitByClass("autosave-complete");
 }
 
-describe("geneSET crud operations and interactions", (config = {}) => {
+describe("geneSET crud operations and interactions", () => {
   test("static pre existing genesets load from csv, expand", async () => {
-    await setup(config);
+    await goToPage(appUrlBase);
+
     await assertGenesetExists(preExistingGenesetName);
   });
   test("brush on geneset mean", async () => {
-    await setup(config);
+    await goToPage(appUrlBase);
+
     await expandGeneset(meanExpressionBrushGenesetName);
 
     const histBrushableAreaId = `histogram-${meanExpressionBrushGenesetName}-plot-brushable-area`;
@@ -88,7 +111,7 @@ describe("geneSET crud operations and interactions", (config = {}) => {
     expect(cellCount).toBe(meanExpressionBrushCellsSelected);
   });
   test("create a new geneset", async () => {
-    await setup(config);
+    await goToPage(appUrlBase);
 
     const genesetName = `test-geneset-foo-123`;
     await assertGenesetDoesNotExist(genesetName);
@@ -97,22 +120,50 @@ describe("geneSET crud operations and interactions", (config = {}) => {
     await assertGenesetExists(genesetName);
   });
   test("edit geneset name", async () => {
-    await setup(config);
+    await goToPage(appUrlBase);
+
     await editGenesetName(editableGenesetName, editText);
     await assertGenesetExists(newGenesetName);
   });
   test("delete a geneset", async () => {
-    await setup(config);
+    await goToPage(appUrlBase);
+
     await deleteGeneset(genesetToDeleteName);
   });
 });
 
-// describe("GENE crud operations and interactions", () => {
-//   test("add a gene to geneset", async () => {});
-//   test("color by gene", async () => {});
-//   test("expand gene and brush", async () => {});
-//   test("delete gene from geneset", async () => {});
-// });
+describe("GENE crud operations and interactions", () => {
+  test("add a gene to geneset", async () => {
+    await goToPage(appUrlBase);
+
+    await addGeneToSet(setToAddGeneTo, geneToAddToSet);
+    await expandGeneset(setToAddGeneTo);
+    await assertGeneExistsInGeneset(geneToAddToSet);
+  });
+  test("expand gene and brush", async () => {
+    await goToPage(appUrlBase);
+    await expandGeneset(brushThisGeneGeneset);
+    await expandGene(geneToBrush);
+    const histBrushableAreaId = `histogram-${geneToBrush}-plot-brushable-area`;
+
+    const coords = await calcDragCoordinates(histBrushableAreaId, {
+      x1: 0.25,
+      y1: 0.5,
+      x2: 0.55,
+      y2: 0.5,
+    });
+    await drag(histBrushableAreaId, coords.start, coords.end);
+    const cellCount = await getCellSetCount(1);
+    expect(cellCount).toBe(geneBrushedCellCount);
+  });
+  test("delete gene from geneset", async () => {
+    await goToPage(appUrlBase);
+
+    await expandGeneset(setToRemoveFrom);
+    await removeGene(geneToRemove);
+    await assertGeneDoesNotExist(geneToRemove);
+  });
+});
 
 describe.each([
   { withSubset: true, tag: "subset" },

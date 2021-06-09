@@ -160,14 +160,6 @@ export async function expandCategory(category) {
   if (notExpanded) await clickOn(`${category}:category-expand`);
 }
 
-export async function expandGeneset(genesetName) {
-  const expand = await waitByID(`${genesetName}:geneset-expand`);
-  const notExpanded = await expand.$(
-    "[data-testclass='geneset-expand-is-not-expanded']"
-  );
-  if (notExpanded) await clickOn(`${genesetName}:geneset-expand`);
-}
-
 export async function clip(min = 0, max = 100) {
   await clickOn("visualization-settings");
   await clearInputAndTypeInto("clip-min-input", min);
@@ -182,6 +174,20 @@ export async function createCategory(categoryName) {
 
   await typeInto("new-category-name", categoryName);
   await clickOn("submit-category");
+}
+
+/* 
+
+  GENESET 
+
+*/
+
+export async function expandGeneset(genesetName) {
+  const expand = await waitByID(`${genesetName}:geneset-expand`);
+  const notExpanded = await expand.$(
+    "[data-testclass='geneset-expand-is-not-expanded']"
+  );
+  if (notExpanded) await clickOn(`${genesetName}:geneset-expand`);
 }
 
 export async function createGeneset(genesetName) {
@@ -234,6 +240,54 @@ export async function assertGenesetExists(genesetName) {
 
   return expect(result).toBe(genesetName);
 }
+
+/* 
+
+  GENE
+
+*/
+
+export async function addGeneToSet(genesetName, geneToAddToSet) {
+  const submitButton = `${genesetName}:submit-gene`;
+
+  await clickOn(`${genesetName}:add-new-gene-to-geneset`);
+  await typeInto("add-genes", geneToAddToSet);
+  await clickOn(submitButton);
+}
+
+export async function removeGene(geneSymbol) {
+  const targetId = `delete-from-geneset:${geneSymbol}`;
+
+  await clickOn(targetId);
+
+  await waitByClass("autosave-complete");
+}
+
+export async function assertGeneExistsInGeneset(geneSymbol) {
+  const handle = await waitByID(`${geneSymbol}:gene-label`);
+
+  const result = await handle.evaluate((node) => {
+    return node.getAttribute("aria-label");
+  });
+
+  return expect(result).toBe(geneSymbol);
+}
+
+export async function assertGeneDoesNotExist(geneSymbol) {
+  const result = await isElementPresent(getTestId(`${geneSymbol}:gene-label`));
+
+  await expect(result).toBe(false);
+}
+
+export async function expandGene(geneSymbol) {
+  await clickOn(`maximize-${geneSymbol}`);
+}
+
+/* 
+
+  CATEGORY 
+
+*/
 
 export async function duplicateCategory(categoryName) {
   await clickOn("open-annotation-dialog");

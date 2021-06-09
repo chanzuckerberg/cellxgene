@@ -58,7 +58,7 @@ class AddGeneToGenesetDialogue extends React.PureComponent {
           isActive={genesetsUI.isAddingGenesToGeneset === geneset}
           inputProps={{ "data-testid": `${geneset}:create-label-dialog` }}
           primaryButtonProps={{
-            "data-testid": `${geneset}:submit-label`,
+            "data-testid": `${geneset}:submit-gene`,
           }}
           title="Add genes to gene set"
           instruction={`Add gene to ${geneset}`}

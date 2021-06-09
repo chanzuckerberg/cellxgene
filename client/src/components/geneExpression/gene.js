@@ -124,7 +124,7 @@ class Gene extends React.Component {
             <AnchorButton
               minimal
               small
-              data-testid={`delete-from-geneset-${gene}`}
+              data-testid={`delete-from-geneset:${gene}`}
               onClick={this.handleDeleteGeneFromSet}
               intent="none"
               style={{ fontWeight: 700, marginRight: 2 }}

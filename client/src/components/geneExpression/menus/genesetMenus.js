@@ -76,8 +76,8 @@ class GenesetMenus extends React.PureComponent {
             >
               <Button
                 style={{ marginLeft: 0, marginRight: 2 }}
-                data-testclass="handleAddNewLabelToCategory"
-                data-testid={`${geneset}:add-new-label-to-category`}
+                data-testclass="handleAddNewGeneToGeneset"
+                data-testid={`${geneset}:add-new-gene-to-geneset`}
                 icon={<Icon icon="plus" iconSize={10} />}
                 onClick={this.activateAddGeneToGenesetMode}
                 small
