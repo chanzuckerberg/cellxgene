@@ -2,6 +2,7 @@ import React from "react";
 import {
   Button,
   ButtonGroup,
+  Classes,
   Icon,
   Intent,
   NumericInput,
@@ -26,6 +27,7 @@ const Clip = React.memo((props) => {
     handleClipOnKeyPress,
     handleClipPercentileMaxValueChange,
     handleClipPercentileMinValueChange,
+    skeleton,
   } = props;
 
   const clipMin =
@@ -54,6 +56,7 @@ const Clip = React.memo((props) => {
               style={{
                 cursor: "pointer",
               }}
+              className={skeleton ? Classes.SKELETON : null}
             />
           </Tooltip>
         }
@@ -69,6 +72,7 @@ const Clip = React.memo((props) => {
               flexDirection: "column",
               padding: 10,
             }}
+            className={skeleton ? Classes.SKELETON : null}
           >
             <div>Clip all continuous values to percentile range</div>
             <div

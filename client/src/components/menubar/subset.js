@@ -1,5 +1,5 @@
 import React from "react";
-import { AnchorButton, ButtonGroup, Tooltip } from "@blueprintjs/core";
+import { AnchorButton, ButtonGroup, Classes, Tooltip } from "@blueprintjs/core";
 import styles from "./menubar.css";
 import * as globals from "../../globals";
 
@@ -9,6 +9,7 @@ const Subset = React.memo((props) => {
     subsetResetPossible,
     handleSubset,
     handleSubsetReset,
+    skeleton,
   } = props;
 
   return (
@@ -24,6 +25,7 @@ const Subset = React.memo((props) => {
           disabled={!subsetPossible}
           icon="pie-chart"
           onClick={handleSubset}
+          className={skeleton ? Classes.SKELETON : null}
         />
       </Tooltip>
       <Tooltip
@@ -37,6 +39,7 @@ const Subset = React.memo((props) => {
           disabled={!subsetResetPossible}
           icon="full-circle"
           onClick={handleSubsetReset}
+          className={skeleton ? Classes.SKELETON : null}
         />
       </Tooltip>
     </ButtonGroup>

@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { ButtonGroup, AnchorButton, Tooltip } from "@blueprintjs/core";
+import { ButtonGroup, AnchorButton, Tooltip, Classes } from "@blueprintjs/core";
 import * as globals from "../../globals";
 import styles from "./menubar.css";
 import actions from "../../actions";
@@ -10,6 +10,7 @@ import CellSetButton from "./cellSetButtons";
   differential: state.differential,
   diffexpMayBeSlow: state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
   diffexpCellcountMax: state.config?.limits?.diffexp_cellcount_max,
+  skeleton: state.skeleton.skeleton,
 }))
 class DiffexpButtons extends React.PureComponent {
   computeDiffExp = () => {
@@ -26,7 +27,12 @@ class DiffexpButtons extends React.PureComponent {
 
   render() {
     /* diffexp-related buttons may be disabled */
-    const { differential, diffexpMayBeSlow, diffexpCellcountMax } = this.props;
+    const {
+      differential,
+      diffexpMayBeSlow,
+      diffexpCellcountMax,
+      skeleton,
+    } = this.props;
 
     const haveBothCellSets =
       !!differential.celllist1 && !!differential.celllist2;
@@ -49,7 +55,11 @@ class DiffexpButtons extends React.PureComponent {
         diffexpCellcountMax;
 
     return (
-      <ButtonGroup className={styles.menubarButton}>
+      <ButtonGroup
+        className={`${styles.menubarButton} ${
+          skeleton ? Classes.SKELETON : null
+        }`}
+      >
         <CellSetButton eitherCellSetOneOrTwo={1} />
         <CellSetButton eitherCellSetOneOrTwo={2} />
         <Tooltip

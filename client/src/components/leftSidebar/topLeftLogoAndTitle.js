@@ -18,6 +18,7 @@ import InformationMenu from "./infoMenu";
     ),
     tosURL: state.config?.parameters?.about_legal_tos,
     privacyURL: state.config?.parameters?.about_legal_privacy,
+    skeleton: state.skeleton.skeleton,
   };
 })
 class LeftSideBar extends React.Component {
@@ -29,6 +30,7 @@ class LeftSideBar extends React.Component {
       privacyURL,
       tosURL,
       dispatch,
+      skeleton,
     } = this.props;
 
     return (
@@ -80,6 +82,7 @@ class LeftSideBar extends React.Component {
               tosURL,
               privacyURL,
               dispatch,
+              skeleton,
             }}
           />
         </div>

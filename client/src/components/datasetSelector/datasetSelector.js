@@ -1,5 +1,5 @@
 /* core dependencies */
-import { Breadcrumb, Icon } from "@blueprintjs/core";
+import { Breadcrumb, Classes, Icon } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import React, { PureComponent } from "react";
 import { connect } from "react-redux";
@@ -23,6 +23,7 @@ app-level collection and dataset breadcrumbs.
   return {
     collection,
     selectedDatasetId,
+    skeleton: state.skeleton.skeleton,
   };
 })
 class DatasetSelector extends PureComponent {
@@ -135,7 +136,7 @@ class DatasetSelector extends PureComponent {
   };
 
   render() {
-    const { collection, dispatch, selectedDatasetId } = this.props;
+    const { collection, dispatch, selectedDatasetId, skeleton } = this.props;
     if (!collection) {
       return null;
     }
@@ -147,6 +148,7 @@ class DatasetSelector extends PureComponent {
           overflow: "scroll", // TODO(cc) Mim to revisit
           flex: 1,
         }}
+        className={skeleton ? Classes.SKELETON : null}
       >
         <TruncatingBreadcrumbs
           breadcrumbRenderer={this.renderBreadcrumb}

@@ -45,6 +45,7 @@ const LABEL_WIDTH_ANNO = LABEL_WIDTH - ANNO_BUTTON_WIDTH;
     crossfilter: state.obsCrossfilter,
     isUserAnno,
     genesets: state.genesets.genesets,
+    skeleton: state.skeleton.skeleton,
   };
 })
 class Category extends React.PureComponent {
@@ -220,6 +221,7 @@ class Category extends React.PureComponent {
       colors,
       annoMatrix,
       isUserAnno,
+      skeleton,
     } = this.props;
 
     const checkboxID = `category-select-${metadataField}`;
@@ -278,6 +280,7 @@ class Category extends React.PureComponent {
                   onCategoryToggleAllClick={handleCategoryToggleAllClick}
                   onCategoryMenuClick={this.handleCategoryClick}
                   onCategoryMenuKeyPress={this.handleCategoryKeyPress}
+                  skeleton={skeleton}
                 />
               );
             }}
@@ -500,6 +503,7 @@ const CategoryRender = React.memo(
     onCategoryMenuClick,
     onCategoryMenuKeyPress,
     onCategoryToggleAllClick,
+    skeleton,
   }) => {
     /*
     Render the core of the category, including checkboxes, controls, etc.
@@ -531,6 +535,7 @@ const CategoryRender = React.memo(
             justifyContent: "space-between",
             alignItems: "baseline",
           }}
+          className={skeleton ? Classes.SKELETON : null}
         >
           <CategoryHeader
             metadataField={metadataField}

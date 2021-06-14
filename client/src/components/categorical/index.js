@@ -1,5 +1,5 @@
 import React from "react";
-import { AnchorButton, Tooltip, Position } from "@blueprintjs/core";
+import { AnchorButton, Tooltip, Position, Classes } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import Category from "./category";
@@ -15,6 +15,7 @@ import actions from "../../actions";
   schema: state.annoMatrix?.schema,
   ontology: state.ontology,
   userInfo: state.userInfo,
+  skeleton: state.skeleton.skeleton,
 }))
 class Categories extends React.Component {
   constructor(props) {
@@ -132,6 +133,7 @@ class Categories extends React.Component {
       schema,
       ontology,
       userInfo,
+      skeleton,
     } = this.props;
     const ontologyEnabled = ontology?.enabled ?? false;
     /* all names, sorted in display order.  Will be rendered in this order */
@@ -203,6 +205,7 @@ class Categories extends React.Component {
                 onClick={this.handleEnableAnnoMode}
                 intent="primary"
                 disabled={!userInfo.is_authenticated}
+                className={skeleton ? Classes.SKELETON : null}
               >
                 Create new <strong>category</strong>
               </AnchorButton>
