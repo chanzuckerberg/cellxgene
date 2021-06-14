@@ -266,7 +266,6 @@ export const switchDataset = (dataset) => (dispatch) => {
    */
   dispatch({ type: "dataset switch" });
   dispatch(updateLocation(dataset.url));
-  window.history.pushState(null, "cellxgene", dataset.url);
   globals.API.prefix = replaceDataRootAndDeploymentId(
     globals.API.prefix,
     dataset.url
@@ -279,7 +278,7 @@ const updateLocation = (url) => (dispatch) => {
   Add entry to the session's history stack.
    */
   dispatch({ type: "location update" });
-  window.history.pushState(null, null, url);
+  window.history.pushState(null, "", url);
 };
 
 function fetchJson(pathAndQuery) {
