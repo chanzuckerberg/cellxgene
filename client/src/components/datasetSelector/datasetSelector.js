@@ -5,10 +5,8 @@ import React, { PureComponent } from "react";
 import { connect } from "react-redux";
 
 /* app dependencies */
-import actions from "../../actions";
+import { switchDataset } from "../../actions";
 import DatasetMenu from "./datasetMenu";
-import * as globals from "../../globals";
-import { replaceDataRootAndDeploymentId } from "../../util/stateManager/collectionsHelpers";
 
 /* styles */
 import styles from "./datasetSelector.css";
@@ -61,13 +59,7 @@ class DatasetSelector extends PureComponent {
       datasets: collection.datasets.map((dataset) => ({
         ...dataset,
         onClick: () => {
-          // TODO(cc) review responsibilities (eg dispatch action to update URL and trigger reload) as well as update of global
-          window.history.pushState(null, "cellxgene", dataset.url);
-          globals.API.prefix = replaceDataRootAndDeploymentId(
-            globals.API.prefix,
-            dataset.url
-          );
-          dispatch(actions.doInitialDataLoad(window.location.search));
+          dispatch(switchDataset(dataset));
         },
       })),
       selectedDatasetId,

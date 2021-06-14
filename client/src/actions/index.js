@@ -12,6 +12,7 @@ import {
   createCollectionsViewModel,
   lookupDatasetIdByPath,
   keyCollectionsByDatasetId,
+  replaceDataRootAndDeploymentId,
 } from "../util/stateManager/collectionsHelpers";
 import { loadUserColorConfig } from "../util/stateManager/colorHelpers";
 import * as selnActions from "./selection";
@@ -259,6 +260,30 @@ const requestDifferentialExpression = (set1, set2, num_genes = 50) => async (
   }
 };
 
+export const switchDataset = (dataset) => (dispatch) => {
+  /*
+  Update data root and deployment ID in URL from given dataset, kick off data load.
+  TODO(cc) revisit:
+    - globals update: move to server-side, split from initial doc returned from server?
+    - data load: wait for data load to complete and dispatch switch success action
+   */
+  dispatch({ type: "dataset switch" });
+  dispatch(updateLocation(dataset.url));
+  globals.API.prefix = replaceDataRootAndDeploymentId(
+    globals.API.prefix,
+    dataset.url
+  );
+  dispatch(doInitialDataLoad(window.location.search));
+};
+
+const updateLocation = (url) => (dispatch) => {
+  /*
+  Add entry to the session's history stack.
+   */
+  dispatch({ type: "location update" });
+  window.history.pushState(null, "", url);
+};
+
 function fetchJson(pathAndQuery) {
   return doJsonRequest(
     `${globals.API.prefix}${globals.API.version}${pathAndQuery}`
@@ -279,6 +304,7 @@ export default {
   requestSingleGeneExpressionCountsForColoringPOST,
   requestUserDefinedGene,
   requestReembed,
+  switchDataset,
   selectContinuousMetadataAction: selnActions.selectContinuousMetadataAction,
   selectCategoricalMetadataAction: selnActions.selectCategoricalMetadataAction,
   selectCategoricalAllMetadataAction:
