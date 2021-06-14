@@ -20,6 +20,7 @@ import actions from "../actions";
   loading: state.controls.loading,
   error: state.controls.error,
   graphRenderCounter: state.controls.graphRenderCounter,
+  skeleton: state.skeleton.skeleton,
 }))
 class App extends React.Component {
   componentDidMount() {
@@ -40,11 +41,11 @@ class App extends React.Component {
   }
 
   render() {
-    const { loading, error, graphRenderCounter } = this.props;
+    const { loading, error, graphRenderCounter, skeleton } = this.props;
     return (
       <Container>
         <Helmet title="cellxgene" />
-        {loading ? (
+        {loading && !skeleton ? (
           <div
             style={{
               position: "fixed",
@@ -68,7 +69,7 @@ class App extends React.Component {
             error loading cellxgene
           </div>
         ) : null}
-        {loading || error ? null : (
+        {(loading && !skeleton) || error ? null : (
           <Layout>
             <LeftSideBar />
             {(viewportRef) => (
@@ -87,11 +88,15 @@ class App extends React.Component {
                   <DatasetSelector />
                   <MenuBar />
                 </div>
-                <Embedding />
-                <Autosave />
-                <TermsOfServicePrompt />
-                <Legend viewportRef={viewportRef} />
-                <Graph key={graphRenderCounter} viewportRef={viewportRef} />
+                {skeleton ? null : (
+                  <>
+                    <Embedding />
+                    <Autosave />
+                    <TermsOfServicePrompt />
+                    <Legend viewportRef={viewportRef} />
+                    <Graph key={graphRenderCounter} viewportRef={viewportRef} />
+                  </>
+                )}
               </>
             )}
             <RightSideBar />

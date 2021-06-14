@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { ButtonGroup, AnchorButton, Tooltip } from "@blueprintjs/core";
+import { ButtonGroup, AnchorButton, Tooltip, Classes } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 
 import * as globals from "../../globals";
@@ -53,6 +53,7 @@ import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
     categoricalSelection: state.categoricalSelection,
     enableReembedding:
       state.config?.parameters?.["enable-reembedding"] ?? false,
+    skeleton: state.skeleton.skeleton,
   };
 })
 class MenuBar extends React.PureComponent {
@@ -217,6 +218,7 @@ class MenuBar extends React.PureComponent {
       enableReembedding,
       userInfo,
       auth,
+      skeleton,
     } = this.props;
     const { pendingClipPercentiles } = this.state;
 
@@ -250,12 +252,14 @@ class MenuBar extends React.PureComponent {
               cursor: "pointer",
             }}
             data-testid="drawer"
+            className={skeleton ? Classes.SKELETON : null}
           />
         </ButtonGroup>
         <UndoRedoReset
           dispatch={dispatch}
           undoDisabled={undoDisabled}
           redoDisabled={redoDisabled}
+          skeleton={skeleton}
         />
         <Clip
           pendingClipPercentiles={pendingClipPercentiles}
@@ -272,6 +276,7 @@ class MenuBar extends React.PureComponent {
           handleClipPercentileMinValueChange={
             this.handleClipPercentileMinValueChange
           }
+          skeleton={skeleton}
         />
         {enableReembedding ? <Reembedding /> : null}
         <Tooltip
@@ -280,7 +285,9 @@ class MenuBar extends React.PureComponent {
           disabled={graphInteractionMode === "zoom"}
         >
           <AnchorButton
-            className={styles.menubarButton}
+            className={`${styles.menubarButton} ${
+              skeleton ? Classes.SKELETON : ""
+            }`}
             type="button"
             data-testid="centroid-label-toggle"
             icon="property"
@@ -307,6 +314,7 @@ class MenuBar extends React.PureComponent {
                   data: "select",
                 });
               }}
+              className={skeleton ? Classes.SKELETON : null}
             />
           </Tooltip>
           <Tooltip
@@ -325,6 +333,7 @@ class MenuBar extends React.PureComponent {
                   data: "zoom",
                 });
               }}
+              className={skeleton ? Classes.SKELETON : null}
             />
           </Tooltip>
         </ButtonGroup>
@@ -333,6 +342,7 @@ class MenuBar extends React.PureComponent {
           subsetResetPossible={subsetResetPossible}
           handleSubset={this.handleSubset}
           handleSubsetReset={this.handleSubsetReset}
+          skeleton={skeleton}
         />
         {disableDiffexp ? null : <DiffexpButtons />}
         <InfoDrawer />

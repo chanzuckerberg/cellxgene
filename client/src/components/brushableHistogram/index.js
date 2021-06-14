@@ -3,6 +3,7 @@ import { connect, shallowEqual } from "react-redux";
 import * as d3 from "d3";
 import Async from "react-async";
 import memoize from "memoize-one";
+import { Classes } from "@blueprintjs/core";
 import * as globals from "../../globals";
 import actions from "../../actions";
 import { histogramContinuous } from "../../util/dataframe/histogram";
@@ -25,6 +26,7 @@ import ErrorLoading from "./error";
     isScatterplotYYaccessor: state.controls.scatterplotYYaccessor === field,
     continuousSelectionRange: state.continuousSelection[myName],
     isColorAccessor: state.colors.colorAccessor === field,
+    skeleton: state.skeleton.skeleton,
   };
 })
 class HistogramBrush extends React.PureComponent {
@@ -366,6 +368,7 @@ class HistogramBrush extends React.PureComponent {
       isObs,
       mini,
       setGenes,
+      skeleton,
     } = this.props;
     const {
       margin,
@@ -407,6 +410,7 @@ class HistogramBrush extends React.PureComponent {
                   padding: mini ? 0 : globals.leftSidebarSectionPadding,
                   backgroundColor: zebra ? globals.lightestGrey : "white",
                 }}
+                className={skeleton ? Classes.SKELETON : null}
               >
                 {!mini && isObs ? (
                   <HistogramHeader

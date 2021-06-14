@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Button } from "@blueprintjs/core";
+import { Button, Classes } from "@blueprintjs/core";
 import GeneSet from "./geneSet";
 
 import CreateGenesetDialogue from "./menus/createGenesetDialogue";
@@ -8,6 +8,7 @@ import CreateGenesetDialogue from "./menus/createGenesetDialogue";
 @connect((state) => {
   return {
     genesets: state.genesets.genesets,
+    skeleton: state.skeleton.skeleton,
   };
 })
 class GeneExpression extends React.Component {
@@ -35,6 +36,7 @@ class GeneExpression extends React.Component {
   };
 
   render() {
+    const { skeleton } = this.props;
     return (
       <div>
         <div>
@@ -43,6 +45,7 @@ class GeneExpression extends React.Component {
               data-testid="open-create-geneset-dialog"
               onClick={this.handleActivateCreateGenesetMode}
               intent="primary"
+              className={skeleton ? Classes.SKELETON : null}
             >
               Create new <strong>gene set</strong>
             </Button>

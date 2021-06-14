@@ -1,5 +1,12 @@
 import React from "react";
-import { Button, Menu, MenuItem, Popover, Position } from "@blueprintjs/core";
+import {
+  Button,
+  Classes,
+  Menu,
+  MenuItem,
+  Popover,
+  Position,
+} from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 
 /* app dependencies */
@@ -9,7 +16,13 @@ import IconGitHub from "./iconGitHub";
 import IconSlack from "./iconSlack";
 
 const InformationMenu = React.memo((props) => {
-  const { dataSourceLink, libraryVersions, tosURL, privacyURL } = props;
+  const {
+    dataSourceLink,
+    libraryVersions,
+    tosURL,
+    privacyURL,
+    skeleton,
+  } = props;
   return (
     <Popover
       content={
@@ -76,7 +89,13 @@ const InformationMenu = React.memo((props) => {
         preventOverflow: { enabled: false },
       }}
     >
-      <Button data-testid="menu" icon={IconNames.MENU} minimal type="button" />
+      <Button
+        data-testid="menu"
+        icon={IconNames.MENU}
+        minimal
+        type="button"
+        className={skeleton ? Classes.SKELETON : null}
+      />
     </Popover>
   );
 });

@@ -1,11 +1,11 @@
 import React from "react";
-import { AnchorButton, ButtonGroup, Tooltip } from "@blueprintjs/core";
+import { AnchorButton, ButtonGroup, Classes, Tooltip } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { tooltipHoverOpenDelay } from "../../globals";
 import styles from "./menubar.css";
 
 const UndoRedo = React.memo((props) => {
-  const { undoDisabled, redoDisabled, dispatch } = props;
+  const { undoDisabled, redoDisabled, dispatch, skeleton } = props;
   return (
     <ButtonGroup className={`${styles.menubarButton}`}>
       <Tooltip
@@ -24,6 +24,7 @@ const UndoRedo = React.memo((props) => {
             cursor: "pointer",
           }}
           data-testid="undo"
+          className={skeleton ? Classes.SKELETON : null}
         />
       </Tooltip>
       <Tooltip
@@ -42,6 +43,7 @@ const UndoRedo = React.memo((props) => {
             cursor: "pointer",
           }}
           data-testid="redo"
+          className={skeleton ? Classes.SKELETON : null}
         />
       </Tooltip>
     </ButtonGroup>
