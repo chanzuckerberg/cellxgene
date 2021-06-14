@@ -1,10 +1,12 @@
 include ../common.mk
 
 ANNOTATIONS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../backend/test/fixtures/pbmc3k-annotations.csv)
-GENE_SETS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../backend/test/fixtures/pbmc3k-genesets.csv) 
-ANNOTATIONS_FILENAME := $(shell basename $(TEST_CSVS))
+GENE_SETS := $(if $(GENE_SETS),$(GENE_SETS),../backend/test/fixtures/pbmc3k-genesets.csv) 
+ANNOTATIONS_FILENAME := $(shell basename $(ANNOTATIONS))
+GENE_SETS_FILENAME := $(shell basename $(GENE_SETS))
 
 CXG_CONFIG := $(if $(CXG_CONFIG), $(CXG_CONFIG), ./__tests__/e2e/test_config.yaml)
+
 
 # Packaging
 .PHONY: clean
@@ -45,7 +47,7 @@ smoke-test-annotations:
 	cp $(ANNOTATIONS) $(TMP_DIR)/ && \
 	cp $(GENE_SETS) $(TMP_DIR)/ && \
 	start_server_and_test \
-		'CXG_OPTIONS="--annotations-file $(TMP_DIR)/$(ANNOTATIONS_FILENAME)" $(MAKE) start-server' \
+		'CXG_OPTIONS="--annotations-file $(TMP_DIR)/$(ANNOTATIONS_FILENAME) --gene-sets-file $(TMP_DIR)/$(GENE_SETS_FILENAME)" $(MAKE) start-server' \
 		$(CXG_SERVER_PORT) \
 		'CXG_URL_BASE="http://localhost:$(CXG_SERVER_PORT)" npm run e2e-annotations -- --verbose false'
 	rm -rf $(TMP_DIR)
