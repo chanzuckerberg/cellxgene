@@ -85,7 +85,7 @@ async function setup(config) {
 }
 
 describe("geneSET crud operations and interactions", () => {
-  test("static pre existing genesets load from csv, expand", async () => {
+  test("genesets load from csv", async () => {
     await goToPage(appUrlBase);
 
     await assertGenesetExists(preExistingGenesetName);
