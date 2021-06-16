@@ -16,13 +16,7 @@ import IconGitHub from "./iconGitHub";
 import IconSlack from "./iconSlack";
 
 const InformationMenu = React.memo((props) => {
-  const {
-    dataSourceLink,
-    libraryVersions,
-    tosURL,
-    privacyURL,
-    skeleton,
-  } = props;
+  const { libraryVersions, tosURL, privacyURL, skeleton } = props;
   return (
     <Popover
       content={
@@ -48,19 +42,10 @@ const InformationMenu = React.memo((props) => {
             target="_blank"
             text="GitHub"
           />
-          {dataSourceLink?.url && (
-            <MenuItem
-              href={dataSourceLink?.url}
-              icon={<IconDocument />}
-              rel="noopener"
-              target="_blank"
-              text={dataSourceLink?.name}
-            />
-          )}
           <MenuItem
             icon={<IconAbout />}
             popoverProps={{ openOnTargetFocus: false }}
-            text="About"
+            text="About cellxgene"
           >
             <MenuItem text={libraryVersions?.cellxgene || null} />
             <MenuItem text="MIT License" />
