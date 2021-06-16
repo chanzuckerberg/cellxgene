@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 
 import * as globals from "../../globals";
 import Logo from "../framework/logo";
+import Title from "../framework/title";
 import InformationMenu from "./infoMenu";
 
 @connect((state) => {
@@ -46,30 +47,7 @@ class LeftSideBar extends React.Component {
       >
         <div>
           <Logo size={28} />
-          <span
-            style={{
-              fontSize: 24,
-              position: "relative",
-              top: -6,
-              fontWeight: "bold",
-              marginLeft: 5,
-              color: globals.logoColor,
-              userSelect: "none",
-            }}
-          >
-            cell
-            <span
-              style={{
-                position: "relative",
-                top: 1,
-                fontWeight: 300,
-                fontSize: 24,
-              }}
-            >
-              ×
-            </span>
-            gene
-          </span>
+          <Title />
         </div>
         <div style={{ marginRight: 5, height: "100%" }}>
           <InformationMenu

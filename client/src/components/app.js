@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import DatasetSelector from "./datasetSelector/datasetSelector";
 import Container from "./framework/container";
 import Layout from "./framework/layout";
+import Skeleton from "./framework/skeleton";
 import LeftSideBar from "./leftSidebar";
 import RightSideBar from "./rightSidebar";
 import Legend from "./continuousLegend";
@@ -44,18 +45,7 @@ class App extends React.Component {
     return (
       <Container>
         <Helmet title="cellxgene" />
-        {loading ? (
-          <div
-            style={{
-              position: "fixed",
-              fontWeight: 500,
-              top: window.innerHeight / 2,
-              left: window.innerWidth / 2 - 50,
-            }}
-          >
-            loading cellxgene
-          </div>
-        ) : null}
+        {loading ? <Skeleton /> : null}
         {error ? (
           <div
             style={{
