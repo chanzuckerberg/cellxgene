@@ -596,26 +596,37 @@ class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
         )
 
     def test_get_genesets_csv(self):
+
         endpoint = "genesets"
         url = f"{self.URL_BASE}{endpoint}"
         result = self.session.get(url, headers={"Accept": "text/csv"})
+        self.maxDiff=None
+        
+        print(result.text)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "text/csv")
         self.assertEqual(
             result.text,
             """gene_set_name,gene_set_description,gene_symbol,gene_description\r
 first gene set name,a description,F5, a gene_description\r
+first gene set name,a description,NO_SUCH_GENE, non-existent gene\r
+first gene set name,a description,F5, duplicate gene\r
 first gene set name,a description,SUMO3,\r
 first gene set name,a description,SRM,\r
-second gene set,,RER1,\r
-second gene set,,SIK1,\r
-third gene set,,,\r
-fourth_gene_set,fourth description,,\r
+second_gene_set,,RER1,\r
+second_gene_set,,SIK1,\r
+third gene set,,NO_SUCH_GENE,\r
+fourth_gene_set,fourth description,,gene intentionally missing\r
 fifth_dataset,,,\r
 summary test,,ACD,\r
 summary test,,AATF,\r
 summary test,,F5,\r
 summary test,,PIGU,\r
+geneset_to_delete,,,\r
+geneset_to_edit,,,\r
+fill_this_geneset,,RER1,\r
+empty_this_geneset,,SIK1,\r
+brush_this_gene,,SIK1,\r
 """,
         )
 

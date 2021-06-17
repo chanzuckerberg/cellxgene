@@ -570,11 +570,11 @@ class EndPointsCxg(unittest.TestCase, EndPoints):
             """gene_set_name,gene_set_description,gene_symbol,gene_description\r
 first gene set name,a description,F5, a gene_description\r
 first gene set name,a description,NO_SUCH_GENE, non-existent gene\r
-first gene set name,a description,F5, duplicate gene
+first gene set name,a description,F5, duplicate gene\r
 first gene set name,a description,SUMO3,\r
 first gene set name,a description,SRM,\r
-second gene set,,RER1,\r
-second gene set,,SIK1,\r
+second_gene_set,,RER1,\r
+second_gene_set,,SIK1,\r
 third gene set,,NO_SUCH_GENE,\r
 fourth_gene_set,fourth description,,gene intentionally missing\r
 fifth_dataset,,,\r
