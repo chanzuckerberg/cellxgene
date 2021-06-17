@@ -4,7 +4,7 @@ import numpy as np
 from numba import jit
 
 from backend.czi_hosted.data_cxg.cxg_util import pack_selector_from_indices
-from backend.czi_hosted.compute.diffexp_generic import diffexp_ttest_from_mean_var, mean_var_n
+from backend.common.compute.diffexp_generic import diffexp_ttest_from_mean_var, mean_var_n
 from backend.common.errors import ComputeError
 
 """
@@ -115,14 +115,14 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
             meanB += X_col_shift
 
     r = diffexp_ttest_from_mean_var(
-        meanA.astype(dtype),
-        varA.astype(dtype),
-        nA,
-        meanB.astype(dtype),
-        varB.astype(dtype),
-        nB,
-        top_n,
-        diffexp_lfc_cutoff,
+        meanA=meanA.astype(dtype),
+        varA=varA.astype(dtype),
+        nA=nA,
+        meanB=meanB.astype(dtype),
+        varB=varB.astype(dtype),
+        nB=nB,
+        top_n=top_n,
+        diffexp_lfc_cutoff=diffexp_lfc_cutoff
     )
 
     return r

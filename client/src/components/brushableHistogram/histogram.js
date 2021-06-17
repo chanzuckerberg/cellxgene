@@ -26,7 +26,13 @@ const Histogram = ({
     /*
       Create the d3 histogram
       */
-    const { marginLeft, marginRight, marginBottom, marginTop } = margin;
+    //  This is just a constant that's flipped by parent's `mini` boolean
+    const {
+      LEFT: marginLeft,
+      RIGHT: marginRight,
+      BOTTOM: marginBottom,
+      TOP: marginTop,
+    } = margin;
     const { x, y, bins, binStart, binEnd, binWidth } = histogram;
     const svg = d3.select(svgRef.current);
     const binPadding = mini ? 0 : -1;

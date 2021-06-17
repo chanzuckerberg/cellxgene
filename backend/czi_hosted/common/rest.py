@@ -260,7 +260,6 @@ def diffexp_obs_post(request, data_adaptor):
     try:
         # TODO: implement varfilter mode
         mode = DiffExpMode(args["mode"])
-
         if mode == DiffExpMode.VAR_FILTER or "varFilter" in args:
             return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, "varFilter not enabled")
 

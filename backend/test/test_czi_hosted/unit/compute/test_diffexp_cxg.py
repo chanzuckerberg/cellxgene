@@ -4,7 +4,8 @@ import unittest
 
 import numpy as np
 
-from backend.czi_hosted.compute import diffexp_generic, diffexp_cxg
+from backend.czi_hosted.compute import diffexp_cxg
+from backend.common.compute import diffexp_generic
 from backend.czi_hosted.compute.diffexp_cxg import diffexp_ttest
 from backend.czi_hosted.converters.h5ad_data_file import H5ADDataFile
 from backend.common.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
@@ -40,21 +41,37 @@ class DiffExpTest(unittest.TestCase):
             self.assertTrue(np.isclose(result[2], expect[2], 1e-6, 1e-4))
             self.assertTrue(np.isclose(result[3], expect[3], 1e-6, 1e-4))
 
+
     def check_1_10_2_10(self, results):
         """Checks the results for a specific set of rows selections"""
-        expects = [
+
+        positive_expects = [
+            [1712, -0.5525154, 0.0051788902660723345, 1.0],
+            [1575, 1.0317602, 0.007830310753043345, 1.0],
+            [693, 0.4703904, 0.008715846769131548, 1.0],
+            [916, 0.9567287, 0.009080596532247588, 1.0],
+            [77, 0.02665649, 0.010070392939027756, 1.0],
+            [782, -1.0981874, 0.010161745218916036, 1.0],
+            [913, 0.5683986, 0.010782030711612685, 1.0],
+            [910, 0.83164597, 0.014596411069229197, 1.0],
+            [1727, 0.4127781, 0.015168372104237176, 1.0],
+            [1443, -0.8241895, 0.015337080567465522, 1.0]
+        ]
+        negative_expects = [
             [956, 0.016060986, 0.0008649321884808977, 1.0],
             [1124, 0.96602094, 0.0011717216548271284, 1.0],
             [1809, 1.1110606, 0.0019304405196777848, 1.0],
-            [1712, -0.5525154, 0.0051788902660723345, 1.0],
             [1754, 0.5201581, 0.005691734062127954, 1.0],
             [948, 1.6390722, 0.006622111055981219, 1.0],
             [1810, 0.78618884, 0.007055917428377063, 1.0],
             [779, 1.5241305, 0.007202934422407284, 1.0],
-            [1575, 1.0317602, 0.007830310753043345, 1.0],
             [576, 0.97873515, 0.008272092578813124, 1.0],
+            [538, 0.89114505, 0.01062259019889307, 1.0],
+            [436, 0.3119122, 0.01127515110543434, 1.0]
         ]
-        self.compare_diffexp_results(results, expects)
+
+        self.compare_diffexp_results(results['positive'], positive_expects)
+        self.compare_diffexp_results(results['negative'], negative_expects)
 
     def get_X_col(self, adaptor, cols):
         varmask = np.zeros(adaptor.get_shape()[1], dtype=bool)
@@ -80,6 +97,7 @@ class DiffExpTest(unittest.TestCase):
         self.check_1_10_2_10(results)
 
         # run it directly
+
         results = diffexp_ttest(adaptor, maskA, maskB, 10)
         self.check_1_10_2_10(results)
 
@@ -128,15 +146,22 @@ class DiffExpTest(unittest.TestCase):
             diffexp_results_sparse = diffexp_cxg.diffexp_ttest(adaptor_sparse, maskA, maskB, 10)
             diffexp_results_dense = diffexp_cxg.diffexp_ttest(adaptor_dense, maskA, maskB, 10)
 
-            self.compare_diffexp_results(diffexp_results_anndata, diffexp_results_sparse)
-            self.compare_diffexp_results(diffexp_results_anndata, diffexp_results_dense)
+            self.compare_diffexp_results(diffexp_results_anndata['positive'], diffexp_results_sparse['positive'])
+            self.compare_diffexp_results(diffexp_results_anndata['negative'], diffexp_results_sparse['negative'])
 
-            topcols = np.array([x[0] for x in diffexp_results_anndata])
+            self.compare_diffexp_results(diffexp_results_anndata['positive'], diffexp_results_dense['positive'])
+            self.compare_diffexp_results(diffexp_results_anndata['negative'], diffexp_results_dense['negative'])
+
+            topcols_pos = np.array([x[0] for x in diffexp_results_anndata['positive']])
+            topcols_neg = np.array([x[0] for x in diffexp_results_anndata['negative']])
+            topcols = np.concatenate((topcols_pos, topcols_neg))
+
             cols_anndata = self.get_X_col(adaptor_anndata, topcols)
             cols_sparse = self.get_X_col(adaptor_sparse, topcols)
             cols_dense = self.get_X_col(adaptor_dense, topcols)
+
             assert cols_anndata.shape[0] == adaptor_sparse.get_shape()[0]
-            assert cols_anndata.shape[1] == len(diffexp_results_anndata)
+            assert cols_anndata.shape[1] == len(diffexp_results_anndata['positive']) + len(diffexp_results_anndata['negative'])
 
             def convert(mat, cols):
                 return decode_matrix_fbs(encode_matrix_fbs(mat, col_idx=cols)).to_numpy()

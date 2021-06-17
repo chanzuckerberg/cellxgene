@@ -25,7 +25,8 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     :param maskB: observation selection mask for set 2
     :param top_n: number of variables to return stats for
     :param diffexp_lfc_cutoff: minimum
-    :return:  for top N genes, [ varindex, logfoldchange, pval, pval_adj ]
+    absolute value returning [ varindex, logfoldchange, pval, pval_adj ] for top N genes
+    :return:  for top N genes, {"positive": for top N genes, [ varindex, logfoldchange, pval, pval_adj ], "negative": for top N genes, [ varindex, logfoldchange, pval, pval_adj ]}
     """
 
     dataA = adaptor.get_X_array(maskA, None)
@@ -66,24 +67,27 @@ def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp
     # logfoldchanges: log2(meanA / meanB)
     logfoldchanges = np.log2(np.abs((meanA + 1e-9) / (meanB + 1e-9)))
 
+    stats_to_sort = tscores
     # find all with lfc > cutoff
     lfc_above_cutoff_idx = np.nonzero(np.abs(logfoldchanges) > diffexp_lfc_cutoff)[0]
-    stats_to_sort = np.abs(tscores)
 
     # derive sort order
-    if lfc_above_cutoff_idx.shape[0] > top_n:
+    if lfc_above_cutoff_idx.shape[0] > top_n*2:
         # partition top N
-        rel_t_partition = np.argpartition(stats_to_sort[lfc_above_cutoff_idx], -top_n)[-top_n:]
-        t_partition = lfc_above_cutoff_idx[rel_t_partition]
+        rel_t_partition = np.argpartition(stats_to_sort[lfc_above_cutoff_idx], (top_n, -top_n))
+        rel_t_partition_top_n = np.concatenate((rel_t_partition[-top_n:], rel_t_partition[:top_n]))
+        t_partition = lfc_above_cutoff_idx[rel_t_partition_top_n]
         # sort the top N partition
         rel_sort_order = np.argsort(stats_to_sort[t_partition])[::-1]
         sort_order = t_partition[rel_sort_order]
     else:
         # partition and sort top N, ignoring lfc cutoff
-        partition = np.argpartition(stats_to_sort, -top_n)[-top_n:]
-        rel_sort_order = np.argsort(stats_to_sort[partition])[::-1]
+        partition = np.argpartition(stats_to_sort, (top_n, -top_n))
+        partition_top_n = np.concatenate((partition[-top_n:], partition[:top_n]))
+
+        rel_sort_order = np.argsort(stats_to_sort[partition_top_n])[::-1]
         indices = np.indices(stats_to_sort.shape)[0]
-        sort_order = indices[partition][rel_sort_order]
+        sort_order = indices[partition_top_n][rel_sort_order]
 
     # top n slice based upon sort order
     logfoldchanges_top_n = logfoldchanges[sort_order]
@@ -91,7 +95,11 @@ def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp
     pvals_adj_top_n = pvals_adj[sort_order]
 
     # varIndex, logfoldchange, pval, pval_adj
-    result = [[sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]] for i in range(top_n)]
+    result = {"positive": [[sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]] for i in
+                           range(top_n)],
+              "negative": [[sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]] for i in
+                           range(-1, -1 - top_n, -1)], }
+
     return result
 
 

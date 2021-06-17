@@ -211,15 +211,18 @@ const requestDifferentialExpression = (set1, set2, num_genes = 50) => async (
 
     const response = await res.json();
     const varIndex = await annoMatrix.fetch("var", varIndexName);
-    const data = response.map((v) => [
-      varIndex.at(v[0], varIndexName),
-      ...v.slice(1),
-    ]);
+    const diffexpLists = { negative: [], positive: [] };
+    for (const polarity of Object.keys(diffexpLists)) {
+      diffexpLists[polarity] = response[polarity].map((v) => [
+        varIndex.at(v[0], varIndexName),
+        ...v.slice(1),
+      ]);
+    }
 
     /* then send the success case action through */
     return dispatch({
       type: "request differential expression success",
-      data,
+      data: diffexpLists,
     });
   } catch (error) {
     return dispatch({

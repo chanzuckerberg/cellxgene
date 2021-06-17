@@ -13,6 +13,23 @@ import HistogramFooter from "./footer";
 import StillLoading from "./loading";
 import ErrorLoading from "./error";
 
+const MARGIN = {
+  LEFT: 10, // Space for 0 tick label on X axis
+  RIGHT: 54, // space for Y axis & labels
+  BOTTOM: 25, // space for X axis & labels
+  TOP: 3,
+};
+const WIDTH = 340 - MARGIN.LEFT - MARGIN.RIGHT;
+const HEIGHT = 135 - MARGIN.TOP - MARGIN.BOTTOM;
+const MARGIN_MINI = {
+  LEFT: 0, // Space for 0 tick label on X axis
+  RIGHT: 0, // space for Y axis & labels
+  BOTTOM: 0, // space for X axis & labels
+  TOP: 0,
+};
+const WIDTH_MINI = 120 - MARGIN_MINI.LEFT - MARGIN_MINI.RIGHT;
+const HEIGHT_MINI = 15 - MARGIN_MINI.TOP - MARGIN_MINI.BOTTOM;
+
 @connect((state, ownProps) => {
   const { isObs, isUserDefined, isGeneSetSummary, field } = ownProps;
   const myName = makeContinuousDimensionName(
@@ -43,34 +60,6 @@ class HistogramBrush extends React.PureComponent {
       dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(field));
     }
   });
-
-  constructor(props) {
-    super(props);
-
-    const marginLeft = 10; // Space for 0 tick label on X axis
-    const marginRight = 54; // space for Y axis & labels
-    const marginBottom = 25; // space for X axis & labels
-    const marginTop = 3;
-
-    this.state = {
-      margin: {
-        marginLeft,
-        marginRight,
-        marginBottom,
-        marginTop,
-      },
-      width: 340 - marginLeft - marginRight,
-      height: 135 - marginTop - marginBottom,
-      marginMini: {
-        marginLeft: 0, // Space for 0 tick label on X axis
-        marginRight: 0, // space for Y axis & labels
-        marginBottom: 0, // space for X axis & labels
-        marginTop: 0,
-      },
-      widthMini: 120,
-      heightMini: 15,
-    };
-  }
 
   onBrush = (selection, x, eventType) => {
     const type = `continuous metadata histogram ${eventType}`;
@@ -210,15 +199,8 @@ class HistogramBrush extends React.PureComponent {
   };
 
   fetchAsyncProps = async () => {
-    const { annoMatrix } = this.props;
-    const {
-      margin,
-      width,
-      height,
-      marginMini,
-      widthMini,
-      heightMini,
-    } = this.state;
+    const { annoMatrix, width } = this.props;
+
     const { isClipped } = annoMatrix;
 
     const query = this.createQuery();
@@ -246,12 +228,17 @@ class HistogramBrush extends React.PureComponent {
         : globals.blue,
     ];
 
-    const histogram = this.calcHistogramCache(column, margin, width, height);
+    const histogram = this.calcHistogramCache(
+      column,
+      MARGIN,
+      width || WIDTH,
+      HEIGHT
+    );
     const miniHistogram = this.calcHistogramCache(
       column,
-      marginMini,
-      widthMini,
-      heightMini
+      MARGIN_MINI,
+      width || WIDTH_MINI,
+      HEIGHT_MINI
     );
 
     const isSingleValue = summary.min === summary.max;
@@ -275,7 +262,7 @@ class HistogramBrush extends React.PureComponent {
   };
 
   // eslint-disable-next-line class-methods-use-this -- instance method allows for memoization per annotation
-  calcHistogramCache(col, margin, width, height) {
+  calcHistogramCache(col, newMargin, newWidth, newHeight) {
     /*
      recalculate expensive stuff, notably bins, summaries, etc.
     */
@@ -283,7 +270,10 @@ class HistogramBrush extends React.PureComponent {
     const summary = col.summarize(); /* this is memoized, so it's free the second time you call it */
     const { min: domainMin, max: domainMax } = summary;
     const numBins = 40;
-    const { marginTop, marginLeft } = margin; /* changes with mini */
+    const {
+      TOP: topMargin,
+      LEFT: leftMargin,
+    } = newMargin; /* changes with mini */
 
     histogramCache.domain = [
       domainMin,
@@ -293,7 +283,7 @@ class HistogramBrush extends React.PureComponent {
     histogramCache.x = d3
       .scaleLinear()
       .domain([domainMin, domainMax])
-      .range([marginLeft, marginLeft + width]);
+      .range([leftMargin, leftMargin + newWidth]);
 
     histogramCache.bins = histogramContinuous(col, numBins, [
       domainMin,
@@ -310,7 +300,7 @@ class HistogramBrush extends React.PureComponent {
     histogramCache.y = d3
       .scaleLinear()
       .domain([0, yMax])
-      .range([marginTop + height, marginTop]);
+      .range([topMargin + newHeight, topMargin]);
 
     return histogramCache;
   }
@@ -367,14 +357,12 @@ class HistogramBrush extends React.PureComponent {
       mini,
       setGenes,
     } = this.props;
-    const {
-      margin,
-      width,
-      height,
-      marginMini,
-      widthMini,
-      heightMini,
-    } = this.state;
+
+    let { width } = this.props;
+    if (!width) {
+      width = mini ? WIDTH_MINI : WIDTH;
+    }
+
     const fieldForId = field.replace(/\s/g, "_");
     const showScatterPlot = isUserDefined;
 
@@ -432,11 +420,11 @@ class HistogramBrush extends React.PureComponent {
                   histogram={
                     mini ? asyncProps.miniHistogram : asyncProps.histogram
                   }
-                  width={mini ? widthMini : width}
-                  height={mini ? heightMini : height}
+                  width={width}
+                  height={mini ? HEIGHT_MINI : HEIGHT}
                   onBrush={this.onBrush}
                   onBrushEnd={this.onBrushEnd}
-                  margin={mini ? marginMini : margin}
+                  margin={mini ? MARGIN_MINI : MARGIN}
                   isColorBy={isColorAccessor}
                   selectionRange={continuousSelectionRange}
                   mini={mini}
