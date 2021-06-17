@@ -2,6 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Button } from "@blueprintjs/core";
 import GeneSet from "./geneSet";
+import QuickGene from "./quickGene";
 
 import CreateGenesetDialogue from "./menus/createGenesetDialogue";
 
@@ -37,6 +38,7 @@ class GeneExpression extends React.Component {
   render() {
     return (
       <div>
+        <QuickGene />
         <div>
           <div style={{ marginBottom: 10, position: "relative", top: -2 }}>
             <Button
