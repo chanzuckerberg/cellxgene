@@ -539,7 +539,7 @@ class EndPointsCxg(unittest.TestCase, EndPoints):
                             {"gene_description": "", "gene_symbol": "SIK1"},
                         ],
                         "geneset_description": "",
-                        "geneset_name": "second gene set",
+                        "geneset_name": "second_gene_set",
                     },
                     {"genes": [], "geneset_description": "", "geneset_name": "third gene set"},
                     {"genes": [], "geneset_description": "fourth description", "geneset_name": "fourth_gene_set"},

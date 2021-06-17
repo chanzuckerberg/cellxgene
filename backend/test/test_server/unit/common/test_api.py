@@ -613,7 +613,6 @@ class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
         )
 
     def test_get_genesets_csv(self):
-
         endpoint = "genesets"
         url = f"{self.URL_BASE}{endpoint}"
         result = self.session.get(url, headers={"Accept": "text/csv"})
