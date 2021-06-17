@@ -575,7 +575,7 @@ class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
                             {"gene_description": "", "gene_symbol": "SIK1"},
                         ],
                         "geneset_description": "",
-                        "geneset_name": "second gene set",
+                        "geneset_name": "second_gene_set",
                     },
                     {"genes": [], "geneset_description": "", "geneset_name": "third gene set"},
                     {"genes": [], "geneset_description": "fourth description", "geneset_name": "fourth_gene_set"},
@@ -590,6 +590,23 @@ class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
                         "geneset_description": "",
                         "geneset_name": "summary test",
                     },
+                    {'genes': [], 'geneset_description': '', 'geneset_name': 'geneset_to_delete'},
+                    {'genes': [], 'geneset_description': '', 'geneset_name': 'geneset_to_edit'},
+                    {
+                        'genes': [{'gene_description': '', 'gene_symbol': 'RER1'}],
+                        'geneset_description': '',
+                        'geneset_name': 'fill_this_geneset'
+                    },
+                    {
+                        'genes': [{'gene_description': '', 'gene_symbol': 'SIK1'}],
+                        'geneset_description': '',
+                        'geneset_name': 'empty_this_geneset'
+                    },
+                    {
+                        'genes': [{'gene_description': '', 'gene_symbol': 'SIK1'}],
+                        'geneset_description': '',
+                        'geneset_name': 'brush_this_gene'
+                    }
                 ],
                 "tid": 0,
             },
@@ -600,23 +617,18 @@ class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
         endpoint = "genesets"
         url = f"{self.URL_BASE}{endpoint}"
         result = self.session.get(url, headers={"Accept": "text/csv"})
-        self.maxDiff=None
-        
-        print(result.text)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "text/csv")
         self.assertEqual(
             result.text,
             """gene_set_name,gene_set_description,gene_symbol,gene_description\r
 first gene set name,a description,F5, a gene_description\r
-first gene set name,a description,NO_SUCH_GENE, non-existent gene\r
-first gene set name,a description,F5, duplicate gene\r
 first gene set name,a description,SUMO3,\r
 first gene set name,a description,SRM,\r
 second_gene_set,,RER1,\r
 second_gene_set,,SIK1,\r
-third gene set,,NO_SUCH_GENE,\r
-fourth_gene_set,fourth description,,gene intentionally missing\r
+third gene set,,,\r
+fourth_gene_set,fourth description,,\r
 fifth_dataset,,,\r
 summary test,,ACD,\r
 summary test,,AATF,\r

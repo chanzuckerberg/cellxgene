@@ -554,6 +554,23 @@ class EndPointsCxg(unittest.TestCase, EndPoints):
                         "geneset_description": "",
                         "geneset_name": "summary test",
                     },
+                    {'genes': [], 'geneset_description': '', 'geneset_name': 'geneset_to_delete'},
+                    {'genes': [], 'geneset_description': '', 'geneset_name': 'geneset_to_edit'},
+                    {
+                        'genes': [{'gene_description': '', 'gene_symbol': 'RER1'}],
+                        'geneset_description': '',
+                        'geneset_name': 'fill_this_geneset'
+                    },
+                    {
+                        'genes': [{'gene_description': '', 'gene_symbol': 'SIK1'}],
+                        'geneset_description': '',
+                        'geneset_name': 'empty_this_geneset'
+                    },
+                    {
+                        'genes': [{'gene_description': '', 'gene_symbol': 'SIK1'}],
+                        'geneset_description': '',
+                        'geneset_name': 'brush_this_gene'
+                    }
                 ],
                 "tid": 0,
             },
@@ -569,14 +586,12 @@ class EndPointsCxg(unittest.TestCase, EndPoints):
             result.text,
             """gene_set_name,gene_set_description,gene_symbol,gene_description\r
 first gene set name,a description,F5, a gene_description\r
-first gene set name,a description,NO_SUCH_GENE, non-existent gene\r
-first gene set name,a description,F5, duplicate gene\r
 first gene set name,a description,SUMO3,\r
 first gene set name,a description,SRM,\r
 second_gene_set,,RER1,\r
 second_gene_set,,SIK1,\r
-third gene set,,NO_SUCH_GENE,\r
-fourth_gene_set,fourth description,,gene intentionally missing\r
+third gene set,,,\r
+fourth_gene_set,fourth description,,\r
 fifth_dataset,,,\r
 summary test,,ACD,\r
 summary test,,AATF,\r
