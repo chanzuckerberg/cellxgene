@@ -9,7 +9,6 @@ import anndata
 import numpy as np
 from pandas import Series, DataFrame
 import tiledb
-from urllib.parse import urljoin
 
 from backend.czi_hosted.common.corpora import CorporaConstants
 from backend.czi_hosted.converters.h5ad_data_file import H5ADDataFile
@@ -168,9 +167,6 @@ class TestH5ADDataFile(unittest.TestCase):
 
     def _validate_cxg_and_h5ad_content_match(self, h5ad_filename, cxg_directory, is_sparse, has_column_encoding=False):
         anndata_object = anndata.read_h5ad(h5ad_filename)
-        tiledb_ctx = tiledb.Ctx(
-            {"sm.tile_cache_size": 8 * 1024 * 1024 * 1024, "sm.num_reader_threads": 32, "vfs.s3.region": "us-east-1"}
-        )
 
         # Array locations
         metadata_array_location = f"{cxg_directory}/cxg_group_metadata"
@@ -182,25 +178,26 @@ class TestH5ADDataFile(unittest.TestCase):
         x_col_shift_array_location = f"{cxg_directory}/X_col_shift"
 
         # Assert CXG structure
-        self.assertEqual(tiledb.object_type(cxg_directory, ctx=tiledb_ctx), "group")
-        self.assertEqual(tiledb.object_type(obs_array_location, ctx=tiledb_ctx), "array")
-        self.assertEqual(tiledb.object_type(var_array_location, ctx=tiledb_ctx), "array")
-        self.assertEqual(tiledb.object_type(main_x_array_location, ctx=tiledb_ctx), "array")
-        self.assertEqual(tiledb.object_type(embedding_array_location, ctx=tiledb_ctx), "group")
-        self.assertEqual(tiledb.object_type(specific_embedding_array_location, ctx=tiledb_ctx), "array")
+        self.assertEqual(tiledb.object_type(cxg_directory), "group")
+        self.assertEqual(tiledb.object_type(obs_array_location), "array")
+        self.assertEqual(tiledb.object_type(var_array_location), "array")
+        self.assertEqual(tiledb.object_type(main_x_array_location), "array")
+        self.assertEqual(tiledb.object_type(embedding_array_location), "group")
+        self.assertEqual(tiledb.object_type(specific_embedding_array_location), "array")
 
         if has_column_encoding:
-            self.assertEqual(tiledb.object_type(x_col_shift_array_location, ctx=tiledb_ctx), "array")
+            self.assertEqual(tiledb.object_type(x_col_shift_array_location), "array")
 
         # Validate metadata
-        metadata_array = tiledb.DenseArray(metadata_array_location, mode="r", ctx=tiledb_ctx)
+        metadata_array = tiledb.DenseArray(metadata_array_location, mode="r")
         self.assertIn("cxg_version", metadata_array.meta)
 
         # Validate obs index
-        obs_array = tiledb.DenseArray(obs_array_location, mode="r", ctx=tiledb_ctx)
+        obs_array = tiledb.DenseArray(obs_array_location, mode="r")
         expected_index_data = anndata_object.obs.index.to_numpy()
         index_name = json.loads(obs_array.meta["cxg_schema"])["index"]
         actual_index_data = obs_array.query(attrs=[index_name])[:][index_name]
+        actual_index_data = obs_array
         self.assertTrue(np.array_equal(expected_index_data, actual_index_data))
 
         # Validate obs columns
@@ -211,14 +208,14 @@ class TestH5ADDataFile(unittest.TestCase):
             self.assertTrue(np.array_equal(expected_data, actual_data))
 
         # Validate var index
-        var_array = tiledb.DenseArray(var_array_location, mode="r", ctx=tiledb_ctx)
+        var_array = tiledb.DenseArray(var_array_location, mode="r")
         expected_index_data = anndata_object.var.index.to_numpy()
         index_name = json.loads(var_array.meta["cxg_schema"])["index"]
         actual_index_data = var_array.query(attrs=[index_name])[:][index_name]
         self.assertTrue(np.array_equal(expected_index_data, actual_index_data))
 
         # Validate var columns
-        expected_columns = list(anndata_object.var.columns.values)
+        expected_columns = anndata_object.var.columns.values
         for column_name in expected_columns:
             expected_data = anndata_object.var[column_name].to_numpy()
             actual_data = var_array.query(attrs=[column_name])[:][column_name]
@@ -226,7 +223,7 @@ class TestH5ADDataFile(unittest.TestCase):
 
         # Validate embedding
         expected_embedding_data = anndata_object.obsm.get("X_awesome_embedding")
-        embedding_array = tiledb.DenseArray(specific_embedding_array_location, mode="r", ctx=tiledb_ctx)
+        embedding_array = tiledb.DenseArray(specific_embedding_array_location, mode="r")
         actual_embedding_data = embedding_array[:, 0:2]
         self.assertTrue(np.array_equal(expected_embedding_data, actual_embedding_data))
 
@@ -234,10 +231,10 @@ class TestH5ADDataFile(unittest.TestCase):
         if not has_column_encoding:
             expected_x_data = anndata_object.X
             if is_sparse:
-                x_array = tiledb.SparseArray(main_x_array_location, mode="r", ctx=tiledb_ctx)
+                x_array = tiledb.SparseArray(main_x_array_location, mode="r")
                 actual_x_data = np.reshape(x_array[:, :][""], expected_x_data.shape)
             else:
-                x_array = tiledb.DenseArray(main_x_array_location, mode="r", ctx=tiledb_ctx)
+                x_array = tiledb.DenseArray(main_x_array_location, mode="r")
                 actual_x_data = x_array[:, :]
             self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
 
