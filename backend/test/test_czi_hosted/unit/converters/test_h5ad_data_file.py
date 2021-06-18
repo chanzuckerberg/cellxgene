@@ -8,6 +8,8 @@ from uuid import uuid4
 import anndata
 import numpy as np
 from pandas import Series, DataFrame
+import tiledb
+from urllib.parse import urljoin
 
 from backend.czi_hosted.common.corpora import CorporaConstants
 from backend.czi_hosted.converters.h5ad_data_file import H5ADDataFile
@@ -129,25 +131,25 @@ class TestH5ADDataFile(unittest.TestCase):
         h5ad_file = H5ADDataFile(self.sample_h5ad_filename, use_corpora_schema=False)
         h5ad_file.to_cxg(self.sample_output_directory, 100)
 
-        self._validate_expected_generated_list_of_tiledb_files()
+        self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, True)
 
     def test__to_cxg__simple_anndata_with_corpora_and_sparse(self):
         h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
         h5ad_file.to_cxg(self.sample_output_directory, 100)
 
-        self._validate_expected_generated_list_of_tiledb_files()
+        self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, True)
 
     def test__to_cxg__simple_anndata_no_corpora_and_dense(self):
         h5ad_file = H5ADDataFile(self.sample_h5ad_filename, use_corpora_schema=False)
         h5ad_file.to_cxg(self.sample_output_directory, 0)
 
-        self._validate_expected_generated_list_of_tiledb_files()
+        self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, False)
 
     def test__to_cxg__simple_anndata_with_corpora_and_dense(self):
         h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
         h5ad_file.to_cxg(self.sample_output_directory, 0)
 
-        self._validate_expected_generated_list_of_tiledb_files()
+        self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, False)
 
     def test__to_cxg__with_sparse_column_encoding(self):
         anndata = self._create_sample_anndata_dataset()
@@ -157,69 +159,87 @@ class TestH5ADDataFile(unittest.TestCase):
         h5ad_file = H5ADDataFile(sparse_with_column_shift_filename)
         h5ad_file.to_cxg(self.sample_output_directory, 50)
 
-        self._validate_expected_generated_list_of_tiledb_files(has_column_encoding=True)
+        self._validate_cxg_and_h5ad_content_match(
+            sparse_with_column_shift_filename, self.sample_output_directory, False, has_column_encoding=True
+        )
 
         # Clean up
         remove(sparse_with_column_shift_filename)
 
-    def _validate_expected_generated_list_of_tiledb_files(self, has_column_encoding=False):
-        (
-            expected_directories,
-            expected_obs_files,
-            expected_var_files,
-        ) = self._get_expected_generated_list_of_tiledb_files()
+    def _validate_cxg_and_h5ad_content_match(self, h5ad_filename, cxg_directory, is_sparse, has_column_encoding=False):
+        anndata_object = anndata.read_h5ad(h5ad_filename)
+        tiledb_ctx = tiledb.Ctx(
+            {"sm.tile_cache_size": 8 * 1024 * 1024 * 1024, "sm.num_reader_threads": 32, "vfs.s3.region": "us-east-1"}
+        )
 
-        for directory in expected_directories:
-            self.assertTrue(path.isdir(directory))
+        # Array locations
+        metadata_array_location = f"{cxg_directory}/cxg_group_metadata"
+        main_x_array_location = f"{cxg_directory}/X"
+        embedding_array_location = f"{cxg_directory}/emb"
+        specific_embedding_array_location = f"{self.sample_output_directory}/emb/awesome_embedding"
+        obs_array_location = f"{cxg_directory}/obs"
+        var_array_location = f"{cxg_directory}/var"
+        x_col_shift_array_location = f"{cxg_directory}/X_col_shift"
 
-        for obs_file in expected_obs_files:
-            expected_location_of_obs_file = f"{self.sample_output_directory}/obs/*/{obs_file}"
-            self.assertTrue(path.isfile(glob(expected_location_of_obs_file)[0]))
-
-        for var_file in expected_var_files:
-            expected_location_of_var_file = f"{self.sample_output_directory}/var/*/{var_file}"
-            self.assertTrue(path.isfile(glob(expected_location_of_var_file)[0]))
+        # Assert CXG structure
+        self.assertEqual(tiledb.object_type(cxg_directory, ctx=tiledb_ctx), "group")
+        self.assertEqual(tiledb.object_type(obs_array_location, ctx=tiledb_ctx), "array")
+        self.assertEqual(tiledb.object_type(var_array_location, ctx=tiledb_ctx), "array")
+        self.assertEqual(tiledb.object_type(main_x_array_location, ctx=tiledb_ctx), "array")
+        self.assertEqual(tiledb.object_type(embedding_array_location, ctx=tiledb_ctx), "group")
+        self.assertEqual(tiledb.object_type(specific_embedding_array_location, ctx=tiledb_ctx), "array")
 
         if has_column_encoding:
-            self.assertTrue(path.isdir(f"{self.sample_output_directory}/X_col_shift"))
+            self.assertEqual(tiledb.object_type(x_col_shift_array_location, ctx=tiledb_ctx), "array")
 
-    def _get_expected_generated_list_of_tiledb_files(self):
+        # Validate metadata
+        metadata_array = tiledb.DenseArray(metadata_array_location, mode="r", ctx=tiledb_ctx)
+        self.assertIn("cxg_version", metadata_array.meta)
 
-        # Expected directories
-        metadata_directory = f"{self.sample_output_directory}/cxg_group_metadata"
-        main_x_directory = f"{self.sample_output_directory}/X"
-        overall_embedding_directory = f"{self.sample_output_directory}/emb"
-        specific_embedding_directory = f"{self.sample_output_directory}/emb/awesome_embedding"
-        obs_directory = f"{self.sample_output_directory}/obs"
-        var_directory = f"{self.sample_output_directory}/var"
+        # Validate obs index
+        obs_array = tiledb.DenseArray(obs_array_location, mode="r", ctx=tiledb_ctx)
+        expected_index_data = anndata_object.obs.index.to_numpy()
+        index_name = json.loads(obs_array.meta["cxg_schema"])["index"]
+        actual_index_data = obs_array.query(attrs=[index_name])[:][index_name]
+        self.assertTrue(np.array_equal(expected_index_data, actual_index_data))
 
-        # Obs files
-        obs_files = []
-        obs_files.append("name_0.tdb")
-        obs_files.append("name_0_var.tdb")
-        obs_files.append("string_category.tdb")
-        obs_files.append("string_category_var.tdb")
-        obs_files.append("float_category.tdb")
+        # Validate obs columns
+        expected_columns = list(anndata_object.obs.columns.values)
+        for column_name in expected_columns:
+            expected_data = anndata_object.obs[column_name].to_numpy()
+            actual_data = obs_array.query(attrs=[column_name])[:][column_name]
+            self.assertTrue(np.array_equal(expected_data, actual_data))
 
-        # Var files
-        var_files = []
-        var_files.append("name_0.tdb")
-        var_files.append("name_0_var.tdb")
-        var_files.append("bool_category.tdb")
-        var_files.append("int_category.tdb")
+        # Validate var index
+        var_array = tiledb.DenseArray(var_array_location, mode="r", ctx=tiledb_ctx)
+        expected_index_data = anndata_object.var.index.to_numpy()
+        index_name = json.loads(var_array.meta["cxg_schema"])["index"]
+        actual_index_data = var_array.query(attrs=[index_name])[:][index_name]
+        self.assertTrue(np.array_equal(expected_index_data, actual_index_data))
 
-        return (
-            [
-                metadata_directory,
-                main_x_directory,
-                overall_embedding_directory,
-                specific_embedding_directory,
-                obs_directory,
-                var_directory,
-            ],
-            obs_files,
-            var_files,
-        )
+        # Validate var columns
+        expected_columns = list(anndata_object.var.columns.values)
+        for column_name in expected_columns:
+            expected_data = anndata_object.var[column_name].to_numpy()
+            actual_data = var_array.query(attrs=[column_name])[:][column_name]
+            self.assertTrue(np.array_equal(expected_data, actual_data))
+
+        # Validate embedding
+        expected_embedding_data = anndata_object.obsm.get("X_awesome_embedding")
+        embedding_array = tiledb.DenseArray(specific_embedding_array_location, mode="r", ctx=tiledb_ctx)
+        actual_embedding_data = embedding_array[:, 0:2]
+        self.assertTrue(np.array_equal(expected_embedding_data, actual_embedding_data))
+
+        # Validate X matrix if not column shifted
+        if not has_column_encoding:
+            expected_x_data = anndata_object.X
+            if is_sparse:
+                x_array = tiledb.SparseArray(main_x_array_location, mode="r", ctx=tiledb_ctx)
+                actual_x_data = np.reshape(x_array[:, :][""], expected_x_data.shape)
+            else:
+                x_array = tiledb.DenseArray(main_x_array_location, mode="r", ctx=tiledb_ctx)
+                actual_x_data = x_array[:, :]
+            self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
 
     def _write_anndata_to_file(self, anndata):
         temporary_filename = f"{PROJECT_ROOT}/backend/test/fixtures/{uuid4()}.h5ad"
