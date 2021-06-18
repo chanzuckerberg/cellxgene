@@ -197,7 +197,6 @@ class TestH5ADDataFile(unittest.TestCase):
         expected_index_data = anndata_object.obs.index.to_numpy()
         index_name = json.loads(obs_array.meta["cxg_schema"])["index"]
         actual_index_data = obs_array.query(attrs=[index_name])[:][index_name]
-        actual_index_data = obs_array
         self.assertTrue(np.array_equal(expected_index_data, actual_index_data))
 
         # Validate obs columns
