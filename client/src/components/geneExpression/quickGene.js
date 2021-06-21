@@ -111,7 +111,7 @@ function QuickGene() {
   };
 
   return (
-    <div>
+    <div style={{ width: "100%", marginBottom: "16px" }}>
       <H4
         role="menuitem"
         tabIndex="0"
@@ -129,29 +129,39 @@ function QuickGene() {
           <Icon icon={IconNames.CHEVRON_RIGHT} />
         )}
       </H4>
-      <div>
-        <Suggest
-          resetOnSelect
-          closeOnSelect
-          resetOnClose
-          itemDisabled={userDefinedGenesLoading ? () => true : () => false}
-          noResults={<MenuItem disabled text="No matching genes." />}
-          onItemSelect={(g) => {
-            /* this happens on 'enter' */
-            handleClick(g);
-          }}
-          initialContent={<MenuItem disabled text="Enter a gene…" />}
-          inputProps={{ "data-testid": "gene-search" }}
-          inputValueRenderer={() => {
-            return "";
-          }}
-          itemListPredicate={filterGenes}
-          itemRenderer={renderGene}
-          items={geneNames || ["No genes"]}
-          popoverProps={{ minimal: true }}
-        />
-      </div>
-      <Genes genes={userDefinedGenes} />
+      {isExpanded && (
+        <>
+          <div style={{ marginBottom: "8px" }}>
+            <Suggest
+              resetOnSelect
+              closeOnSelect
+              resetOnClose
+              itemDisabled={userDefinedGenesLoading ? () => true : () => false}
+              noResults={<MenuItem disabled text="No matching genes." />}
+              onItemSelect={(g) => {
+                /* this happens on 'enter' */
+                handleClick(g);
+              }}
+              initialContent={<MenuItem disabled text="Enter a gene…" />}
+              inputProps={{
+                "data-testid": "gene-search",
+                placeholder: "Quick Gene Search",
+                leftIcon: IconNames.SEARCH,
+                fill: true,
+              }}
+              inputValueRenderer={() => {
+                return "";
+              }}
+              itemListPredicate={filterGenes}
+              itemRenderer={renderGene}
+              items={geneNames || ["No genes"]}
+              popoverProps={{ minimal: true }}
+              fill
+            />
+          </div>
+          <Genes genes={userDefinedGenes} />
+        </>
+      )}
     </div>
   );
 }
