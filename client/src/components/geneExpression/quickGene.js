@@ -1,6 +1,6 @@
 import { H4, Icon, MenuItem } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import fuzzysort from "fuzzysort";
 import { Suggest } from "@blueprintjs/select";
 import { useSelector, useDispatch } from "react-redux";
@@ -104,11 +104,18 @@ function QuickGene() {
     dispatch({ type: "clear user defined gene", data: gene });
   };
 
-  const Genes = ({ genes }) => {
-    return genes.map((gene) => {
-      return <Gene key={gene} gene={gene} removeGene={removeGene} quickGene />;
+  const QuickGenes = useMemo(() => {
+    return userDefinedGenes.map((gene) => {
+      return (
+        <Gene
+          key={`quick=${gene}`}
+          gene={gene}
+          removeGene={removeGene}
+          quickGene
+        />
+      );
     });
-  };
+  }, [userDefinedGenes]);
 
   return (
     <div style={{ width: "100%", marginBottom: "16px" }}>
@@ -159,7 +166,7 @@ function QuickGene() {
               fill
             />
           </div>
-          <Genes genes={userDefinedGenes} />
+          {QuickGenes}
         </>
       )}
     </div>
