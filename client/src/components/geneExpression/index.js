@@ -38,7 +38,13 @@ class GeneExpression extends React.Component {
 
   handleActivateCreateGenesetMode = () => {
     const { dispatch } = this.props;
+    const { geneSetsExpanded } = this.state;
     dispatch({ type: "geneset: activate add new geneset mode" });
+    if (!geneSetsExpanded) {
+      this.setState((state) => {
+        return { ...state, geneSetsExpanded: true };
+      });
+    }
   };
 
   handleExpandGeneSets = () => {
