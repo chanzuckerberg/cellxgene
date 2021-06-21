@@ -58,7 +58,3 @@ client/.eslintcache
 
 # E2E Testing
 ignoreE2E*
-test.csv
-test_genesets.csv
-test-backups/
-test_genesets-backups/
