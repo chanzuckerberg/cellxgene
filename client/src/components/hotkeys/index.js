@@ -44,7 +44,7 @@ export const HotkeyTest = (props) => {
         onKeyDown: () => dispatch(actions.selectAll()),
       },
     ],
-    []
+    [differential]
   );
   const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
 
