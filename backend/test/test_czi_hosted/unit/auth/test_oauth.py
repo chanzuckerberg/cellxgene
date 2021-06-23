@@ -10,7 +10,6 @@ from multiprocessing import Process
 
 import jose
 from backend.czi_hosted.common.config.app_config import AppConfig
-from backend.test.test_czi_hosted.unit import test_server
 from backend.test import FIXTURES_ROOT
 
 # This tests the oauth authentication type.
@@ -20,6 +19,8 @@ from backend.test import FIXTURES_ROOT
 # oauth server.
 
 # number of seconds that the oauth token is valid
+from backend.test.test_czi_hosted.unit import BaseTest
+
 TOKEN_EXPIRES = 2
 
 # Create a mocked out oauth token, which servers all the endpoints needed by the oauth type.
@@ -69,7 +70,7 @@ def launch_mock_oauth(mock_port):
     mock_oauth_app.run(port=mock_port)
 
 
-class AuthTest(unittest.TestCase):
+class AuthTest(BaseTest):
     @classmethod
     def setUpClass(cls):
         # The port that the mock oauth server will listen on
@@ -119,89 +120,92 @@ class AuthTest(unittest.TestCase):
         app_config.update_server_config(multi_dataset__dataroot=self.dataset_dataroot)
         app_config.complete_config()
 
-        with test_server(app_config=app_config) as server:
-            session = requests.Session()
+        server= self.create_app(app_config)
+        server.testing = True
+        session = server.test_client()
 
-            # auth datasets
-            config = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/config").json()
-            userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
+        # auth datasets
+        config = json.loads(session.get(f"/d/pbmc3k.cxg/api/v0.2/config").data)
+        userinfo = json.loads(session.get(f"/d/pbmc3k.cxg/api/v0.2/userinfo").data)
 
-            self.assertFalse(userinfo["userinfo"]["is_authenticated"])
-            self.assertIsNone(userinfo["userinfo"]["username"])
-            self.assertTrue(config["config"]["authentication"]["requires_client_login"])
-            self.assertTrue(config["config"]["parameters"]["annotations"])
+        self.assertFalse(userinfo["userinfo"]["is_authenticated"])
+        self.assertIsNone(userinfo["userinfo"]["username"])
+        self.assertTrue(config["config"]["authentication"]["requires_client_login"])
+        self.assertTrue(config["config"]["parameters"]["annotations"])
 
-            login_uri = config["config"]["authentication"]["login"]
-            logout_uri = config["config"]["authentication"]["logout"]
+        login_uri = config["config"]["authentication"]["login"]
+        logout_uri = config["config"]["authentication"]["logout"]
 
-            self.assertEqual(login_uri, f"{server}/login?dataset=d/pbmc3k.cxg/")
-            self.assertEqual(logout_uri, f"{server}/logout?dataset=d/pbmc3k.cxg/")
+        self.assertEqual(login_uri, "http://localhost:5005/login?dataset=d/pbmc3k.cxg/")
+        self.assertEqual(logout_uri, "http://localhost:5005/logout?dataset=d/pbmc3k.cxg/")
 
-            r = session.get(login_uri)
-            # check that the login redirect worked
-            self.assertEqual(r.history[0].status_code, 302)
-            self.assertEqual(r.url, f"{server}/d/pbmc3k.cxg/")
-            config = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/config").json()
-            userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
+        response = session.get(login_uri)
+        # check that the login redirect worked
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, f"/d/pbmc3k.cxg/")
+        config = json.loads(session.get("/d/pbmc3k.cxg/api/v0.2/config").data)
+        userinfo = json.loads(session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").data)
+        self.assertTrue(userinfo["userinfo"]["is_authenticated"])
+        self.assertEqual(userinfo["userinfo"]["username"], "fake_user")
+        self.assertEqual(userinfo["userinfo"]["email"], "fake_user@email.com")
+        self.assertTrue(config["config"]["parameters"]["annotations"])
+
+        if cookie_key:
+            cookie = session.cookies.get(cookie_key)
+            token = json.loads(base64.b64decode(cookie))
+            access_token_before = token.get("access_token")
+            id_token_before = token.get("id_token")
+
+            # let the token expire
+            time.sleep(TOKEN_EXPIRES + 1)
+
+            # check that refresh works
+            session.get(login_uri)
+            userinfo = json.loads(session.get(f"/d/pbmc3k.cxg/api/v0.2/userinfo").data)
             self.assertTrue(userinfo["userinfo"]["is_authenticated"])
             self.assertEqual(userinfo["userinfo"]["username"], "fake_user")
-            self.assertEqual(userinfo["userinfo"]["email"], "fake_user@email.com")
-            self.assertTrue(config["config"]["parameters"]["annotations"])
 
-            if cookie_key:
-                cookie = session.cookies.get(cookie_key)
-                token = json.loads(base64.b64decode(cookie))
-                access_token_before = token.get("access_token")
-                id_token_before = token.get("id_token")
+            cookie = session.cookies.get(cookie_key)
+            token = json.loads(base64.b64decode(cookie))
+            access_token_after = token.get("access_token")
+            id_token_after = token.get("id_token")
 
-                # let the token expire
-                time.sleep(TOKEN_EXPIRES + 1)
+            self.assertNotEqual(access_token_before, access_token_after)
+            self.assertNotEqual(id_token_before, id_token_after)
 
-                # check that refresh works
-                session.get(login_uri)
-                userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
-                self.assertTrue(userinfo["userinfo"]["is_authenticated"])
-                self.assertEqual(userinfo["userinfo"]["username"], "fake_user")
-
-                cookie = session.cookies.get(cookie_key)
-                token = json.loads(base64.b64decode(cookie))
-                access_token_after = token.get("access_token")
-                id_token_after = token.get("id_token")
-
-                self.assertNotEqual(access_token_before, access_token_after)
-                self.assertNotEqual(id_token_before, id_token_after)
-
-                # invalid cookie is rejected
-                session.cookies.set(cookie_key, "TEST_" + cookie)
-                self.assertTrue(cookie_key in session.cookies)
-                response = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo")
-                # this is not an error, the invalid cookie is just ignored.
-                self.assertEqual(response.status_code, 200)
-                userinfo = response.json()
-                self.assertFalse(userinfo["userinfo"]["is_authenticated"])
-                self.assertIsNone(userinfo["userinfo"]["username"])
-
-                # invalid id_token is rejected
-                test_token = token
-                test_token["id_token"] = "TEST_" + id_token_after
-                encoded_cookie = base64.b64encode(json.dumps(test_token).encode()).decode()
-                session.cookies.set(cookie_key, encoded_cookie)
-                response = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo")
-                # this is not an error, the invalid id_token is just ignored.
-                self.assertEqual(response.status_code, 200)
-                userinfo = response.json()
-                self.assertFalse(userinfo["userinfo"]["is_authenticated"])
-                self.assertIsNone(userinfo["userinfo"]["username"])
-
-            r = session.get(logout_uri)
-            # check that the logout redirect worked
-            self.assertEqual(r.history[0].status_code, 302)
-            self.assertEqual(r.url, f"{server}/d/pbmc3k.cxg/")
-            config = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/config").json()
-            userinfo = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").json()
+            # invalid cookie is rejected
+            session.cookies.set(cookie_key, "TEST_" + cookie)
+            self.assertTrue(cookie_key in session.cookies)
+            response = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo")
+            # this is not an error, the invalid cookie is just ignored.
+            self.assertEqual(response.status_code, 200)
+            userinfo = json.loads(response.data)
             self.assertFalse(userinfo["userinfo"]["is_authenticated"])
             self.assertIsNone(userinfo["userinfo"]["username"])
-            self.assertTrue(config["config"]["parameters"]["annotations"])
+
+            # invalid id_token is rejected
+            test_token = token
+            test_token["id_token"] = "TEST_" + id_token_after
+            encoded_cookie = base64.b64encode(json.dumps(test_token).encode()).decode()
+            session.cookies.set(cookie_key, encoded_cookie)
+            response = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo")
+            # this is not an error, the invalid id_token is just ignored.
+            self.assertEqual(response.status_code, 200)
+            userinfo = json.loads(response.data)
+            self.assertFalse(userinfo["userinfo"]["is_authenticated"])
+            self.assertIsNone(userinfo["userinfo"]["username"])
+
+        r = session.get(logout_uri)
+        # check that the logout redirect worked
+
+        self.assertEqual(r.history[0].status_code, 302)
+        self.assertEqual(r.url, f"{server}/d/pbmc3k.cxg/")
+        config = json.loads(session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/config").data)
+        userinfo = json.loads(session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/userinfo").data)
+        self.assertFalse(userinfo["userinfo"]["is_authenticated"])
+        self.assertIsNone(userinfo["userinfo"]["username"])
+        self.assertTrue(config["config"]["parameters"]["annotations"])
 
     def test_auth_oauth_session(self):
         # test with session cookies

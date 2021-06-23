@@ -55,7 +55,7 @@ class AuthTypeClientBase(AuthTypeBase):
         super().__init__()
 
     def requires_client_login(self):
-        return True
+        return False
 
     @abstractmethod
     def add_url_rules(self, selfapp):

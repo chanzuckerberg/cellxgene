@@ -1,12 +1,11 @@
 import os
 from unittest.mock import patch
 
-import requests
+import yaml
 
 from backend.common.errors import ConfigurationError
 from backend.czi_hosted.common.config.app_config import AppConfig
 from backend.common.utils.type_conversion_utils import convert_string_to_value
-from backend.test.test_czi_hosted.unit import test_server
 from backend.test import FIXTURES_ROOT
 from backend.test.test_czi_hosted.unit.common.config import ConfigTests
 
@@ -39,24 +38,31 @@ class TestExternalConfig(ConfigTests):
         env = os.environ
         env["DATAPATH"] = f"{FIXTURES_ROOT}/pbmc3k.cxg"
         env["DIFFEXP"] = "False"
-        with test_server(command_line_args=["-c", configfile], env=env) as server:
-            session = requests.Session()
+        with open(configfile) as config_file:
+            config = yaml.load(config_file, Loader=yaml.Loader)
+        with self.create_app(config) as server:
+            server.testing = True
+            session = server.test_client()
+
             response = session.get(f"{server}/api/v0.2/config")
             data_config = response.json()
             self.assertEqual(data_config["config"]["displayNames"]["dataset"], "pbmc3k")
             self.assertTrue(data_config["config"]["parameters"]["disable-diffexp"])
 
-        env["DATAPATH"] = f"{FIXTURES_ROOT}/a95c59b4-7f5d-4b80-ad53-a694834ca18b.h5ad"
-        env["DIFFEXP"] = "True"
-        with test_server(command_line_args=["-c", configfile], env=env) as server:
-            session = requests.Session()
+        os.environ["DATAPATH"] = f"{FIXTURES_ROOT}/a95c59b4-7f5d-4b80-ad53-a694834ca18b.h5ad"
+        os.environ["DIFFEXP"] = "True"
+        with self.create_app(config) as server:
+            # with test_server(port=str(backend_port), app_config=config) as server:
+            server.testing = True
+            session = server.test_client()
+
+            # session = requests.Session()
             response = session.get(f"{server}/api/v0.2/config")
             data_config = response.json()
             self.assertEqual(data_config["config"]["displayNames"]["dataset"], "a95c59b4-7f5d-4b80-ad53-a694834ca18b")
             self.assertFalse(data_config["config"]["parameters"]["disable-diffexp"])
 
     def test_environment_variable_errors(self):
-
         # no name
         app_config = AppConfig()
         app_config.external_config.environment = [dict(required=True, path=["this", "is", "a", "path"])]

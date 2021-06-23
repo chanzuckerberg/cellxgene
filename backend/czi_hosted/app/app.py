@@ -1,3 +1,4 @@
+import base64
 import datetime
 import logging
 from functools import wraps
@@ -15,9 +16,11 @@ from flask import (
     abort,
     Blueprint,
     request,
-    send_from_directory,
+    send_from_directory, json,
 )
+from flask_cors import CORS
 from flask_restful import Api, Resource
+from flask_talisman import Talisman
 from server_timing import Timing as ServerTiming
 
 import backend.czi_hosted.common.rest as common_rest
@@ -78,6 +81,7 @@ def dataset_index(url_dataroot=None, dataset=None):
             return dataroot_index()
         else:
             location = server_config.single_dataset__datapath
+            dataset = server_config.single_dataset__datapath.split("/")[-1]
     else:
         dataroot = None
         for key, dataroot_dict in server_config.multi_dataset__dataroot.items():
@@ -87,7 +91,6 @@ def dataset_index(url_dataroot=None, dataset=None):
         if dataroot is None:
             abort(HTTPStatus.NOT_FOUND)
         location = path_join(dataroot, dataset)
-
     dataset_config = app_config.get_dataset_config(url_dataroot)
     scripts = dataset_config.app__scripts
     inline_scripts = dataset_config.app__inline_scripts
@@ -168,7 +171,7 @@ def rest_get_data_adaptor(func):
     return wrapped_function
 
 
-def dataroot_test_index():
+def  dataroot_test_index():
     # the following index page is meant for testing/debugging purposes
     data = '<!doctype html><html lang="en">'
     data += "<head><title>Hosted Cellxgene</title></head>"
@@ -218,6 +221,7 @@ def dataroot_index():
     if not config.server_config.multi_dataset__index:
         abort(HTTPStatus.NOT_FOUND)
     elif config.server_config.multi_dataset__index is True:
+        print('and eventually we get here?')
         return dataroot_test_index()
     else:
         return redirect(config.server_config.multi_dataset__index)
@@ -475,6 +479,100 @@ class Server:
 
         auth = server_config.auth
         self.app.auth = auth
-        if auth.requires_client_login():
+        if auth and auth.requires_client_login():
             auth.add_url_rules(self.app)
-        auth.complete_setup(self.app)
+            auth.complete_setup(self.app)
+
+
+class WSGIServer(Server):
+    def __init__(self, app_config):
+        super().__init__(app_config)
+
+    @staticmethod
+    def _before_adding_routes(app, app_config):
+        script_hashes = WSGIServer.get_csp_hashes(app, app_config)
+        server_config = app_config.server_config
+
+        # add the api_base_url to the connect_src csp header.
+        extra_connect_src = []
+        api_base_url = server_config.get_api_base_url()
+        if api_base_url:
+            parse_api_base_url = urlparse(api_base_url)
+            extra_connect_src = [f"{parse_api_base_url.scheme}://{parse_api_base_url.netloc}"]
+
+        # This hash should be in sync with the script within
+        # `client/configuration/webpack/obsoleteHTMLTemplate.html`
+
+        # It is _very_ difficult to generate the correct hash manually,
+        # consider forcing CSP to fail on the local server by intercepting the response via Requestly
+        # this should print the failing script's hash to console.
+        # See more here: https://github.com/chanzuckerberg/cellxgene/pull/1745
+        obsolete_browser_script_hash = ["'sha256-/rmgOi/skq9MpiZxPv6lPb1PNSN+Uf4NaUHO/IjyfwM='"]
+        csp = {
+            "default-src": ["'self'"],
+            "connect-src": ["'self'"] + extra_connect_src,
+            "script-src": ["'self'", "'unsafe-eval'"] + obsolete_browser_script_hash + script_hashes,
+            "style-src": ["'self'", "'unsafe-inline'"],
+            "img-src": ["'self'", "https://cellxgene.cziscience.com", "data:"],
+            "object-src": ["'none'"],
+            "base-uri": ["'none'"],
+            "frame-ancestors": ["'none'"],
+        }
+
+        if not app.debug:
+            csp["upgrade-insecure-requests"] = ""
+
+        if server_config.app__csp_directives:
+            for k, v in server_config.app__csp_directives.items():
+                if not isinstance(v, list):
+                    v = [v]
+                csp[k] = csp.get(k, []) + v
+
+        # Add the web_base_url to the CORS header
+        web_base_url = server_config.get_web_base_url()
+        if web_base_url:
+            web_base_url_parse = urlparse(web_base_url)
+            allowed_origin = f"{web_base_url_parse.scheme}://{web_base_url_parse.netloc}"
+            CORS(app, supports_credentials=True, origins=allowed_origin)
+
+        Talisman(
+            app, force_https=server_config.app__force_https, frame_options="DENY", content_security_policy=csp,
+        )
+
+    @staticmethod
+    def load_static_csp_hashes(app):
+        csp_hashes = None
+        try:
+            with app.open_resource("../common/web/csp-hashes.json") as f:
+                csp_hashes = json.load(f)
+        except FileNotFoundError:
+            pass
+        if not isinstance(csp_hashes, dict):
+            csp_hashes = {}
+        script_hashes = [f"'{hash}'" for hash in csp_hashes.get("script-hashes", [])]
+        if len(script_hashes) == 0:
+            logging.error("Content security policy hashes are missing, falling back to unsafe-inline policy")
+
+        return script_hashes
+
+    @staticmethod
+    def compute_inline_csp_hashes(app, app_config):
+        dataset_configs = [app_config.default_dataset_config] + list(app_config.dataroot_config.values())
+        hashes = []
+        for dataset_config in dataset_configs:
+            inline_scripts = dataset_config.app__inline_scripts
+            for script in inline_scripts:
+                with app.open_resource(f"../common/web/templates/{script}") as f:
+                    content = f.read()
+                    # we use jinja2 template include, which trims final newline if present.
+                    if content[-1] == 0x0A:
+                        content = content[0:-1]
+                    hash = base64.b64encode(hashlib.sha256(content).digest())
+                    hashes.append(f"'sha256-{hash.decode('utf-8')}'")
+        return hashes
+
+    @staticmethod
+    def get_csp_hashes(app, app_config):
+        script_hashes = WSGIServer.load_static_csp_hashes(app)
+        script_hashes += WSGIServer.compute_inline_csp_hashes(app, app_config)
+        return script_hashes

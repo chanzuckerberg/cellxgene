@@ -1,24 +1,22 @@
-import os
-import random
+import logging
 import shutil
 import tempfile
-import time
-from contextlib import contextmanager
+import unittest
+
 from os import path
-from subprocess import Popen
 
 import pandas as pd
-import requests
+from flask_compress import Compress
+from flask_cors import CORS
 
 from backend.czi_hosted.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
 from backend.czi_hosted.common.annotations.local_file_csv import AnnotationsLocalFile
-from backend.czi_hosted.common.config import DEFAULT_SERVER_PORT
 from backend.czi_hosted.common.config.app_config import AppConfig
 from backend.common.utils.data_locator import DataLocator
-from backend.common.utils.utils import find_available_port
 from backend.common.fbs.matrix import encode_matrix_fbs
 from backend.czi_hosted.data_common.matrix_loader import MatrixDataType, MatrixDataLoader
 from backend.czi_hosted.db.db_utils import DbUtils
+from backend.czi_hosted.app.app import Server
 from backend.test import PROJECT_ROOT, FIXTURES_ROOT
 
 
@@ -92,7 +90,7 @@ def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
         None,
         annotations_file,
     )
-    return data, tmp_dir, annotations
+    return data, tmp_dir, annotations, config
 
 
 def make_fbs(data):
@@ -133,75 +131,56 @@ def app_config(data_locator, backed=False, extra_server_config={}, extra_dataset
     return config
 
 
-def start_test_server(command_line_args=[], app_config=None, env=None):
-    """
-    Command line arguments can be passed in, as well as an app_config.
-    This function is meant to be used like this, for example:
+class TestServer(Server):
+    def __init__(self, app_config):
+        super().__init__(app_config)
 
-    with unit(...) as server:
-        r = requests.get(f"{server}/...")
-        // check r
-
-    where the server can be accessed within the context, and is terminated when
-    the context is exited.
-    The port is automatically set using find_available_port, unless passed in as a command line arg.
-    The verbose flag is automatically set to True.
-    If an app_config is provided, then this function writes a temporary
-    yaml config file, which this server will read and parse.
-    """
-
-    command = ["cellxgene", "--no-upgrade-check", "launch", "--verbose"]
-    if "-p" in command_line_args:
-        port = int(command_line_args[command_line_args.index("-p") + 1])
-    elif "--port" in command_line_args:
-        port = int(command_line_args[command_line_args.index("--port") + 1])
-    else:
-        start = random.randint(DEFAULT_SERVER_PORT, 2 ** 16 - 1)
-        port = int(os.environ.get("CXG_SERVER_PORT", start))
-        port = find_available_port("localhost", port)
-        command += ["--port=%d" % port]
-
-    command += command_line_args
-
-    tempdir = None
-    if app_config:
-        tempdir = tempfile.TemporaryDirectory()
-        config_file = os.path.join(tempdir.name, "config.yaml")
-        app_config.write_config(config_file)
-        command.extend(["-c", config_file])
-
-    server = f"http://localhost:{port}"
-    ps = Popen(command, env=env)
-
-    for _ in range(10):
-        try:
-            requests.get(f"{server}/health")
-            break
-        except requests.exceptions.ConnectionError:
-            time.sleep(1)
-
-    if tempdir:
-        tempdir.cleanup()
-
-    return ps, server
+    @staticmethod
+    def _before_adding_routes(app, app_config):
+        app.config["COMPRESS_MIMETYPES"] = [
+            "text/html",
+            "text/css",
+            "text/xml",
+            "application/json",
+            "application/javascript",
+            "application/octet-stream",
+        ]
+        Compress(app)
+        if app_config.server_config.app__debug:
+            CORS(app, supports_credentials=True)
 
 
-def stop_test_server(ps):
-    try:
-        ps.terminate()
-    except ProcessLookupError:
-        pass
+class BaseTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls, app_config=None):
+        cls.TEST_URL_BASE = "/d/pbmc3k.cxg/api/v0.2/"
+        cls.maxDiff = None
+        cls.app = cls.create_app(app_config)
 
+    # def client(self):
+    #     self.app.testing = True
+    #     with self.app.test_client() as client:
+    #         yield client
 
-@contextmanager
-def test_server(command_line_args=[], app_config=None, env=None):
-    """A context to run the cellxgene server."""
+    @classmethod
+    def create_app(cls, app_config=None):
+        if not app_config:
+            app_config = AppConfig()
+            app_config.update_server_config(
+                authentication__type="test",
+                authentication__insecure_test_environment=True,
+                app__flask_secret_key="testing",
+                app__debug=True,
+                multi_dataset__dataroot=f"{FIXTURES_ROOT}",
+                multi_dataset__index=True
+            )
+            app_config.update_default_dataset_config(embeddings__enable_reembedding=False, )
+            app_config.update_server_config(multi_dataset__allowed_matrix_types=["cxg"], )
+        app_config.complete_config(logging.info)
 
-    ps, server = start_test_server(command_line_args, app_config, env)
-    try:
-        yield server
-    finally:
-        try:
-            stop_test_server(ps)
-        except ProcessLookupError:
-            pass
+        app = TestServer(app_config).app
+
+        app.testing = True
+        app.debug = True
+
+        return app

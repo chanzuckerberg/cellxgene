@@ -8,7 +8,7 @@ from server_timing import Timing as ServerTiming
 
 from backend.czi_hosted.common.config.app_config import AppConfig
 from backend.common.constants import Axis
-from backend.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError, UnsupportedSummaryMethod
+from backend.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError, UnsupportedSummaryMethod, DatasetAccessError
 from backend.common.utils.utils import jsonify_numpy
 from backend.common.fbs.matrix import encode_matrix_fbs
 
@@ -283,7 +283,7 @@ class DataAdaptor(metaclass=ABCMeta):
 
         try:
             obs_selector, var_selector = self._filter_to_mask(filter)
-        except (KeyError, IndexError, TypeError, AttributeError):
+        except (KeyError, IndexError, TypeError, AttributeError, DatasetAccessError):
             raise FilterError("Error parsing filter")
 
         if obs_selector is not None:
