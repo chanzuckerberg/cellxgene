@@ -185,6 +185,35 @@ export const graphLassoEndAction = (embName, polygon) => async (
   });
 };
 
+export const selectInverseSelectionAction = () => async (
+  dispatch,
+  getState
+) => {
+  const { annoMatrix, obsCrossfilter: prevObsCrossfilter } = getState();
+  const arr = new Array(annoMatrix.nObs);
+  prevObsCrossfilter.fillByIsSelected(arr, false, true);
+
+  const unselected = [...arr.keys()].filter((i) => arr[i]);
+  const nameDf = await annoMatrix.fetch("obs", "name_0");
+  const rowNames = nameDf.__columns[0];
+  const values = unselected.map((index) => rowNames[index]);
+
+  const selection = {
+    mode: "exact",
+    values,
+  };
+  let obsCrossfilter = await prevObsCrossfilter.select(
+    "obs",
+    "name_0",
+    selection
+  );
+  obsCrossfilter = await obsCrossfilter.selectAllExcept("obs/name_0");
+  await dispatch({
+    type: "invert lasso selection",
+    obsCrossfilter,
+  });
+};
+
 /*
 Differential expression set selection
 */

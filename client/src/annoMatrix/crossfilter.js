@@ -161,6 +161,7 @@ export default class AnnoMatrixObsCrossfilter {
     const df = await annoMatrix.fetch(field, query);
 
     const dimName = _dimensionNameFromDf(field, df);
+
     if (!obsCrossfilter.hasDimension(dimName)) {
       // lazy index generation - add dimension when first used
       obsCrossfilter = this._addObsCrossfilterDimension(
@@ -170,9 +171,21 @@ export default class AnnoMatrixObsCrossfilter {
         df
       );
     }
-
     // select
     obsCrossfilter = obsCrossfilter.select(dimName, spec);
+    return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
+  }
+
+  selectAllExcept(dimName) {
+    /*
+		Select all on any dimension in this field.
+		*/
+    const { annoMatrix } = this;
+    let currentDims = this.obsCrossfilter.dimensionNames();
+    currentDims = currentDims.filter((value) => value !== dimName);
+    const obsCrossfilter = currentDims.reduce((xfltr, dim) => {
+      return xfltr.select(dim, { mode: "all" });
+    }, this.obsCrossfilter);
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
 

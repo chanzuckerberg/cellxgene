@@ -232,6 +232,23 @@ const requestDifferentialExpression = (set1, set2, num_genes = 50) => async (
   }
 };
 
+const selectAll = () => async (dispatch, getState) => {
+  dispatch({ type: "select all observations" });
+  try {
+    const { obsCrossfilter: prevObsCrossfilter } = getState();
+    const obsCrossfilter = await prevObsCrossfilter.selectAll();
+    return dispatch({
+      type: "selected all observations",
+      obsCrossfilter,
+    });
+  } catch (error) {
+    return dispatch({
+      type: "error selecting all observations",
+      error,
+    });
+  }
+};
+
 function fetchJson(pathAndQuery) {
   return doJsonRequest(
     `${globals.API.prefix}${globals.API.version}${pathAndQuery}`
@@ -240,10 +257,12 @@ function fetchJson(pathAndQuery) {
 
 export default {
   doInitialDataLoad,
+  selectAll,
   requestDifferentialExpression,
   requestSingleGeneExpressionCountsForColoringPOST,
   requestUserDefinedGene,
   requestReembed,
+  selectInverseSelectionAction: selnActions.selectInverseSelectionAction,
   selectContinuousMetadataAction: selnActions.selectContinuousMetadataAction,
   selectCategoricalMetadataAction: selnActions.selectCategoricalMetadataAction,
   selectCategoricalAllMetadataAction:

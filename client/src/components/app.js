@@ -1,7 +1,6 @@
 import React from "react";
 import Helmet from "react-helmet";
 import { connect } from "react-redux";
-
 import Container from "./framework/container";
 import Layout from "./framework/layout";
 import LeftSideBar from "./leftSidebar";
@@ -12,10 +11,11 @@ import MenuBar from "./menubar";
 import Autosave from "./autosave";
 import Embedding from "./embedding";
 import TermsOfServicePrompt from "./termsPrompt";
-
+import { HotkeyTest } from "./hotkeys";
 import actions from "../actions";
 
 @connect((state) => ({
+  differential: state.differential,
   loading: state.controls.loading,
   error: state.controls.error,
   graphRenderCounter: state.controls.graphRenderCounter,
@@ -23,7 +23,6 @@ import actions from "../actions";
 class App extends React.Component {
   componentDidMount() {
     const { dispatch } = this.props;
-
     /* listen for url changes, fire one when we start the app up */
     window.addEventListener("popstate", this._onURLChanged);
     this._onURLChanged();
@@ -39,6 +38,7 @@ class App extends React.Component {
   }
 
   render() {
+    const { dispatch, differential } = this.props;
     const { loading, error, graphRenderCounter } = this.props;
     return (
       <Container>
@@ -72,6 +72,7 @@ class App extends React.Component {
             <LeftSideBar />
             {(viewportRef) => (
               <>
+                <HotkeyTest differential={differential} dispatch={dispatch} />
                 <MenuBar />
                 <Embedding />
                 <Autosave />

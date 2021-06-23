@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import { HotkeysProvider, FocusStyleManager } from "@blueprintjs/core";
 import { Provider } from "react-redux";
-import { FocusStyleManager } from "@blueprintjs/core";
 
 import "./index.css";
 
@@ -13,7 +13,9 @@ FocusStyleManager.onlyShowFocusOnTabs();
 
 ReactDOM.render(
   <Provider store={store}>
-    <App />
+    <HotkeysProvider>
+      <App />
+    </HotkeysProvider>
   </Provider>,
   document.getElementById("root")
 );
