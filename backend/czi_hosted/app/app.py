@@ -76,6 +76,7 @@ def cache_control_always(**cache_kwargs):
 def dataset_index(url_dataroot=None, dataset=None):
     app_config = current_app.app_config
     server_config = app_config.server_config
+
     if dataset is None:
         if app_config.is_multi_dataset():
             return dataroot_index()
@@ -176,7 +177,6 @@ def  dataroot_test_index():
     data = '<!doctype html><html lang="en">'
     data += "<head><title>Hosted Cellxgene</title></head>"
     data += "<body><H1>Welcome to cellxgene</H1>"
-
     config = current_app.app_config
     server_config = config.server_config
 

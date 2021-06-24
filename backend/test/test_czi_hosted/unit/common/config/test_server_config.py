@@ -4,6 +4,8 @@ import unittest
 from unittest import mock
 from unittest.mock import patch
 
+from flask import render_template
+
 from backend.czi_hosted.common.config.base_config import BaseConfig
 from backend.common.utils.utils import find_available_port
 from backend.test import PROJECT_ROOT, FIXTURES_ROOT
@@ -226,7 +228,9 @@ class TestServerConfig(ConfigTests):
             )
             self.config.complete_config()
 
-    def test_mulitdatasets_work_e2e(self):
+    @patch("backend.czi_hosted.app.app.render_template")
+    def test_mulitdatasets_work_e2e(self, mock_render_template):
+        mock_render_template.return_value = "something"
         # test that multi dataroots work end to end
         self.config.update_server_config(
             multi_dataset__dataroot=dict(
@@ -253,6 +257,7 @@ class TestServerConfig(ConfigTests):
         self.config.complete_config()
 
         server = self.create_app(self.config)
+        server.auth.requires_client_login = lambda: False
         server.testing = True
         session = server.test_client()
 
@@ -264,14 +269,14 @@ class TestServerConfig(ConfigTests):
         assert data_config["config"]["parameters"]["disable-diffexp"] is False
         assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set1.html"
 
-        response = session.get(f"/set2/pbmc3k.cxg/api/v0.2/config")
+        response = session.get("/set2/pbmc3k.cxg/api/v0.2/config")
 
         data_config = json.loads(response.data)
         assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
         assert data_config["config"]["parameters"]["annotations"] is True
         assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set2.html"
 
-        response = session.get(f"/set3/pbmc3k.cxg/api/v0.2/config")
+        response = session.get("/set3/pbmc3k.cxg/api/v0.2/config")
         data_config = json.loads(response.data)
         assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
         assert data_config["config"]["parameters"]["annotations"] is True

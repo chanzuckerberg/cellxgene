@@ -1,3 +1,4 @@
+import json
 import os
 from unittest.mock import patch
 
@@ -38,29 +39,33 @@ class TestExternalConfig(ConfigTests):
         env = os.environ
         env["DATAPATH"] = f"{FIXTURES_ROOT}/pbmc3k.cxg"
         env["DIFFEXP"] = "False"
-        with open(configfile) as config_file:
-            config = yaml.load(config_file, Loader=yaml.Loader)
-        with self.create_app(config) as server:
-            server.testing = True
-            session = server.test_client()
+        config = AppConfig()
+        config.update_from_config_file(configfile)
+        config.update_server_config(app__flask_secret_key="123 magic")
 
-            response = session.get(f"{server}/api/v0.2/config")
-            data_config = response.json()
-            self.assertEqual(data_config["config"]["displayNames"]["dataset"], "pbmc3k")
-            self.assertTrue(data_config["config"]["parameters"]["disable-diffexp"])
+        server = self.create_app(config)
+
+        server.testing = True
+        session = server.test_client()
+
+        response = session.get("/api/v0.2/config")
+        data_config = json.loads(response.data)
+        self.assertEqual(data_config["config"]["displayNames"]["dataset"], "pbmc3k")
+        self.assertTrue(data_config["config"]["parameters"]["disable-diffexp"])
 
         os.environ["DATAPATH"] = f"{FIXTURES_ROOT}/a95c59b4-7f5d-4b80-ad53-a694834ca18b.h5ad"
         os.environ["DIFFEXP"] = "True"
-        with self.create_app(config) as server:
-            # with test_server(port=str(backend_port), app_config=config) as server:
-            server.testing = True
-            session = server.test_client()
 
-            # session = requests.Session()
-            response = session.get(f"{server}/api/v0.2/config")
-            data_config = response.json()
-            self.assertEqual(data_config["config"]["displayNames"]["dataset"], "a95c59b4-7f5d-4b80-ad53-a694834ca18b")
-            self.assertFalse(data_config["config"]["parameters"]["disable-diffexp"])
+        server= self.create_app(config)
+
+        server.testing = True
+        session = server.test_client()
+
+        # session = requests.Session()
+        response = session.get("/api/v0.2/config")
+        data_config = json.loads(response.data)
+        self.assertEqual(data_config["config"]["displayNames"]["dataset"], "a95c59b4-7f5d-4b80-ad53-a694834ca18b")
+        self.assertFalse(data_config["config"]["parameters"]["disable-diffexp"])
 
     def test_environment_variable_errors(self):
         # no name

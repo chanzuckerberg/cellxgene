@@ -82,13 +82,12 @@ class AuthTest(BaseTest):
 
         response = session.get(login_uri)
         # check that the login redirect worked
-        import pdb
-        pdb.set_trace()
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, "/auth/pbmc3k.cxg")
 
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.headers['Location'], 'http://localhost/auth/pbmc3k.cxg')
         config = json.loads(session.get("/auth/pbmc3k.cxg/api/v0.2/config").data)
         userinfo = json.loads(session.get("/auth/pbmc3k.cxg/api/v0.2/userinfo").data)
+
         self.assertTrue(userinfo["userinfo"]["is_authenticated"])
         self.assertEqual(userinfo["userinfo"]["username"], "test_account")
         self.assertEqual(userinfo["userinfo"]["picture"], None)
@@ -98,9 +97,6 @@ class AuthTest(BaseTest):
         # check that the logout redirect worked
 
         self.assertEqual(response.status_code, 302)
-        import pdb
-        pdb.set_trace()
-        self.assertEqual(response.url, "/auth/pbmc3k.cxg")
         config = json.loads(session.get("/auth/pbmc3k.cxg/api/v0.2/config").data)
         userinfo = json.loads(session.get("/auth/pbmc3k.cxg/api/v0.2/userinfo").data)
         self.assertFalse(userinfo["userinfo"]["is_authenticated"])
@@ -108,14 +104,14 @@ class AuthTest(BaseTest):
         self.assertTrue(config["config"]["parameters"]["annotations"])
 
         # no-auth datasets
-        config = json.loads(session.get(f"{server}/no-auth/pbmc3k.cxg/api/v0.2/config").data)
-        userinfo = json.loads(session.get(f"{server}/no-auth/pbmc3k.cxg/api/v0.2/userinfo").data)
+        config = json.loads(session.get("/no-auth/pbmc3k.cxg/api/v0.2/config").data)
+        userinfo = json.loads(session.get("/no-auth/pbmc3k.cxg/api/v0.2/userinfo").data)
         self.assertIsNone(userinfo)
         self.assertFalse(config["config"]["parameters"]["annotations"])
 
         # login with a picture
         session.get(f"{login_uri}&picture=myimage.png")
-        userinfo = json.loads(session.get(f"{server}/auth/pbmc3k.cxg/api/v0.2/userinfo").data)
+        userinfo = json.loads(session.get("/auth/pbmc3k.cxg/api/v0.2/userinfo").data)
         self.assertTrue(userinfo["userinfo"]["is_authenticated"])
         self.assertEqual(userinfo["userinfo"]["picture"], "myimage.png")
 
@@ -159,8 +155,9 @@ class AuthTest(BaseTest):
         self.assertEqual(userinfo["userinfo"]["username"], "test_account")
         self.assertTrue(config["config"]["parameters"]["annotations"])
 
-        response = session.get(f"{server}/{logout_uri}")
+        response = session.get(logout_uri)
         # check that the logout redirect worked
+
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.headers['Location'], "http://localhost/")
         config = json.loads(session.get("/api/v0.2/config").data)

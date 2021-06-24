@@ -157,11 +157,6 @@ class BaseTest(unittest.TestCase):
         cls.maxDiff = None
         cls.app = cls.create_app(app_config)
 
-    # def client(self):
-    #     self.app.testing = True
-    #     with self.app.test_client() as client:
-    #         yield client
-
     @classmethod
     def create_app(cls, app_config=None):
         if not app_config:
