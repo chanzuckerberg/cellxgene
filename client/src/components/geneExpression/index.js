@@ -1,8 +1,10 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Button } from "@blueprintjs/core";
-import GeneSet from "./geneSet";
+import { Button, H4, Icon } from "@blueprintjs/core";
+import { IconNames } from "@blueprintjs/icons";
 
+import GeneSet from "./geneSet";
+import QuickGene from "./quickGene";
 import CreateGenesetDialogue from "./menus/createGenesetDialogue";
 
 @connect((state) => {
@@ -11,6 +13,11 @@ import CreateGenesetDialogue from "./menus/createGenesetDialogue";
   };
 })
 class GeneExpression extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { geneSetsExpanded: true };
+  }
+
   renderGeneSets = () => {
     const sets = [];
     const { genesets } = this.props;
@@ -31,25 +38,66 @@ class GeneExpression extends React.Component {
 
   handleActivateCreateGenesetMode = () => {
     const { dispatch } = this.props;
+    const { geneSetsExpanded } = this.state;
     dispatch({ type: "geneset: activate add new geneset mode" });
+    if (!geneSetsExpanded) {
+      this.setState((state) => {
+        return { ...state, geneSetsExpanded: true };
+      });
+    }
+  };
+
+  handleExpandGeneSets = () => {
+    this.setState((state) => {
+      return { ...state, geneSetsExpanded: !state.geneSetsExpanded };
+    });
   };
 
   render() {
+    const { geneSetsExpanded } = this.state;
     return (
       <div>
+        <QuickGene />
         <div>
-          <div style={{ marginBottom: 10, position: "relative", top: -2 }}>
-            <Button
-              data-testid="open-create-geneset-dialog"
-              onClick={this.handleActivateCreateGenesetMode}
-              intent="primary"
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+            }}
+          >
+            <H4
+              role="menuitem"
+              tabIndex="0"
+              data-testclass="category-expand"
+              onKeyPress={this.handleExpandGeneSets}
+              style={{
+                cursor: "pointer",
+              }}
+              onClick={this.handleExpandGeneSets}
             >
-              Create new <strong>gene set</strong>
-            </Button>
+              Gene Sets{" "}
+              {geneSetsExpanded ? (
+                <Icon icon={IconNames.CHEVRON_DOWN} />
+              ) : (
+                <Icon icon={IconNames.CHEVRON_RIGHT} />
+              )}
+            </H4>
+
+            <div style={{ marginBottom: 10, position: "relative", top: -2 }}>
+              <Button
+                data-testid="open-create-geneset-dialog"
+                onClick={this.handleActivateCreateGenesetMode}
+                intent="primary"
+              >
+                Create new
+              </Button>
+            </div>
           </div>
           <CreateGenesetDialogue />
         </div>
-        <div>{this.renderGeneSets()}</div>
+
+        {geneSetsExpanded && <div>{this.renderGeneSets()}</div>}
       </div>
     );
   }

@@ -64,6 +64,8 @@ class Gene extends React.Component {
       isColorAccessor,
       isScatterplotXXaccessor,
       isScatterplotYYaccessor,
+      quickGene,
+      removeGene,
     } = this.props;
     const { geneIsExpanded } = this.state;
     const geneSymbolWidth = 60 + (geneIsExpanded ? MINI_HISTOGRAM_WIDTH : 0);
@@ -94,16 +96,18 @@ class Gene extends React.Component {
             }}
           >
             <div>
-              <Icon
-                icon="drag-handle-horizontal"
-                iconSize={12}
-                style={{
-                  marginRight: 7,
-                  cursor: "grab",
-                  position: "relative",
-                  top: -1,
-                }}
-              />
+              {!quickGene && (
+                <Icon
+                  icon="drag-handle-horizontal"
+                  iconSize={12}
+                  style={{
+                    marginRight: 7,
+                    cursor: "grab",
+                    position: "relative",
+                    top: -1,
+                  }}
+                />
+              )}
               <Truncate
                 tooltipAddendum={geneDescription && `: ${geneDescription}`}
               >
@@ -132,7 +136,9 @@ class Gene extends React.Component {
               minimal
               small
               data-testid={`delete-from-geneset-${gene}`}
-              onClick={this.handleDeleteGeneFromSet}
+              onClick={
+                quickGene ? removeGene(gene) : this.handleDeleteGeneFromSet
+              }
               intent="none"
               style={{ fontWeight: 700, marginRight: 2 }}
               icon={<Icon icon="trash" iconSize={10} />}
