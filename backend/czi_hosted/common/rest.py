@@ -217,7 +217,6 @@ def data_var_put(request, data_adaptor):
 
     filter_json = request.get_json()
     filter = filter_json["filter"] if filter_json else None
-
     try:
         return make_response(
             data_adaptor.data_frame_to_fbs_matrix(filter, axis=Axis.VAR),

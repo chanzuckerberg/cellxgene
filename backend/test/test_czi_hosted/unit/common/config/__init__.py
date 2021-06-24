@@ -1,15 +1,11 @@
 import os
 import shutil
 import random
-from unittest import mock
 import yaml
 
 from backend.test import FIXTURES_ROOT
 from backend.test.test_czi_hosted.unit import BaseTest
 
-
-# def mockenv(**envvars):
-#     return mock.patch.dict(os.environ, envvars)
 
 
 class ConfigTests(BaseTest):
