@@ -39,6 +39,9 @@ import {
   removeGene,
   assertGeneDoesNotExist,
   expandGene,
+  colorByGeneset,
+  assertColorLegendLabel,
+  colorByGene,
 } from "./cellxgeneActions";
 
 const data = datasets[DATASET];
@@ -51,6 +54,7 @@ const genesetToDeleteName = "geneset_to_delete";
 const preExistingGenesetName = "fifth_dataset";
 const meanExpressionBrushGenesetName = "second_gene_set";
 const meanExpressionBrushCellsSelected = "557";
+const subsetMeanExpressionBrushCellsSelected = "452";
 
 // initial text, the text we type in, the result
 const editableGenesetName = "geneset_to_edit";
@@ -66,16 +70,19 @@ const geneToRemove = "SIK1";
 const setToRemoveFrom = "empty_this_geneset";
 
 // brush a gene
-const geneToBrush = "SIK1";
+const geneToBrushAndColorBy = "SIK1";
 const brushThisGeneGeneset = "brush_this_gene";
 const geneBrushedCellCount = "109";
+const subsetGeneBrushedCellCount = "96";
 
 async function setup(config) {
   await goToPage(appUrlBase);
 
-  // setup the test fixtures
-  await createCategory(perTestCategoryName);
-  await createLabel(perTestCategoryName, perTestLabelName);
+  if (config.categoricalAnno) {
+    // setup the test fixtures
+    await createCategory(perTestCategoryName);
+    await createLabel(perTestCategoryName, perTestLabelName);
+  }
 
   if (config.withSubset) {
     await subset({ x1: 0.1, y1: 0.1, x2: 0.8, y2: 0.8 });
@@ -84,14 +91,17 @@ async function setup(config) {
   await waitByClass("autosave-complete");
 }
 
-describe("geneSET crud operations and interactions", () => {
+describe.each([
+  { withSubset: true, tag: "subset" },
+  { withSubset: false, tag: "whole" },
+])("geneSET crud operations and interactions", (config) => {
   test("genesets load from csv", async () => {
-    await goToPage(appUrlBase);
+    await setup(config);
 
     await assertGenesetExists(preExistingGenesetName);
   });
   test("brush on geneset mean", async () => {
-    await goToPage(appUrlBase);
+    await setup(config);
 
     await expandGeneset(meanExpressionBrushGenesetName);
 
@@ -107,11 +117,22 @@ describe("geneSET crud operations and interactions", () => {
     await drag(histBrushableAreaId, coords.start, coords.end);
 
     const cellCount = await getCellSetCount(1);
+    if (config.withSubset) {
+      expect(cellCount).toBe(subsetMeanExpressionBrushCellsSelected);
+    } else {
+      expect(cellCount).toBe(meanExpressionBrushCellsSelected);
+    }
+  });
+  test("color by mean expression", async () => {
+    await setup(config);
 
-    expect(cellCount).toBe(meanExpressionBrushCellsSelected);
+    await colorByGeneset(meanExpressionBrushGenesetName);
+    await assertColorLegendLabel(meanExpressionBrushGenesetName);
   });
   test("create a new geneset", async () => {
-    await goToPage(appUrlBase);
+    if (config.withSubset) return;
+
+    await setup(config);
 
     const genesetName = `test-geneset-foo-123`;
     await assertGenesetDoesNotExist(genesetName);
@@ -120,31 +141,37 @@ describe("geneSET crud operations and interactions", () => {
     await assertGenesetExists(genesetName);
   });
   test("edit geneset name", async () => {
-    await goToPage(appUrlBase);
+    await setup(config);
 
     await editGenesetName(editableGenesetName, editText);
     await assertGenesetExists(newGenesetName);
   });
   test("delete a geneset", async () => {
-    await goToPage(appUrlBase);
+    if (config.withSubset) return;
+
+    await setup(config);
 
     await deleteGeneset(genesetToDeleteName);
   });
 });
 
-describe("GENE crud operations and interactions", () => {
+describe.each([
+  { withSubset: true, tag: "subset" },
+  { withSubset: false, tag: "whole" },
+])("GENE crud operations and interactions", (config) => {
   test("add a gene to geneset", async () => {
-    await goToPage(appUrlBase);
+    await setup(config);
 
     await addGeneToSet(setToAddGeneTo, geneToAddToSet);
     await expandGeneset(setToAddGeneTo);
     await assertGeneExistsInGeneset(geneToAddToSet);
   });
   test("expand gene and brush", async () => {
-    await goToPage(appUrlBase);
+    await setup(config);
+
     await expandGeneset(brushThisGeneGeneset);
-    await expandGene(geneToBrush);
-    const histBrushableAreaId = `histogram-${geneToBrush}-plot-brushable-area`;
+    await expandGene(geneToBrushAndColorBy);
+    const histBrushableAreaId = `histogram-${geneToBrushAndColorBy}-plot-brushable-area`;
 
     const coords = await calcDragCoordinates(histBrushableAreaId, {
       x1: 0.25,
@@ -154,10 +181,25 @@ describe("GENE crud operations and interactions", () => {
     });
     await drag(histBrushableAreaId, coords.start, coords.end);
     const cellCount = await getCellSetCount(1);
-    expect(cellCount).toBe(geneBrushedCellCount);
+    if (config.withSubset) {
+      expect(cellCount).toBe(subsetGeneBrushedCellCount);
+    } else {
+      expect(cellCount).toBe(geneBrushedCellCount);
+    }
+  });
+  test("color by gene in geneset", async () => {
+    await setup(config);
+
+    await expandGeneset(meanExpressionBrushGenesetName);
+
+    await colorByGene(geneToBrushAndColorBy);
+    await assertColorLegendLabel(geneToBrushAndColorBy);
   });
   test("delete gene from geneset", async () => {
-    await goToPage(appUrlBase);
+    // We've already deleted the gene
+    if (config.withSubset) return;
+
+    await setup(config);
 
     await expandGeneset(setToRemoveFrom);
     await removeGene(geneToRemove);
@@ -166,8 +208,8 @@ describe("GENE crud operations and interactions", () => {
 });
 
 describe.each([
-  { withSubset: true, tag: "subset" },
-  { withSubset: false, tag: "whole" },
+  { withSubset: true, tag: "subset", categoricalAnno: true },
+  { withSubset: false, tag: "whole", categoricalAnno: true },
 ])("annotations", (config) => {
   test("create a category", async () => {
     await setup(config);

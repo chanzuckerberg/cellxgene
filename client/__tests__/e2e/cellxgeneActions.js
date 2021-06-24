@@ -182,6 +182,24 @@ export async function createCategory(categoryName) {
 
 */
 
+export async function colorByGeneset(genesetName) {
+  await clickOn(`${genesetName}:colorby-entire-geneset`);
+}
+
+export async function colorByGene(gene) {
+  await clickOn(`colorby-${gene}`);
+}
+
+export async function assertColorLegendLabel(label) {
+  const handle = await waitByID("continuous_legend_color_by_label");
+
+  const result = await handle.evaluate((node) => {
+    return node.getAttribute("aria-label");
+  });
+
+  return expect(result).toBe(label);
+}
+
 export async function expandGeneset(genesetName) {
   const expand = await waitByID(`${genesetName}:geneset-expand`);
   const notExpanded = await expand.$(
