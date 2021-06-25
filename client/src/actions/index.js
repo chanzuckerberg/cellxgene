@@ -9,10 +9,9 @@ import {
   requestReembed /* , reembedResetWorldToUniverse -- disabled temporarily, TODO issue #1606 */,
 } from "./reembed";
 import {
-  createCollectionsViewModel,
-  lookupDatasetIdByPath,
-  keyCollectionsByDatasetId,
-  replaceDataRootAndDeploymentId,
+  createDatasetUrl,
+  createExplorerUrl,
+  createAPIPrefix,
 } from "../util/stateManager/collectionsHelpers";
 import { loadUserColorConfig } from "../util/stateManager/colorHelpers";
 import * as selnActions from "./selection";
@@ -48,24 +47,20 @@ async function configFetch(dispatch) {
   });
 }
 
-async function doCollectionsDataLoad(dispatch) {
+async function collectionFetchAndLoad(dispatch) {
   /*
-  - fetch collections from static file and map to select-optimized view model
-  - determine selected dataset from the current URL.
+  Fetch dataset meta for the current visualization then fetch the corresponding collection.
    */
-  return fetchStaticJson("collections.json").then((collections) => {
-    const collectionViews = createCollectionsViewModel(collections);
-    const collectionsByDatasetId = keyCollectionsByDatasetId(collectionViews);
-    const selectedDatasetId = lookupDatasetIdByPath(
-      window.location.pathname,
-      collections
-    );
-    dispatch({
-      type: "collections load complete",
-      collectionsByDatasetId,
-      selectedDatasetId,
-    });
-    return collections;
+  const datasetMeta = await datasetMetaFetch();
+  const {
+    collection_id: collectionId,
+    dataset_id: selectedDatasetId,
+  } = datasetMeta;
+  const collection = await collectionFetch(collectionId);
+  dispatch({
+    type: "collection load complete",
+    collection,
+    selectedDatasetId,
   });
 }
 
@@ -101,6 +96,23 @@ async function genesetsFetch(dispatch, config) {
   }
 }
 
+async function datasetMetaFetch() {
+  /*
+   Fetch dataset meta for the current dataset.
+   TODO(cc) revisit swap of explorer URL origin for environments without a corresponding Portal instance (eg local, canary)
+   */
+  const explorerUrl = createExplorerUrl();
+  const explorerUrlParam = encodeURIComponent(explorerUrl);
+  return fetchPortalJson(`datasets/meta?url=${explorerUrlParam}`);
+}
+
+async function collectionFetch(collectionId) {
+  /*
+   Fetch collection with the given ID.
+   */
+  return fetchPortalJson(`collections/${collectionId}`);
+}
+
 function prefetchEmbeddings(annoMatrix) {
   /*
   prefetch requests for all embeddings
@@ -123,7 +135,7 @@ const doInitialDataLoad = () =>
         schemaFetch(dispatch),
         userColorsFetchAndLoad(dispatch),
         userInfoFetch(dispatch),
-        doCollectionsDataLoad(dispatch),
+        collectionFetchAndLoad(dispatch),
       ]);
 
       genesetsFetch(dispatch, config);
@@ -262,17 +274,18 @@ const requestDifferentialExpression = (set1, set2, num_genes = 50) => async (
 
 export const switchDataset = (dataset) => (dispatch) => {
   /*
-  Update data root and deployment ID in URL from given dataset, kick off data load.
+  Update browser location to dataset's deployment URL, kick off data load. 
   TODO(cc) revisit:
+    - origin (and data root) switch for environments without corresponding Portal instance (eg local, canary)
     - globals update: move to server-side, split from initial doc returned from server?
-    - data load: wait for data load to complete and dispatch switch success action
    */
   dispatch({ type: "dataset switch" });
-  dispatch(updateLocation(dataset.url));
-  globals.API.prefix = replaceDataRootAndDeploymentId(
-    globals.API.prefix,
-    dataset.url
-  );
+
+  const deploymentUrl = dataset.dataset_deployments?.[0].url ?? "";
+  const datasetUrl = createDatasetUrl(deploymentUrl);
+  dispatch(updateLocation(datasetUrl));
+
+  globals.API.prefix = createAPIPrefix(globals.API.prefix, datasetUrl);
   dispatch(doInitialDataLoad(window.location.search));
 };
 
@@ -290,12 +303,12 @@ function fetchJson(pathAndQuery) {
   );
 }
 
-function fetchStaticJson(fileName) {
-  /*
-  read JSON file from static assets folder
-  TODO(cc) remove on update to config response
+function fetchPortalJson(url) {
+  /* 
+  Fetch JSON from Portal API.
+  TODO(cc) revisit - required for dataset meta and collection requests from Portal 
    */
-  return doJsonRequest(`static/assets/${fileName}`);
+  return doJsonRequest(`${globals.API.portalPrefix}${url}`);
 }
 
 export default {

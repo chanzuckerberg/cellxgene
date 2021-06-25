@@ -106,7 +106,22 @@ if (window.CELLXGENE && window.CELLXGENE.API) {
   };
 }
 
-// TODO(cc) temp set local flag to handle differences between local and deployed environments
+/*
+ TODO(cc) temp set local flag to handle differences between local and deployed environments
+ */
 _API.local = window.location.hostname === "localhost";
+
+/*
+ TODO(cc) temp set Portal staging prefix to handle meta and collection API requests
+ */
+_API.portalPrefix =
+  "https://api.cellxgene.staging.single-cell.czi.technology/dp/v1/";
+
+/*
+ TODO(cc) temp set of Portal/Explorer origin, required for breadcrumb links as well as generating explore URL param for
+  meta endpoint in environments where hosted origin does not match Portal/dataset deployment URL origin (eg local and
+  canary).
+ */
+_API.origin = "https://cellxgene.staging.single-cell.czi.technology/";
 
 export const API = _API;
