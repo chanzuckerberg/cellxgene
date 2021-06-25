@@ -1,4 +1,6 @@
 import os
+from unittest.mock import patch
+
 import requests
 import subprocess
 import tempfile
@@ -14,6 +16,7 @@ from backend.test import PROJECT_ROOT, FIXTURES_ROOT
 def run_eb_app(tempdirname):
     ps = subprocess.Popen(["python", "artifact.dir/application.py"], cwd=tempdirname)
     server = "http://localhost:5000"
+
     for _ in range(10):
         try:
             requests.get(f"{server}/health")
@@ -37,17 +40,15 @@ class Elastic_Beanstalk_Test(unittest.TestCase):
         config = AppConfig()
         # test that eb works
         config.update_server_config(multi_dataset__dataroot=f"{FIXTURES_ROOT}", app__flask_secret_key="open sesame")
-
         config.complete_config()
         config.write_config(f"{tempdirname}/config.yaml")
-        subprocess.check_call(f"git ls-files . | cpio -pdm {tempdirname}", cwd=f"{PROJECT_ROOT}/backend/czi_hosted/eb", shell=True)
-
+        subprocess.check_call(f"git ls-files . | cpio -pdm {tempdirname}", cwd=f"{PROJECT_ROOT}/backend/czi_hosted/eb",
+                              shell=True)
         subprocess.check_call(["make", "build"], cwd=tempdirname)
         with run_eb_app(tempdirname) as server:
             session = requests.Session()
-
-            r = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/config")
-            data_config = r.json()
+            response = session.get(f"{server}/d/pbmc3k.cxg/api/v0.2/config")
+            data_config = response.json()
             assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
 
     def test_config(self):

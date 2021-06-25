@@ -33,8 +33,8 @@ server:
     # none:  No authentication support, features like user_annotations must not be enabled.
     # session:  A session based userid is automatically generated. (no params needed)
     # oauth: oauth2 is used for authentication;  parameters are defined in params_oauth.
-    type: session
-    insecure_test_environment: false
+    type: test
+    insecure_test_environment: true
 
     params_oauth:
        # url to the oauth server
