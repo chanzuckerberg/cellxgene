@@ -129,6 +129,34 @@ describe.each([
     await colorByGeneset(meanExpressionBrushGenesetName);
     await assertColorLegendLabel(meanExpressionBrushGenesetName);
   });
+  test("diffexp", async () => {
+    if (config.withSubset) return;
+
+    await setup(config);
+
+    // set the two cell sets to b cells vs nk cells
+    await expandCategory(`louvain`);
+    await clickOn(`louvain:category-select`);
+    await clickOn(`categorical-value-select-louvain-B cells`);
+    await clickOn(`cellset-button-1`);
+    await clickOn(`categorical-value-select-louvain-B cells`);
+    await clickOn(`categorical-value-select-louvain-NK cells`);
+    await clickOn(`cellset-button-2`);
+
+    // check our assumption that we begin with 11
+    const _sets = await getAllByClass("geneset-expand");
+    expect(_sets).toHaveLength(11);
+
+    // run diffexp
+    await clickOn(`diffexp-button`);
+
+    // save
+    await waitByClass("autosave-complete");
+
+    // grab all the gene sets, check if the two new ones are there
+    const sets = await getAllByClass("geneset-expand");
+    expect(sets).toHaveLength(13);
+  });
   test("create a new geneset", async () => {
     if (config.withSubset) return;
 
