@@ -47,6 +47,11 @@ class WSGIServer(Server):
         if api_base_url:
             parse_api_base_url = urlparse(api_base_url)
             extra_connect_src = [f"{parse_api_base_url.scheme}://{parse_api_base_url.netloc}"]
+            
+        # Add Portal API for dataset meta and collection API calls. 
+        # TODO(cc) revisit
+        portal_api_url = ["'https://api.cellxgene.staging.single-cell.czi.technology'"]
+        extra_connect_src.append(portal_api_url)
 
         # This hash should be in sync with the script within
         # `client/configuration/webpack/obsoleteHTMLTemplate.html`
