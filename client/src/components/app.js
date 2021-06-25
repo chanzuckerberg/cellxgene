@@ -11,11 +11,10 @@ import MenuBar from "./menubar";
 import Autosave from "./autosave";
 import Embedding from "./embedding";
 import TermsOfServicePrompt from "./termsPrompt";
-import { HotkeyTest } from "./hotkeys";
+import { GlobalHotkeys } from "./hotkeys";
 import actions from "../actions";
 
 @connect((state) => ({
-  differential: state.differential,
   loading: state.controls.loading,
   error: state.controls.error,
   graphRenderCounter: state.controls.graphRenderCounter,
@@ -38,7 +37,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { dispatch, differential } = this.props;
+    const { dispatch } = this.props;
     const { loading, error, graphRenderCounter } = this.props;
     return (
       <Container>
@@ -72,7 +71,7 @@ class App extends React.Component {
             <LeftSideBar />
             {(viewportRef) => (
               <>
-                <HotkeyTest differential={differential} dispatch={dispatch} />
+                <GlobalHotkeys dispatch={dispatch} />
                 <MenuBar />
                 <Embedding />
                 <Autosave />

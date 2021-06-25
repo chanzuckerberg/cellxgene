@@ -5,6 +5,7 @@ import * as globals from "../../globals";
 import styles from "./menubar.css";
 import actions from "../../actions";
 import CellSetButton from "./cellSetButtons";
+import { DgeHotkeys } from "../hotkeys";
 
 @connect((state) => ({
   differential: state.differential,
@@ -26,7 +27,12 @@ class DiffexpButtons extends React.PureComponent {
 
   render() {
     /* diffexp-related buttons may be disabled */
-    const { differential, diffexpMayBeSlow, diffexpCellcountMax } = this.props;
+    const {
+      dispatch,
+      differential,
+      diffexpMayBeSlow,
+      diffexpCellcountMax,
+    } = this.props;
 
     const haveBothCellSets =
       !!differential.celllist1 && !!differential.celllist2;
@@ -50,6 +56,7 @@ class DiffexpButtons extends React.PureComponent {
 
     return (
       <ButtonGroup className={styles.menubarButton}>
+        <DgeHotkeys dispatch={dispatch} differential={differential} />
         <CellSetButton eitherCellSetOneOrTwo={1} />
         <CellSetButton eitherCellSetOneOrTwo={2} />
         <Tooltip
