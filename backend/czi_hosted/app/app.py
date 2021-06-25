@@ -78,7 +78,6 @@ def dataset_index(url_dataroot=None, dataset=None):
             return dataroot_index()
         else:
             location = server_config.single_dataset__datapath
-            dataset = server_config.single_dataset__datapath.split("/")[-1]
     else:
         dataroot = None
         for key, dataroot_dict in server_config.multi_dataset__dataroot.items():
@@ -476,6 +475,6 @@ class Server:
         self.app.auth = auth
         if auth and auth.requires_client_login():
             auth.add_url_rules(self.app)
-            auth.complete_setup(self.app)
+        auth.complete_setup(self.app)
 
 
