@@ -1,3 +1,4 @@
+import { postUserErrorToast } from "../components/framework/toasters";
 /*
 Action creators for gene sets
 
@@ -16,7 +17,7 @@ The behavior manifest in these action creators:
     Add a gene to a gene set, will:
       * drop index & clear selection state on the gene set summary
       * will NOT touch the selection state for the gene
-  
+
 Note that crossfilter indices are lazy created, as needed.
 */
 
@@ -34,9 +35,25 @@ export const genesetDelete = (genesetName) => (dispatch, getState) => {
   });
 };
 
-export const genesetAddGenes = (genesetName, genes) => (dispatch, getState) => {
+export const genesetAddGenes = (genesetName, genes) => async (
+  dispatch,
+  getState
+) => {
   const state = getState();
-  const { obsCrossfilter: prevObsCrossfilter } = state;
+  const { obsCrossfilter: prevObsCrossfilter, annoMatrix } = state;
+  const { schema } = annoMatrix;
+  const varIndex = schema.annotations.var.index;
+  const df = await annoMatrix.fetch("var", varIndex);
+  const geneNames = df.col(varIndex).asArray();
+  genes = genes.reduce((acc, gene) => {
+    if (geneNames.indexOf(gene.geneSymbol) === -1) {
+      postUserErrorToast(
+        `${gene.geneSymbol} doesn't appear to be a valid gene name.`
+      );
+    } else acc.push(gene);
+    return acc;
+  }, []);
+
   const obsCrossfilter = dropGenesetSummaryDimension(
     prevObsCrossfilter,
     state,
