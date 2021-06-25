@@ -36,7 +36,7 @@ class DatasetSelector extends PureComponent {
     Create the set of breadcrumbs elements, home > collection name > dataset name, where dataset name reveals the
     dataset menu.
      */
-    const origin = globals.API.portalUrl;
+    const { origin } = globals.API;
     const homeProp = this.buildBreadcrumbProp({
       href: origin,
       shortText: "Home",
