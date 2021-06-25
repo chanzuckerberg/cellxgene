@@ -3,9 +3,7 @@ const fs = require("fs");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const ObsoleteWebpackPlugin = require("obsolete-webpack-plugin");
 const ScriptExtHtmlWebpackPlugin = require("script-ext-html-webpack-plugin");
-const CopyPlugin = require("copy-webpack-plugin");
 
-const srcJson = path.resolve("src/json");
 const src = path.resolve("src");
 const nodeModules = path.resolve("node_modules");
 
@@ -71,15 +69,6 @@ module.exports = {
     }),
     new ScriptExtHtmlWebpackPlugin({
       async: "obsolete",
-    }),
-    // TODO(cc) add collections.json as static asset, remove copy-webpack-plugin on update to config response
-    new CopyPlugin({
-      patterns: [
-        {
-          from: srcJson,
-          to: "static/assets",
-        },
-      ],
     }),
   ],
 };

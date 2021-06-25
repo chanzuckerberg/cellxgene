@@ -54,7 +54,7 @@ const skipOnActions = new Set([
   "geneset: disable rename geneset mode",
 
   /* collections */
-  "collections load complete",
+  "collection load complete",
 ]);
 
 /*

@@ -7,7 +7,7 @@ const Collections = (
     loading: true,
     error: null,
 
-    collectionsByDatasetId: null,
+    collection: null,
     selectedDatasetId: null,
   },
   action
@@ -19,12 +19,12 @@ const Collections = (
         loading: true,
         error: null,
       };
-    case "collections load complete":
+    case "collection load complete":
       return {
         ...state,
         loading: false,
         error: null,
-        collectionsByDatasetId: action.collectionsByDatasetId,
+        collection: action.collection,
         selectedDatasetId: action.selectedDatasetId,
       };
     case "initial data load error":
