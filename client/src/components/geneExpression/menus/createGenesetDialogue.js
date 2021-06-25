@@ -100,7 +100,12 @@ class CreateGenesetDialogue extends React.PureComponent {
   };
 
   validate = (genesetName, genesets) => {
-    return genesets.has(genesetName);
+    return (
+      !genesets.has(genesetName) &&
+      // eslint-disable-next-line no-control-regex -- unicode 0-31 127-65535
+      genesetName.match(/^\s|[\u0000-\u001F\u007F-\uFFFF]|[ ]{2,}|^$|\s$/g)
+        ?.length
+    );
   };
 
   render() {
@@ -185,9 +190,7 @@ class CreateGenesetDialogue extends React.PureComponent {
                 <Button
                   data-testid={`${metadataField}:submit-geneset`}
                   onClick={this.createGeneset}
-                  disabled={
-                    !genesetName || this.validate(genesetName, genesets)
-                  }
+                  disabled={this.validate(genesetName, genesets)}
                   intent="primary"
                   type="submit"
                 >
