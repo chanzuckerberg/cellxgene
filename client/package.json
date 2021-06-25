@@ -105,7 +105,6 @@
     "clean-webpack-plugin": "^4.0.0-alpha.0",
     "codecov": "^3.7.1",
     "connect-history-api-fallback": "^1.6.0",
-    "copy-webpack-plugin": "^8.1.1",
     "css-loader": "^5.2.4",
     "eslint": "^7.24.0",
     "eslint-config-airbnb": "^18.2.0",

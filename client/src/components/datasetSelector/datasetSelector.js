@@ -7,22 +7,20 @@ import { connect } from "react-redux";
 /* app dependencies */
 import { switchDataset } from "../../actions";
 import DatasetMenu from "./datasetMenu";
+import * as globals from "../../globals";
+import TruncatingBreadcrumbs from "./truncatingBreadcrumbs";
+import { sortDatasets } from "../../util/stateManager/collectionsHelpers";
 
 /* styles */
 import styles from "./datasetSelector.css";
-import TruncatingBreadcrumbs from "./truncatingBreadcrumbs";
 
 /*
 app-level collection and dataset breadcrumbs.
  */
 @connect((state) => {
-  const selectedDatasetId = state.collections?.selectedDatasetId;
-  const collection = state.collections?.collectionsByDatasetId?.get(
-    selectedDatasetId
-  );
   return {
-    collection,
-    selectedDatasetId,
+    collection: state.collections?.collection,
+    selectedDatasetId: state.collections?.selectedDatasetId,
   };
 })
 class DatasetSelector extends PureComponent {
@@ -38,7 +36,7 @@ class DatasetSelector extends PureComponent {
     Create the set of breadcrumbs elements, home > collection name > dataset name, where dataset name reveals the
     dataset menu.
      */
-    const origin = "https://cellxgene.staging.single-cell.czi.technology/"; // TODO(cc) update to use global
+    const origin = globals.API.portalUrl;
     const homeProp = this.buildBreadcrumbProp({
       href: origin,
       shortText: "Home",
@@ -53,10 +51,11 @@ class DatasetSelector extends PureComponent {
       selectedDatasetId,
       collection.datasets
     );
+    const datasets = [...collection.datasets].sort(sortDatasets);
     const datasetProp = this.buildBreadcrumbProp({
       shortText: "Dataset",
       text: selectedDataset.name,
-      datasets: collection.datasets.map((dataset) => ({
+      datasets: datasets.map((dataset) => ({
         ...dataset,
         onClick: () => {
           dispatch(switchDataset(dataset));
@@ -144,7 +143,7 @@ class DatasetSelector extends PureComponent {
         style={{
           marginTop: "8px", // Match margin on sibling menu buttons
           flexGrow: 1,
-          overflow: "scroll", // TODO(cc) Mim to revisit
+          overflow: "scroll",
           flex: 1,
         }}
       >

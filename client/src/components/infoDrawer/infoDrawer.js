@@ -6,12 +6,8 @@ import InfoFormat from "./infoFormat";
 import { selectableCategoryNames } from "../../util/stateManager/controlsHelpers";
 
 @connect((state) => {
-  const selectedDatasetId = state.collections?.selectedDatasetId;
-  const collection = state.collections?.collectionsByDatasetId?.get(
-    selectedDatasetId
-  );
   return {
-    collection,
+    collection: state.collections?.collection,
     schema: state.annoMatrix.schema,
     isOpen: state.controls.datasetDrawer,
     dataPortalProps: state.config?.corpora_props,
