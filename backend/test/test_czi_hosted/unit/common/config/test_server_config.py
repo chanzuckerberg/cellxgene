@@ -146,7 +146,7 @@ class TestServerConfig(ConfigTests):
         with self.assertRaises(ConfigurationError):
             config.server_config.handle_data_source()
 
-    def xtest_get_api_base_url_works(self):
+    def test_get_api_base_url_works(self):
         # test the api_base_url feature, and that it can contain a path
         config = AppConfig()
         backend_port = find_available_port("localhost", 10000)
