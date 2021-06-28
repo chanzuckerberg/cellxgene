@@ -1,0 +1,6 @@
+gene_set_name,gene_set_description,gene_symbol,gene_description,provenance1,provenance1_description,provenance2,provenance2_description,
+club.cell,Genes that when expressed together uniquely define club cells,CCKAR,This gene encodes a G protein,Pubmed ID XYZ123,Primary Pubmed ID,Pubmed ID 576869,Secondary Pubmed ID,
+club.cell,Genes that when expressed together uniquely define club cells,SCGB3A2,protein coding gene associated with asthma,Pubmed ID ABC456,Primary Pubmed ID,Pubmed ID 2928374,Secondary Pubmed ID,
+club.cell,Genes that when expressed together uniquely define club cells,CYP2F2,protein coding gene associated with metabolic processes,Pubmed ID DCF678,Primary Pubmed ID,Pubmed ID XYZ123,Secondary Pubmed ID,
+macrophage,Genes that when expressed together uniquely define macrophages,CD68,Critical to macrophages,,,,,
+macrophage,Genes that when expressed together uniquely define macrophages,CD163,Also critical to macrophages,,,,,
