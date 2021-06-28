@@ -1,10 +1,10 @@
 """cellxgene AWS elastic beanstalk application"""
+
 import sys
 import os
 import hashlib
 import base64
 from urllib.parse import urlparse
-
 from flask import json
 import logging
 from flask_talisman import Talisman
