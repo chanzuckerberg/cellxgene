@@ -102,8 +102,8 @@ class GeneSet extends React.Component {
     const genesetIsEmpty = setGenes.length === 0;
     let testClass = "geneset-expand";
 
-    if (setName.contains("pop1High")) testClass = "pop-1-geneset-expand";
-    else if (setName.contains("pop2High")) testClass = "pop-2-geneset-expand";
+    if (setName.includes("Pop1 high")) testClass = "pop-1-geneset-expand";
+    else if (setName.includes("Pop2 high")) testClass = "pop-2-geneset-expand";
 
     return (
       <div style={{ marginBottom: 3 }}>
