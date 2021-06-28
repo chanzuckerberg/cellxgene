@@ -167,10 +167,10 @@ class BaseTest(unittest.TestCase):
                 app__flask_secret_key="testing",
                 app__debug=True,
                 multi_dataset__dataroot=f"{FIXTURES_ROOT}",
-                multi_dataset__index=True
+                multi_dataset__index=True,
+                multi_dataset__allowed_matrix_types=["cxg"]
             )
             app_config.update_default_dataset_config(embeddings__enable_reembedding=False, )
-            app_config.update_server_config(multi_dataset__allowed_matrix_types=["cxg"], )
         app_config.complete_config(logging.info)
 
         app = TestServer(app_config).app
