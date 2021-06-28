@@ -15,7 +15,8 @@ from flask import (
     abort,
     Blueprint,
     request,
-    send_from_directory, )
+    send_from_directory,
+)
 from flask_restful import Api, Resource
 from server_timing import Timing as ServerTiming
 
@@ -72,7 +73,6 @@ def cache_control_always(**cache_kwargs):
 def dataset_index(url_dataroot=None, dataset=None):
     app_config = current_app.app_config
     server_config = app_config.server_config
-
     if dataset is None:
         if app_config.is_multi_dataset():
             return dataroot_index()
@@ -87,6 +87,7 @@ def dataset_index(url_dataroot=None, dataset=None):
         if dataroot is None:
             abort(HTTPStatus.NOT_FOUND)
         location = path_join(dataroot, dataset)
+
     dataset_config = app_config.get_dataset_config(url_dataroot)
     scripts = dataset_config.app__scripts
     inline_scripts = dataset_config.app__inline_scripts
@@ -172,6 +173,7 @@ def  dataroot_test_index():
     data = '<!doctype html><html lang="en">'
     data += "<head><title>Hosted Cellxgene</title></head>"
     data += "<body><H1>Welcome to cellxgene</H1>"
+
     config = current_app.app_config
     server_config = config.server_config
 
@@ -476,5 +478,3 @@ class Server:
         if auth and auth.requires_client_login():
             auth.add_url_rules(self.app)
         auth.complete_setup(self.app)
-
-

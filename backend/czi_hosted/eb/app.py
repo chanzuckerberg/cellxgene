@@ -1,15 +1,15 @@
 """cellxgene AWS elastic beanstalk application"""
-import base64
-import hashlib
-
 import sys
 import os
-import logging
+import hashlib
+import base64
 from urllib.parse import urlparse
 
 from flask import json
-from flask_cors import CORS
+import logging
 from flask_talisman import Talisman
+from flask_cors import CORS
+
 
 if os.path.isdir("/opt/python/log"):
     # This is the standard location where Amazon EC2 instances store the application logs.
