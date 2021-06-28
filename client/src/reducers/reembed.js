@@ -27,3 +27,25 @@ export const reembedController = (
     }
   }
 };
+
+export const numPcs = (
+  state = {
+    npcs: 50,
+  },
+  action
+) => {
+  switch (action.type) {
+    case "reembed: number of pcs update": {
+      const { num } = action;
+      return {
+        npcs: num,
+      };
+    }
+    case "reembed: reset number of pcs to default":
+      return {
+        npcs: 50,
+      };
+    default:
+      return state;
+  }
+};

@@ -22,16 +22,14 @@ function abortableFetch(request, opts, timeout = 0) {
   };
 }
 
-async function doReembedFetch(dispatch, getState) {
+async function doReembedFetch(dispatch, getState, layer, npcs) {
   const state = getState();
   let cells = state.annoMatrix.rowIndex.labels();
-
   // These lines ensure that we convert any TypedArray to an Array.
   // This is necessary because JSON.stringify() does some very strange
   // things with TypedArrays (they are marshalled to JSON objects, rather
   // than being marshalled as a JSON array).
   cells = Array.isArray(cells) ? cells : Array.from(cells);
-
   const af = abortableFetch(
     `${API.prefix}${API.version}layout/obs`,
     {
@@ -43,6 +41,8 @@ async function doReembedFetch(dispatch, getState) {
       body: JSON.stringify({
         method: "umap",
         filter: { obs: { index: cells } },
+        layer,
+        npcs,
       }),
       credentials: "include",
     },
@@ -70,10 +70,10 @@ async function doReembedFetch(dispatch, getState) {
 /*
 functions below are dispatch-able
 */
-export function requestReembed() {
+export function requestReembed(layer, npcs) {
   return async (dispatch, getState) => {
     try {
-      const res = await doReembedFetch(dispatch, getState);
+      const res = await doReembedFetch(dispatch, getState, layer, npcs);
       const schema = await res.json();
       dispatch({
         type: "reembed: request completed",

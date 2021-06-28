@@ -51,7 +51,7 @@ export default class AnnoMatrix {
     /*
     return the fields present in the AnnoMatrix instance.
     */
-    return ["obs", "var", "emb", "X"];
+    return ["obs", "var", "emb", "X", "layers"];
   }
 
   constructor(schema, nObs, nVar, rowIndex = null) {
