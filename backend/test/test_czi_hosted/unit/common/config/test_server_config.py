@@ -158,8 +158,8 @@ class TestServerConfig(ConfigTests):
         )
 
         config.complete_config()
-        server = self.create_app(config)
         print(f"HEYYYY MADISON!!!: {os.getcwd()}")
+        server = self.create_app(config)
         server.testing = True
         session = server.test_client()
         response = session.get(f"/additional/path/d/pbmc3k.h5ad/api/v0.2/config")
