@@ -321,9 +321,11 @@ def layout_obs_put(request, data_adaptor):
     if not filter:
         return abort_and_log(HTTPStatus.BAD_REQUEST, "obs filter is required")
     method = args["method"] if args else "umap"
+    layer = args["layer"] if args else "X"
+    npcs = args["npcs"] if args else 50
 
     try:
-        schema = data_adaptor.compute_embedding(method, filter)
+        schema = data_adaptor.compute_embedding(method, filter, layer, npcs)
         return make_response(jsonify(schema), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
         return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))

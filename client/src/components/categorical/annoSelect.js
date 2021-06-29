@@ -29,7 +29,7 @@ class DuplicateCategorySelect extends React.PureComponent {
           itemRenderer={(d, { handleClick }) => {
             return (
               <MenuItem
-                data-testclass="duplicate-category-dropdown-option"
+                data-testclass="duplicate-category-wn-option"
                 onClick={handleClick}
                 key={d}
                 text={d}
@@ -43,7 +43,7 @@ class DuplicateCategorySelect extends React.PureComponent {
         >
           {/* children become the popover target; render value here */}
           <Button
-            data-testid="duplicate-category-dropdown"
+            data-testid="duplicate-category-wn"
             text={categoryToDuplicate || "None (all cells 'unassigned')"}
             rightIcon="double-caret-vertical"
           />

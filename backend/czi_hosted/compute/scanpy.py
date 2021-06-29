@@ -19,7 +19,7 @@ def get_scanpy_module():
         raise NotImplementedError() from e
 
 
-def scanpy_umap(adata, obs_mask=None, pca_options={}, neighbors_options={}, umap_options={}):
+def scanpy_umap(adata, obs_mask=None, layer = "X", npcs = 50, pca_options={}, neighbors_options={}, umap_options={}):
     """
     Given adata and an obs mask, return a new embedding for adata[obs_mask, :]
     as an ndarray of shape (len(obs_mask), N), where N>=2.
@@ -42,8 +42,12 @@ def scanpy_umap(adata, obs_mask=None, pca_options={}, neighbors_options={}, umap
         del adata.obsm[k]
     for k in list(adata.uns.keys()):
         del adata.uns[k]
-
-    sc.pp.pca(adata, zero_center=None, n_comps=min(adata.n_vars - 1, 50), **pca_options)
+    
+    X = adata.X
+    if layer != "X":
+        adata.X = adata.layers[layer]
+    sc.pp.pca(adata, zero_center=None, n_comps=min(adata.n_vars - 1, npcs), **pca_options)
+    adata.X = X
     sc.pp.neighbors(adata, **neighbors_options)
     sc.tl.umap(adata, **umap_options)
 

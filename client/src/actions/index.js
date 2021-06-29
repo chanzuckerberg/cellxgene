@@ -97,7 +97,6 @@ const doInitialDataLoad = () =>
         userColorsFetchAndLoad(dispatch),
         userInfoFetch(dispatch),
       ]);
-
       genesetsFetch(dispatch, config);
 
       const baseDataUrl = `${globals.API.prefix}${globals.API.version}`;

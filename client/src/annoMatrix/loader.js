@@ -318,6 +318,7 @@ function _XLoader(baseURL, field, query) {
     const urlBase = `${baseURL}data/var`;
     const urlQuery = _urlEncodeComplexQuery(query);
     const url = `${urlBase}?${urlQuery}`;
+    console.log(url);
     return () => doBinaryRequest(url);
   }
 

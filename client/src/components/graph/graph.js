@@ -787,7 +787,6 @@ class Graph extends React.Component {
     const { annoMatrix, genesets } = this.props;
     const { schema } = annoMatrix;
     const { colorMode, colorAccessor } = colors;
-
     return createColorQuery(colorMode, colorAccessor, schema, genesets);
   }
 

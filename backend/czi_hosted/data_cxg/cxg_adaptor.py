@@ -199,7 +199,7 @@ class CxgAdaptor(DataAdaptor):
         array = self.open_array(f"emb/{ename}")
         return array[:, 0:dims]
 
-    def compute_embedding(self, method, filter):
+    def compute_embedding(self, method, filter, layer, npcs):
         raise NotImplementedError("CXG does not yet support re-embedding")
 
     def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None):
