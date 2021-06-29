@@ -39,14 +39,6 @@ const buildDatasetMetadata = (singleValueCategories, corporaMetadata) => {
   return metadata;
 };
 
-const getTableCellKeyStyles = () => {
-  return { padding: "8px 8px 0 0" };
-};
-
-const getTableCellValueStyles = () => {
-  return { padding: "8px 0 0 8px" };
-};
-
 const getTableStyles = () => {
   return { tableLayout: "fixed", width: "100%" };
 };
@@ -158,16 +150,14 @@ const renderCollectionLinks = (collection) => {
       <HTMLTable style={getTableStyles()}>
         <tbody>
           <tr>
-            <td style={getTableCellKeyStyles()}>Contact</td>
-            <td style={getTableCellValueStyles()}>
-              {renderCollectionContactLink(contactName, contactEmail)}
-            </td>
+            <td>Contact</td>
+            <td>{renderCollectionContactLink(contactName, contactEmail)}</td>
           </tr>
           {links.map(({ name, type, url }, i) => {
             return (
               <tr {...{ key: i }}>
-                <td style={getTableCellKeyStyles()}>{type}</td>
-                <td style={getTableCellValueStyles()}>
+                <td>{type}</td>
+                <td>
                   <a href={url} rel="noopener" target="_blank">
                     {name}
                   </a>
@@ -213,8 +203,8 @@ const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
           {metadata.map(({ key, value, tip }) => {
             return (
               <tr {...{ key }}>
-                <td style={getTableCellKeyStyles()}>{key}</td>
-                <td style={getTableCellValueStyles()}>
+                <td>{key}</td>
+                <td>
                   <Tooltip
                     content={tip}
                     disabled={!tip}
