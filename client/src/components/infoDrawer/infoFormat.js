@@ -151,6 +151,7 @@ const renderCollectionLinks = (collection) => {
   TODO(cc) handle case where there is no contact and no links?
    */
   const links = buildCollectionLinks(collection.links);
+  const { contact_name: contactName, contact_email: contactEmail } = collection;
   return (
     <>
       {renderSectionTitle("Collection")}
@@ -159,7 +160,7 @@ const renderCollectionLinks = (collection) => {
           <tr>
             <td style={getTableCellKeyStyles()}>Contact</td>
             <td style={getTableCellValueStyles()}>
-              {renderCollectionContactLink(collection.contact)}
+              {renderCollectionContactLink(contactName, contactEmail)}
             </td>
           </tr>
           {links.map(({ name, type, url }, i) => {
@@ -180,14 +181,13 @@ const renderCollectionLinks = (collection) => {
   );
 };
 
-const renderCollectionContactLink = (contact) => {
+const renderCollectionContactLink = (name, email) => {
   /*
   display collection contact's name with a link to their associated email.
    */
-  if (!contact || (!contact.name && !contact.email)) {
+  if (!name && !email) {
     return null;
   }
-  const { name, email } = contact;
   if (email) {
     return <a href={`mailto:${email}`}>{name}</a>;
   }
