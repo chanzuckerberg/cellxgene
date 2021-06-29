@@ -17,10 +17,11 @@ const buildCollectionLinks = (links) => {
    */
   const sortedLinks = [...links].sort(sortCollectionLinks);
   return sortedLinks.map((link) => {
+    const { link_name: name, link_type: type, link_url: url } = link;
     return {
-      name: buildLinkName(link),
-      type: transformLinkTypeToDisplay(link.type),
-      url: link.url,
+      name: buildLinkName(name, type, url),
+      type: transformLinkTypeToDisplay(type),
+      url,
     };
   });
 };
@@ -61,18 +62,18 @@ const sortCollectionLinks = (l0, l1) => {
   );
 };
 
-const buildLinkName = (link) => {
+const buildLinkName = (name, type, url) => {
   /*
   determine name to display for collection link.
   TODO(cc) error handling
    */
-  if (link.name) {
-    return link.name;
+  if (name) {
+    return name;
   }
-  if (link.type === "DOI") {
-    return new URL(link.url).pathname.substring(1);
+  if (type === "DOI") {
+    return new URL(url).pathname.substring(1);
   }
-  return new URL(link.url).host;
+  return new URL(url).host;
 };
 
 const sortDatasetMetadata = (m0, m1) => {
