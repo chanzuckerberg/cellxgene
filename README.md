@@ -15,23 +15,6 @@ Whether you need to visualize one thousand cells or one million, cellxgene helps
 
 # Getting started
 
-## For the Data Science team
-This fork implements some of the key features that have been highly requested by the data science team at CZBiohub.
-
-Features include:
-- Hotkeys (SHIFT+? to see a tooltip describing all available  hotkeys)
-- Inverting the selected cells
-- Choosing the layer used for reembedding
-
-### Installation
-The easiest way is to install from the precompiled pip distribution located in `dist/`.
-Clone this repo, activate your virtual environment of choice (`conda` or `venv`, typically), and install with:
-```
-pip install dist/cellxgene-0.16.7.tar.gz
-```
-
-Ping me on slack (@Alec) if you have any questions!
-
 ### The comprehensive guide to cellxgene
 
 [The cellxgene documentation is your one-stop-shop for information about cellxgene](https://chanzuckerberg.github.io/cellxgene/)! You may be particularly interested in:
