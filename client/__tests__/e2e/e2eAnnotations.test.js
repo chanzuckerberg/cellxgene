@@ -143,19 +143,34 @@ describe.each([
     await clickOn(`categorical-value-select-louvain-NK cells`);
     await clickOn(`cellset-button-2`);
 
-    // check our assumption that we begin with 11
-    const _sets = await getAllByClass("geneset-expand");
-    expect(_sets).toHaveLength(11);
-
     // run diffexp
     await clickOn(`diffexp-button`);
+    await waitByClass("pop-1-geneset-expand");
+    await expect(page).toClick(getTestClass("pop-1-geneset-expand"));
+    const popOne = await waitByClass("histogram-gene-set-summary");
+    const popOneParent = popOne.getProperty("parentNode");
 
-    // save
-    await waitByClass("autosave-complete");
+    await popOneParent.waitForFunction(
+      (selector) => !document.querySelector(selector),
+      {},
+      getTestClass("gene-loading-spinner")
+    );
 
-    // grab all the gene sets, check if the two new ones are there
-    const sets = await getAllByClass("geneset-expand");
-    expect(sets).toHaveLength(13);
+    expect(popOneParent).toMatchSnapshot();
+
+    await expect(page).toClick(getTestClass("pop-1-geneset-expand"));
+    await expect(page).toClick(getTestClass("pop-2-geneset-expand"));
+
+    const popTwo = await waitByClass("histogram-gene-set-summary");
+    const popTwoParent = popTwo.getProperty("parentNode");
+
+    await popTwoParent.waitForFunction(
+      (selector) => !document.querySelector(selector),
+      {},
+      getTestClass("gene-loading-spinner")
+    );
+
+    expect(popTwoParent).toMatchSnapshot();
   });
   test("create a new geneset", async () => {
     if (config.withSubset) return;
