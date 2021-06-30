@@ -69,21 +69,21 @@ class AppConfig(object):
 
     def update_server_config(self, **kw):
         self.server_config.update(**kw)
-        self.is_complete = False
+        self.is_completed = False
 
     def update_default_dataset_config(self, **kw):
         self.default_dataset_config.update(**kw)
         # update all the other dataset configs, if any
         for value in self.dataroot_config.values():
             value.update(**kw)
-        self.is_complete = False
+        self.is_completed = False
 
     def update_single_config_from_path_and_value(self, path, value):
         """Update a single config parameter with the value.
         Path is a list of string, that gives a path to the config parameter to be updated.
         For example, path may be ["server","app","port"].
         """
-        self.is_complete = False
+        self.is_completed = False
         if not isinstance(path, list):
             raise ConfigurationError(f"path must be a list of strings, got '{str(path)}'")
         for part in path:
@@ -147,7 +147,7 @@ class AppConfig(object):
         if config.get("external"):
             self.external_config.update_from_config(config["external"], "external")
 
-        self.is_complete = False
+        self.is_completed = False
 
     def config_to_dict(self):
         """return the configuration as an unflattened dict"""

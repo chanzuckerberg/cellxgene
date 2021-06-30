@@ -163,7 +163,7 @@ class WritableTileDBStoredAnnotationTest(unittest.TestCase):
 
 class WritableAnnotationTest(unittest.TestCase):
     def setUp(self):
-        self.data, self.tmp_dir, self.annotations = data_with_tmp_annotations(MatrixDataType.H5AD)
+        self.data, self.tmp_dir, self.annotations, self.config= data_with_tmp_annotations(MatrixDataType.H5AD)
         self.data.dataset_config.user_annotations = self.annotations
 
     def tearDown(self):
