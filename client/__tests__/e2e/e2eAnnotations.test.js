@@ -147,8 +147,6 @@ describe.each([
     await clickOn(`diffexp-button`);
     await waitByClass("pop-1-geneset-expand");
     await expect(page).toClick(getTestClass("pop-1-geneset-expand"));
-    const popOne = await waitByClass("histogram-gene-set-summary");
-    const popOneParent = (await popOne.$x(".."))[0];
 
     await page.waitForFunction(
       (selector) => !document.querySelector(selector),
@@ -156,21 +154,28 @@ describe.each([
       getTestClass("gene-loading-spinner")
     );
 
-    expect(popOneParent).toMatchSnapshot();
+    const popOneParentHTML = await page.$eval(
+      getTestClass("histogram-gene-set-summary"),
+      (el) => el.parentElement.innerHTML
+    );
+
+    expect(popOneParentHTML).toMatchSnapshot();
 
     await expect(page).toClick(getTestClass("pop-1-geneset-expand"));
     await expect(page).toClick(getTestClass("pop-2-geneset-expand"));
 
-    const popTwo = await waitByClass("histogram-gene-set-summary");
-    const popTwoParent = (await popTwo.$x(".."))[0];
-
     await page.waitForFunction(
       (selector) => !document.querySelector(selector),
       {},
       getTestClass("gene-loading-spinner")
     );
 
-    expect(popTwoParent).toMatchSnapshot();
+    const popTwoParentHTML = await page.$eval(
+      getTestClass("histogram-gene-set-summary"),
+      (el) => el.parentElement.innerHTML
+    );
+
+    expect(popTwoParentHTML).toMatchSnapshot();
   });
   test("create a new geneset", async () => {
     if (config.withSubset) return;
