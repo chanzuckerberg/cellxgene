@@ -148,9 +148,9 @@ describe.each([
     await waitByClass("pop-1-geneset-expand");
     await expect(page).toClick(getTestClass("pop-1-geneset-expand"));
     const popOne = await waitByClass("histogram-gene-set-summary");
-    const popOneParent = popOne.getProperty("parentNode");
+    const popOneParent = await popOne.getProperty("parentNode");
 
-    await popOneParent.waitForFunction(
+    await page.waitForFunction(
       (selector) => !document.querySelector(selector),
       {},
       getTestClass("gene-loading-spinner")
@@ -162,7 +162,7 @@ describe.each([
     await expect(page).toClick(getTestClass("pop-2-geneset-expand"));
 
     const popTwo = await waitByClass("histogram-gene-set-summary");
-    const popTwoParent = popTwo.getProperty("parentNode");
+    const popTwoParent = await popTwo.getProperty("parentNode");
 
     await popTwoParent.waitForFunction(
       (selector) => !document.querySelector(selector),
