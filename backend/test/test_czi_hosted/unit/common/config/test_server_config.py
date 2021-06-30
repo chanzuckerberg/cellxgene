@@ -13,10 +13,6 @@ from backend.common.errors import ConfigurationError
 from backend.test.test_czi_hosted.unit.common.config import ConfigTests
 
 
-# def mockenv(**envvars):
-#     return mock.patch.dict(os.environ, envvars)
-
-
 class TestServerConfig(ConfigTests):
     def setUp(self):
         self.config_file_name = f"{unittest.TestCase.id(self).split('.')[-1]}.yml"
@@ -155,7 +151,7 @@ class TestServerConfig(ConfigTests):
             app__flask_secret_key="secret",
             app__api_base_url=f"http://localhost:{backend_port}/additional/path",
             multi_dataset__dataroot=f"{PROJECT_ROOT}/example-dataset",
-            multi_dataset__allowed_matrix_types=["h5ad"],
+            multi_dataset__allowed_matrix_types=["cxg"],
         )
 
         config.complete_config()

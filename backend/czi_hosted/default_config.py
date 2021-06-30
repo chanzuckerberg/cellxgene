@@ -29,11 +29,12 @@ server:
     web_base_url: null
 
   authentication:
-    # The authentication types may be "none", "session", "oauth"
+    # The authentication types may be "none", "session", "oauth" or "test"
     # none:  No authentication support, features like user_annotations must not be enabled.
     # session:  A session based userid is automatically generated. (no params needed)
     # oauth: oauth2 is used for authentication;  parameters are defined in params_oauth.
-    type: test
+    # test: Simple module for testing the authentication logic without connecting to an external service
+    type: test 
     insecure_test_environment: true
 
     params_oauth:

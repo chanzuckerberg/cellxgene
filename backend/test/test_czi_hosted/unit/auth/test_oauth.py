@@ -147,10 +147,10 @@ class AuthTest(BaseTest):
         config = json.loads(session.get("/d/pbmc3k.cxg/api/v0.2/config").data)
         userinfo = json.loads(session.get("/d/pbmc3k.cxg/api/v0.2/userinfo").data)
 
-        # self.assertTrue(userinfo["userinfo"]["is_authenticated"])
-        # self.assertEqual(userinfo["userinfo"]["username"], "fake_user")
-        # self.assertEqual(userinfo["userinfo"]["email"], "fake_user@email.com")
-        # self.assertTrue(config["config"]["parameters"]["annotations"])
+        self.assertTrue(userinfo["userinfo"]["is_authenticated"])
+        self.assertEqual(userinfo["userinfo"]["username"], "fake_user")
+        self.assertEqual(userinfo["userinfo"]["email"], "fake_user@email.com")
+        self.assertTrue(config["config"]["parameters"]["annotations"])
 
         if cookie_key:
             cookie = session.cookies.get(cookie_key)
