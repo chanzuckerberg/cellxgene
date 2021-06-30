@@ -49,6 +49,8 @@ class BaseConfigTest(ConfigTests):
             [
                 ("app__verbose", True, False),
                 ("app__flask_secret_key", "secret", None),
+                ('authentication__type', 'session', 'test'),
+                ('authentication__insecure_test_environment', False, True),
                 ("multi_dataset__dataroot", FIXTURES_ROOT, None),
                 ("multi_dataset__matrix_cache__timelimit_s", 5, 30),
                 ("data_locator__s3__region_name", "us-east-1", True),
