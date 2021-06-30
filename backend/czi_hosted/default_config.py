@@ -34,7 +34,7 @@ server:
     # session:  A session based userid is automatically generated. (no params needed)
     # oauth: oauth2 is used for authentication;  parameters are defined in params_oauth.
     # test: Simple module for testing the authentication logic without connecting to an external service
-    type: test 
+    type: test
     insecure_test_environment: true
 
     params_oauth:
