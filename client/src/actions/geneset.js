@@ -27,6 +27,11 @@ export const genesetDelete = (genesetName) => (dispatch, getState) => {
   const gs = genesets?.genesets?.get(genesetName) ?? {};
   const geneSymbols = Array.from(gs.genes.keys());
   const obsCrossfilter = dropGeneset(dispatch, state, genesetName, geneSymbols);
+  if (genesetName === state.colors.colorAccessor) {
+    dispatch({
+      type: "reset colorscale",
+    });
+  }
   dispatch({
     type: "geneset: delete",
     genesetName,
