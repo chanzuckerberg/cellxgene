@@ -3,7 +3,6 @@ Tests included in this file are specific to annotation features
 */
 import { appUrlBase, DATASET } from "./config";
 import { datasets } from "./data";
-import { diffexpPop1Genes, diffexpPop2Genes } from "./diffexpGeneSets";
 
 import {
   clickOn,
