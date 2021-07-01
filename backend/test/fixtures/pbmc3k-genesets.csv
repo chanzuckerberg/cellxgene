@@ -1,13 +1,13 @@
 # Test fixture
 gene_set_name,gene_set_description,gene_symbol,gene_description
-first gene set name,a description,F5, a gene_description
+first gene set name,,F5, a gene_description
 first gene set name,a description,NO_SUCH_GENE, non-existent gene
 first gene set name,a description,F5, duplicate gene
-first gene set name,a description,SUMO3,
-first gene set name,a description,SRM,
-second_gene_set,,RER1,
-second_gene_set,,SIK1,
-third gene set,,NO_SUCH_GENE,
+first gene set name, a description,SUMO3,
+first gene set name,,SRM,
+second_gene_set,,RER1
+second_gene_set,,SIK1
+third gene set,,NO_SUCH_GENE
 fourth_gene_set,fourth description,,gene intentionally missing
 fifth_dataset,,,
 summary test,,ACD,
