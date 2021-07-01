@@ -3,6 +3,7 @@ Tests included in this file are specific to annotation features
 */
 import { appUrlBase, DATASET } from "./config";
 import { datasets } from "./data";
+import { diffexpPop1Genes, diffexpPop2Genes } from "./diffexpGeneSets";
 
 import {
   clickOn,
@@ -159,7 +160,9 @@ describe.each([
       (el) => el.parentElement.innerHTML
     );
 
-    expect(popOneParentHTML).toMatchSnapshot();
+    for (let i = 0; i < diffexpPop1Genes.length; i += 1) {
+      expect(popOneParentHTML).toContain(diffexpPop1Genes[i]);
+    }
 
     await expect(page).toClick(getTestClass("pop-1-geneset-expand"));
     await expect(page).toClick(getTestClass("pop-2-geneset-expand"));
@@ -175,7 +178,9 @@ describe.each([
       (el) => el.parentElement.innerHTML
     );
 
-    expect(popTwoParentHTML).toMatchSnapshot();
+    for (let i = 0; i < diffexpPop1Genes.length; i += 1) {
+      expect(popTwoParentHTML).toContain(diffexpPop2Genes[i]);
+    }
   });
   test("create a new geneset", async () => {
     if (config.withSubset) return;
