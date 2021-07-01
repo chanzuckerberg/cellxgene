@@ -12,6 +12,7 @@ import {
   getTestId,
   getTestClass,
   getAllByClass,
+  getOneElementInnerHTML,
 } from "./puppeteerUtils";
 
 import {
@@ -154,12 +155,11 @@ describe.each([
       getTestClass("gene-loading-spinner")
     );
 
-    const popOneParentHTML = await page.$eval(
-      getTestClass("histogram-gene-set-summary"),
-      (el) => el.parentElement.innerHTML
+    let genesHTML = await getOneElementInnerHTML(
+      getTestClass("gene-set-genes")
     );
 
-    expect(popOneParentHTML).toMatchSnapshot();
+    expect(genesHTML).toMatchSnapshot();
 
     await expect(page).toClick(getTestClass("pop-1-geneset-expand"));
     await expect(page).toClick(getTestClass("pop-2-geneset-expand"));
@@ -170,12 +170,9 @@ describe.each([
       getTestClass("gene-loading-spinner")
     );
 
-    const popTwoParentHTML = await page.$eval(
-      getTestClass("histogram-gene-set-summary"),
-      (el) => el.parentElement.innerHTML
-    );
+    genesHTML = await getOneElementInnerHTML(getTestClass("gene-set-genes"));
 
-    expect(popTwoParentHTML).toMatchSnapshot();
+    expect(genesHTML).toMatchSnapshot();
   });
   test("create a new geneset", async () => {
     if (config.withSubset) return;
