@@ -81,18 +81,22 @@ class GeneSet extends React.Component {
   renderGenes() {
     const { setName, setGenes, setGenesWithDescriptions } = this.props;
 
-    return setGenes.map((gene) => {
-      const { geneDescription } = setGenesWithDescriptions.get(gene);
+    return (
+      <div data-testclass="gene-set-genes">
+        {setGenes.map((gene) => {
+          const { geneDescription } = setGenesWithDescriptions.get(gene);
 
-      return (
-        <Gene
-          key={gene}
-          gene={gene}
-          geneDescription={geneDescription}
-          geneset={setName}
-        />
-      );
-    });
+          return (
+            <Gene
+              key={gene}
+              gene={gene}
+              geneDescription={geneDescription}
+              geneset={setName}
+            />
+          );
+        })}
+      </div>
+    );
   }
 
   render() {
