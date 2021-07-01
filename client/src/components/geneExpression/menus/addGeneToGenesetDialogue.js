@@ -61,7 +61,7 @@ class AddGeneToGenesetDialogue extends React.PureComponent {
             "data-testid": `${geneset}:submit-gene`,
           }}
           title="Add genes to gene set"
-          instruction={`Add gene to ${geneset}`}
+          instruction={`Add genes to ${geneset}`}
           cancelTooltipContent="Close this dialog without adding genes to gene set."
           primaryButtonText="Add genes"
           text={genesToAdd}
