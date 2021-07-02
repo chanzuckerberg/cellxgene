@@ -23,16 +23,14 @@ export function createAPIPrefix(existingPrefix, replaceWithPrefix) {
 
 export function createDatasetUrl(deploymentUrl) {
   /*
-  For local environments, switch out the data root of the given URL to /d/. For example, update 
-  protocol://origin/dataRoot/dataset.cxg to protocol://origin/d/dataset.cxg.
-  TODO(cc) revisit special handling for local environment.
+  Switch out dataset URL origin to the current location's origin. For local environments, also replace the
+  data root of the given URL to /d/. For example, update protocol://origin/dataRoot/dataset.cxg to
+  protocol://origin/d/dataset.cxg.
+  TODO(cc) revisit special handling for canary and local environments.
    */
-  if (globals.API.local) {
-    const dataRoot = "d";
-    const deploymentId = bindDeploymentId(deploymentUrl);
-    return `${window.location.origin}/${dataRoot}/${deploymentId}/`;
-  }
-  return deploymentUrl;
+  const dataRoot = globals.API.local ? "d" : bindDataRoot(deploymentUrl);
+  const deploymentId = bindDeploymentId(deploymentUrl);
+  return `${window.location.origin}/${dataRoot}/${deploymentId}/`;
 }
 
 export function createExplorerUrl() {
@@ -63,6 +61,20 @@ export function sortDatasets(vm0, vm1) {
   return (vm1.cell_count ?? 0) - (vm0.cell_count ?? 0);
 }
 
+function bindDataRoot(pathOrUrl) {
+  /*
+  read dataroot from path. given "protocol://hostname/x/any-alpha-numeric.cxg/", match on "/x/",
+  read data root from path. given "protocol://origin/x/any-alpha-numeric.cxg/", match on "/x/",
+  group on "x".
+   */
+  const matches = pathOrUrl.match(/\/([a-z0-9_.-]+)\/[a-z0-9_.-]+\.cxg\//i);
+  if (!matches || matches.length < 2) {
+    // Expecting at least match and one capturing group
+    throw new Error(`Unable to bind data root from "${pathOrUrl}"`);
+  }
+  return matches[1];
+}
+
 function bindDataRootAndDeploymentId(pathOrUrl) {
   /*
   Read data root and deployment ID from path. Given "protocol://origin/x/any-alpha-numeric.cxg/", match on
@@ -71,7 +83,7 @@ function bindDataRootAndDeploymentId(pathOrUrl) {
   const matches = pathOrUrl.match(/\/([a-z0-9_.-]+\/[a-z0-9_.-]+\.cxg)\//i);
   if (!matches || matches.length < 2) {
     if (globals.API.local) {
-      return "e/03aa05fe-74dc-456f-ab2b-4b56d51f3ed0.cxg"; // TODO(cc) default data root and deployment ID for local (single mode)
+      return "e/792d29b8-83d4-4e6e-b3ce-cad060d1a23b.cxg"; // TODO(cc) default data root and deployment ID for local (single mode)
     }
     // Expecting at least match and one capturing group
     throw new Error(
@@ -89,7 +101,7 @@ function bindDeploymentId(pathOrUrl) {
   const matches = pathOrUrl.match(/\/([a-z0-9_.-]*\.cxg)\//i);
   if (!matches || matches.length < 2) {
     if (globals.API.local) {
-      return "03aa05fe-74dc-456f-ab2b-4b56d51f3ed0.cxg"; // TODO(cc) default dataset for local (single mode)
+      return "792d29b8-83d4-4e6e-b3ce-cad060d1a23b.cxg"; // TODO(cc) default dataset for local (single mode)
     }
     // Expecting at least match and one capturing group
     throw new Error(`Unable to bind deployment ID from "${pathOrUrl}"`);
