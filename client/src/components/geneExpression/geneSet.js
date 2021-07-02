@@ -10,6 +10,8 @@ import GenesetMenus from "./menus/genesetMenus";
 import EditGenesetNameDialogue from "./menus/editGenesetNameDialogue";
 import HistogramBrush from "../brushableHistogram";
 
+import { diffexpPopNamePrefix1, diffexpPopNamePrefix2 } from "../../globals";
+
 @connect((state, ownProps) => {
   return {
     world: state.world,
@@ -81,18 +83,22 @@ class GeneSet extends React.Component {
   renderGenes() {
     const { setName, setGenes, setGenesWithDescriptions } = this.props;
 
-    return setGenes.map((gene) => {
-      const { geneDescription } = setGenesWithDescriptions.get(gene);
+    return (
+      <div data-testclass="gene-set-genes">
+        {setGenes.map((gene) => {
+          const { geneDescription } = setGenesWithDescriptions.get(gene);
 
-      return (
-        <Gene
-          key={gene}
-          gene={gene}
-          geneDescription={geneDescription}
-          geneset={setName}
-        />
-      );
-    });
+          return (
+            <Gene
+              key={gene}
+              gene={gene}
+              geneDescription={geneDescription}
+              geneset={setName}
+            />
+          );
+        })}
+      </div>
+    );
   }
 
   render() {
@@ -100,6 +106,12 @@ class GeneSet extends React.Component {
     const { isOpen } = this.state;
     const genesetNameLengthVisible = 150; /* this magic number determines how much of a long geneset name we see */
     const genesetIsEmpty = setGenes.length === 0;
+    let testClass = "geneset-expand";
+
+    if (setName.includes(diffexpPopNamePrefix1))
+      testClass = "pop-1-geneset-expand";
+    else if (setName.includes(diffexpPopNamePrefix2))
+      testClass = "pop-2-geneset-expand";
 
     return (
       <div style={{ marginBottom: 3 }}>
@@ -113,7 +125,7 @@ class GeneSet extends React.Component {
           <span
             role="menuitem"
             tabIndex="0"
-            data-testclass="geneset-expand"
+            data-testclass={testClass}
             data-testid={`${setName}:geneset-expand`}
             onKeyPress={
               /* TODO(colinmegill): #2101: click handler on span */ () => {}
@@ -133,7 +145,7 @@ class GeneSet extends React.Component {
                 style={{
                   maxWidth: globals.leftSidebarWidth - genesetNameLengthVisible,
                 }}
-                data-testid={`${setName}:geneset-label`}
+                data-testid={`${setName}:geneset-name`}
               >
                 {setName}
               </span>

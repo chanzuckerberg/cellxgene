@@ -98,6 +98,8 @@ const continuous = (selectorId, colorScale, colorAccessor) => {
     .attr("y", 2)
     .attr("x", 0 - legendHeight / 2)
     .attr("dy", "1em")
+    .attr("data-testid", "continuous_legend_color_by_label")
+    .attr("aria-label", colorAccessor)
     .style("text-anchor", "middle")
     .style("fill", "white")
     .text(colorAccessor);

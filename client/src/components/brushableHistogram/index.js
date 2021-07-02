@@ -366,6 +366,10 @@ class HistogramBrush extends React.PureComponent {
     const fieldForId = field.replace(/\s/g, "_");
     const showScatterPlot = isUserDefined;
 
+    let testClass = "histogram-continuous-metadata";
+    if (isUserDefined) testClass = "histogram-user-gene";
+    else if (isGeneSetSummary) testClass = "histogram-gene-set-summary";
+
     return (
       <Async
         watchFn={HistogramBrush.watchAsync}
@@ -386,11 +390,7 @@ class HistogramBrush extends React.PureComponent {
               <div
                 id={`histogram_${fieldForId}`}
                 data-testid={`histogram-${field}`}
-                data-testclass={
-                  isUserDefined
-                    ? "histogram-user-gene"
-                    : "histogram-continuous-metadata"
-                }
+                data-testclass={testClass}
                 style={{
                   padding: mini ? 0 : globals.leftSidebarSectionPadding,
                   backgroundColor: zebra ? globals.lightestGrey : "white",

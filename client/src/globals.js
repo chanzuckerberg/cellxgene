@@ -79,6 +79,9 @@ export const categoryDisplayStringMaxLength = 33;
 export const maxUserDefinedGenes = 25;
 export const maxGenes = 100;
 
+export const diffexpPopNamePrefix1 = "Pop1 high";
+export const diffexpPopNamePrefix2 = "Pop2 high";
+
 /* various timing-related behaviors */
 export const tooltipHoverOpenDelay = 1000; /* ms delay before a tooltip displays */
 export const tooltipHoverOpenDelayQuick = 500;

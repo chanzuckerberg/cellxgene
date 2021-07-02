@@ -5,8 +5,8 @@ first gene set name,a description,NO_SUCH_GENE, non-existent gene
 first gene set name,a description,F5, duplicate gene
 first gene set name, a description,SUMO3,
 first gene set name,,SRM,
-second gene set,,RER1
-second gene set,,SIK1
+second_gene_set,,RER1
+second_gene_set,,SIK1
 third gene set,,NO_SUCH_GENE
 fourth_gene_set,fourth description,,gene intentionally missing
 fifth_dataset,,,
@@ -14,3 +14,8 @@ summary test,,ACD,
 summary test,,AATF,
 summary test,,F5,
 summary test,,PIGU,
+geneset_to_delete,,,
+geneset_to_edit,,,
+fill_this_geneset,,RER1,
+empty_this_geneset,,SIK1,
+brush_this_gene,,SIK1,

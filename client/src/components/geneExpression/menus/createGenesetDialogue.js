@@ -128,8 +128,8 @@ class CreateGenesetDialogue extends React.PureComponent {
   };
 
   render() {
-    const { genesetName, nameErrorMessage } = this.state;
-    const { metadataField, genesetsUI, genesets } = this.props;
+    const { genesetName, nameErrorMessage} = this.state;
+    const { genesetsUI, genesets } = this.props;
 
     return (
       <>
@@ -150,7 +150,7 @@ class CreateGenesetDialogue extends React.PureComponent {
                 <LabelInput
                   onChange={this.handleChange}
                   inputProps={{
-                    "data-testid": "create-geneset-modal",
+                    "data-testid": "create-geneset-input",
                     leftIcon: "manually-entered-data",
                     intent: "none",
                     autoFocus: true,
@@ -205,7 +205,7 @@ class CreateGenesetDialogue extends React.PureComponent {
                   </Button>
                 </Tooltip2>
                 <Button
-                  data-testid={`${metadataField}:submit-geneset`}
+                  data-testid="submit-geneset"
                   onClick={this.createGeneset}
                   disabled={nameErrorMessage !== ""}
                   intent="primary"
