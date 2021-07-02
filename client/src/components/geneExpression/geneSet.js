@@ -10,6 +10,8 @@ import GenesetMenus from "./menus/genesetMenus";
 import EditGenesetNameDialogue from "./menus/editGenesetNameDialogue";
 import HistogramBrush from "../brushableHistogram";
 
+import { diffexpPopNamePrefix1, diffexpPopNamePrefix2 } from "../../globals";
+
 @connect((state, ownProps) => {
   return {
     world: state.world,
@@ -106,8 +108,10 @@ class GeneSet extends React.Component {
     const genesetIsEmpty = setGenes.length === 0;
     let testClass = "geneset-expand";
 
-    if (setName.includes("Pop1 high")) testClass = "pop-1-geneset-expand";
-    else if (setName.includes("Pop2 high")) testClass = "pop-2-geneset-expand";
+    if (setName.includes(diffexpPopNamePrefix1))
+      testClass = "pop-1-geneset-expand";
+    else if (setName.includes(diffexpPopNamePrefix2))
+      testClass = "pop-2-geneset-expand";
 
     return (
       <div style={{ marginBottom: 3 }}>
