@@ -7,11 +7,14 @@ const Dotplot = (
 ) => {
   switch (action.type) {
     case "set dotplot row":
+      console.log("in dotplot reducer row is", action.data);
       return {
         ...state,
         row: action.data,
       };
     case "set dotplot column":
+      console.log("in dotplot reducer COLUMN is", action.data);
+
       return {
         ...state,
         column: action.data,

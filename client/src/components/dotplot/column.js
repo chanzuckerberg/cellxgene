@@ -21,6 +21,7 @@ import {
   genesets: state.genesets.genesets,
   pointDilation: state.pointDilation,
   differential: state.differential,
+  dotplot: state.dotplot,
 }))
 class Column extends React.Component {
   static watchAsync(props, prevProps) {

@@ -17,6 +17,7 @@ import controls from "./controls";
 import annotations from "./annotations";
 import genesets from "./genesets";
 import genesetsUI from "./genesetsUI";
+import dotplot from "./dotplot";
 import autosave from "./autosave";
 import centroidLabels from "./centroidLabels";
 import pointDialation from "./pointDilation";
@@ -32,6 +33,7 @@ const Reducer = undoable(
     ["annotations", annotations],
     ["genesets", genesets],
     ["genesetsUI", genesetsUI],
+    ["dotplot", dotplot],
     ["layoutChoice", layoutChoice],
     ["categoricalSelection", categoricalSelection],
     ["continuousSelection", continuousSelection],

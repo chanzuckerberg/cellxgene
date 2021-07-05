@@ -21,6 +21,7 @@ import AddGeneToGenesetDialogue from "./addGeneToGenesetDialogue";
   return {
     genesetsUI: state.genesetsUI,
     colorAccessor: state.colors.colorAccessor,
+    dotplot: state.layoutChoice.dotplot,
   };
 })
 class GenesetMenus extends React.PureComponent {
@@ -47,12 +48,19 @@ class GenesetMenus extends React.PureComponent {
   };
 
   handleColorByEntireGeneset = () => {
-    const { dispatch, geneset } = this.props;
+    const { dispatch, geneset, dotplot } = this.props;
 
-    dispatch({
-      type: "color by geneset mean expression",
-      geneset,
-    });
+    if (dotplot) {
+      dispatch({
+        type: "set dotplot column",
+        data: geneset,
+      });
+    } else {
+      dispatch({
+        type: "color by geneset mean expression",
+        geneset,
+      });
+    }
   };
 
   handleDeleteGeneset = () => {
@@ -61,7 +69,13 @@ class GenesetMenus extends React.PureComponent {
   };
 
   render() {
-    const { geneset, genesetsEditable, createText, colorAccessor } = this.props;
+    const {
+      geneset,
+      genesetsEditable,
+      createText,
+      colorAccessor,
+      dotplot,
+    } = this.props;
 
     const isColorBy = geneset === colorAccessor;
 
@@ -130,7 +144,9 @@ class GenesetMenus extends React.PureComponent {
                 onClick={this.handleColorByEntireGeneset}
                 data-testclass="colorby-entire-geneset"
                 data-testid={`${geneset}:colorby-entire-geneset`}
-                icon={<Icon icon="tint" iconSize={16} />}
+                icon={
+                  <Icon icon={dotplot ? "layout-grid" : "tint"} iconSize={16} />
+                }
               />
             </Tooltip2>
           </>

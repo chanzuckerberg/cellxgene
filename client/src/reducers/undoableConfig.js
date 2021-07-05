@@ -82,6 +82,10 @@ const saveOnActions = new Set([
   "color by expression",
   "color by geneset mean expression",
 
+  "set dotplot row",
+  "set dotplot column",
+  "toggle dotplot",
+
   "show centroid labels for category",
 
   "set scatterplot x",

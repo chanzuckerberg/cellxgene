@@ -45,6 +45,7 @@ const LABEL_WIDTH_ANNO = LABEL_WIDTH - ANNO_BUTTON_WIDTH;
     crossfilter: state.obsCrossfilter,
     isUserAnno,
     genesets: state.genesets.genesets,
+    dotplot: state.layoutChoice.dotplot,
   };
 })
 class Category extends React.PureComponent {
@@ -83,11 +84,19 @@ class Category extends React.PureComponent {
   }
 
   handleColorChange = () => {
-    const { dispatch, metadataField } = this.props;
-    dispatch({
-      type: "color by categorical metadata",
-      colorAccessor: metadataField,
-    });
+    const { dispatch, metadataField, dotplot } = this.props;
+
+    if (dotplot) {
+      dispatch({
+        type: "set dotplot row",
+        data: metadataField,
+      });
+    } else {
+      dispatch({
+        type: "color by categorical metadata",
+        colorAccessor: metadataField,
+      });
+    }
   };
 
   handleCategoryClick = () => {
@@ -220,6 +229,7 @@ class Category extends React.PureComponent {
       colors,
       annoMatrix,
       isUserAnno,
+      dotplot,
     } = this.props;
 
     const checkboxID = `category-select-${metadataField}`;
@@ -278,6 +288,7 @@ class Category extends React.PureComponent {
                   onCategoryToggleAllClick={handleCategoryToggleAllClick}
                   onCategoryMenuClick={this.handleCategoryClick}
                   onCategoryMenuKeyPress={this.handleCategoryKeyPress}
+                  dotplot={dotplot}
                 />
               );
             }}
@@ -372,6 +383,7 @@ const CategoryHeader = React.memo(
     onCategoryMenuClick,
     onCategoryMenuKeyPress,
     onCategoryToggleAllClick,
+    dotplot,
   }) => {
     /*
     Render category name and controls (eg, color-by button).
@@ -473,7 +485,7 @@ const CategoryHeader = React.memo(
               active={isColorAccessor}
               intent={isColorAccessor ? "primary" : "none"}
               disabled={isTruncated}
-              icon="tint"
+              icon={dotplot ? "layout-grid" : "tint"}
             />
           </Tooltip>
         </div>
@@ -500,6 +512,7 @@ const CategoryRender = React.memo(
     onCategoryMenuClick,
     onCategoryMenuKeyPress,
     onCategoryToggleAllClick,
+    dotplot,
   }) => {
     /*
     Render the core of the category, including checkboxes, controls, etc.
@@ -544,6 +557,7 @@ const CategoryRender = React.memo(
             onCategoryToggleAllClick={onCategoryToggleAllClick}
             onCategoryMenuClick={onCategoryMenuClick}
             onCategoryMenuKeyPress={onCategoryMenuKeyPress}
+            dotplot={dotplot}
           />
         </div>
         <div style={{ marginLeft: 26 }}>
