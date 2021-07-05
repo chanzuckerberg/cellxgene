@@ -6,7 +6,7 @@ import Column from "./column";
 @connect((state) => ({
   layoutChoice: state.layoutChoice,
   genesets: state.genesets.genesets,
-  colors: state.colors,
+  dotplot: state.dotplot,
 }))
 class Dotplot extends React.Component {
   constructor(props) {
@@ -39,15 +39,15 @@ class Dotplot extends React.Component {
 
   render() {
     const { viewport } = this.state;
-    const { genesets } = this.props;
+    const { genesets, dotplot } = this.props;
 
-    const _TESTgeneset = genesets.get("bladder urothelial");
-    const _TESTmetadatField = "tissue";
+    let _geneset = null;
+    let _genes = null;
 
-    /* TODO(colinmegill) #632 componetize */
-    if (!_TESTgeneset) return null;
-
-    const _genes = Array.from(_TESTgeneset.genes.keys());
+    if (dotplot.column) {
+      _geneset = genesets.get(dotplot.column);
+      _genes = Array.from(_geneset.genes.keys());
+    }
 
     return (
       <div
@@ -70,43 +70,54 @@ class Dotplot extends React.Component {
           height={viewport.height}
         >
           <g
-            id="dotplot_interface_margin"
+            id="dotplot_help_text"
             transform={`translate(${this.dotplotLeftPadding},${this.dotplotTopPadding})`}
           >
-            {/* Acaa1b, Mal, Foxq1 ... across the top of the dotplot */}
-            <g id="dotplot_column_labels" transform="translate(14,-13)">
-              {_genes.map((_geneSymbol, _geneIndexInGeneset) => {
-                return (
-                  <text
-                    key={_geneSymbol}
-                    x={0}
-                    y={0}
-                    transform={`translate(${
-                      _geneIndexInGeneset * this.rowColumnSize
-                    }) rotate(270)`}
-                    style={{ fill: "black", font: "12px Roboto Condensed" }}
-                  >
-                    {_geneSymbol}
-                  </text>
-                );
-              })}
-            </g>
-            {/* loop over genes in the geneset, */}
-            <g id="dotplot_columns">
-              {_genes.map((_geneSymbol, _geneIndexInGeneset) => {
-                return (
-                  <Column
-                    key={_geneSymbol}
-                    _geneSymbol={_geneSymbol}
-                    _geneIndex={_geneIndexInGeneset}
-                    viewport={viewport}
-                    rowColumnSize={this.rowColumnSize}
-                    metadataField={_TESTmetadatField}
-                  />
-                );
-              })}
-            </g>
+            <text>
+              {!dotplot.row && "Select a row"}{" "}
+              {!dotplot.column && "Select a column"}
+            </text>
           </g>
+          {dotplot.row && dotplot.column && (
+            <g
+              id="dotplot_interface_margin"
+              transform={`translate(${this.dotplotLeftPadding},${this.dotplotTopPadding})`}
+            >
+              {/* Acaa1b, Mal, Foxq1 ... across the top of the dotplot */}
+              <g id="dotplot_column_labels" transform="translate(14,-13)">
+                {_genes.map((_geneSymbol, _geneIndexInGeneset) => {
+                  return (
+                    <text
+                      key={_geneSymbol}
+                      x={0}
+                      y={0}
+                      transform={`translate(${
+                        _geneIndexInGeneset * this.rowColumnSize
+                      }) rotate(270)`}
+                      style={{ fill: "black", font: "12px Roboto Condensed" }}
+                    >
+                      {_geneSymbol}
+                    </text>
+                  );
+                })}
+              </g>
+              {/* loop over genes in the geneset, */}
+              <g id="dotplot_columns">
+                {_genes.map((_geneSymbol, _geneIndexInGeneset) => {
+                  return (
+                    <Column
+                      key={_geneSymbol}
+                      _geneSymbol={_geneSymbol}
+                      _geneIndex={_geneIndexInGeneset}
+                      viewport={viewport}
+                      rowColumnSize={this.rowColumnSize}
+                      metadataField={dotplot.row}
+                    />
+                  );
+                })}
+              </g>
+            </g>
+          )}
         </svg>
       </div>
     );
