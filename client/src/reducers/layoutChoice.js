@@ -24,7 +24,7 @@ function setToDefaultLayout(schema) {
 const LayoutChoice = (
   state = {
     available: [], // all available choices
-    dotplot: true /* todo(colinmegill) #632 wire up inputs */,
+    dotplot: true, // is the dotplot toggled on, or not
     current: undefined, // name of the current layout, eg, 'umap'
     currentDimNames: [], // dimension name
   },
@@ -38,6 +38,14 @@ const LayoutChoice = (
       return {
         ...state,
         ...setToDefaultLayout(annoMatrix.schema),
+      };
+    }
+
+    case "toggle dotplot": {
+      console.log("toggle: state, newstate", state.dotplot, !state.dotplot);
+      return {
+        ...state,
+        dotplot: !state.dotplot,
       };
     }
 
