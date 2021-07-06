@@ -128,7 +128,7 @@ class CreateGenesetDialogue extends React.PureComponent {
   };
 
   render() {
-    const { genesetName, nameErrorMessage} = this.state;
+    const { genesetName, nameErrorMessage } = this.state;
     const { genesetsUI, genesets } = this.props;
 
     return (
