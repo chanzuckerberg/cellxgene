@@ -1,6 +1,8 @@
-## Overview
+## Gene Sets Overview
 
-A gene set is a named list of user-ordered genes. A gene set can describe marker genes for a cell type, state, or pathway.
+A gene set is a user-created, ordered list of gene identifiers. Typical uses for a gene set include marker genes for a cell type, state, or pathway.
+
+A gene set must have a unique name. A given gene may be included in multiple gene sets. A gene set may optionally include a description for the entire gene set, and descriptions for each gene included the gene set.
 
 Users may view gene sets along with their dataset and access gene sets created in pip installed cellxgene by following the instructions below.
 
@@ -67,7 +69,7 @@ Populating `gene_set_description` is optional. The first instance where `gene_se
 
 ### `gene_symbol`
 
-`gene_symbol` MUST contain a unique gene symbols for the given `gene_set_name` and exist as a VAR in the underlying anndata file.
+A given `gene_symbol` may only be added once to a gene set and exist as a VAR in the underlying anndata file.
 
 ---
 
