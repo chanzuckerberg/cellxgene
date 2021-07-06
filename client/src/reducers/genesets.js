@@ -22,6 +22,8 @@
  * routes. Do not rely on it to enforce geneset integrity - eg, no duplicate
  * genes in a geneset.
  */
+import { diffexpPopNamePrefix1, diffexpPopNamePrefix2 } from "../globals";
+
 const GeneSets = (
   state = {
     initialized: false,
@@ -365,8 +367,8 @@ const GeneSets = (
       const dateString = new Date().toLocaleString();
 
       const genesetNames = {
-        positive: `Pop1 high (${dateString})`,
-        negative: `Pop2 high (${dateString})`,
+        positive: `${diffexpPopNamePrefix1} (${dateString})`,
+        negative: `${diffexpPopNamePrefix2} (${dateString})`,
       };
 
       const diffExpGeneSets = [];

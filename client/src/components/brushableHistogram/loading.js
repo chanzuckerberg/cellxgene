@@ -9,6 +9,7 @@ const StillLoading = ({ zebra, displayName }) => {
     */
   return (
     <div
+      data-testclass="gene-loading-spinner"
       style={{
         padding: globals.leftSidebarSectionPadding,
         backgroundColor: zebra ? globals.lightestGrey : "white",

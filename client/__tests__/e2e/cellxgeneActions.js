@@ -176,6 +176,137 @@ export async function createCategory(categoryName) {
   await clickOn("submit-category");
 }
 
+/* 
+
+  GENESET 
+
+*/
+
+export async function colorByGeneset(genesetName) {
+  await clickOn(`${genesetName}:colorby-entire-geneset`);
+}
+
+export async function colorByGene(gene) {
+  await clickOn(`colorby-${gene}`);
+}
+
+export async function assertColorLegendLabel(label) {
+  const handle = await waitByID("continuous_legend_color_by_label");
+
+  const result = await handle.evaluate((node) => {
+    return node.getAttribute("aria-label");
+  });
+
+  return expect(result).toBe(label);
+}
+
+export async function expandGeneset(genesetName) {
+  const expand = await waitByID(`${genesetName}:geneset-expand`);
+  const notExpanded = await expand.$(
+    "[data-testclass='geneset-expand-is-not-expanded']"
+  );
+  if (notExpanded) await clickOn(`${genesetName}:geneset-expand`);
+}
+
+export async function createGeneset(genesetName) {
+  await clickOnUntil("open-create-geneset-dialog", async () => {
+    await expect(page).toMatchElement(getTestId("create-geneset-input"));
+  });
+
+  await typeInto("create-geneset-input", genesetName);
+  await clickOn("submit-geneset");
+  await waitByClass("autosave-complete");
+}
+
+export async function editGenesetName(genesetName, editText) {
+  const editButton = `${genesetName}:edit-genesetName-mode`;
+  const submitButton = `${genesetName}:submit-geneset`;
+  await clickOnUntil(`${genesetName}:see-actions`, async () => {
+    await expect(page).toMatchElement(getTestId(editButton));
+  });
+  await clickOn(editButton);
+  await typeInto("rename-geneset-modal", editText);
+  await clickOn(submitButton);
+}
+
+export async function deleteGeneset(genesetName) {
+  const targetId = `${genesetName}:delete-geneset`;
+
+  await clickOnUntil(`${genesetName}:see-actions`, async () => {
+    await expect(page).toMatchElement(getTestId(targetId));
+  });
+
+  await clickOn(targetId);
+
+  await assertGenesetDoesNotExist(genesetName);
+  await waitByClass("autosave-complete");
+}
+
+export async function assertGenesetDoesNotExist(genesetName) {
+  const result = await isElementPresent(
+    getTestId(`${genesetName}:geneset-name`)
+  );
+  await expect(result).toBe(false);
+}
+
+export async function assertGenesetExists(genesetName) {
+  const handle = await waitByID(`${genesetName}:geneset-name`);
+
+  const result = await handle.evaluate((node) => {
+    return node.getAttribute("aria-label");
+  });
+
+  return expect(result).toBe(genesetName);
+}
+
+/* 
+
+  GENE
+
+*/
+
+export async function addGeneToSet(genesetName, geneToAddToSet) {
+  const submitButton = `${genesetName}:submit-gene`;
+
+  await clickOn(`${genesetName}:add-new-gene-to-geneset`);
+  await typeInto("add-genes", geneToAddToSet);
+  await clickOn(submitButton);
+}
+
+export async function removeGene(geneSymbol) {
+  const targetId = `delete-from-geneset:${geneSymbol}`;
+
+  await clickOn(targetId);
+
+  await waitByClass("autosave-complete");
+}
+
+export async function assertGeneExistsInGeneset(geneSymbol) {
+  const handle = await waitByID(`${geneSymbol}:gene-label`);
+
+  const result = await handle.evaluate((node) => {
+    return node.getAttribute("aria-label");
+  });
+
+  return expect(result).toBe(geneSymbol);
+}
+
+export async function assertGeneDoesNotExist(geneSymbol) {
+  const result = await isElementPresent(getTestId(`${geneSymbol}:gene-label`));
+
+  await expect(result).toBe(false);
+}
+
+export async function expandGene(geneSymbol) {
+  await clickOn(`maximize-${geneSymbol}`);
+}
+
+/* 
+
+  CATEGORY 
+
+*/
+
 export async function duplicateCategory(categoryName) {
   await clickOn("open-annotation-dialog");
 

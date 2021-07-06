@@ -122,7 +122,7 @@ function QuickGene() {
       <H4
         role="menuitem"
         tabIndex="0"
-        data-testclass="category-expand"
+        data-testclass="quickgene-heading-expand"
         onKeyPress={handleExpand}
         style={{
           cursor: "pointer",

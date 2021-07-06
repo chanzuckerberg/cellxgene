@@ -5,14 +5,14 @@ import unittest
 from http import HTTPStatus
 
 import anndata
-import requests
 
+from backend.czi_hosted.common.config.app_config import AppConfig
 from backend.czi_hosted.common.corpora import (
     corpora_get_versions_from_anndata,
     corpora_is_version_supported,
     corpora_get_props_from_anndata,
 )
-from backend.test.test_czi_hosted.unit import start_test_server, stop_test_server
+from backend.test.test_czi_hosted.unit import BaseTest
 from backend.test import PROJECT_ROOT
 
 VERSION = "v0.2"
@@ -105,7 +105,7 @@ class CorporaAPITest(unittest.TestCase):
         return anndata.read_h5ad(f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad")
 
 
-class CorporaRESTAPITest(unittest.TestCase):
+class CorporaRESTAPITest(BaseTest):
     """ Confirm endpoints reflect Corpora-specific features """
 
     @classmethod
@@ -129,31 +129,33 @@ class CorporaRESTAPITest(unittest.TestCase):
         adata.write(path)
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls, app_config=None):
+        if not app_config:
+            app_config = AppConfig()
         cls.tmp_dir = tempfile.TemporaryDirectory()
         src = f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad"
         dst = f"{cls.tmp_dir.name}/pbmc3k.h5ad"
         shutil.copyfile(src, dst)
         cls.setCorporaFields(dst)
-        cls.ps, cls.server = start_test_server([dst])
+        app_config.update_server_config(single_dataset__datapath=dst)
 
-    @classmethod
-    def tearDownClass(cls):
-        stop_test_server(cls.ps)
-        cls.tmp_dir.cleanup()
+        super().setUpClass(app_config)
+        cls.app.testing = True
+        cls.client = cls.app.test_client()
 
     def setUp(self):
-        self.session = requests.Session()
-        self.url_base = f"{self.server}/api/{VERSION}/"
+        self.session = self.client
+        self.url_base = "/api/v0.2/"
 
     def test_config(self):
         endpoint = "config"
         url = f"{self.url_base}{endpoint}"
-        result = self.session.get(url)
+        header = {"Content-Type": "application/json"}
+        result = self.session.get(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
 
-        result_data = result.json()
+        result_data = json.loads(result.data)
         self.assertIsInstance(result_data["config"]["corpora_props"], dict)
         self.assertIsInstance(result_data["config"]["parameters"], dict)
 
@@ -161,5 +163,6 @@ class CorporaRESTAPITest(unittest.TestCase):
         parameters = result_data["config"]["parameters"]
 
         self.assertEqual(corpora_props["version"]["corpora_schema_version"], "1.0.0")
+
         self.assertEqual(corpora_props["organism"], "human")
         self.assertEqual(parameters["default_embedding"], "tsne")

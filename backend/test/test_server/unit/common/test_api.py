@@ -575,7 +575,7 @@ class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
                             {"gene_description": "", "gene_symbol": "SIK1"},
                         ],
                         "geneset_description": "",
-                        "geneset_name": "second gene set",
+                        "geneset_name": "second_gene_set",
                     },
                     {"genes": [], "geneset_description": "", "geneset_name": "third gene set"},
                     {"genes": [], "geneset_description": "fourth description", "geneset_name": "fourth_gene_set"},
@@ -590,6 +590,23 @@ class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
                         "geneset_description": "",
                         "geneset_name": "summary test",
                     },
+                    {'genes': [], 'geneset_description': '', 'geneset_name': 'geneset_to_delete'},
+                    {'genes': [], 'geneset_description': '', 'geneset_name': 'geneset_to_edit'},
+                    {
+                        'genes': [{'gene_description': '', 'gene_symbol': 'RER1'}],
+                        'geneset_description': '',
+                        'geneset_name': 'fill_this_geneset'
+                    },
+                    {
+                        'genes': [{'gene_description': '', 'gene_symbol': 'SIK1'}],
+                        'geneset_description': '',
+                        'geneset_name': 'empty_this_geneset'
+                    },
+                    {
+                        'genes': [{'gene_description': '', 'gene_symbol': 'SIK1'}],
+                        'geneset_description': '',
+                        'geneset_name': 'brush_this_gene'
+                    }
                 ],
                 "tid": 0,
             },
@@ -607,8 +624,8 @@ class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
 first gene set name,a description,F5, a gene_description\r
 first gene set name,a description,SUMO3,\r
 first gene set name,a description,SRM,\r
-second gene set,,RER1,\r
-second gene set,,SIK1,\r
+second_gene_set,,RER1,\r
+second_gene_set,,SIK1,\r
 third gene set,,,\r
 fourth_gene_set,fourth description,,\r
 fifth_dataset,,,\r
@@ -616,6 +633,11 @@ summary test,,ACD,\r
 summary test,,AATF,\r
 summary test,,F5,\r
 summary test,,PIGU,\r
+geneset_to_delete,,,\r
+geneset_to_edit,,,\r
+fill_this_geneset,,RER1,\r
+empty_this_geneset,,SIK1,\r
+brush_this_gene,,SIK1,\r
 """,
         )
 

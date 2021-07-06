@@ -31,6 +31,7 @@ class CreateGenesetDialogue extends React.PureComponent {
       genesetName: "",
       genesToPopulateGeneset: "",
       genesetDescription: "",
+      nameErrorMessage: "",
     });
     dispatch({
       type: "geneset: disable create geneset mode",
@@ -48,7 +49,7 @@ class CreateGenesetDialogue extends React.PureComponent {
 
     dispatch({
       type: "geneset: create",
-      genesetName,
+      genesetName: genesetName.trim(),
       genesetDescription,
     });
     if (genesToPopulateGeneset) {
@@ -82,7 +83,9 @@ class CreateGenesetDialogue extends React.PureComponent {
   };
 
   handleChange = (e) => {
+    const { genesets } = this.props;
     this.setState({ genesetName: e });
+    this.validate(e, genesets);
   };
 
   handleGenesetInputChange = (e) => {
@@ -100,12 +103,33 @@ class CreateGenesetDialogue extends React.PureComponent {
   };
 
   validate = (genesetName, genesets) => {
-    return genesets.has(genesetName);
+    if (genesets.has(genesetName)) {
+      this.setState({
+        nameErrorMessage: "There is already a geneset with that name",
+      });
+      return false;
+    }
+
+    if (
+      genesetName.length > 1 &&
+      // eslint-disable-next-line no-control-regex -- unicode 0-31 127-65535
+      genesetName.match(/^[\u0000-\u001F\u007F-\uFFFF]|[ ]{2,}/g)?.length
+    ) {
+      this.setState({
+        nameErrorMessage:
+          "Gene set names can only contain alphanumeric characters and the following special characters: ! ” # $ % ’ ( ) * + , - . / : ; < = > ? @  ] ^ _ ` | ~",
+      });
+      return false;
+    }
+    this.setState({
+      nameErrorMessage: "",
+    });
+    return true;
   };
 
   render() {
-    const { genesetName } = this.state;
-    const { metadataField, genesetsUI, genesets } = this.props;
+    const { genesetName, nameErrorMessage} = this.state;
+    const { genesetsUI, genesets } = this.props;
 
     return (
       <>
@@ -126,7 +150,7 @@ class CreateGenesetDialogue extends React.PureComponent {
                 <LabelInput
                   onChange={this.handleChange}
                   inputProps={{
-                    "data-testid": "create-geneset-modal",
+                    "data-testid": "create-geneset-input",
                     leftIcon: "manually-entered-data",
                     intent: "none",
                     autoFocus: true,
@@ -136,13 +160,11 @@ class CreateGenesetDialogue extends React.PureComponent {
                 <p
                   style={{
                     marginTop: 7,
-                    visibility: this.validate(genesetName, genesets)
-                      ? "visible"
-                      : "hidden",
+                    visibility: nameErrorMessage !== "" ? "visible" : "hidden",
                     color: Colors.ORANGE3,
                   }}
                 >
-                  {this.genesetNameError()}
+                  {nameErrorMessage}
                 </p>
                 <p style={{ marginTop: 20 }}>
                   Optionally add a{" "}
@@ -183,11 +205,9 @@ class CreateGenesetDialogue extends React.PureComponent {
                   </Button>
                 </Tooltip2>
                 <Button
-                  data-testid={`${metadataField}:submit-geneset`}
+                  data-testid="submit-geneset"
                   onClick={this.createGeneset}
-                  disabled={
-                    !genesetName || this.validate(genesetName, genesets)
-                  }
+                  disabled={nameErrorMessage !== ""}
                   intent="primary"
                   type="submit"
                 >
