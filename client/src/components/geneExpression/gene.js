@@ -135,7 +135,7 @@ class Gene extends React.Component {
             <Button
               minimal
               small
-              data-testid={`delete-from-geneset-${gene}`}
+              data-testid={`delete-from-geneset:${gene}`}
               onClick={
                 quickGene ? removeGene(gene) : this.handleDeleteGeneFromSet
               }

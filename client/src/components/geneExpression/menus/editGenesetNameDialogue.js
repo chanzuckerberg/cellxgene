@@ -9,6 +9,7 @@ import LabelInput from "../../labelInput";
   ontology: state.ontology,
   obsCrossfilter: state.obsCrossfilter,
   genesetsUI: state.genesetsUI,
+  genesets: state.genesets.genesets,
 }))
 class RenameGeneset extends React.PureComponent {
   constructor(props) {
@@ -61,9 +62,23 @@ class RenameGeneset extends React.PureComponent {
     this.setState({ newGenesetDescription: e });
   };
 
+  validate = (genesetName, genesets) => {
+    return (
+      !genesets.has(genesetName) &&
+      // eslint-disable-next-line no-control-regex -- unicode 0-31 127-65535
+      genesetName.match(/^\s|[\u0000-\u001F\u007F-\uFFFF]|[ ]{2,}|^$|\s$/g)
+        ?.length
+    );
+  };
+
   render() {
     const { newGenesetName, newGenesetDescription } = this.state;
-    const { genesetsUI, parentGeneset, parentGenesetDescription } = this.props;
+    const {
+      genesetsUI,
+      parentGeneset,
+      parentGenesetDescription,
+      genesets,
+    } = this.props;
 
     return (
       <>
@@ -82,7 +97,7 @@ class RenameGeneset extends React.PureComponent {
           text={newGenesetName}
           secondaryText={newGenesetDescription}
           validationError={
-            genesetsUI.isEditingGenesetName === newGenesetName &&
+            this.validate(newGenesetName, genesets) &&
             parentGenesetDescription === newGenesetDescription
           }
           annoInput={
