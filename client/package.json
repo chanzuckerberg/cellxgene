@@ -34,7 +34,8 @@
     "iOS >= 10.3",
     "Firefox >= 60",
     "Edge >= 79",
-    "not Explorer > 0"
+    "not Explorer > 0",
+    "not Safari > 0"
   ],
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.13.0",
