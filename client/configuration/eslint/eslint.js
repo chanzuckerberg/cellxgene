@@ -10,15 +10,9 @@ module.exports = {
     "prettier",
   ],
   settings: {
-    polyfills: [
-      "TextDecoder",
-      "TextEncoder",
-      "fetch",
-      "Request",
-      "Response",
-      "Headers",
-      "AbortController",
-    ],
+    // AbortController is not supported in iOS Safari 10.3, Chrome 61
+    // Headers is not supported in iOS Safari 10.3
+    polyfills: ["Headers", "AbortController"],
   },
   env: { browser: true, commonjs: true, es6: true },
   globals: {
