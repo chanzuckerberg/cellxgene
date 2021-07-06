@@ -8,7 +8,7 @@ Users may view gene sets along with their dataset and access gene sets created i
 
 Users MAY use --gene-sets-file `name_of_file.csv` to designate a CSV with preexisting gene sets you would like to view in cellxgene. The CSV MUST follow the format below.
 
-Users MAY use --user-generated-data-dir `file_name` to designate a file where both gene sets and annotations CSVs will be saved.
+Users MAY use --user-generated-data-dir `file_name` to designate a file where both gene sets and annotations CSVs will be saved. File names for gene sets and annotations will contain a pseudo-session ID by default. --user-generated-data-dir is incompatible with --gene-sets-file and --annotations-file and will error if used together. See --help for more details. 
 
 ## cellxgene Gene Set CSV Data Format
   
