@@ -416,7 +416,7 @@ class DataAdaptor(metaclass=ABCMeta):
         else:
             X = self.get_X_array(obs_selector, var_selector)
             if sparse.issparse(X):
-                mean = X.mean(axis=1)
+                mean = X.mean(axis=1).A
             else:
                 mean = X.mean(axis=1, keepdims=True)
 
