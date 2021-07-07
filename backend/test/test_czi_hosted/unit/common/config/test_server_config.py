@@ -1,21 +1,16 @@
+import json
 import os
 import unittest
-from unittest import mock
 from unittest.mock import patch
+
 
 from backend.czi_hosted.common.config.base_config import BaseConfig
 from backend.common.utils.utils import find_available_port
-from backend.test.test_czi_hosted.unit import test_server
 from backend.test import PROJECT_ROOT, FIXTURES_ROOT
-import requests
 
 from backend.czi_hosted.common.config.app_config import AppConfig
 from backend.common.errors import ConfigurationError
 from backend.test.test_czi_hosted.unit.common.config import ConfigTests
-
-
-def mockenv(**envvars):
-    return mock.patch.dict(os.environ, envvars)
 
 
 class TestServerConfig(ConfigTests):
@@ -147,8 +142,8 @@ class TestServerConfig(ConfigTests):
         with self.assertRaises(ConfigurationError):
             config.server_config.handle_data_source()
 
+    @unittest.skip("skip when running in github action")
     def test_get_api_base_url_works(self):
-
         # test the api_base_url feature, and that it can contain a path
         config = AppConfig()
         backend_port = find_available_port("localhost", 10000)
@@ -156,21 +151,22 @@ class TestServerConfig(ConfigTests):
             app__flask_secret_key="secret",
             app__api_base_url=f"http://localhost:{backend_port}/additional/path",
             multi_dataset__dataroot=f"{PROJECT_ROOT}/example-dataset",
+            multi_dataset__allowed_matrix_types=["cxg"],
         )
 
         config.complete_config()
+        server = self.create_app(config)
+        server.testing = True
+        session = server.test_client()
+        response = session.get(f"/additional/path/d/pbmc3k.h5ad/api/v0.2/config")
 
-        with test_server(["-p", str(backend_port)], app_config=config) as server:
-            session = requests.Session()
-            self.assertEqual(server, f"http://localhost:{backend_port}")
-            response = session.get(f"{server}/additional/path/d/pbmc3k.h5ad/api/v0.2/config")
-            self.assertEqual(response.status_code, 200)
-            data_config = response.json()
-            self.assertEqual(data_config["config"]["displayNames"]["dataset"], "pbmc3k")
+        self.assertEqual(response.status_code, 200)
+        data_config = json.loads(response.data)
+        self.assertEqual(data_config["config"]["displayNames"]["dataset"], "pbmc3k")
 
-            # test the health check at the correct url
-            response = session.get(f"{server}/additional/path/health")
-            assert response.json()["status"] == "pass"
+        # test the health check at the correct url
+        response = session.get(f"/additional/path/health")
+        assert json.loads(response.data)["status"] == "pass"
 
     def test_get_web_base_url_works(self):
         config = self.get_config(web_base_url="www.thisisawebsite.com")
@@ -225,7 +221,9 @@ class TestServerConfig(ConfigTests):
             )
             self.config.complete_config()
 
-    def test_mulitdatasets_work_e2e(self):
+    @patch("backend.czi_hosted.app.app.render_template")
+    def test_mulitdatasets_work_e2e(self, mock_render_template):
+        mock_render_template.return_value = "something"
         # test that multi dataroots work end to end
         self.config.update_server_config(
             multi_dataset__dataroot=dict(
@@ -251,39 +249,43 @@ class TestServerConfig(ConfigTests):
         # no specializations for set3 (they get the default dataset config)
         self.config.complete_config()
 
-        with test_server(app_config=self.config) as server:
-            session = requests.Session()
+        server = self.create_app(self.config)
+        server.auth.requires_client_login = lambda: False
+        server.testing = True
+        session = server.test_client()
 
-            response = session.get(f"{server}/set1/1/2/pbmc3k.h5ad/api/v0.2/config")
-            data_config = response.json()
-            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
-            assert data_config["config"]["parameters"]["annotations"] is False
-            assert data_config["config"]["parameters"]["disable-diffexp"] is False
-            assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set1.html"
+        response = session.get(f"/set1/1/2/pbmc3k.h5ad/api/v0.2/config")
 
-            response = session.get(f"{server}/set2/pbmc3k.cxg/api/v0.2/config")
-            data_config = response.json()
-            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
-            assert data_config["config"]["parameters"]["annotations"] is True
-            assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set2.html"
+        data_config = json.loads(response.data)
+        assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
+        assert data_config["config"]["parameters"]["annotations"] is False
+        assert data_config["config"]["parameters"]["disable-diffexp"] is False
+        assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set1.html"
 
-            response = session.get(f"{server}/set3/pbmc3k.cxg/api/v0.2/config")
-            data_config = response.json()
-            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
-            assert data_config["config"]["parameters"]["annotations"] is True
-            assert data_config["config"]["parameters"]["disable-diffexp"] is False
-            assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_default.html"
+        response = session.get("/set2/pbmc3k.cxg/api/v0.2/config")
 
-            response = session.get(f"{server}/health")
-            assert response.json()["status"] == "pass"
+        data_config = json.loads(response.data)
+        assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
+        assert data_config["config"]["parameters"]["annotations"] is True
+        assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set2.html"
 
-            # access a dataset (no slash)
-            response = session.get(f"{server}/set2/pbmc3k.cxg")
-            self.assertEqual(response.status_code, 200)
+        response = session.get("/set3/pbmc3k.cxg/api/v0.2/config")
+        data_config = json.loads(response.data)
+        assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
+        assert data_config["config"]["parameters"]["annotations"] is True
+        assert data_config["config"]["parameters"]["disable-diffexp"] is False
+        assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_default.html"
 
-            # access a dataset (with slash)
-            response = session.get(f"{server}/set2/pbmc3k.cxg/")
-            self.assertEqual(response.status_code, 200)
+        response = session.get("/health")
+        assert json.loads(response.data)["status"] == "pass"
+
+        # access a dataset (no slash)
+        response = session.get("/set2/pbmc3k.cxg")
+        self.assertEqual(response.status_code, 200)
+
+        # access a dataset (with slash)
+        response = session.get("/set2/pbmc3k.cxg/")
+        self.assertEqual(response.status_code, 200)
 
     @patch("backend.czi_hosted.common.config.server_config.diffexp_tiledb.set_config")
     def test_handle_diffexp(self, mock_tiledb_config):

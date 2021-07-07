@@ -52,7 +52,6 @@ cellxgene currently supports the following browsers:
 - Google Chrome 61+
 - Edge 15+
 - Firefox 60+
-- Safari 10.1+
 
 Please [file an issue](https://github.com/chanzuckerberg/cellxgene/issues/new/choose) if you would like us to add support for an unsupported browser.
 

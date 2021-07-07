@@ -55,7 +55,7 @@ class GenesetMenus extends React.PureComponent {
     });
   };
 
-  handleDeleteCategory = () => {
+  handleDeleteGeneset = () => {
     const { dispatch, geneset } = this.props;
     dispatch(actions.genesetDelete(geneset));
   };
@@ -76,8 +76,8 @@ class GenesetMenus extends React.PureComponent {
             >
               <Button
                 style={{ marginLeft: 0, marginRight: 2 }}
-                data-testclass="handleAddNewLabelToCategory"
-                data-testid={`${geneset}:add-new-label-to-category`}
+                data-testclass="handleAddNewGeneToGeneset"
+                data-testid={`${geneset}:add-new-gene-to-geneset`}
                 icon={<Icon icon="plus" iconSize={10} />}
                 onClick={this.activateAddGeneToGenesetMode}
                 small
@@ -101,9 +101,9 @@ class GenesetMenus extends React.PureComponent {
                   <MenuItem
                     icon="trash"
                     intent="danger"
-                    data-testclass="handleDeleteCategory"
-                    data-testid={`${geneset}:delete-category`}
-                    onClick={this.handleDeleteCategory}
+                    data-testclass="handleDeleteGeneset"
+                    data-testid={`${geneset}:delete-geneset`}
+                    onClick={this.handleDeleteGeneset}
                     text="Delete this gene set (destructive, will remove set and collection of genes)"
                   />
                 </Menu>

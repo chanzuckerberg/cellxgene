@@ -1,7 +1,7 @@
+import json
 import os
 import tempfile
 
-import requests
 import unittest
 from unittest.mock import patch
 
@@ -9,7 +9,6 @@ from backend.czi_hosted.common.annotations.hosted_tiledb import AnnotationsHoste
 from backend.czi_hosted.common.annotations.local_file_csv import AnnotationsLocalFile
 from backend.czi_hosted.common.config.app_config import AppConfig
 from backend.czi_hosted.common.config.base_config import BaseConfig
-from backend.test.test_czi_hosted.unit import test_server
 from backend.test import PROJECT_ROOT, FIXTURES_ROOT
 
 from backend.common.errors import ConfigurationError
@@ -197,31 +196,35 @@ class TestDatasetConfig(ConfigTests):
         # no specializations for set3 (they get the default dataset config)
         config.complete_config()
 
-        with test_server(app_config=config) as server:
-            session = requests.Session()
+        server = self.create_app(config)
 
-            response = session.get(f"{server}/set1/1/2/pbmc3k.h5ad/api/v0.2/config")
-            data_config = response.json()
-            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
-            assert data_config["config"]["parameters"]["annotations"] is False
-            assert data_config["config"]["parameters"]["disable-diffexp"] is False
-            assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set1.html"
+        server.testing = True
+        session = server.test_client()
 
-            response = session.get(f"{server}/set2/pbmc3k.cxg/api/v0.2/config")
-            data_config = response.json()
-            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
-            assert data_config["config"]["parameters"]["annotations"] is True
-            assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set2.html"
+        response = session.get("/set1/1/2/pbmc3k.h5ad/api/v0.2/config")
+        data_config = json.loads(response.data)
 
-            response = session.get(f"{server}/set3/pbmc3k.cxg/api/v0.2/config")
-            data_config = response.json()
-            assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
-            assert data_config["config"]["parameters"]["annotations"] is True
-            assert data_config["config"]["parameters"]["disable-diffexp"] is False
-            assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_default.html"
+        assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
+        assert data_config["config"]["parameters"]["annotations"] is False
+        assert data_config["config"]["parameters"]["disable-diffexp"] is False
+        assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set1.html"
 
-            response = session.get(f"{server}/health")
-            assert response.json()["status"] == "pass"
+        response = session.get("/set2/pbmc3k.cxg/api/v0.2/config")
+        data_config = json.loads(response.data)
+        assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
+        assert data_config["config"]["parameters"]["annotations"] is True
+        assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set2.html"
+
+        response = session.get("/set3/pbmc3k.cxg/api/v0.2/config")
+        data_config = json.loads(response.data)
+        assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
+        assert data_config["config"]["parameters"]["annotations"] is True
+        assert data_config["config"]["parameters"]["disable-diffexp"] is False
+        assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_default.html"
+
+        response = session.get("/health")
+
+        assert json.loads(response.data)["status"] == "pass"
 
     def test_configfile_with_specialization(self):
         # test that per_dataset_config config load the default config, then the specialized config

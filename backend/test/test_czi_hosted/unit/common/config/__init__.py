@@ -1,18 +1,14 @@
 import os
 import shutil
-import unittest
 import random
-from unittest import mock
 import yaml
 
 from backend.test import FIXTURES_ROOT
+from backend.test.test_czi_hosted.unit import BaseTest
 
 
-def mockenv(**envvars):
-    return mock.patch.dict(os.environ, envvars)
 
-
-class ConfigTests(unittest.TestCase):
+class ConfigTests(BaseTest):
     tmp_fixtures_directory = os.path.join(FIXTURES_ROOT, "tmp_dir")
 
     @classmethod

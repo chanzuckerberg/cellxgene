@@ -2,6 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const ObsoleteWebpackPlugin = require("obsolete-webpack-plugin");
+// eslint-disable-next-line @blueprintjs/classes-constants -- incorrect match
 const ScriptExtHtmlWebpackPlugin = require("script-ext-html-webpack-plugin");
 
 const src = path.resolve("src");
@@ -20,7 +21,6 @@ module.exports = {
   entry: [
     "core-js",
     "regenerator-runtime/runtime",
-    "fastestsmallesttextencoderdecoder",
     "whatwg-fetch",
     "abort-controller/polyfill",
     "./src/index",

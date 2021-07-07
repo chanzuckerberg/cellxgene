@@ -12,7 +12,7 @@ export async function waitByID(testId, props = {}) {
 }
 
 export async function waitByClass(testClass, props = {}) {
-  await page.waitForSelector(`[data-testclass='${testClass}']`, props);
+  return page.waitForSelector(`[data-testclass='${testClass}']`, props);
 }
 
 export async function waitForAllByIds(testIds) {

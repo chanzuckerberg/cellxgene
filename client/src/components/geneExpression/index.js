@@ -69,7 +69,7 @@ class GeneExpression extends React.Component {
             <H4
               role="menuitem"
               tabIndex="0"
-              data-testclass="category-expand"
+              data-testclass="geneset-heading-expand"
               onKeyPress={this.handleExpandGeneSets}
               style={{
                 cursor: "pointer",
