@@ -185,7 +185,7 @@ export const graphLassoEndAction = (embName, polygon) => async (
   });
 };
 
-export const selectInverseSelectionAction = () => async (
+export const setCellsFromSelectionAndInverseAction = () => async (
   dispatch,
   getState
 ) => {
@@ -194,24 +194,8 @@ export const selectInverseSelectionAction = () => async (
   prevObsCrossfilter.fillByIsSelected(arr, false, true);
 
   const unselected = [...arr.keys()].filter((i) => arr[i]);
-  const nameDf = await annoMatrix.fetch("obs", "name_0");
-  const rowNames = nameDf.__columns[0];
-  const values = unselected.map((index) => rowNames[index]);
-
-  const selection = {
-    mode: "exact",
-    values,
-  };
-  let obsCrossfilter = await prevObsCrossfilter.select(
-    "obs",
-    "name_0",
-    selection
-  );
-  obsCrossfilter = await obsCrossfilter.selectAllExcept("obs/name_0");
-  await dispatch({
-    type: "invert lasso selection",
-    obsCrossfilter,
-  });
+  dispatch(setCellSetFromSelection(1));
+  dispatch(setCellSetFromInputArray(2, unselected));
 };
 
 /*
@@ -224,5 +208,12 @@ export const setCellSetFromSelection = (cellSetId) => (dispatch, getState) => {
   dispatch({
     type: `store current cell selection as differential set ${cellSetId}`,
     data: selected.length > 0 ? selected : null,
+  });
+};
+
+export const setCellSetFromInputArray = (cellSetId, cells) => (dispatch) => {
+  dispatch({
+    type: `store current cell selection as differential set ${cellSetId}`,
+    data: cells.length > 0 ? cells : null,
   });
 };

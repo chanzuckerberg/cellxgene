@@ -12,12 +12,8 @@ export const GlobalHotkeys = (props) => {
         global: true,
         label:
           "Set the current selection and its inverse to cell sets 1 and 2, respectively.",
-        onKeyDown: async () => {
-          await dispatch(actions.setCellSetFromSelection(1));
-          await dispatch(actions.selectInverseSelectionAction());
-          await dispatch(actions.setCellSetFromSelection(2));
-          await dispatch(actions.selectInverseSelectionAction());
-        },
+        onKeyDown: () =>
+          dispatch(actions.setCellsFromSelectionAndInverseAction()),
       },
       {
         combo: "SHIFT+1",

@@ -262,7 +262,8 @@ export default {
   requestSingleGeneExpressionCountsForColoringPOST,
   requestUserDefinedGene,
   requestReembed,
-  selectInverseSelectionAction: selnActions.selectInverseSelectionAction,
+  setCellsFromSelectionAndInverseAction:
+    selnActions.setCellsFromSelectionAndInverseAction,
   selectContinuousMetadataAction: selnActions.selectContinuousMetadataAction,
   selectCategoricalMetadataAction: selnActions.selectCategoricalMetadataAction,
   selectCategoricalAllMetadataAction:
