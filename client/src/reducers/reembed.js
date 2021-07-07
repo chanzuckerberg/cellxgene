@@ -31,7 +31,15 @@ export const reembedController = (
 export const reembedParameters = (
   state = {
     dimredParams: {},
-    prepParams: {},
+    prepParams: {
+      doPreprocess: false,
+      minCountsCF: 0,
+      minGenesCF: 0,
+      minCellsGF: 0,
+      maxCellsGF: 100,
+      minCountsGF: 0,
+      doSAM: false,
+    },
     batchParams: {}
   },
   action

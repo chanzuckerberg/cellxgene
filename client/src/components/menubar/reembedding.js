@@ -14,6 +14,8 @@ import * as globals from "../../globals";
 import actions from "../../actions";
 import styles from "./menubar.css";
 import PrepPanel from "./preppanel";
+import BatchPanel from "./batchpanel";
+import DimredPanel from "./dimredpanel";
 
 @connect((state) => ({
   reembedController: state.reembedController,
@@ -90,7 +92,7 @@ class Reembedding extends React.PureComponent {
                 id="batchcorrect"
                 panel={
                   <div>
-                    Batch correction parameters go here.
+                    <BatchPanel/>
                   </div>
                 }
                 title="Batch correction"
@@ -99,7 +101,7 @@ class Reembedding extends React.PureComponent {
                 id="dimred"
                 panel={
                   <div>
-                    Dimensionality reduction parameters go here.
+                    <DimredPanel/>
                   </div>
                 }
                 title="Dimensionality reduction"
