@@ -28,23 +28,33 @@ export const reembedController = (
   }
 };
 
-export const numPcs = (
+export const reembedParameters = (
   state = {
-    npcs: 50,
+    dimredParams: {},
+    prepParams: {},
+    batchParams: {}
   },
   action
 ) => {
   switch (action.type) {
-    case "reembed: number of pcs update": {
-      const { num } = action;
+    case "reembed: set batch correction parameters": {
+      const { params } = action;
       return {
-        npcs: num,
+        batchParams: params,
       };
-    }
-    case "reembed: reset number of pcs to default":
+    } 
+    case "reembed: set dimensionality reduction parameters": {
+      const { params } = action;
       return {
-        npcs: 50,
+        dimredParams: params,
       };
+    }     
+    case "reembed: set preprocessing parameters": {
+      const { params } = action;
+      return {
+        prepParams: params,
+      };
+    }     
     default:
       return state;
   }

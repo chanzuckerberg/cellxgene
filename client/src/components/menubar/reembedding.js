@@ -6,74 +6,105 @@ import {
   Tooltip,
   Slider,
   MenuItem,
+  DialogStep,
+  MultistepDialog,
+  Collapse
 } from "@blueprintjs/core";
-import { Select } from "@blueprintjs/select";
 import * as globals from "../../globals";
 import actions from "../../actions";
 import styles from "./menubar.css";
+import PrepPanel from "./preppanel";
 
 @connect((state) => ({
   reembedController: state.reembedController,
   annoMatrix: state.annoMatrix,
-  numPcs: state.numPcs,
+  dimredParams: state.reembedParameters.dimredParams,
+  prepParams: state.reembedParameters.prepParams,
+  batchCorrectionParams: state.reembedParameters.batchParams,
 }))
 class Reembedding extends React.PureComponent {
-  render() {
-    const { dispatch, annoMatrix, reembedController, numPcs } = this.props;
-    const loading = !!reembedController?.pendingFetch;
-    const disabled = annoMatrix.nObs === annoMatrix.schema.dataframe.nObs;
-    const tipContent = disabled
-      ? "Subset cells first, then click to recompute UMAP embedding."
-      : "Click to recompute UMAP embedding on the current cell subset.";
+  constructor(props) {
+    super(props);
+    this.state = {
+      setReembedDialogActive: false,
+      params: {}
+    };
+  }  
+  handleEnableReembedDialog = () => {
+    this.setState({ setReembedDialogActive: true });
+  };
 
+
+  handleDisableReembedDialog = () => {
+    this.setState({
+      setReembedDialogActive: false
+    });
+  };
+
+  handleRunAndDisableReembedDialog = () => {
+    const { dispatch } = this.props;
+    dispatch(actions.requestReembed(this.state.params));
+    this.setState({
+      setReembedDialogActive: false
+    });
+  };
+  render() {
+    const {
+      setReembedDialogActive, params
+    } = this.state;
+
+    const { dispatch, annoMatrix, reembedController, dimredParams, prepParams, batchCorrectionParams } = this.props;
+    const loading = !!reembedController?.pendingFetch;
+    const tipContent = "Click to recompute UMAP embedding on the currently selected cells.";
+      const finalButtonProps = {
+        intent: "primary",
+        onClick: this.handleRunAndDisableReembedDialog,
+        text: "Run",
+    };
+    const dialogparams = {
+      autoFocus: true,
+      canEscapeKeyClose: true,
+      canOutsideClickClose: true,
+      enforceFocus: true,
+      initialStepIndex: 0,
+      isOpen: setReembedDialogActive,
+      usePortal: true,
+    };
     return (
       <ButtonGroup className={styles.menubarButton}>
-        <Select
-          items={
-            annoMatrix.schema.layers.concat(["npcs-slider"]) ||
-            [] /* this is a placeholder, could be  a subcomponent to avoid this */
-          }
-          filterable={false}
-          itemRenderer={(d, { handleClick }) => {
-            return (
-              <div key={d} style={{ margin: "0 auto" }}>
-                {d !== "npcs-slider" ? (
-                  <MenuItem
-                    data-testclass="duplicate-category-wn-option"
-                    onClick={handleClick}
-                    key={d}
-                    text={d}
-                  />
-                ) : (
-                  <div style={{ width: "90%", margin: "0 auto" }}>
-                    <Tooltip
-                      content="Select the number of PCs for reembedding."
-                      position="bottom"
-                      hoverOpenDelay={globals.tooltipHoverOpenDelay}
-                    >
-                      <Slider
-                        min={5}
-                        max={150}
-                        stepSize={1}
-                        labelStepSize={145}
-                        value={numPcs.npcs}
-                        onChange={(val) => {
-                          dispatch({
-                            type: "reembed: number of pcs update",
-                            num: val,
-                          });
-                        }}
-                      />
-                    </Tooltip>
-                  </div>
-                )}
-              </div>
-            );
-          }}
-          onItemSelect={(d) => {
-            dispatch(actions.requestReembed(d, numPcs.npcs));
-          }}
+        <MultistepDialog
+            icon="info-sign"
+            onClose={this.handleDisableReembedDialog}
+            finalButtonProps={finalButtonProps}
+            title="Reembedding parameters"
+            {...dialogparams}
         >
+            <DialogStep
+                id="preprocessing"
+                panel={
+                  <PrepPanel/>
+                }
+                title="Preprocessing"
+            />            
+            <DialogStep
+                id="batchcorrect"
+                panel={
+                  <div>
+                    Batch correction parameters go here.
+                  </div>
+                }
+                title="Batch correction"
+            />
+            <DialogStep
+                id="dimred"
+                panel={
+                  <div>
+                    Dimensionality reduction parameters go here.
+                  </div>
+                }
+                title="Dimensionality reduction"
+            />               
+        </MultistepDialog>        
           <Tooltip
             content={tipContent}
             position="bottom"
@@ -81,12 +112,11 @@ class Reembedding extends React.PureComponent {
           >
             <AnchorButton
               icon="new-object"
-              disabled={disabled}
               loading={loading}
+              onClick={this.handleEnableReembedDialog}
               data-testid="reembedding-options"
             />
           </Tooltip>
-        </Select>
       </ButtonGroup>
     );
   }

@@ -262,7 +262,7 @@ class MenuBar extends React.PureComponent {
             this.handleClipPercentileMinValueChange
           }
         />
-        {enableReembedding ? <Reembedding /> : null}
+        <Reembedding/>
         <Tooltip
           content="When a category is colored by, show labels on the graph"
           position="bottom"
