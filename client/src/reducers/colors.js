@@ -50,7 +50,6 @@ const ColorsReducer = (
         colorAccessor: null,
       };
     }
-
     case "color by categorical metadata":
     case "color by continuous metadata": {
       /* toggle between this mode and reset */
@@ -83,12 +82,12 @@ const ColorsReducer = (
 
     case "color by geneset mean expression": {
       /* toggle between this mode and reset */
+
       const resetCurrent =
         action.type === state.colorMode &&
         action.geneset === state.colorAccessor;
       const colorMode = !resetCurrent ? action.type : null;
       const colorAccessor = !resetCurrent ? action.geneset : null;
-
       return {
         ...state,
         colorMode,
