@@ -10,8 +10,10 @@ export const GlobalHotkeys = (props) => {
       {
         combo: "SHIFT+I",
         global: true,
-        label: "Invert the current selection",
-        onKeyDown: () => dispatch(actions.selectInverseSelectionAction()),
+        label:
+          "Set the current selection and its inverse to cell sets 1 and 2, respectively.",
+        onKeyDown: () =>
+          dispatch(actions.setCellsFromSelectionAndInverseAction()),
       },
       {
         combo: "SHIFT+1",
@@ -24,24 +26,6 @@ export const GlobalHotkeys = (props) => {
         global: true,
         label: "Set current selection to cell set 2.",
         onKeyDown: () => dispatch(actions.setCellSetFromSelection(2)),
-      },
-      {
-        combo: "SHIFT+A",
-        global: true,
-        label: "Select all cells",
-        onKeyDown: () => dispatch(actions.selectAll()),
-      },
-      {
-        combo: "SHIFT+M",
-        global: true,
-        label:
-          "Sets cell groups 1 and 2 to be the current and inverse selections, respectively. (SHIFT+1+I+2+A)",
-        onKeyDown: async () => {
-          await dispatch(actions.setCellSetFromSelection(1));
-          await dispatch(actions.selectInverseSelectionAction());
-          await dispatch(actions.setCellSetFromSelection(2));
-          await dispatch(actions.selectAll());
-        },
       },
     ],
     []
@@ -79,6 +63,42 @@ export const DgeHotkeys = (props) => {
       },
     ],
     [differential]
+  );
+  const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
+
+  return (
+    <div
+      role="tab"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      onKeyUp={handleKeyUp}
+    >
+      <InputGroup inputRef={inputRef} />
+    </div>
+  );
+};
+export const GenesetHotkeys = (props) => {
+  const { dispatch, genesets, colorAccessor } = props;
+  const inputRef = createRef();
+  const hotkeys = useMemo(
+    () => [
+      {
+        combo: "SHIFT+Q",
+        global: true,
+        label: "Delete the most recent geneset.",
+        onKeyDown: async () => {
+          const geneset = Array.from(genesets.values())[0].genesetName;
+          if (colorAccessor === geneset) {
+            dispatch({
+              type: "color by geneset mean expression",
+              geneset,
+            });
+          }
+          dispatch(actions.genesetDelete(geneset));
+        },
+      },
+    ],
+    [genesets]
   );
   const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
 

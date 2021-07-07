@@ -62,7 +62,6 @@ class GenesetMenus extends React.PureComponent {
 
   render() {
     const { geneset, genesetsEditable, createText, colorAccessor } = this.props;
-
     const isColorBy = geneset === colorAccessor;
 
     return (

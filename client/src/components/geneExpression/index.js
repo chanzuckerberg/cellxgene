@@ -2,19 +2,20 @@ import React from "react";
 import { connect } from "react-redux";
 import { Button } from "@blueprintjs/core";
 import GeneSet from "./geneSet";
+import { GenesetHotkeys } from "../hotkeys";
 
 import CreateGenesetDialogue from "./menus/createGenesetDialogue";
 
 @connect((state) => {
   return {
     genesets: state.genesets.genesets,
+    colorAccessor: state.colors.colorAccessor,
   };
 })
 class GeneExpression extends React.Component {
   renderGeneSets = () => {
     const sets = [];
     const { genesets } = this.props;
-
     for (const [name, geneset] of genesets) {
       sets.push(
         <GeneSet
@@ -35,8 +36,14 @@ class GeneExpression extends React.Component {
   };
 
   render() {
+    const { dispatch, genesets, colorAccessor } = this.props;
     return (
       <div>
+        <GenesetHotkeys
+          dispatch={dispatch}
+          genesets={genesets}
+          colorAccessor={colorAccessor}
+        />
         <div>
           <div style={{ marginBottom: 10, position: "relative", top: -2 }}>
             <Button
