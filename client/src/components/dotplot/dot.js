@@ -24,11 +24,12 @@ const Dot = (props) => {
   ); /* SUM REMAINING ELEMENTS */
 
   /* TODO(colinmegill) #632 scale between correct dimensions */
-  const paddingEquivalentToRowColumnIndexOffset = 0;
+  const paddingEquivalentToRowColumnIndexOffset = 8;
   const dotscale = d3
     .scaleLinear()
     .domain([0, 1])
     .range([0, rowColumnSize - paddingEquivalentToRowColumnIndexOffset]);
+
   const _radius = dotscale(expressing / totalCells);
 
   return (
