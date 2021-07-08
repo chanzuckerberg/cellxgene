@@ -4,7 +4,7 @@ Color By UI state
 
 const ColorsReducer = (
   state = {
-    colorMode: null /* by continuous, by expression */,
+    colorMode: "color by dotplot columns" /* by continuous, by expression */,
     colorAccessor: null /* tissue, Apod */,
   },
   action
@@ -51,6 +51,7 @@ const ColorsReducer = (
       };
     }
 
+    case "color by dotplot columns":
     case "color by categorical metadata":
     case "color by continuous metadata": {
       /* toggle between this mode and reset */
