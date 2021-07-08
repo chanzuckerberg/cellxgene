@@ -4,6 +4,7 @@ Color By UI state
 
 const ColorsReducer = (
   state = {
+    /* TODO(colinmegill) #632 remove hardcode for dev */
     colorMode: "color by dotplot columns" /* by continuous, by expression */,
     colorAccessor: null /* tissue, Apod */,
   },
