@@ -28,23 +28,63 @@ export const reembedController = (
   }
 };
 
-export const numPcs = (
-  state = {
-    npcs: 50,
-  },
-  action
-) => {
+export const defaultPrepParams = {
+  doPreprocess: false,
+  minCountsCF: 0,
+  minGenesCF: 0,
+  minCellsGF: 0,
+  maxCellsGF: 100,
+  minCountsGF: 0,
+  doSAM: false,
+  nTopGenesHVG: 2000,
+  nBinsHVG: 20,
+};
+export const defaultBatchParams = {
+  doBatch: false,
+  batchMethod: "Scanorama",
+  batchKey: "",
+  scanoramaKnn: 20,
+  scanoramaSigma: 15,
+  scanoramaAlpha: 0.1,
+  scanoramaBatchSize: 5000,
+  bbknnNeighborsWithinBatch: 3,
+};
+export const defaultDimredParams = {
+  numPCs: 150,
+  pcaSolver: "randomized",
+  neighborsKnn: 20,
+  neighborsMethod: "umap",
+  distanceMetric: "cosine",
+  nnaSAM: 50,
+  weightModeSAM: "dispersion",
+  umapMinDist: 0.1,
+  logTransform: false,
+  scaleData: false,
+  dataLayer: "X",
+  sumNormalizeCells: false,
+};
+
+const defaults = {
+  ...defaultPrepParams,
+  ...defaultBatchParams,
+  ...defaultDimredParams,
+};
+export const reembedParameters = (state = defaults, action) => {
   switch (action.type) {
-    case "reembed: number of pcs update": {
-      const { num } = action;
+    case "reembed: set parameter": {
+      const { key, value } = action;
       return {
-        npcs: num,
+        ...state,
+        [key]: value,
       };
     }
-    case "reembed: reset number of pcs to default":
+    case "reembed: set parameters": {
+      const { params } = action;
       return {
-        npcs: 50,
+        ...state,
+        ...params,
       };
+    }
     default:
       return state;
   }

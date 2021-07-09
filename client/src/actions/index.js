@@ -42,7 +42,7 @@ async function configFetch(dispatch) {
   });
 }
 
-async function userInfoFetch(dispatch) {
+export async function userInfoFetch(dispatch) {
   return fetchJson("userinfo").then((response) => {
     const { userinfo: userInfo } = response || {};
     dispatch({
