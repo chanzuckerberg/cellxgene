@@ -113,6 +113,8 @@ def scanpy_umap(adata, obs_mask=None, reembedParams = {}, pca_options={}, neighb
         if not doSAM:
             batchKey = None if (batchKey == "" or not doBatch) else batchKey
             sc.pp.highly_variable_genes(adata_raw,batch_key=batchKey,flavor='seurat_v3',n_top_genes=nTopGenesHVG, n_bins=nBinsHVG)
+    else:
+        adata_raw = adata
         
     if doSAM:
         SAM = get_samalg_module()
@@ -134,20 +136,21 @@ def scanpy_umap(adata, obs_mask=None, reembedParams = {}, pca_options={}, neighb
         X = adata_raw.X
         if dataLayer != "X":
             adata_raw.X = adata_raw.layers[dataLayer]
-
+        if scaleData:
+            print('Scaling')
+            sc.pp.scale(adata_raw,max_value=10)
         sc.pp.pca(adata_raw,n_comps=min(adata.n_vars - 1, numPCs), svd_solver=pcaSolver)
         adata_raw.X = X
     else:
         X = sam.adata.X
         if dataLayer != "X":
-            adata_raw.X = adata_raw.layers[dataLayer]        
-        sam.adata.X = sam.adata.layers[dataLayer]
+            sam.adata.X = sam.adata.layers[dataLayer]        
         preprocessing = "StandardScaler" if scaleData else "Normalizer"
-        sam.run(projection=None,weight_mode=weightModeSAM,preprocessing=preprocessing, num_norm_avg=nnaSAM)
+        sam.run(projection=None,weight_mode=weightModeSAM,preprocessing=preprocessing,distance=distanceMetric,num_norm_avg=nnaSAM)
         sam.adata.X = X        
         adata_raw=sam.adata
 
-    if doBatch and not doSAM:
+    if doBatch:
         # do yo batch correction
         sce = get_scanpy_external_module()
         if doSAM:
@@ -159,21 +162,24 @@ def scanpy_umap(adata, obs_mask=None, reembedParams = {}, pca_options={}, neighb
             sce.pp.harmony_integrate(adata_batch,batchKey,adjusted_basis="X_pca")
         elif batchMethod == "BBKNN":
             metric = "angular" if distanceMetric in ["correlation","cosine"] else "euclidean"
-            sce.pp.bknn(adata_batch, batch_key=batchKey, metric=metric, n_pcs=numPCs)
+            sce.pp.bbknn(adata_batch, batch_key=batchKey, metric=metric, n_pcs=numPCs)
         elif batchMethod == "Scanorama":
-            sce.pp.scanorama_integrate(adata, batchKey, basis='X_pca', adjusted_basis='X_pca',
-                                       knn=scanoramaKnn, sigma=scanoramaSigma, alpha=scanoramaAlpha,
-                                       batch_size=scanoramaBatchSize)
+            sce.pp.scanorama_integrate(adata_batch, batchKey, basis='X_pca', adjusted_basis='X_pca',
+                                    knn=scanoramaKnn, sigma=scanoramaSigma, alpha=scanoramaAlpha,
+                                    batch_size=scanoramaBatchSize)
         if doSAM:
             sam.adata = adata_batch
         else:
             adata_raw = adata_batch
     
-    if not doSAM:
+    if not doSAM or doSAM and batchMethod == "BBKNN":
         if not doBatch or doBatch and batchMethod != "BBKNN":
-            sc.pp.neighbors(adata_raw, n_neighbors=neighborsKnn, use_rep="X_pca",method=neighborsMethod, metric=distanceMetric)
-    
-    sc.tl.umap(adata_raw, min_dist=umapMinDist)
+            sc.pp.neighbors(adata_raw, n_neighbors=neighborsKnn, use_rep="X_pca",method=neighborsMethod, metric=distanceMetric)    
+        sc.tl.umap(adata_raw, min_dist=umapMinDist)
+    else:
+        sam.run_umap(metric=distanceMetric,min_dist=umapMinDist)
+        adata_raw.obsm['X_umap'] = sam.adata.obsm['X_umap']
+        
     umap = adata_raw.obsm["X_umap"]
     result = np.full((obs_mask.shape[0], umap.shape[1]), np.NaN)
     result[obs_mask] = umap
