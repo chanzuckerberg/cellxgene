@@ -1,4 +1,4 @@
-anndata>=0.7.0
+anndata>0.7.4
 boto3>=1.12.18
 click>=7.1.2
 fastobo>=0.6.1
@@ -21,6 +21,7 @@ pandas>=1.0,!=1.1  # pandas 1.1 breaks tests, https://github.com/pandas-dev/pand
 PyYAML>=5.4  # CVE-2020-14343
 scipy>=1.4
 requests>=2.22.0
+scikit-misc
 s3fs==0.4.2
-scanpy==1.4.6 # Until we move to anndata 0.7.4 scanpy needs to be pinned here
+scanpy>=1.7.0 # Until we move to anndata 0.7.4 scanpy needs to be pinned here
 umap-learn<0.5.0 # The pinned version scanpy is not compatible with latest umap-learn

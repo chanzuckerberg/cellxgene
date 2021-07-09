@@ -22,7 +22,7 @@ function abortableFetch(request, opts, timeout = 0) {
   };
 }
 
-async function doReembedFetch(dispatch, getState, layer, npcs) {
+async function doReembedFetch(dispatch, getState, reembedParams) {
   const state = getState();
   let cells = state.annoMatrix.rowIndex.labels();
   // These lines ensure that we convert any TypedArray to an Array.
@@ -41,8 +41,7 @@ async function doReembedFetch(dispatch, getState, layer, npcs) {
       body: JSON.stringify({
         method: "umap",
         filter: { obs: { index: cells } },
-        layer,
-        npcs,
+        params: reembedParams,
       }),
       credentials: "include",
     },
@@ -55,6 +54,7 @@ async function doReembedFetch(dispatch, getState, layer, npcs) {
   const res = await af.ready();
 
   if (res.ok && res.headers.get("Content-Type").includes("application/json")) {
+    // #TOOD: TRIGGER CELL SUBSETTING AND AWAIT RESULTS!
     return res;
   }
 
@@ -70,10 +70,10 @@ async function doReembedFetch(dispatch, getState, layer, npcs) {
 /*
 functions below are dispatch-able
 */
-export function requestReembed(layer, npcs) {
+export function requestReembed(reembedParams) {
   return async (dispatch, getState) => {
     try {
-      const res = await doReembedFetch(dispatch, getState, layer, npcs);
+      const res = await doReembedFetch(dispatch, getState, reembedParams);
       const schema = await res.json();
       dispatch({
         type: "reembed: request completed",

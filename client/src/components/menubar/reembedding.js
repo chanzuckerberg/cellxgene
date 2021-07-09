@@ -4,11 +4,8 @@ import {
   AnchorButton,
   ButtonGroup,
   Tooltip,
-  Slider,
-  MenuItem,
   DialogStep,
   MultistepDialog,
-  Collapse
 } from "@blueprintjs/core";
 import * as globals from "../../globals";
 import actions from "../../actions";
@@ -19,106 +16,109 @@ import DimredPanel from "./dimredpanel";
 
 @connect((state) => ({
   reembedController: state.reembedController,
+  reembedParams: state.reembedParameters,
   annoMatrix: state.annoMatrix,
-  dimredParams: state.reembedParameters.dimredParams,
-  prepParams: state.reembedParameters.prepParams,
-  batchCorrectionParams: state.reembedParameters.batchParams,
+  idhash: state.config?.parameters?.["annotations-user-data-idhash"] ?? null,
 }))
 class Reembedding extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
       setReembedDialogActive: false,
-      params: {}
     };
-  }  
+  }
+
   handleEnableReembedDialog = () => {
     this.setState({ setReembedDialogActive: true });
   };
 
-
   handleDisableReembedDialog = () => {
     this.setState({
-      setReembedDialogActive: false
+      setReembedDialogActive: false,
     });
   };
 
   handleRunAndDisableReembedDialog = () => {
-    const { dispatch } = this.props;
-    dispatch(actions.requestReembed(this.state.params));
+    const { dispatch, reembedParams } = this.props;
+    dispatch(actions.requestReembed(reembedParams));
     this.setState({
-      setReembedDialogActive: false
+      setReembedDialogActive: false,
     });
+    // this is where you need to trigger subset if cells were filtered.
   };
-  render() {
-    const {
-      setReembedDialogActive, params
-    } = this.state;
 
-    const { dispatch, annoMatrix, reembedController, dimredParams, prepParams, batchCorrectionParams } = this.props;
+  render() {
+    const { setReembedDialogActive } = this.state;
+
+    const { reembedController, idhash, reembedParams, annoMatrix } = this.props;
     const loading = !!reembedController?.pendingFetch;
-    const tipContent = "Click to recompute UMAP embedding on the currently selected cells.";
-      const finalButtonProps = {
-        intent: "primary",
-        onClick: this.handleRunAndDisableReembedDialog,
-        text: "Run",
+    const tipContent =
+      "Click to recompute UMAP embedding on the currently selected cells.";
+    const finalButtonProps = {
+      intent: "primary",
+      onClick: this.handleRunAndDisableReembedDialog,
+      text: "Run",
     };
-    const dialogparams = {
-      autoFocus: true,
-      canEscapeKeyClose: true,
-      canOutsideClickClose: true,
-      enforceFocus: true,
-      initialStepIndex: 0,
-      isOpen: setReembedDialogActive,
-      usePortal: true,
+    const nextButtonProps = {
+      intent: "primary",
+      disabled: reembedParams.doBatch && reembedParams.batchKey === "",
+      text: "Next",
     };
+
     return (
       <ButtonGroup className={styles.menubarButton}>
         <MultistepDialog
-            icon="info-sign"
-            onClose={this.handleDisableReembedDialog}
-            finalButtonProps={finalButtonProps}
-            title="Reembedding parameters"
-            {...dialogparams}
+          icon="info-sign"
+          onClose={this.handleDisableReembedDialog}
+          finalButtonProps={finalButtonProps}
+          title={`Reembedding on ${annoMatrix.nObs}/${annoMatrix.schema.dataframe.nObs} cells.`}
+          autoFocus
+          canEscapeKeyClose
+          canOutsideClickClose
+          enforceFocus
+          initialStepIndex={0}
+          isOpen={setReembedDialogActive}
+          usePortal
         >
+          <DialogStep
+            id="preprocessing"
+            panel={<PrepPanel idhash={idhash} />}
+            title="Preprocessing"
+          />
+          {!reembedParams.doSAM ? (
             <DialogStep
-                id="preprocessing"
-                panel={
-                  <PrepPanel/>
-                }
-                title="Preprocessing"
-            />            
-            <DialogStep
-                id="batchcorrect"
-                panel={
-                  <div>
-                    <BatchPanel/>
-                  </div>
-                }
-                title="Batch correction"
+              id="batchcorrect"
+              panel={
+                <div>
+                  <BatchPanel idhash={idhash} />
+                </div>
+              }
+              title="Batch correction"
+              nextButtonProps={nextButtonProps}
             />
-            <DialogStep
-                id="dimred"
-                panel={
-                  <div>
-                    <DimredPanel/>
-                  </div>
-                }
-                title="Dimensionality reduction"
-            />               
-        </MultistepDialog>        
-          <Tooltip
-            content={tipContent}
-            position="bottom"
-            hoverOpenDelay={globals.tooltipHoverOpenDelay}
-          >
-            <AnchorButton
-              icon="new-object"
-              loading={loading}
-              onClick={this.handleEnableReembedDialog}
-              data-testid="reembedding-options"
-            />
-          </Tooltip>
+          ) : null}
+          <DialogStep
+            id="dimred"
+            panel={
+              <div>
+                <DimredPanel idhash={idhash} />
+              </div>
+            }
+            title="Dimensionality reduction"
+          />
+        </MultistepDialog>
+        <Tooltip
+          content={tipContent}
+          position="bottom"
+          hoverOpenDelay={globals.tooltipHoverOpenDelay}
+        >
+          <AnchorButton
+            icon="new-object"
+            loading={loading}
+            onClick={this.handleEnableReembedDialog}
+            data-testid="reembedding-options"
+          />
+        </Tooltip>
       </ButtonGroup>
     );
   }
