@@ -71,7 +71,9 @@ def serialize_typed_array(builder, source_array, encoding_info):
             arr = arr[0]
         elif arr.shape[1] == 1:
             arr = arr.T[0]
-
+    if isinstance(arr,np.matrix):
+        arr = arr.A.flatten()
+        print('Flattening')
     vec = builder.CreateNumpyVector(arr)
 
     # serialize the typed array table

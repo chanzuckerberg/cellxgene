@@ -64,7 +64,6 @@ class Reembedding extends React.PureComponent {
       disabled: reembedParams.doBatch && reembedParams.batchKey === "",
       text: "Next",
     };
-
     return (
       <ButtonGroup className={styles.menubarButton}>
         <MultistepDialog
@@ -85,18 +84,16 @@ class Reembedding extends React.PureComponent {
             panel={<PrepPanel idhash={idhash} />}
             title="Preprocessing"
           />
-          {!reembedParams.doSAM ? (
-            <DialogStep
-              id="batchcorrect"
-              panel={
-                <div>
-                  <BatchPanel idhash={idhash} />
-                </div>
-              }
-              title="Batch correction"
-              nextButtonProps={nextButtonProps}
-            />
-          ) : null}
+          <DialogStep
+            id="batchcorrect"
+            panel={
+              <div>
+                <BatchPanel idhash={idhash} />
+              </div>
+            }
+            title="Batch correction"
+            nextButtonProps={nextButtonProps}
+          />
           <DialogStep
             id="dimred"
             panel={
