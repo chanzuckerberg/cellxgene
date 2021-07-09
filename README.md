@@ -20,14 +20,13 @@ This fork implements some of the key features that have been highly requested by
 
 Features include:
 - Hotkeys (SHIFT+? to see a tooltip describing all available  hotkeys)
-- Inverting the selected cells
-- Choosing the layer used for reembedding
+- End-to-end interactive analysis and reembedding.
 
 ### Installation
 The easiest way is to install from the precompiled pip distribution located in `dist/`.
 Clone this repo, activate your virtual environment of choice (`conda` or `venv`, typically), and install with:
 ```
-pip install dist/cellxgene-0.16.7.tar.gz
+pip install dist/cellxgene-latest.tar.gz
 ```
 
 Ping me on slack (@Alec) if you have any questions!
