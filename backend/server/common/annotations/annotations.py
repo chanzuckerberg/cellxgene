@@ -9,7 +9,7 @@ from backend.common.genesets import write_gene_sets_tidycsv
 
 
 class Annotations(metaclass=ABCMeta):
-    """ baseclass for annotations, including ontologies and gene sets"""
+    """ baseclass for annotations, including ontologies, gene sets, and re-embedding parameters """
 
     """ our default ontology is the PURL for the Cell Ontology.
     See http://www.obofoundry.org/ontology/cl.html """
@@ -86,8 +86,18 @@ class Annotations(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def read_reembed_parameters(self, data_adaptor):
+        """Return the reembedding parameters from persistent storage """
+        pass        
+
+    @abstractmethod
     def write_gene_sets(self, gs, data_adaptor):
         """Write the gene sets (gs) to a persistent storage such that it can later be read"""
+        pass
+
+    @abstractmethod
+    def write_reembed_parameters(self, parameters, data_adaptor):
+        """Write the reembedding parameters (parameters) to a persistent storage such that it can later be read"""
         pass
 
     @abstractmethod

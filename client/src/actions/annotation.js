@@ -445,7 +445,6 @@ export const saveGenesetsAction = () => async (dispatch, getState) => {
             dataCollectionName
           )}`
         : "";
-
     const res = await fetch(
       `${globals.API.prefix}${globals.API.version}genesets${queryString}`,
       {
@@ -480,6 +479,46 @@ export const saveGenesetsAction = () => async (dispatch, getState) => {
       type: "autosave: genesets error",
       message: error.toString(),
       error,
+    });
+  }
+};
+
+export const saveReembedParametersAction = () => async (dispatch, getState) => {
+  const state = getState();
+  const reembedParams = state.reembedParameters;
+
+  try {
+    const { dataCollectionName } = state.annotations;
+    const queryString = `?annotation-collection-name=${encodeURIComponent(
+      dataCollectionName
+    )}`;
+    const res = await fetch(
+      `${globals.API.prefix}${globals.API.version}reembed-parameters${queryString}`,
+      {
+        method: "PUT",
+        headers: new Headers({
+          Accept: "application/octet-stream",
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({ reembedParams }),
+        credentials: "include",
+      }
+    );
+    if (!res.ok) {
+      return dispatch({
+        type: "reembed: saving parameters error",
+        message: `HTTP error ${res.status} - ${res.statusText}`,
+      });
+    }
+    return Promise.all([
+      dispatch({
+        type: "reembed: saving parameters complete",
+      }),
+    ]);
+  } catch (error) {
+    return dispatch({
+      type: "autosave: saving parameters error",
+      message: error.toString(),
     });
   }
 };

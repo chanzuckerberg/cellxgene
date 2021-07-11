@@ -14,6 +14,7 @@ import * as annoActions from "./annotation";
 import * as viewActions from "./viewStack";
 import * as embActions from "./embedding";
 import * as genesetActions from "./geneset";
+import { defaultReembedParams } from "../reducers/reembed";
 
 /*
 return promise fetching user-configured colors
@@ -73,6 +74,28 @@ async function genesetsFetch(dispatch, config) {
     });
   }
 }
+export async function reembedParamsFetch(dispatch) {
+  /* request reembedding parameters ONLY if the backend supports the feature */
+  const defaultResponse = {
+    reembedParams: defaultReembedParams,
+  };
+  try {
+    fetchJson("reembed-parameters").then((response) => {
+      const isEmpty = Object.keys(response.reembedParams).length === 0;
+      dispatch({
+        type: "reembed: load",
+        params: isEmpty
+          ? defaultResponse.reembedParams
+          : response.reembedParams ?? defaultResponse.reembedParams,
+      });
+    });
+  } catch (e) {
+    dispatch({
+      type: "reembed: load",
+      data: defaultResponse,
+    });
+  }
+}
 
 function prefetchEmbeddings(annoMatrix) {
   /*
@@ -98,6 +121,7 @@ const doInitialDataLoad = () =>
         userInfoFetch(dispatch),
       ]);
       genesetsFetch(dispatch, config);
+      reembedParamsFetch(dispatch);
 
       const baseDataUrl = `${globals.API.prefix}${globals.API.version}`;
       const annoMatrix = new AnnoMatrixLoader(baseDataUrl, schema.schema);
@@ -289,6 +313,7 @@ export default {
   annotationLabelCurrentSelection: annoActions.annotationLabelCurrentSelection,
   saveObsAnnotationsAction: annoActions.saveObsAnnotationsAction,
   saveGenesetsAction: annoActions.saveGenesetsAction,
+  saveReembedParametersAction: annoActions.saveReembedParametersAction,
   needToSaveObsAnnotations: annoActions.needToSaveObsAnnotations,
   layoutChoiceAction: embActions.layoutChoiceAction,
   setCellSetFromSelection: selnActions.setCellSetFromSelection,
