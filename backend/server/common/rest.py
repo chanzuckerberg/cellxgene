@@ -329,6 +329,20 @@ def layout_obs_put(request, data_adaptor):
     except (ValueError, DisabledFeatureError, FilterError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
 
+def reembed_parameters_get(request, data_adaptor):
+    preferred_mimetype = request.accept_mimetypes.best_match(["application/json", "text/csv"])
+    if preferred_mimetype not in ("application/json", "text/csv"):
+        return abort(HTTPStatus.NOT_ACCEPTABLE)
+
+    try:
+        annotations = data_adaptor.dataset_config.user_annotations
+        (reembedParams) = annotations.read_reembed_parameters(data_adaptor)
+
+        return make_response(
+            jsonify({"reembedParams": reembedParams}), HTTPStatus.OK
+        )
+    except (ValueError, KeyError, AnnotationsError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
 
 def genesets_get(request, data_adaptor):
     preferred_mimetype = request.accept_mimetypes.best_match(["application/json", "text/csv"])
@@ -354,6 +368,28 @@ def genesets_get(request, data_adaptor):
             )
     except (ValueError, KeyError, AnnotationsError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e))
+
+def reembed_parameters_put(request, data_adaptor):
+    annotations = data_adaptor.dataset_config.user_annotations
+
+    anno_collection = request.args.get("annotation-collection-name", default=None)
+    if anno_collection is not None:
+        if not annotations.is_safe_collection_name(anno_collection):
+            return abort(HTTPStatus.BAD_REQUEST, "Bad annotation collection name")
+        annotations.set_collection(anno_collection)
+
+    args = request.get_json()
+    try:
+        reembedParams = args.get("reembedParams", None)
+        if reembedParams is None:
+            abort(HTTPStatus.BAD_REQUEST)
+
+        annotations.write_reembed_parameters(reembedParams, data_adaptor)
+        return make_response(jsonify({"status": "OK"}), HTTPStatus.OK)
+    except (ValueError, DisabledFeatureError, KeyError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
+    except (ObsoleteRequest, TypeError) as e:
+        return abort(HTTPStatus.NOT_FOUND, description=str(e))
 
 
 def genesets_put(request, data_adaptor):

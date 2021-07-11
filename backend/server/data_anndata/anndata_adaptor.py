@@ -293,7 +293,8 @@ class AnndataAdaptor(DataAdaptor):
                 valid_layouts.append(layout)
 
         if len(valid_layouts) == 0:
-            raise PrepareError("No valid layout data.")
+            self.data.obsm["X_umap"] = np.zeros((self.data.shape[0],2))
+            valid_layouts = ["umap"]
 
         # cap layouts to MAX_LAYOUTS
         return valid_layouts[0:MAX_LAYOUTS]

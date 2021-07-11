@@ -36,7 +36,9 @@ class DatasetConfig(BaseConfig):
             self.user_annotations__local_file_csv__gene_sets_file = default_config["user_annotations"][
                 "local_file_csv"
             ]["gene_sets_file"]
-
+            self.user_annotations__local_file_csv__reembed_parameters_file = default_config["user_annotations"][
+                "local_file_csv"
+            ]["reembed_parameters_file"]
             self.embeddings__names = default_config["embeddings"]["names"]
             self.embeddings__enable_reembedding = default_config["embeddings"]["enable_reembedding"]
 
@@ -101,6 +103,9 @@ class DatasetConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__local_file_csv__gene_sets_file", (type(None), str)
         )
+        self.validate_correct_type_of_configuration_attribute(
+            "user_annotations__local_file_csv__reembed_parameters_file", (type(None), str)
+        )        
         self.validate_correct_type_of_configuration_attribute("user_annotations__ontology__enable", bool)
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__ontology__obo_location", (type(None), str)
@@ -135,6 +140,7 @@ class DatasetConfig(BaseConfig):
         dirname = self.user_annotations__local_file_csv__directory
         filename = self.user_annotations__local_file_csv__file
         genesets_filename = self.user_annotations__local_file_csv__gene_sets_file
+        reembed_parameters_filename = self.user_annotations__local_file_csv__reembed_parameters_file
 
         if dirname is not None and (filename is not None or genesets_filename is not None):
             raise ConfigurationError(
@@ -150,7 +156,12 @@ class DatasetConfig(BaseConfig):
             lf_name, lf_ext = splitext(genesets_filename)
             if lf_ext and lf_ext != ".csv":
                 raise ConfigurationError(f"genesets file type must be .csv: {genesets_filename}")
-
+        
+        if reembed_parameters_filename is not None:
+            lf_name, lf_ext = splitext(reembed_parameters_filename)
+            if lf_ext and lf_ext != ".json":
+                raise ConfigurationError(f"reembed parameters file type must be .json: {reembed_parameters_filename}")
+        
         if dirname is not None and not isdir(dirname):
             try:
                 os.mkdir(dirname)
@@ -161,7 +172,7 @@ class DatasetConfig(BaseConfig):
             "user-annotations": self.user_annotations__enable,
             "genesets-save": not self.user_annotations__gene_sets__readonly,
         }
-        self.user_annotations = AnnotationsLocalFile(anno_config, dirname, filename, genesets_filename)
+        self.user_annotations = AnnotationsLocalFile(anno_config, dirname, filename, genesets_filename, reembed_parameters_filename)
 
         # if the user has specified a fixed label file, go ahead and validate it
         # so that we can remove errors early in the process.
@@ -175,6 +186,11 @@ class DatasetConfig(BaseConfig):
                     self.user_annotations.read_gene_sets(data_adaptor, context)
                 except (ValueError, AnnotationsError, KeyError) as e:
                     raise ConfigurationError(f"Unable to read genesets CSV file: {str(e)}") from e
+            if self.user_annotations__local_file_csv__reembed_parameters_file:
+                try:
+                    self.user_annotations.read_reembed_parameters(data_adaptor, context)
+                except (ValueError, AnnotationsError, KeyError) as e:
+                    raise ConfigurationError(f"Unable to read reembed JSON file: {str(e)}") from e                    
 
     def check_annotation_config_vars_not_set(self, context):
         if self.user_annotations__type is not None:

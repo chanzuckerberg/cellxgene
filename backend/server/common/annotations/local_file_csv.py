@@ -4,6 +4,7 @@ import re
 import threading
 from datetime import datetime
 from hashlib import blake2b
+import json
 
 import pandas as pd
 from flask import session, has_request_context, current_app
@@ -18,14 +19,16 @@ from backend.common.utils.data_locator import DataLocator
 class AnnotationsLocalFile(Annotations):
     CXG_ANNO_COLLECTION = "cxg_anno_collection"
 
-    def __init__(self, config, output_dir, label_output_file, gene_sets_output_file):
+    def __init__(self, config, output_dir, label_output_file, gene_sets_output_file, reembed_parameters_output_file):
         super().__init__(config)
         self.output_dir = output_dir
         self.label_output_file = label_output_file
         self.gene_sets_output_file = gene_sets_output_file
+        self.reembed_parameters_output_file = reembed_parameters_output_file
         # lock used to protect label file write ops
         self.label_lock = threading.RLock()
         self.gene_sets_lock = threading.RLock()
+        self.reembed_parameters_lock = threading.RLock()
 
         # cache the most recent cell labels/annotations.
         self.last_label_fname = None
@@ -110,6 +113,20 @@ class AnnotationsLocalFile(Annotations):
             self.last_label_fname = fname
             self.last_labels = df
 
+    def read_reembed_parameters(self,data_adaptor,context=None):
+        if has_request_context():
+            if not current_app.auth.is_user_authenticated():
+                return ({})
+        
+        fname = self._get_reembed_parameters_filename(data_adaptor)
+        with self.reembed_parameters_lock:
+            try:
+                with open(fname) as json_file:
+                    parameters = json.load(json_file)
+            except FileNotFoundError as error:
+                parameters = {}
+        return parameters
+    
     def read_gene_sets(self, data_adaptor, context=None):
         if has_request_context():
             if not current_app.auth.is_user_authenticated():
@@ -136,6 +153,12 @@ class AnnotationsLocalFile(Annotations):
                     self.last_geneset = gene_sets
 
         return (gene_sets, tid)
+    
+    def write_reembed_parameters(self,parameters,data_adaptor):
+        with self.reembed_parameters_lock:
+            fname = self._get_reembed_parameters_filename(data_adaptor)
+            with open(fname, 'w') as outfile:
+                json.dump(parameters, outfile)
 
     def write_gene_sets(self, gene_sets, tid, data_adaptor):
         self.check_gene_sets_save_enabled()  # raises
@@ -186,7 +209,7 @@ class AnnotationsLocalFile(Annotations):
         if self.output_dir:
             return self.output_dir
 
-        output_file = self.label_output_file or self.gene_sets_output_file
+        output_file = (self.label_output_file or self.gene_sets_output_file) or self.reembed_parameters_output_file
         if output_file:
             return os.path.dirname(os.path.abspath(output_file))
 
@@ -205,6 +228,13 @@ class AnnotationsLocalFile(Annotations):
             return self.gene_sets_output_file
 
         return self._get_filename(data_adaptor, "gene-sets")
+
+    def _get_reembed_parameters_filename(self, data_adaptor):
+        """ return the current reembed parameters file name """
+        if self.reembed_parameters_output_file:
+            return self.reembed_parameters_output_file
+
+        return '.csv'.join(self._get_filename(data_adaptor, "reembed-parameters").split('.csv')[:-1])+'.json'
 
     def _get_filename(self, data_adaptor, anno_name):
         # we need to generate a file name, which we can only do if we have a UID and collection name

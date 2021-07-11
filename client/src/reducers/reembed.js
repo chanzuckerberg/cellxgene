@@ -28,7 +28,7 @@ export const reembedController = (
   }
 };
 
-export const defaultPrepParams = {
+const defaultPrepParams = {
   doPreprocess: false,
   minCountsCF: 0,
   minGenesCF: 0,
@@ -39,7 +39,7 @@ export const defaultPrepParams = {
   nTopGenesHVG: 2000,
   nBinsHVG: 20,
 };
-export const defaultBatchParams = {
+const defaultBatchParams = {
   doBatch: false,
   batchMethod: "Scanorama",
   batchKey: "",
@@ -49,7 +49,7 @@ export const defaultBatchParams = {
   scanoramaBatchSize: 5000,
   bbknnNeighborsWithinBatch: 3,
 };
-export const defaultDimredParams = {
+const defaultDimredParams = {
   numPCs: 150,
   pcaSolver: "randomized",
   neighborsKnn: 20,
@@ -64,13 +64,17 @@ export const defaultDimredParams = {
   sumNormalizeCells: false,
 };
 
-const defaults = {
+export const defaultReembedParams = {
   ...defaultPrepParams,
   ...defaultBatchParams,
   ...defaultDimredParams,
 };
-export const reembedParameters = (state = defaults, action) => {
+export const reembedParameters = (state = defaultReembedParams, action) => {
   switch (action.type) {
+    case "reembed: load": {
+      const { params } = action;
+      return params;
+    }
     case "reembed: set parameter": {
       const { key, value } = action;
       return {

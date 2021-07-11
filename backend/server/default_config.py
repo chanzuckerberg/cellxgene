@@ -66,6 +66,7 @@ dataset:
       directory: null
       file: null            # annotations file name
       gene_sets_file: null  # gene sets file name
+      reembed_parameters_file: null # reembed parameters file name
     ontology:
       enable: false
       obo_location: null
