@@ -8,13 +8,14 @@ from unittest.mock import patch
 
 import requests
 
-
 from backend.czi_hosted.common.config.app_config import AppConfig
+from backend.czi_hosted.data_common.matrix_loader import MatrixDataLoader
 from backend.test import decode_fbs, FIXTURES_ROOT
 from backend.test.fixtures.fixtures import pbmc3k_colors
 from backend.test.test_czi_hosted.unit import BaseTest, skip_if
 
 BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
+
 
 class EndPoints(BaseTest):
     @classmethod
@@ -355,8 +356,6 @@ class EndPoints(BaseTest):
         self.assertAlmostEqual(df["columns"][0][0], -0.16628358)
 
     def test_post_summaryvar(self):
-        # import pdb
-        # pdb.set_trace()
         index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
         endpoint = "summarize/var"
         headers = {"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/octet-stream"}
@@ -392,13 +391,24 @@ class EndPoints(BaseTest):
         self.assertAlmostEqual(df["columns"][0][0], -0.16628358)
 
 
-
 class EndPointsCxg(EndPoints):
     """Test Case for endpoints"""
+
     @classmethod
     def setUpClass(cls):
-        app_config = AppConfig()
-        app_config.update_default_dataset_config(user_annotations__enable=False)
+        cls.app_config = AppConfig()
+        cls.app_config.update_server_config(
+            multi_dataset__dataroot=FIXTURES_ROOT,
+            authentication__type="test",
+            authentication__insecure_test_environment=True,
+            app__flask_secret_key="testing",
+            app__debug=True
+        )
+        cls.app_config.update_default_dataset_config(
+            embeddings__enable_reembedding=True,
+            user_annotations__enable=False,
+        )
+        super().setUpClass(cls.app_config)
 
 
     def test_get_genesets_json(self):
@@ -508,64 +518,134 @@ brush_this_gene,,SIK1,\r
 
         self.assertEqual(result.status_code, HTTPStatus.METHOD_NOT_ALLOWED)
 
-class DataLocator(EndPoints):
+
+class TestDataLocatorMockApi(BaseTest):
     @classmethod
-    def setUpClass(cls):
+    @patch('requests.get')
+    @patch('backend.czi_hosted.data_common.matrix_loader.MatrixDataLoader')
+    def setUpClass(cls, mock_matrix_loader, mock_get):
+        cls.data_locator_api_base = "api.cellxgene.staging.single-cell.czi.technology/dp/v1"
         cls.config = AppConfig()
-        cls.config.update_server_config(data_locator__s3__region_name="us-east-1")
-        cls.config.update_server_config(data_locator__api_base="api.test.cellxgene.com")
         cls.config.update_server_config(
-            multi_dataset__dataroot=FIXTURES_ROOT,
+            data_locator__api_base=cls.data_locator_api_base,
+            multi_dataset__dataroot={"e": {"base_url":"e", "dataroot": FIXTURES_ROOT}},
             authentication__type="test",
             authentication__insecure_test_environment=True,
             app__flask_secret_key="testing",
-            app__debug=True
+            app__debug=True,
+            app__api_base_url="local",
+            data_locator__s3__region_name="us-east-1"
         )
-        cls.config.complete_config()
         super().setUpClass(cls.config)
+        cls.TEST_DATASET_URL_BASE = "/e/pbmc3k.cxg"
+        cls.TEST_URL_BASE = f"{cls.TEST_DATASET_URL_BASE}/api/v0.2/"
+        cls.config.complete_config()
+        cls.response_body = json.dumps({
+            "collection_id": "4f098ff4-4a12-446b-a841-91ba3d8e3fa6",
+            "collection_visibility": "PUBLIC",
+            "dataset_id": "2fa37b10-ab4d-49c9-97a8-b4b3d80bf939",
+            "s3_uri": "s3://hosted-cellxgene-staging/2fa37b10-ab4d-49c9-97a8-b4b3d80bf939.cxg/",
+            "tombstoned": "False"
+        })
+        mock_get.return_value = MockResponse(body=cls.response_body, status_code=200)
+        mock_matrix_loader.return_value = MatrixDataLoader(location=f"{FIXTURES_ROOT}/pbmc3k.cxg",
+                                                           app_config=cls.config)
+        cls.app.testing = True
+        cls.client = cls.app.test_client()
+        os.environ["SKIP_STATIC"] = "True"
 
-    def test_initialize(self):
+        result = cls.client.get(f"{cls.TEST_URL_BASE}schema")
+        cls.schema = json.loads(result.data)
+
+    @patch('requests.get')
+    @patch('backend.czi_hosted.data_common.matrix_loader.MatrixDataLoader')
+    def test_data_adaptor_uses_corpora_api(self, mock_matrix_loader, mock_get):
+        response_body = json.dumps({
+            "collection_id": "4f098ff4-4a12-446b-a841-91ba3d8e3fa6",
+            "collection_visibility": "PUBLIC",
+            "dataset_id": "2fa37b10-ab4d-49c9-97a8-b4b3d80bf939",
+            "s3_uri": "s3://hosted-cellxgene-staging/2fa37b10-ab4d-49c9-97a8-b4b3d80bf939.cxg/",
+            "tombstoned": "False"
+        })
+        mock_get.return_value = MockResponse(body=response_body, status_code=200)
+        mock_matrix_loader.return_value = MatrixDataLoader(location=f"{FIXTURES_ROOT}/pbmc3k.cxg",
+                                                           app_config=self.config)
         endpoint = "schema"
-        url = f"{self.URL_BASE}{endpoint}"
-        result = self.session.get(url)
+        url = f"{self.TEST_URL_BASE}{endpoint}"
+        result = self.client.get(url)
+
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
-        result_data = result.json()
+
+        # check that the metadata api was called correctly
+        self.assertEqual(mock_get.call_count, 1)
+        self.assertEqual(
+            mock_get._mock_call_args[1]['url'],
+            f"http://{self.data_locator_api_base}/datasets/meta?url={self.config.server_config.get_web_base_url()}{self.TEST_DATASET_URL_BASE}")
+
+        # TODO @madison refactor mock out s3 instead of MatrixDataLoaderX
+        # Check mocked MatrixDataLoader correctly loads schema
+        result_data = json.loads(result.data)
         self.assertEqual(result_data["schema"]["dataframe"]["nObs"], 2638)
         self.assertEqual(len(result_data["schema"]["annotations"]["obs"]), 2)
         self.assertEqual(
-            len(result_data["schema"]["annotations"]["obs"]["columns"]),  5
+            len(result_data["schema"]["annotations"]["obs"]["columns"]), 5
         )
 
-    def test_config(self):
-        # mock_get.return_value = {}
+    @patch('requests.get')
+    @patch('backend.czi_hosted.data_common.matrix_loader.MatrixDataLoader')
+    def test_config(self, mock_matrix_loader, mock_get):
+        mock_get.return_value = MockResponse(body=self.response_body, status_code=200)
+        mock_matrix_loader.return_value = MatrixDataLoader(location=f"{FIXTURES_ROOT}/pbmc3k.cxg",
+                                                           app_config=self.config)
         endpoint = "config"
-        url = f"{self.URL_BASE}{endpoint}"
-        result = self.session.get(url)
+        url = f"{self.TEST_URL_BASE}{endpoint}"
+        result = self.client.get(url)
+
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
-        result_data = result.json()
-        self.assertIn("library_versions", result_data["config"])
-        self.assertEqual(result_data["config"]["displayNames"]["dataset"], "pbmc3k")
+        result_data = json.loads(result.data)
+        self.assertIsNotNone(result_data["config"])
 
-    @patch('backend.czi_hosted.app.app.get_data_adaptor.requests.get')
-    def test_get_annotations_obs_fbs(self, mock_get):
-        mock_get.return_value = {}
+        # check that the metadata api was called once
+        self.assertEqual(mock_get.call_count, 1)
+        self.assertEqual(
+            mock_get._mock_call_args[1]['url'],
+            f"http://{self.data_locator_api_base}/datasets/meta?url={self.config.server_config.get_web_base_url()}{self.TEST_DATASET_URL_BASE}")
 
+
+    @patch('requests.get')
+    @patch('backend.czi_hosted.data_common.matrix_loader.MatrixDataLoader')
+    def test_get_annotations_obs_fbs(self, mock_matrix_loader, mock_get):
+        mock_get.return_value = MockResponse(body=self.response_body, status_code=200)
+        mock_matrix_loader.return_value = MatrixDataLoader(location=f"{FIXTURES_ROOT}/pbmc3k.cxg",
+                                                           app_config=self.config)
         endpoint = "annotations/obs"
-        url = f"{self.URL_BASE}{endpoint}"
+        url = f"{self.TEST_URL_BASE}{endpoint}"
         header = {"Accept": "application/octet-stream"}
-        result = self.session.get(url, headers=header)
+        result = self.client.get(url, headers=header)
+
+        # check that the metadata api was called correctly
+        self.assertEqual(mock_get.call_count, 1)
+        self.assertEqual(
+            mock_get._mock_call_args[1]['url'],
+            f"http://{self.data_locator_api_base}/datasets/meta?url={self.config.server_config.get_web_base_url()}{self.TEST_DATASET_URL_BASE}")
+
+        # check response
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/octet-stream")
-        df = decode_fbs.decode_matrix_FBS(result.content)
-        self.assertEqual(df["n_rows"], 2638)
-        self.assertEqual(df["n_cols"], 5)
-        self.assertIsNotNone(df["columns"])
-        self.assertIsNone(df["row_idx"])
-        self.assertEqual(len(df["columns"]), df["n_cols"])
-        obs_index_col_name = self.schema["schema"]["annotations"]["obs"]["index"]
-        self.assertCountEqual(
-            df["col_idx"],
-            [obs_index_col_name, "n_genes", "percent_mito", "n_counts", "louvain"])
 
+        # TODO @madison refactor mock out s3 instead of MatrixDataLoader
+        # check mocked MatrixDataLoader is returning correctly
+        df = decode_fbs.decode_matrix_FBS(result.data)
+        self.assertEqual(df["n_rows"], 2638)
+
+
+
+class MockResponse:
+    def __init__(self, body, status_code):
+        self.body = body
+        self.status_code = status_code
+
+    def json(self):
+        return self.json_data

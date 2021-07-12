@@ -1,6 +1,9 @@
+import json
 from enum import Enum
 import threading
 import time
+
+import requests
 
 from backend.common.utils.data_locator import DataLocator
 from backend.common.errors import DatasetAccessError
@@ -96,7 +99,7 @@ class MatrixDataCacheInfo(object):
 
 class MatrixDataCacheManager(object):
     """A class to manage the cached datasets.   This is intended to be used as a context manager
-    for handling api requests.  When the context is created, the data_adator is either loaded or
+    for handling api requests.  When the context is created, the data_adaptor is either loaded or
     retrieved from a cache.  In either case, the reader lock is taken during this time, and release
     when the context ends.  This class currently implements a simple least recently used cache,
     which can delete a dataset from the cache to make room for a new one.
@@ -133,7 +136,7 @@ class MatrixDataCacheManager(object):
         self.timelimit_s = timelimit_s
 
     @contextmanager
-    def data_adaptor(self, url_dataroot, location, app_config):
+    def data_adaptor(self, url_dataroot, location, app_config, dataset=None):
         # create a loader for to this location if it does not already exist
 
         delete_adaptor = None
@@ -152,6 +155,21 @@ class MatrixDataCacheManager(object):
                 cache_item = info.cache_item
 
             if data_adaptor is None:
+                if app_config.server_config.data_locator__api_base:
+                    if url_dataroot == "e":  # only pull dataset identification information from the portal for /e/ route
+                        headers = {"Content-Type": "application/json"}
+                        curr_url = f"{app_config.server_config.get_web_base_url()}/{url_dataroot}/{dataset}"
+                        response = requests.get(
+                            url=f"http://{app_config.server_config.data_locator__api_base}/datasets/meta?url={curr_url}",
+                            headers=headers
+                        )
+                        if response.status_code == 200:
+                            dataset_identifiers = json.loads(response.body)
+                            if dataset_identifiers['s3_uri'] and dataset_identifiers["tombstoned"] == 'False':
+                                bucket = dataset_identifiers["s3_uri"].split("/")[2]
+                                dataset_key = "/".join(dataset_identifiers["s3_uri"].split("/")[3:])
+                                location = f"s3://{bucket}/{dataset_key}"
+                                key = (url_dataroot, location)
                 while True:
                     if len(self.datasets) < self.max_cached:
                         break
@@ -164,7 +182,6 @@ class MatrixDataCacheManager(object):
                     oldest_key = oldest[0]
                     del self.datasets[oldest_key]
                     delete_adaptor = oldest_cache
-
                 loader = MatrixDataLoader(location, app_config=app_config)
                 cache_item = MatrixDataCacheItem(loader)
                 item = MatrixDataCacheInfo(cache_item, time.time())

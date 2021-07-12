@@ -153,7 +153,8 @@ class TestServer(Server):
 class BaseTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls, app_config=None):
-        cls.TEST_URL_BASE = "/d/pbmc3k.cxg/api/v0.2/"
+        cls.TEST_DATASET_URL_BASE = "/d/pbmc3k.cxg"
+        cls.TEST_URL_BASE = f"{cls.TEST_DATASET_URL_BASE}/api/v0.2/"
         cls.maxDiff = None
         cls.app = cls.create_app(app_config)
 

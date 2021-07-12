@@ -427,8 +427,6 @@ class CxgAdaptor(DataAdaptor):
         label_join_index = frozenset([index_key]) if need_labels and (return_keys & user_anno_keys) else frozenset()
 
         unknown_fields = return_keys - (cxg_keys | user_anno_keys)
-        import pdb
-        pdb.set_trace()
         if unknown_fields:
             raise KeyError("_".join(unknown_fields))
 

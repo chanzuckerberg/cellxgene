@@ -1,5 +1,4 @@
 import datetime
-import json
 import logging
 from functools import wraps
 from http import HTTPStatus
@@ -7,7 +6,6 @@ from urllib.parse import urlparse
 import hashlib
 import os
 
-import requests
 from flask import (
     Flask,
     redirect,
@@ -116,21 +114,6 @@ def get_data_adaptor(url_dataroot=None, dataset=None):
     config = current_app.app_config
     server_config = config.server_config
     dataset_key = None
-    cache_manager = current_app.matrix_data_cache_manager
-    if server_config.data_locator__api_base:
-        headers = {"Content-Type": "application/json"}
-        curr_url = f"{server_config.get_web_base_url()}/{url_dataroot}/{dataset}.cxg"
-        response = requests.get(
-            url=f"http://{server_config.data_locator__api_base}/datasets/meta?url={curr_url}",
-            headers=headers
-        )
-        if response.status_code == 200:
-            dataset_identifiers = json.loads(response.body)
-            if dataset_identifiers['s3_uri'] and not dataset_identifiers["tombstoned"]:
-                bucket = dataset_identifiers["s3_uri"].split("/")[2]
-                datapath = f"s3://{bucket}/"
-                dataset_key = "/".join(dataset_identifiers["s3_uri"].split("/")[3:])
-                return cache_manager.data_adaptor(dataset_key, datapath, config)
     if dataset is None:
         datapath = server_config.single_dataset__datapath
     else:
@@ -154,7 +137,7 @@ def get_data_adaptor(url_dataroot=None, dataset=None):
         return common_rest.abort_and_log(HTTPStatus.BAD_REQUEST, "Invalid dataset NONE", loglevel=logging.INFO)
 
     cache_manager = current_app.matrix_data_cache_manager
-    return cache_manager.data_adaptor(dataset_key, datapath, config)
+    return cache_manager.data_adaptor(dataset_key, datapath, config, dataset)
 
 
 def requires_authentication(func):
@@ -207,7 +190,6 @@ def  dataroot_test_index():
     for dataroot_dict in server_config.multi_dataset__dataroot.values():
         dataroot = dataroot_dict["dataroot"]
         url_dataroot = dataroot_dict["base_url"]
-        explorer_url_base = server_config.app__web_base_url
         locator = DataLocator(dataroot, region_name=server_config.data_locator__s3__region_name)
         for fname in locator.ls():
             location = path_join(dataroot, fname)
