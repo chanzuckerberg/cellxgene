@@ -132,12 +132,16 @@ const _graphAllAction = (type, embName) => async (dispatch, getState) => {
   const { obsCrossfilter: prevObsCrossfilter } = getState();
   let obsCrossfilter;
   if (type === "graph lasso deselect") {
-    obsCrossfilter = await prevObsCrossfilter.selectAll();
-  } else {
-    obsCrossfilter = await prevObsCrossfilter.select("emb", embName, {
+    obsCrossfilter = await prevObsCrossfilter.select("obs", "name_0", {
       mode: "all",
     });
+  } else {
+    obsCrossfilter = prevObsCrossfilter;
   }
+  obsCrossfilter = await obsCrossfilter.select("emb", embName, {
+    mode: "all",
+  });
+
   dispatch({
     type,
     obsCrossfilter,
@@ -175,11 +179,40 @@ export const graphLassoEndAction = (embName, polygon, multiselect) => async (
     mode: "within-polygon",
     polygon,
   };
-  let obsCrossfilter = await prevObsCrossfilter.selectAll();
+  let obsCrossfilter = await prevObsCrossfilter.select("obs", "name_0", {
+    mode: "all",
+  });
   obsCrossfilter = await obsCrossfilter.select("emb", embName, selection);
+
+  const embSelection =
+    prevObsCrossfilter.obsCrossfilter.dimensions[
+      `emb/${embName}_0:${embName}_1`
+    ]?.selection;
+  let countEmb = 0;
+  if (embSelection) {
+    const { ranges } = embSelection;
+    ranges.forEach((range) => {
+      countEmb += range[1] - range[0];
+    });
+  } else {
+    countEmb = annoMatrix.nObs;
+  }
+
+  const nameSelection =
+    prevObsCrossfilter.obsCrossfilter.dimensions[`obs/name_0`]?.selection;
+  let countName = 0;
+  if (nameSelection) {
+    const { ranges } = nameSelection;
+    ranges.forEach((range) => {
+      countName += range[1] - range[0];
+    });
+  } else {
+    countName = annoMatrix.nObs;
+  }
+
   if (
     isMultiselectOn &&
-    prevObsCrossfilter.countSelected() !== annoMatrix.nObs
+    (countEmb < annoMatrix.nObs || countName < annoMatrix.nObs)
   ) {
     const arr1 = new Array(annoMatrix.nObs);
     const arr2 = new Array(annoMatrix.nObs);
@@ -194,12 +227,10 @@ export const graphLassoEndAction = (embName, polygon, multiselect) => async (
       mode: "exact",
       values,
     };
-    obsCrossfilter = await prevObsCrossfilter.select(
-      "obs",
-      "name_0",
-      selection
-    );
-    obsCrossfilter = await obsCrossfilter.selectAllExcept("obs/name_0");
+    obsCrossfilter = await obsCrossfilter.select("obs", "name_0", selection);
+    obsCrossfilter = await obsCrossfilter.select("emb", embName, {
+      mode: "all",
+    });
   }
 
   dispatch({

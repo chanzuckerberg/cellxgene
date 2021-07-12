@@ -176,19 +176,6 @@ export default class AnnoMatrixObsCrossfilter {
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
 
-  selectAllExcept(dimName) {
-    /*
-		Select all on any dimension in this field.
-		*/
-    const { annoMatrix } = this;
-    let currentDims = this.obsCrossfilter.dimensionNames();
-    currentDims = currentDims.filter((value) => value !== dimName);
-    const obsCrossfilter = currentDims.reduce((xfltr, dim) => {
-      return xfltr.select(dim, { mode: "all" });
-    }, this.obsCrossfilter);
-    return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
-  }
-
   selectAll() {
     /*
 		Select all on any dimension in this field.
