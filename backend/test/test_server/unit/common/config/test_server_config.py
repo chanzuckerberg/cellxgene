@@ -67,7 +67,7 @@ class TestServerConfig(ConfigTests):
         # incorrectly formatted
         datapath = "s3://shouldnt/work"
         file_name = self.custom_app_config(
-            dataset_datapath=datapath, config_file_name=self.config_file_name, data_locater_region_name="true"
+            dataset_datapath=datapath, config_file_name=self.config_file_name, data_locator_region_name="true"
         )
         config = AppConfig()
         config.update_from_config_file(file_name)

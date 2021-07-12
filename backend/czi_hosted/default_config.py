@@ -143,6 +143,7 @@ server:
       target_workunit: 16_000_000
 
   data_locator:
+    api_base: null
     s3:
       # s3 region name.
       #   if true, then the s3 location is automatically determined from the datapath or dataroot.

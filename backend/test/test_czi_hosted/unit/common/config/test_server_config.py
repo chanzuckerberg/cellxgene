@@ -47,7 +47,7 @@ class TestServerConfig(ConfigTests):
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
         mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.server_config.complete_config(self.context)
-        self.assertEqual(mock_check_attrs.call_count, 41)
+        self.assertEqual(mock_check_attrs.call_count, 42)
 
     def test_handle_app__throws_error_if_port_doesnt_exist(self):
         config = self.get_config(port=99999999)
@@ -68,7 +68,7 @@ class TestServerConfig(ConfigTests):
             "d2": {"base_url": "set2/subdir", "dataroot": "s3://shouldnt/work"},
         }
         file_name = self.custom_app_config(
-            dataroot=dataroot, config_file_name=self.config_file_name, data_locater_region_name="true"
+            dataroot=dataroot, config_file_name=self.config_file_name, data_locator_region_name="true"
         )
         config = AppConfig()
         config.update_from_config_file(file_name)
@@ -83,7 +83,7 @@ class TestServerConfig(ConfigTests):
             "d2": {"base_url": "set2/subdir", "dataroot": "s3://hosted-cellxgene-dev"},
         }
         file_name = self.custom_app_config(
-            dataroot=dataroot, config_file_name=self.config_file_name, data_locater_region_name="true"
+            dataroot=dataroot, config_file_name=self.config_file_name, data_locator_region_name="true"
         )
         config = AppConfig()
         config.update_from_config_file(file_name)

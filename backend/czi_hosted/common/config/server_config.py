@@ -81,7 +81,7 @@ class ServerConfig(BaseConfig):
             self.diffexp__alg_cxg__target_workunit = default_config["diffexp"]["alg_cxg"]["target_workunit"]
 
             self.data_locator__s3__region_name = default_config["data_locator"]["s3"]["region_name"]
-
+            self.data_locator__api_base = default_config["data_locator"]["api_base"]
             self.adaptor__cxg_adaptor__tiledb_ctx = default_config["adaptor"]["cxg_adaptor"]["tiledb_ctx"]
             self.adaptor__anndata_adaptor__backed = default_config["adaptor"]["anndata_adaptor"]["backed"]
 
@@ -201,6 +201,7 @@ class ServerConfig(BaseConfig):
 
     def handle_data_locator(self):
         self.validate_correct_type_of_configuration_attribute("data_locator__s3__region_name", (type(None), bool, str))
+        self.validate_correct_type_of_configuration_attribute("data_locator__api_base", (type(None), str))
         if self.data_locator__s3__region_name is True:
             path = self.single_dataset__datapath or self.multi_dataset__dataroot
 
