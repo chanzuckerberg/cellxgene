@@ -77,6 +77,7 @@ function createModelTF() {
   colors: state.colors,
   pointDilation: state.pointDilation,
   genesets: state.genesets.genesets,
+  multiselect: state.graphSelection.multiselect,
 }))
 class Graph extends React.Component {
   static createReglState(canvas) {
@@ -406,7 +407,7 @@ class Graph extends React.Component {
   // when a lasso is completed, filter to the points within the lasso polygon
   handleLassoEnd(polygon) {
     const minimumPolygonArea = 10;
-    const { dispatch, layoutChoice } = this.props;
+    const { dispatch, layoutChoice, multiselect } = this.props;
 
     if (
       polygon.length < 3 ||
@@ -418,7 +419,8 @@ class Graph extends React.Component {
       dispatch(
         actions.graphLassoEndAction(
           layoutChoice.current,
-          polygon.map((xy) => this.mapScreenToPoint(xy))
+          polygon.map((xy) => this.mapScreenToPoint(xy)),
+          multiselect
         )
       );
     }
@@ -468,7 +470,7 @@ class Graph extends React.Component {
     Called from componentDidUpdate. Create the tool SVG, and return any
     state changes that should be passed to setState().
     */
-    const { selectionTool, graphInteractionMode } = this.props;
+    const { selectionTool, graphInteractionMode, multiselect } = this.props;
     const { viewport } = this.state;
 
     /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
@@ -504,7 +506,8 @@ class Graph extends React.Component {
       handleDrag,
       handleEnd,
       handleCancel,
-      viewport
+      viewport,
+      multiselect
     );
 
     return { toolSVG: newToolSVG, tool, container };

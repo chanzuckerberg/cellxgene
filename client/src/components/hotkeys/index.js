@@ -5,6 +5,7 @@ import actions from "../../actions";
 export const GlobalHotkeys = (props) => {
   const { dispatch } = props;
   const inputRef = createRef();
+  let zPressed = false;
   const hotkeys = useMemo(
     () => [
       {
@@ -26,6 +27,21 @@ export const GlobalHotkeys = (props) => {
         global: true,
         label: "Set current selection to cell set 2.",
         onKeyDown: () => dispatch(actions.setCellSetFromSelection(2)),
+      },
+      {
+        combo: "Z",
+        global: true,
+        label: "Hold to use multiple selection lassos.",
+        onKeyDown: () => {
+          if (!zPressed) {
+            zPressed = true;
+            dispatch({ type: "graph: lasso multi-selection on" });
+          }
+        },
+        onKeyUp: () => {
+          zPressed = false;
+          dispatch({ type: "graph: lasso multi-selection off" });
+        },
       },
     ],
     []

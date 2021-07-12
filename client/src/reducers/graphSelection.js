@@ -2,6 +2,7 @@ const GraphSelection = (
   state = {
     tool: "lasso", // what selection tool mode (lasso, brush, ...)
     selection: { mode: "all" }, // current selection, which is tool specific
+    multiselect: false,
   },
   action
 ) => {
@@ -38,6 +39,18 @@ const GraphSelection = (
           mode: "within-polygon",
           polygon,
         },
+      };
+    }
+    case "graph: lasso multi-selection on": {
+      return {
+        ...state,
+        multiselect: true,
+      };
+    }
+    case "graph: lasso multi-selection off": {
+      return {
+        ...state,
+        multiselect: false,
       };
     }
 
