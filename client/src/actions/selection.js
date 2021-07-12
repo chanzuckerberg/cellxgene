@@ -130,11 +130,14 @@ const _graphBrushWithinRectAction = (type, embName, brushCoords) => async (
 
 const _graphAllAction = (type, embName) => async (dispatch, getState) => {
   const { obsCrossfilter: prevObsCrossfilter } = getState();
-
-  const obsCrossfilter = await prevObsCrossfilter.select("emb", embName, {
-    mode: "all",
-  });
-
+  let obsCrossfilter;
+  if (type === "graph lasso deselect") {
+    obsCrossfilter = await prevObsCrossfilter.selectAll();
+  } else {
+    obsCrossfilter = await prevObsCrossfilter.select("emb", embName, {
+      mode: "all",
+    });
+  }
   dispatch({
     type,
     obsCrossfilter,
@@ -160,23 +163,44 @@ export const graphLassoCancelAction = (embName) =>
   _graphAllAction("graph lasso cancel", embName);
 
 export const graphLassoDeselectAction = (embName) =>
-  _graphAllAction("graph lasso cancel", embName);
+  _graphAllAction("graph lasso deselect", embName);
 
-export const graphLassoEndAction = (embName, polygon) => async (
+export const graphLassoEndAction = (embName, polygon, multiselect) => async (
   dispatch,
   getState
 ) => {
-  const { obsCrossfilter: prevObsCrossfilter } = getState();
-
-  const selection = {
+  const { annoMatrix, obsCrossfilter: prevObsCrossfilter } = getState();
+  const isMultiselectOn = multiselect ?? false;
+  let selection = {
     mode: "within-polygon",
     polygon,
   };
-  const obsCrossfilter = await prevObsCrossfilter.select(
-    "emb",
-    embName,
-    selection
-  );
+  let obsCrossfilter = await prevObsCrossfilter.selectAll();
+  obsCrossfilter = await obsCrossfilter.select("emb", embName, selection);
+  if (
+    isMultiselectOn &&
+    prevObsCrossfilter.countSelected() !== annoMatrix.nObs
+  ) {
+    const arr1 = new Array(annoMatrix.nObs);
+    const arr2 = new Array(annoMatrix.nObs);
+    obsCrossfilter.fillByIsSelected(arr1, true, false);
+    prevObsCrossfilter.fillByIsSelected(arr2, true, false);
+    const union = [...arr1.keys()].filter((i) => arr1[i] || arr2[i]);
+    const nameDf = await annoMatrix.fetch("obs", "name_0");
+    const rowNames = nameDf.__columns[0];
+    const values = union.map((index) => rowNames[index]);
+
+    selection = {
+      mode: "exact",
+      values,
+    };
+    obsCrossfilter = await prevObsCrossfilter.select(
+      "obs",
+      "name_0",
+      selection
+    );
+    obsCrossfilter = await obsCrossfilter.selectAllExcept("obs/name_0");
+  }
 
   dispatch({
     type: "graph lasso end",
