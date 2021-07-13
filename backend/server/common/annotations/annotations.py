@@ -1,7 +1,5 @@
 from abc import ABCMeta, abstractmethod
 
-import fsspec
-
 from backend.common.errors import DisabledFeatureError
 from backend.common.utils.type_conversion_utils import get_schema_type_hint_of_array
 from backend.common.genesets import write_gene_sets_tidycsv

@@ -1,4 +1,3 @@
-import fsspec
 import os
 
 from flask import current_app, has_request_context
