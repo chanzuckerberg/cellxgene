@@ -5,7 +5,7 @@ from backend.czi_hosted.common.annotations.annotations import Annotations
 from backend.czi_hosted.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
 from backend.czi_hosted.common.annotations.local_file_csv import AnnotationsLocalFile
 from backend.czi_hosted.common.config.base_config import BaseConfig
-from backend.common.errors import ConfigurationError, OntologyLoadFailure
+from backend.common.errors import ConfigurationError
 from backend.czi_hosted.compute.scanpy import get_scanpy_module
 from backend.czi_hosted.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
 from backend.czi_hosted.db.db_utils import DbUtils
@@ -33,10 +33,6 @@ class DatasetConfig(BaseConfig):
                 "directory"
             ]
             self.user_annotations__local_file_csv__file = default_config["user_annotations"]["local_file_csv"]["file"]
-            self.user_annotations__ontology__enable = default_config["user_annotations"]["ontology"]["enable"]
-            self.user_annotations__ontology__obo_location = default_config["user_annotations"]["ontology"][
-                "obo_location"
-            ]
             self.user_annotations__hosted_tiledb_array__db_uri = default_config["user_annotations"][
                 "hosted_tiledb_array"
             ]["db_uri"]
@@ -55,7 +51,7 @@ class DatasetConfig(BaseConfig):
             raise ConfigurationError(f"Unexpected config: {str(e)}")
 
         # Create the default annotation, which supports gene set reading without
-        # further configuration. Depending on configuration options, `complete_config` 
+        # further configuration. Depending on configuration options, `complete_config`
         # may create a more specialized annotation object and replace this default.
         self.user_annotations = Annotations()
 
@@ -101,10 +97,6 @@ class DatasetConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__local_file_csv__file", (type(None), str)
         )
-        self.validate_correct_type_of_configuration_attribute("user_annotations__ontology__enable", bool)
-        self.validate_correct_type_of_configuration_attribute(
-            "user_annotations__ontology__obo_location", (type(None), str)
-        )
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__hosted_tiledb_array__db_uri", (type(None), str)
         )
@@ -125,11 +117,6 @@ class DatasetConfig(BaseConfig):
                 self.handle_hosted_tiledb_annotations()
             else:
                 raise ConfigurationError('The only annotation type support is "local_file_csv" or "hosted_tiledb_array')
-            if self.user_annotations__ontology__enable or self.user_annotations__ontology__obo_location:
-                try:
-                    self.user_annotations.load_ontology(self.user_annotations__ontology__obo_location)
-                except OntologyLoadFailure as e:
-                    raise ConfigurationError("Unable to load ontology terms\n" + str(e))
         else:
             self.check_annotation_config_vars_not_set(context)
 
@@ -196,13 +183,6 @@ class DatasetConfig(BaseConfig):
                 context["messagefn"](
                     "Warning: hosted_file_directory for hosted_tiledb_array ignored as annotations are disabled."
                 )
-
-        if self.user_annotations__ontology__enable:
-            context["messagefn"]("Warning: --experimental-annotations-ontology ignored as annotations are disabled.")
-        if self.user_annotations__ontology__obo_location is not None:
-            context["messagefn"](
-                "Warning: --experimental-annotations-ontology-obo ignored as annotations are disabled."
-            )
 
     def handle_embeddings(self):
         self.validate_correct_type_of_configuration_attribute("embeddings__names", list)

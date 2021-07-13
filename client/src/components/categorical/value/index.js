@@ -50,7 +50,6 @@ function _currentLabelAsString(ownProps) {
   return {
     annotations: state.annotations,
     schema: state.annoMatrix?.schema,
-    ontology: state.ontology,
     isDilated,
     isSelected,
     label,
@@ -118,9 +117,9 @@ class CategoryValue extends React.Component {
   };
 
   labelNameError = (name) => {
-    const { metadataField, ontology, schema } = this.props;
+    const { metadataField, schema } = this.props;
     if (name === this.currentLabelAsString()) return false;
-    return isLabelErroneous(name, metadataField, ontology, schema);
+    return isLabelErroneous(name, metadataField, schema);
   };
 
   instruction = (label) => {
@@ -490,14 +489,12 @@ class CategoryValue extends React.Component {
       colorTable,
       isUserAnno,
       annotations,
-      ontology,
       isDilated,
       isSelected,
       categorySummary,
       label,
     } = this.props;
     const colorScale = colorTable?.scale;
-    const ontologyEnabled = ontology?.enabled ?? false;
 
     const { editedLabelText } = this.state;
 
@@ -634,7 +631,7 @@ class CategoryValue extends React.Component {
                   annoInput={
                     <LabelInput
                       label={editedLabelText}
-                      labelSuggestions={ontologyEnabled ? ontology.terms : null}
+                      labelSuggestions={null}
                       onChange={this.handleTextChange}
                       onSelect={this.handleTextChange}
                       inputProps={{

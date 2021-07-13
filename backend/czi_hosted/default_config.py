@@ -194,9 +194,6 @@ dataset:
     local_file_csv:
       directory: null
       file: null
-    ontology:
-      enable: false
-      obo_location: null
 
   embeddings:
     names : []

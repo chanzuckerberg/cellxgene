@@ -6,7 +6,6 @@ import LabelInput from "../../labelInput";
 @connect((state) => ({
   annotations: state.annotations,
   schema: state.annoMatrix?.schema,
-  ontology: state.ontology,
   obsCrossfilter: state.obsCrossfilter,
   genesetsUI: state.genesetsUI,
   genesets: state.genesets.genesets,

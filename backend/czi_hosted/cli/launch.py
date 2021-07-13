@@ -44,20 +44,6 @@ def annotation_args(func):
         help="Directory of where to save output annotations; filename will be specified in the application. "
         "Incompatible with --annotations-file.",
     )
-    @click.option(
-        "--experimental-annotations-ontology",
-        is_flag=True,
-        default=DEFAULT_CONFIG.default_dataset_config.user_annotations__ontology__enable,
-        show_default=True,
-        help="When creating annotations, optionally autocomplete names from ontology terms.",
-    )
-    @click.option(
-        "--experimental-annotations-ontology-obo",
-        default=DEFAULT_CONFIG.default_dataset_config.user_annotations__ontology__obo_location,
-        show_default=True,
-        metavar="<path or url>",
-        help="Location of OBO file defining cell annotation autosuggest terms.",
-    )
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
@@ -328,8 +314,6 @@ def launch(
     annotations_dir,
     backed,
     disable_diffexp,
-    experimental_annotations_ontology,
-    experimental_annotations_ontology_obo,
     experimental_enable_reembedding,
     config_file,
     dump_default_config,
@@ -389,8 +373,6 @@ def launch(
             user_annotations__enable=not disable_annotations,
             user_annotations__local_file_csv__file=annotations_file,
             user_annotations__local_file_csv__directory=annotations_dir,
-            user_annotations__ontology__enable=experimental_annotations_ontology,
-            user_annotations__ontology__obo_location=experimental_annotations_ontology_obo,
             presentation__max_categories=max_category_items,
             presentation__custom_colors=not disable_custom_colors,
             embeddings__names=embedding,
