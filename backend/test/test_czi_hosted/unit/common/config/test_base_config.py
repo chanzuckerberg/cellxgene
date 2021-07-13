@@ -36,7 +36,6 @@ class BaseConfigTest(ConfigTests):
         mapping = config.default_dataset_config.create_mapping(config.default_config)
         self.assertIsNotNone(mapping["server__app__verbose"])
         self.assertIsNotNone(mapping["dataset__presentation__max_categories"])
-        self.assertIsNotNone(mapping["dataset__user_annotations__ontology__obo_location"])
         self.assertIsNotNone(mapping["server__multi_dataset__allowed_matrix_types"])
 
     def test_changes_from_default_returns_list_of_nondefault_config_values(self):

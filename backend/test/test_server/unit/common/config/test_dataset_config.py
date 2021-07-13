@@ -40,7 +40,6 @@ class TestDatasetConfig(ConfigTests):
         self.assertEqual(config.dataset_config.presentation__max_categories, 1000)
         self.assertEqual(config.dataset_config.user_annotations__type, "local_file_csv")
         self.assertEqual(config.dataset_config.diffexp__lfc_cutoff, 0.01)
-        self.assertIsNone(config.dataset_config.user_annotations__ontology__obo_location)
 
     @patch("backend.server.common.config.dataset_config.BaseConfig.validate_correct_type_of_configuration_attribute")
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
