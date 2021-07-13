@@ -155,21 +155,11 @@ class MatrixDataCacheManager(object):
                 cache_item = info.cache_item
 
             if data_adaptor is None:
-                if app_config.server_config.data_locator__api_base:
+                if app_config.server_config.data_locator__api_base and dataset:
                     if url_dataroot == "e":  # only pull dataset identification information from the portal for /e/ route
-                        headers = {"Content-Type": "application/json"}
-                        curr_url = f"{app_config.server_config.get_web_base_url()}/{url_dataroot}/{dataset}"
-                        response = requests.get(
-                            url=f"http://{app_config.server_config.data_locator__api_base}/datasets/meta?url={curr_url}",
-                            headers=headers
-                        )
-                        if response.status_code == 200:
-                            dataset_identifiers = json.loads(response.body)
-                            if dataset_identifiers['s3_uri'] and dataset_identifiers["tombstoned"] == 'False':
-                                bucket = dataset_identifiers["s3_uri"].split("/")[2]
-                                dataset_key = "/".join(dataset_identifiers["s3_uri"].split("/")[3:])
-                                location = f"s3://{bucket}/{dataset_key}"
-                                key = (url_dataroot, location)
+                        dataset_identifiers = self.get_dataset_location_from_data_portal(url_dataroot, app_config, dataset)
+                        if dataset_identifiers and dataset_identifiers['s3_uri'] and dataset_identifiers["tombstoned"] == 'False':
+                            location = dataset_identifiers["s3_uri"]
                 while True:
                     if len(self.datasets) < self.max_cached:
                         break
@@ -226,6 +216,19 @@ class MatrixDataCacheManager(object):
             if info.cache_item.attempt_delete():
                 del self.datasets[key]
 
+    def get_dataset_location_from_data_portal(self, url_dataroot, app_config, dataset):
+        headers = {"Content-Type": "application/json", "Accept": "application/json"}
+        curr_url = f"{app_config.server_config.get_web_base_url()}/{url_dataroot}/{dataset}"
+        try:
+            response = requests.get(
+                url=f"http://{app_config.server_config.data_locator__api_base}/datasets/meta?url={curr_url}",
+                headers=headers
+            )
+            if response.status_code == 200:
+                dataset_identifiers = json.loads(response.body)
+                return dataset_identifiers
+        except Exception as e:
+            return None
 
 class MatrixDataType(Enum):
     H5AD = "h5ad"
@@ -303,3 +306,4 @@ class MatrixDataLoader(object):
     def open(self, app_config, dataset_config=None):
         # create and return a DataAdaptor object
         return self.matrix_type.open(self.location, app_config, dataset_config)
+
