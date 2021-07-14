@@ -133,7 +133,6 @@ class TestDatasetConfig(ConfigTests):
     def test_handle_embeddings__checks_data_file_types(self):
         file_name = self.custom_app_config(
             embedding_names=["name1", "name2"],
-            enable_reembedding="true",
             dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad",
             anndata_backed="true",
             config_file_name=self.config_file_name,

@@ -312,25 +312,6 @@ def layout_obs_get(request, data_adaptor):
         )
 
 
-def layout_obs_put(request, data_adaptor):
-    if not data_adaptor.dataset_config.embeddings__enable_reembedding:
-        return abort(HTTPStatus.NOT_IMPLEMENTED)
-
-    args = request.get_json()
-    filter = args["filter"] if args else None
-    if not filter:
-        return abort_and_log(HTTPStatus.BAD_REQUEST, "obs filter is required")
-    method = args["method"] if args else "umap"
-
-    try:
-        schema = data_adaptor.compute_embedding(method, filter)
-        return make_response(jsonify(schema), HTTPStatus.OK, {"Content-Type": "application/json"})
-    except NotImplementedError as e:
-        return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
-    except (ValueError, DisabledFeatureError, FilterError) as e:
-        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
-
-
 def genesets_get(request, data_adaptor):
     preferred_mimetype = request.accept_mimetypes.best_match(["application/json", "text/csv"])
     if preferred_mimetype not in ("application/json", "text/csv"):

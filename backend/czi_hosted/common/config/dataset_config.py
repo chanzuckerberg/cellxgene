@@ -6,7 +6,6 @@ from backend.czi_hosted.common.annotations.hosted_tiledb import AnnotationsHoste
 from backend.czi_hosted.common.annotations.local_file_csv import AnnotationsLocalFile
 from backend.czi_hosted.common.config.base_config import BaseConfig
 from backend.common.errors import ConfigurationError
-from backend.czi_hosted.compute.scanpy import get_scanpy_module
 from backend.czi_hosted.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
 from backend.czi_hosted.db.db_utils import DbUtils
 
@@ -41,7 +40,6 @@ class DatasetConfig(BaseConfig):
             ]["hosted_file_directory"]
 
             self.embeddings__names = default_config["embeddings"]["names"]
-            self.embeddings__enable_reembedding = default_config["embeddings"]["enable_reembedding"]
 
             self.diffexp__enable = default_config["diffexp"]["enable"]
             self.diffexp__lfc_cutoff = default_config["diffexp"]["lfc_cutoff"]
@@ -186,24 +184,6 @@ class DatasetConfig(BaseConfig):
 
     def handle_embeddings(self):
         self.validate_correct_type_of_configuration_attribute("embeddings__names", list)
-        self.validate_correct_type_of_configuration_attribute("embeddings__enable_reembedding", bool)
-
-        server_config = self.app_config.server_config
-        if self.embeddings__enable_reembedding:
-            if server_config.single_dataset__datapath:
-                matrix_data_loader = MatrixDataLoader(
-                    server_config.single_dataset__datapath, app_config=self.app_config
-                )
-                if matrix_data_loader.matrix_data_type != MatrixDataType.H5AD:
-                    raise ConfigurationError("enable-reembedding is only supported with H5AD files.")
-                if server_config.adaptor__anndata_adaptor__backed:
-                    raise ConfigurationError("enable-reembedding is not supported when run in --backed mode.")
-
-            try:
-                get_scanpy_module()
-            except NotImplementedError:
-                # Todo add scanpy to requirements.txt and remove this check once re-embeddings is fully supported
-                raise ConfigurationError("Please install scanpy to enable UMAP re-embedding")
 
     def handle_diffexp(self, context):
         self.validate_correct_type_of_configuration_attribute("diffexp__enable", bool)

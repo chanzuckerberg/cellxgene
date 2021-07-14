@@ -73,34 +73,6 @@ class EndPoints(object):
         self.assertIsNone(df["row_idx"])
         self.assertEqual(len(df["columns"]), df["n_cols"])
 
-    def test_put_layout_fbs(self):
-        # first check that re-embedding is turned on
-        result = self.session.get(f"{self.URL_BASE}config")
-        config_data = result.json()
-        re_embed = config_data["config"]["parameters"]["enable-reembedding"]
-        if not re_embed:
-            return
-        # attempt to reembed with umap over 100 cells.
-        endpoint = "layout/obs"
-        url = f"{self.URL_BASE}{endpoint}"
-        data = {}
-        data["filter"] = {}
-        data["filter"]["obs"] = {}
-        data["filter"]["obs"]["index"] = list(range(100))
-        data["method"] = "umap"
-        result = self.session.put(url, json=data)
-
-        self.assertEqual(result.status_code, HTTPStatus.OK)
-        result_data = result.json()
-        self.assertIsInstance(result_data, dict)
-        self.assertEqual(result_data["type"], "float32")
-        self.assertTrue(result_data["name"].startswith("reembed:umap_"))
-        self.assertIsInstance(result_data["dims"], list)
-        self.assertEqual(len(result_data["dims"]), 2)
-        dims = result_data["dims"]
-        self.assertTrue(dims[0].startswith("reembed:umap_") and dims[0].endswith("_0"))
-        self.assertTrue(dims[1].startswith("reembed:umap_") and dims[1].endswith("_1"))
-
     def test_bad_filter(self):
         endpoint = "data/var"
         url = f"{self.URL_BASE}{endpoint}"
@@ -389,7 +361,6 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
                 f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
                 "--disable-annotations",
                 "--disable-gene-sets-save",
-                "--experimental-enable-reembedding",
             ],
         )
 
