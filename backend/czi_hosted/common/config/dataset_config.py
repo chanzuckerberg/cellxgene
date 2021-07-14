@@ -6,7 +6,6 @@ from backend.czi_hosted.common.annotations.hosted_tiledb import AnnotationsHoste
 from backend.czi_hosted.common.annotations.local_file_csv import AnnotationsLocalFile
 from backend.czi_hosted.common.config.base_config import BaseConfig
 from backend.common.errors import ConfigurationError
-from backend.czi_hosted.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
 from backend.czi_hosted.db.db_utils import DbUtils
 
 

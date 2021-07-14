@@ -4,7 +4,6 @@ from os.path import splitext, isdir
 from backend.server.common.annotations.local_file_csv import AnnotationsLocalFile
 from backend.server.common.config.base_config import BaseConfig
 from backend.common.errors import ConfigurationError, AnnotationsError
-from backend.server.data_common.matrix_loader import MatrixDataLoader
 
 
 class DatasetConfig(BaseConfig):
