@@ -907,52 +907,64 @@ class Graph extends React.Component {
     const { annoMatrix, colors } = this.props;
     const { colorState, lidarCrossfilter, numCellsInLidar } = this.state;
     if (colors.colorMode && colorState.colorDf) {
-      const { colorDf: colorData } = colorState;
+      const { colorDf: colorData, colorTable } = colorState;
       const { colorAccessor, colorMode } = colors;
       if (colorMode === "color by categorical metadata" && lidarCrossfilter) {
         const arr = new Array(annoMatrix.nObs);
         lidarCrossfilter.fillByIsSelected(arr, 1, 0);
         const df = colorData.withCol("New", arr);
-        const { categories, categoryCounts } = df
-          .col(colorAccessor)
-          .summarizeCategorical();
-        const groupBy = df.col("New");
-        const occupancyMap = df
-          .col(colorAccessor)
-          .histogramCategorical(groupBy);
-        const occupancy = occupancyMap.get(1);
+        const dfcol = df.col(colorAccessor);
         let els;
-        if (occupancy) {
-          els = [];
-          for (const key of categories) {
-            if (occupancy.get(key)) {
-              const c = colors.userColors[colorAccessor].colors[key];
-              els.push(
-                <div
-                  key={key}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    flexDirection: "row",
-                  }}
-                >
-                  <strong
+        if (dfcol) {
+          const { categories, categoryCounts } = dfcol.summarizeCategorical();
+          const groupBy = df.col("New");
+          const occupancyMap = df
+            .col(colorAccessor)
+            .histogramCategorical(groupBy);
+          const occupancy = occupancyMap.get(1);
+          const colorDict = {};
+          colorData
+            .col(colorAccessor)
+            .asArray()
+            .forEach((val, index) => {
+              colorDict[val] = colorTable.rgb[index];
+            });
+          if (occupancy) {
+            els = [];
+            for (const key of categories) {
+              if (occupancy.get(key)) {
+                const c = colorDict[key];
+                const color = c
+                  ? `rgb(${c.map((x) => (x * 255).toFixed(0))})`
+                  : "black";
+                els.push(
+                  <div
+                    key={key}
                     style={{
-                      color: `rgb(${c.map((x) => (x * 255).toFixed(0))})`,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      flexDirection: "row",
                     }}
                   >
-                    {key.concat(" ")}
-                  </strong>
-                  <div style={{ paddingLeft: "10px" }}>
-                    {`${occupancy.get(key, 0) ?? 0} / ${
-                      categoryCounts.get(key) ?? 0
-                    }`}
+                    <strong
+                      style={{
+                        color: `${color}`,
+                      }}
+                    >
+                      {key.toString().concat(" ")}
+                    </strong>
+                    <div style={{ paddingLeft: "10px" }}>
+                      {`${occupancy.get(key, 0) ?? 0} / ${
+                        categoryCounts.get(key) ?? 0
+                      }`}
+                    </div>
                   </div>
-                </div>
-              );
+                );
+              }
             }
           }
         }
+
         return (
           <Card interactive elevation={Elevation.TWO}>
             {els ?? `No cells in range`}
