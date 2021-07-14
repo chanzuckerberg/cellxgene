@@ -367,6 +367,11 @@ class Graph extends React.Component {
 
   handleLidarEvent = (e) => {
     if (e.type === "mousemove") {
+      if (e.target.id === "lidar-layer") {
+        this.setState((state) => {
+          return { ...state, lidarFocused: true };
+        });
+      }
       const { lidarCrossfilter } = this.state;
       const rect = e.target.getBoundingClientRect();
       const screenX = e.pageX - rect.left;
@@ -397,10 +402,6 @@ class Graph extends React.Component {
     } else if (e.type === "mouseleave") {
       this.setState((state) => {
         return { ...state, lidarFocused: false };
-      });
-    } else if (e.type === "mouseenter") {
-      this.setState((state) => {
-        return { ...state, lidarFocused: true };
       });
     }
   };
@@ -925,6 +926,7 @@ class Graph extends React.Component {
           els = [];
           for (const key of categories) {
             if (occupancy.get(key)) {
+              const c = colors.userColors[colorAccessor].colors[key];
               els.push(
                 <div
                   key={key}
@@ -934,9 +936,13 @@ class Graph extends React.Component {
                     flexDirection: "row",
                   }}
                 >
-                  <div>
-                    <strong>{key}</strong>
-                  </div>
+                  <strong
+                    style={{
+                      color: `rgb(${c.map((x) => (x * 255).toFixed(0))})`,
+                    }}
+                  >
+                    {key.concat(" ")}
+                  </strong>
                   <div style={{ paddingLeft: "10px" }}>
                     {`${occupancy.get(key, 0) ?? 0} / ${
                       categoryCounts.get(key) ?? 0
@@ -947,7 +953,6 @@ class Graph extends React.Component {
             }
           }
         }
-
         return (
           <Card interactive elevation={Elevation.TWO}>
             {els ?? `No cells in range`}
@@ -1109,6 +1114,7 @@ class Graph extends React.Component {
           pointerEvents={graphInteractionMode === "select" ? "auto" : "none"}
         />
         <Popover2
+          placement="top-left"
           minimal
           content={this.renderMetadata()}
           isOpen={graphInteractionMode === "lidar" && lidarFocused}
@@ -1128,7 +1134,6 @@ class Graph extends React.Component {
             onMouseDown={this.handleLidarEvent}
             onMouseUp={this.handleLidarEvent}
             onMouseMove={this.handleLidarEvent}
-            onMouseEnter={this.handleLidarEvent}
             onMouseLeave={this.handleLidarEvent}
             onDoubleClick={this.handleLidarEvent}
           />
