@@ -44,13 +44,12 @@ class TestDatasetConfig(ConfigTests):
         self.assertEqual(config.default_dataset_config.presentation__max_categories, 1000)
         self.assertEqual(config.default_dataset_config.user_annotations__type, "local_file_csv")
         self.assertEqual(config.default_dataset_config.diffexp__lfc_cutoff, 0.01)
-        self.assertIsNone(config.default_dataset_config.user_annotations__ontology__obo_location)
 
     @patch("backend.czi_hosted.common.config.dataset_config.BaseConfig.validate_correct_type_of_configuration_attribute")
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
         mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.dataset_config.complete_config(self.context)
-        self.assertEqual(mock_check_attrs.call_count, 21)
+        self.assertEqual(mock_check_attrs.call_count, 19)
 
     def test_app_sets_script_vars(self):
         config = self.get_config(scripts=["path/to/script"])

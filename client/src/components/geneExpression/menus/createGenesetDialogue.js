@@ -10,7 +10,6 @@ import actions from "../../../actions";
 @connect((state) => ({
   annotations: state.annotations,
   schema: state.annoMatrix?.schema,
-  ontology: state.ontology,
   obsCrossfilter: state.obsCrossfilter,
   genesets: state.genesets.genesets,
   genesetsUI: state.genesetsUI,

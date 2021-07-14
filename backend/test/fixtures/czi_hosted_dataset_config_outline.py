@@ -22,9 +22,6 @@ dataset:
     local_file_csv:
       directory: {local_file_csv_directory}
       file: {local_file_csv_file}
-    ontology:
-      enable: {ontology_enabled}
-      obo_location: {obo_location}
 
   embeddings:
     names: {embedding_names}

@@ -47,9 +47,6 @@ def get_client_config(app_config, data_adaptor):
         "annotations_genesets": True,  # feature flag
         "annotations_genesets_readonly": dataset_config.user_annotations__gene_sets__readonly,
         "annotations_genesets_summary_methods": ["mean"],
-        "annotations_cell_ontology_enabled": False,
-        "annotations_cell_ontology_obopath": None,
-        "annotations_cell_ontology_terms": None,
         "custom_colors": dataset_config.presentation__custom_colors,
         "diffexp-may-be-slow": False,
     }

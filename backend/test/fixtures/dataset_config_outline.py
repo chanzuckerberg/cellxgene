@@ -17,9 +17,6 @@ dataset:
       directory: {local_file_csv_directory}
       file: {local_file_csv_file}
       gene_sets_file: {local_file_csv_gene_sets_file}
-    ontology:
-      enable: {ontology_enabled}
-      obo_location: {obo_location}
     gene_sets:
       readonly: {gene_sets_readonly}
 
