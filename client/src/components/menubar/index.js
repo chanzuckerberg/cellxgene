@@ -212,7 +212,6 @@ class MenuBar extends React.PureComponent {
       colorAccessor,
       subsetPossible,
       subsetResetPossible,
-      enableReembedding,
       userInfo,
       auth,
     } = this.props;
@@ -262,7 +261,7 @@ class MenuBar extends React.PureComponent {
             this.handleClipPercentileMinValueChange
           }
         />
-        <Reembedding/>
+        <Reembedding />
         <Tooltip
           content="When a category is colored by, show labels on the graph"
           position="bottom"
@@ -312,6 +311,23 @@ class MenuBar extends React.PureComponent {
                 dispatch({
                   type: "change graph interaction mode",
                   data: "zoom",
+                });
+              }}
+            />
+          </Tooltip>
+          <Tooltip
+            content="Show metadata information for hovered cells"
+            position="bottom"
+            hoverOpenDelay={globals.tooltipHoverOpenDelay}
+          >
+            <AnchorButton
+              type="button"
+              icon="airplane"
+              active={graphInteractionMode === "lidar"}
+              onClick={() => {
+                dispatch({
+                  type: "change graph interaction mode",
+                  data: "lidar",
                 });
               }}
             />

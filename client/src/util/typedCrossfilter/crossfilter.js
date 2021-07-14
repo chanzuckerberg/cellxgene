@@ -552,6 +552,8 @@ class ImmutableSpatialDimension extends _ImmutableBaseDimension {
         return this.selectWithinRect(spec);
       case "within-polygon":
         return this.selectWithinPolygon(spec);
+      case "within-lidar":
+        return this.selectWithinLidar(spec);
       default:
         return super.select(spec);
     }
@@ -636,6 +638,54 @@ class ImmutableSpatialDimension extends _ImmutableBaseDimension {
     if (start !== -1) ranges.push([start, slice[1]]);
     return { ranges, index };
   }
+
+  selectWithinLidar(spec) {
+    const { center, radius } = spec;
+    const minX = center[0] - radius;
+    const maxX = center[0] + radius;
+    const minY = center[1] - radius;
+    const maxY = center[1] + radius;
+
+    const { X, Y, Xindex, Yindex } = this;
+    const { length } = X;
+    let slice;
+    let index;
+    if (maxY - minY > maxX - minX) {
+      slice = [
+        lowerBoundIndirect(X, Xindex, minX, 0, length),
+        lowerBoundIndirect(X, Xindex, maxX, 0, length),
+      ];
+      index = Xindex;
+    } else {
+      slice = [
+        lowerBoundIndirect(Y, Yindex, minY, 0, length),
+        lowerBoundIndirect(Y, Yindex, maxY, 0, length),
+      ];
+      index = Yindex;
+    }
+
+    const ranges = [];
+    let start = -1;
+    for (let i = slice[0], e = slice[1]; i < e; i += 1) {
+      const rid = index[i];
+      const x = X[rid];
+      const y = Y[rid];
+      const inside =
+        minX <= x &&
+        x < maxX &&
+        minY <= y &&
+        y < maxY &&
+        withinLidar(center, radius, x, y);
+
+      if (inside && start === -1) start = i;
+      if (!inside && start !== -1) {
+        ranges.push([start, i]);
+        start = -1;
+      }
+    }
+    if (start !== -1) ranges.push([start, slice[1]]);
+    return { ranges, index };
+  }
 }
 
 /* Helpers */
@@ -698,4 +748,12 @@ function withinPolygon(polygon, x, y) {
     y0 = y1;
   }
   return inside;
+}
+
+function distance(pt1, pt2) {
+  return Math.sqrt((pt2[0] - pt1[0]) ** 2 + (pt2[1] - pt1[1]) ** 2);
+}
+
+function withinLidar(center, radius, x, y) {
+  return distance(center, [x, y]) <= radius;
 }

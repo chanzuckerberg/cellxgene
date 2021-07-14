@@ -5,7 +5,8 @@ import { mat3, vec2 } from "gl-matrix";
 import _regl from "regl";
 import memoize from "memoize-one";
 import Async from "react-async";
-import { Button } from "@blueprintjs/core";
+import { Button, Card, Elevation } from "@blueprintjs/core";
+import { Popover2 } from "@blueprintjs/popover2";
 
 import setupSVGandBrushElements from "./setupSVGandBrush";
 import _camera from "../../util/camera";
@@ -107,6 +108,8 @@ class Graph extends React.Component {
   static watchAsync(props, prevProps) {
     return !shallowEqual(props.watchProps, prevProps.watchProps);
   }
+
+  myRef = React.createRef();
 
   computePointPositions = memoize((X, Y, modelTF) => {
     /*
@@ -254,6 +257,9 @@ class Graph extends React.Component {
 
   componentDidMount() {
     window.addEventListener("resize", this.handleResize);
+    this.myRef.current.addEventListener("wheel", this.handleLidarWheelEvent, {
+      passive: false,
+    });
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -303,6 +309,11 @@ class Graph extends React.Component {
 
   componentWillUnmount() {
     window.removeEventListener("resize", this.handleResize);
+    this.myRef.current.removeEventListener(
+      "wheel",
+      this.handleLidarWheelEvent,
+      { passive: false }
+    );
   }
 
   handleResize = () => {
@@ -323,6 +334,73 @@ class Graph extends React.Component {
       this.renderCanvas();
       this.setState((state) => {
         return { ...state, updateOverlay: !state.updateOverlay };
+      });
+    }
+  };
+
+  handleLidarWheelEvent = (e) => {
+    const { graphInteractionMode } = this.props;
+    if (graphInteractionMode === "lidar") {
+      const { lidarRadius, lidarCrossfilter } = this.state;
+      e.preventDefault();
+      const offset = e.deltaY < 0 ? -1.5 : 1.5;
+
+      const radius = (lidarRadius ?? 20) + offset;
+      this.setState((state) => {
+        return { ...state, lidarRadius: radius < 10 ? 10 : radius };
+      });
+      this.fetchLidarCrossfilter();
+      let count = 0;
+      if (lidarCrossfilter) {
+        const { ranges } = lidarCrossfilter.obsCrossfilter.dimensions[
+          "emb/umap_0:umap_1"
+        ].selection;
+        ranges.forEach((range) => {
+          count += range[1] - range[0];
+        });
+      }
+      this.setState((state) => {
+        return { ...state, numCellsInLidar: count };
+      });
+    }
+  };
+
+  handleLidarEvent = (e) => {
+    if (e.type === "mousemove") {
+      const { lidarCrossfilter } = this.state;
+      const rect = e.target.getBoundingClientRect();
+      const screenX = e.pageX - rect.left;
+      const screenY = e.pageY - rect.top;
+      const point = this.mapScreenToPoint([screenX, screenY]);
+      this.setState((state) => {
+        return {
+          ...state,
+          screenX,
+          screenY,
+          pointX: point[0],
+          pointY: point[1],
+        };
+      });
+      this.fetchLidarCrossfilter();
+      let count = 0;
+      if (lidarCrossfilter) {
+        const { ranges } = lidarCrossfilter.obsCrossfilter.dimensions[
+          "emb/umap_0:umap_1"
+        ].selection;
+        ranges.forEach((range) => {
+          count += range[1] - range[0];
+        });
+      }
+      this.setState((state) => {
+        return { ...state, numCellsInLidar: count };
+      });
+    } else if (e.type === "mouseleave") {
+      this.setState((state) => {
+        return { ...state, lidarFocused: false };
+      });
+    } else if (e.type === "mouseenter") {
+      this.setState((state) => {
+        return { ...state, lidarFocused: true };
       });
     }
   };
@@ -470,16 +548,21 @@ class Graph extends React.Component {
     Called from componentDidUpdate. Create the tool SVG, and return any
     state changes that should be passed to setState().
     */
-    const { selectionTool, graphInteractionMode, multiselect } = this.props;
+    const { selectionTool, graphInteractionMode } = this.props;
     const { viewport } = this.state;
 
     /* clear out whatever was on the div, even if nothing, but usually the brushes etc */
     const lasso = d3.select("#lasso-layer");
+
+    const lidar = d3.select("#lidar-layer");
+    if (!lidar.empty()) {
+      lidar.selectAll(".lidar-group").remove();
+    }
     if (lasso.empty()) return {}; // still initializing
     lasso.selectAll(".lasso-group").remove();
 
     // Don't render or recreate toolSVG if currently in zoom mode
-    if (graphInteractionMode !== "select") {
+    if (graphInteractionMode !== "select" && graphInteractionMode !== "lidar") {
       // don't return "change" of state unless we are really changing it!
       const { toolSVG } = this.state;
       if (toolSVG === undefined) return {};
@@ -506,8 +589,7 @@ class Graph extends React.Component {
       handleDrag,
       handleEnd,
       handleCancel,
-      viewport,
-      multiselect
+      viewport
     );
 
     return { toolSVG: newToolSVG, tool, container };
@@ -554,6 +636,9 @@ class Graph extends React.Component {
       pointDilationData,
       pointDilationLabel
     );
+    this.setState((state) => {
+      return { ...state, colorState: { colors, colorDf, colorTable } };
+    });
 
     const { width, height } = viewport;
     return {
@@ -576,6 +661,7 @@ class Graph extends React.Component {
 
     const promises = [];
     // layout
+
     promises.push(annoMatrix.fetch("emb", layoutChoice.current));
 
     // color
@@ -594,6 +680,29 @@ class Graph extends React.Component {
     }
 
     return Promise.all(promises);
+  }
+
+  fetchLidarCrossfilter() {
+    const { lidarRadius, pointX, pointY, screenX, screenY } = this.state;
+    const { crossfilter } = this.props;
+
+    const dummyPoint = this.mapScreenToPoint([
+      screenX - (lidarRadius ?? 20),
+      screenY,
+    ]);
+    const radius = Math.sqrt(
+      (dummyPoint[0] - pointX) ** 2 + (dummyPoint[1] - pointY) ** 2
+    );
+    const selection = {
+      mode: "within-lidar",
+      center: [pointX, pointY],
+      radius,
+    };
+    crossfilter.select("emb", "umap", selection).then((cf) => {
+      this.setState((state) => {
+        return { ...state, lidarCrossfilter: cf };
+      });
+    });
   }
 
   brushToolUpdate(tool, container) {
@@ -793,6 +902,120 @@ class Graph extends React.Component {
     return createColorQuery(colorMode, colorAccessor, schema, genesets);
   }
 
+  renderMetadata() {
+    const { annoMatrix, colors } = this.props;
+    const { colorState, lidarCrossfilter, numCellsInLidar } = this.state;
+    if (colors.colorMode && colorState.colorDf) {
+      const { colorDf: colorData } = colorState;
+      const { colorAccessor, colorMode } = colors;
+      if (colorMode === "color by categorical metadata" && lidarCrossfilter) {
+        const arr = new Array(annoMatrix.nObs);
+        lidarCrossfilter.fillByIsSelected(arr, 1, 0);
+        const df = colorData.withCol("New", arr);
+        const { categories, categoryCounts } = df
+          .col(colorAccessor)
+          .summarizeCategorical();
+        const groupBy = df.col("New");
+        const occupancyMap = df
+          .col(colorAccessor)
+          .histogramCategorical(groupBy);
+        const occupancy = occupancyMap.get(1);
+        let els;
+        if (occupancy) {
+          els = [];
+          for (const key of categories) {
+            if (occupancy.get(key)) {
+              els.push(
+                <div
+                  key={key}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    flexDirection: "row",
+                  }}
+                >
+                  <div>
+                    <strong>{key}</strong>
+                  </div>
+                  <div style={{ paddingLeft: "10px" }}>
+                    {`${occupancy.get(key, 0) ?? 0} / ${
+                      categoryCounts.get(key) ?? 0
+                    }`}
+                  </div>
+                </div>
+              );
+            }
+          }
+        }
+
+        return (
+          <Card interactive elevation={Elevation.TWO}>
+            {els ?? `No cells in range`}
+          </Card>
+        );
+      }
+      if (lidarCrossfilter) {
+        const arr = new Array(annoMatrix.nObs);
+        lidarCrossfilter.fillByIsSelected(arr, 1, 0);
+        const col = colorData.col(colorData.colIndex.rindex[0]).asArray();
+        const subsetArray = [];
+        for (let i = 0; i < arr.length; i += 1) {
+          if (arr[i]) {
+            subsetArray.push(col[i]);
+          }
+        }
+        let mean;
+        let std;
+        if (subsetArray.length > 0) {
+          const n = subsetArray.length;
+          mean = subsetArray.reduce((a, b) => a + b) / n;
+          std = Math.sqrt(
+            subsetArray.map((x) => (x - mean) ** 2).reduce((a, b) => a + b) / n
+          );
+        } else {
+          mean = 0;
+          std = 0;
+        }
+        return (
+          <Card interactive elevation={Elevation.TWO}>
+            <div style={{ paddingBottom: "10px" }}>
+              <strong>{colorAccessor}</strong>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                flexDirection: "row",
+              }}
+            >
+              <div>
+                <strong>Mean</strong>
+              </div>
+              <div style={{ paddingLeft: "10px" }}>
+                <strong>Std. Dev.</strong>
+              </div>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                flexDirection: "row",
+              }}
+            >
+              <div>{mean.toFixed(3)}</div>
+              <div style={{ paddingLeft: "10px" }}>{std.toFixed(3)}</div>
+            </div>
+          </Card>
+        );
+      }
+    }
+    return (
+      <Card interactive elevation={Elevation.TWO}>
+        {`Hovering over ${numCellsInLidar ?? 0} cells.`}
+      </Card>
+    );
+  }
+
   renderPoints(
     regl,
     drawPoints,
@@ -836,9 +1059,19 @@ class Graph extends React.Component {
       pointDilation,
       crossfilter,
     } = this.props;
-    const { modelTF, projectionTF, camera, viewport, regl } = this.state;
+    const {
+      modelTF,
+      lidarFocused,
+      screenX,
+      screenY,
+      projectionTF,
+      camera,
+      viewport,
+      regl,
+      lidarRadius,
+    } = this.state;
+    const radius = lidarRadius ?? 20;
     const cameraTF = camera?.view()?.slice();
-
     return (
       <div
         id="graph-wrapper"
@@ -847,6 +1080,7 @@ class Graph extends React.Component {
           top: 0,
           left: 0,
         }}
+        ref={this.myRef}
       >
         <GraphOverlayLayer
           width={viewport.width}
@@ -874,6 +1108,31 @@ class Graph extends React.Component {
           height={viewport.height}
           pointerEvents={graphInteractionMode === "select" ? "auto" : "none"}
         />
+        <Popover2
+          minimal
+          content={this.renderMetadata()}
+          isOpen={graphInteractionMode === "lidar" && lidarFocused}
+        >
+          <svg
+            id="lidar-layer"
+            className="graph-svg"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              zIndex: 2,
+            }}
+            width={viewport.width}
+            height={viewport.height}
+            pointerEvents={graphInteractionMode === "lidar" ? "auto" : "none"}
+            onMouseDown={this.handleLidarEvent}
+            onMouseUp={this.handleLidarEvent}
+            onMouseMove={this.handleLidarEvent}
+            onMouseEnter={this.handleLidarEvent}
+            onMouseLeave={this.handleLidarEvent}
+            onDoubleClick={this.handleLidarEvent}
+          />
+        </Popover2>
         <canvas
           width={viewport.width}
           height={viewport.height}
@@ -895,6 +1154,23 @@ class Graph extends React.Component {
           onWheel={this.handleCanvasEvent}
         />
 
+        {graphInteractionMode === "lidar" && lidarFocused ? (
+          <div
+            style={{
+              position: "absolute",
+              left: `${screenX - radius}px`,
+              top: `${screenY - radius}px`,
+              width: `${radius * 2}px`,
+              height: `${radius * 2}px`,
+              borderColor: "black",
+              borderWidth: "0.1px",
+              borderStyle: "solid",
+              borderRadius: "50%",
+              paddingLeft: `${radius / 2}px`,
+              paddingTop: `${radius / 2}px`,
+            }}
+          />
+        ) : null}
         <Async
           watchFn={Graph.watchAsync}
           promiseFn={this.fetchAsyncProps}
