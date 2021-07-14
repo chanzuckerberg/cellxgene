@@ -6,6 +6,7 @@ This fork implements some of the key features that have been highly requested by
 Features include:
 - Hotkeys (SHIFT+? to see a tooltip describing all available  hotkeys)
 - End-to-end interactive analysis and reembedding.
+- LIDAR graph interaction mode (the airplane) - Show an interactive tooltip describing the cells underneath your cursor. Very helpful for the color impaired or for large datasets with hundreds of labels.
 
 ### Installation
 The easiest way is to install from the precompiled pip distribution located in `dist/`.
