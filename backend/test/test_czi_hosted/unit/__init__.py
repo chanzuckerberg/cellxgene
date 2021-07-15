@@ -170,7 +170,6 @@ class BaseTest(unittest.TestCase):
                 multi_dataset__index=True,
                 multi_dataset__allowed_matrix_types=["cxg"]
             )
-            app_config.update_default_dataset_config(embeddings__enable_reembedding=False, )
         app_config.complete_config(logging.info)
 
         app = TestServer(app_config).app

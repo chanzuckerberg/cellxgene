@@ -67,11 +67,6 @@ class DataAdaptor(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def compute_embedding(self, method, filter):
-        """compute a new embedding on the specified obs subset, and return the embedding schema."""
-        pass
-
-    @abstractmethod
     def get_X_array(self, obs_mask=None, var_mask=None):
         """return the X array, possibly filtered by obs_mask or var_mask.
         the return type is either ndarray or scipy.sparse.spmatrix."""

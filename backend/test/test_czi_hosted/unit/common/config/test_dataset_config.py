@@ -49,7 +49,7 @@ class TestDatasetConfig(ConfigTests):
     def test_complete_config_checks_all_attr(self, mock_check_attrs):
         mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.dataset_config.complete_config(self.context)
-        self.assertEqual(mock_check_attrs.call_count, 19)
+        self.assertEqual(mock_check_attrs.call_count, 18)
 
     def test_app_sets_script_vars(self):
         config = self.get_config(scripts=["path/to/script"])
@@ -129,20 +129,6 @@ class TestDatasetConfig(ConfigTests):
         self.assertIsInstance(config.default_dataset_config.user_annotations, AnnotationsLocalFile)
         cwd = os.getcwd()
         self.assertEqual(config.default_dataset_config.user_annotations._get_output_dir(), cwd)
-
-    def test_handle_embeddings__checks_data_file_types(self):
-        file_name = self.custom_app_config(
-            embedding_names=["name1", "name2"],
-            enable_reembedding="true",
-            dataset_datapath=f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad",
-            anndata_backed="true",
-            config_file_name=self.config_file_name,
-        )
-        config = AppConfig()
-        config.update_from_config_file(file_name)
-        config.server_config.complete_config(self.context)
-        with self.assertRaises(ConfigurationError):
-            config.default_dataset_config.handle_embeddings()
 
     def test_handle_diffexp__raises_warning_for_large_datasets(self):
         config = self.get_config(lfc_cutoff=0.02, enable_difexp="true", top_n=15)
