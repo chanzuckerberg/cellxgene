@@ -313,9 +313,6 @@ def layout_obs_get(request, data_adaptor):
 
 
 def layout_obs_put(request, data_adaptor):
-    if not data_adaptor.dataset_config.embeddings__enable_reembedding:
-        return abort(HTTPStatus.NOT_IMPLEMENTED)
-
     args = request.get_json()
     filter = args["filter"] if args else None
     if not filter:

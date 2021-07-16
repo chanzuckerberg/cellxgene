@@ -49,8 +49,6 @@ import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
     tosURL: state.config?.parameters?.about_legal_tos,
     privacyURL: state.config?.parameters?.about_legal_privacy,
     categoricalSelection: state.categoricalSelection,
-    enableReembedding:
-      state.config?.parameters?.["enable-reembedding"] ?? false,
   };
 })
 class MenuBar extends React.PureComponent {
@@ -280,7 +278,11 @@ class MenuBar extends React.PureComponent {
         </Tooltip>
         <ButtonGroup className={styles.menubarButton}>
           <Tooltip
-            content={selectionTooltip}
+            content={
+              selectionTooltip === "select"
+                ? "Lasso selection"
+                : selectionTooltip
+            }
             position="bottom"
             hoverOpenDelay={globals.tooltipHoverOpenDelay}
           >

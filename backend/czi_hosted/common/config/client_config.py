@@ -40,7 +40,6 @@ def get_client_config(app_config, data_adaptor):
         "diffexp_lfc_cutoff": dataset_config.diffexp__lfc_cutoff,
         "backed": server_config.adaptor__anndata_adaptor__backed,
         "disable-diffexp": not dataset_config.diffexp__enable,
-        "enable-reembedding": dataset_config.embeddings__enable_reembedding,
         "annotations": False,
         "annotations_file": None,
         "annotations_dir": None,

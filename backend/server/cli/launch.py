@@ -121,14 +121,6 @@ def config_args(func):
         metavar="<text>",
         help="Embedding name, eg, 'umap'. Repeat option for multiple embeddings. Defaults to all.",
     )
-    @click.option(
-        "--experimental-enable-reembedding",
-        is_flag=True,
-        default=DEFAULT_CONFIG.dataset_config.embeddings__enable_reembedding,
-        show_default=False,
-        hidden=True,
-        help="Enable experimental on-demand re-embedding using UMAP. WARNING: may be very slow.",
-    )
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
@@ -340,7 +332,6 @@ def launch(
     disable_diffexp,
     experimental_annotations_ontology,
     experimental_annotations_ontology_obo,
-    experimental_enable_reembedding,
     config_file,
     dump_default_config,
 ):
@@ -401,7 +392,6 @@ def launch(
             presentation__max_categories=max_category_items,
             presentation__custom_colors=not disable_custom_colors,
             embeddings__names=embedding,
-            embeddings__enable_reembedding=experimental_enable_reembedding,
             diffexp__enable=not disable_diffexp,
             diffexp__lfc_cutoff=diffexp_lfc_cutoff,
         )

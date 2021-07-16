@@ -105,7 +105,6 @@ export function _setEmbeddingSubset(annoMatrix, embeddingDf) {
 
   /* if no current embedding subset, and no new embedding subset, just noop */
   if (!embRowOffsets && !curEmbSubsetView) return annoMatrix;
-
   // ... otherwise, do the work
 
   /* stash clipping info, if any */

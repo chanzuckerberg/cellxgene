@@ -8,6 +8,7 @@ import { _setEmbeddingSubset } from "../util/stateManager/viewStackHelpers";
 export async function _switchEmbedding(
   prevAnnoMatrix,
   prevCrossfilter,
+  oldEmbeddingName,
   newEmbeddingName
 ) {
   /*
@@ -15,11 +16,14 @@ export async function _switchEmbedding(
   */
   const base = prevAnnoMatrix.base();
   const embeddingDf = await base.fetch("emb", newEmbeddingName);
+
   const annoMatrix = _setEmbeddingSubset(prevAnnoMatrix, embeddingDf);
-  const obsCrossfilter = await new AnnoMatrixObsCrossfilter(
+  let obsCrossfilter = await new AnnoMatrixObsCrossfilter(
     annoMatrix,
     prevCrossfilter.obsCrossfilter
-  ).select("emb", newEmbeddingName, {
+  ).dropDimension("emb", oldEmbeddingName);
+  obsCrossfilter = await obsCrossfilter.dropDimension("obs", "name_0");
+  obsCrossfilter = await obsCrossfilter.select("emb", newEmbeddingName, {
     mode: "all",
   });
   return [annoMatrix, obsCrossfilter];
@@ -36,10 +40,12 @@ export const layoutChoiceAction = (newLayoutChoice) => async (
   const {
     annoMatrix: prevAnnoMatrix,
     obsCrossfilter: prevCrossfilter,
+    layoutChoice,
   } = getState();
   const [annoMatrix, obsCrossfilter] = await _switchEmbedding(
     prevAnnoMatrix,
     prevCrossfilter,
+    layoutChoice.current,
     newLayoutChoice
   );
   dispatch({

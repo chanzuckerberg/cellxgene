@@ -5,6 +5,7 @@ import {
   postAsyncFailureToast,
 } from "../components/framework/toasters";
 import { _switchEmbedding } from "./embedding";
+import { subsetAction } from "./viewStack";
 
 function abortableFetch(request, opts, timeout = 0) {
   const controller = new AbortController();
@@ -73,6 +74,7 @@ functions below are dispatch-able
 export function requestReembed(reembedParams) {
   return async (dispatch, getState) => {
     try {
+      await dispatch(subsetAction());
       const res = await doReembedFetch(dispatch, getState, reembedParams);
       const schema = await res.json();
       dispatch({
@@ -82,11 +84,13 @@ export function requestReembed(reembedParams) {
       const {
         annoMatrix: prevAnnoMatrix,
         obsCrossfilter: prevCrossfilter,
+        layoutChoice,
       } = getState();
       const base = prevAnnoMatrix.base().addEmbedding(schema);
       const [annoMatrix, obsCrossfilter] = await _switchEmbedding(
         base,
         prevCrossfilter,
+        layoutChoice.current,
         schema.name
       );
       dispatch({

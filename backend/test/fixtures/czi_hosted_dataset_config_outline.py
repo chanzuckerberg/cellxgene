@@ -28,7 +28,6 @@ dataset:
 
   embeddings:
     names: {embedding_names}
-    enable_reembedding: {enable_reembedding}
 
   diffexp:
     enable: {enable_difexp}

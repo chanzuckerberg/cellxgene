@@ -339,7 +339,7 @@ class Graph extends React.Component {
   };
 
   handleLidarWheelEvent = (e) => {
-    const { graphInteractionMode } = this.props;
+    const { graphInteractionMode, layoutChoice } = this.props;
     if (graphInteractionMode === "lidar") {
       const { lidarRadius, lidarCrossfilter } = this.state;
       e.preventDefault();
@@ -352,9 +352,14 @@ class Graph extends React.Component {
       this.fetchLidarCrossfilter();
       let count = 0;
       if (lidarCrossfilter) {
-        const { ranges } = lidarCrossfilter.obsCrossfilter.dimensions[
-          "emb/umap_0:umap_1"
-        ].selection;
+        const dim =
+          lidarCrossfilter.obsCrossfilter.dimensions[
+            `emb/${layoutChoice.current}_0:${layoutChoice.current}_1`
+          ];
+        if (!dim) {
+          return;
+        }
+        const { ranges } = dim.selection;
         ranges.forEach((range) => {
           count += range[1] - range[0];
         });
@@ -372,6 +377,7 @@ class Graph extends React.Component {
           return { ...state, lidarFocused: true };
         });
       }
+      const { layoutChoice } = this.props;
       const { lidarCrossfilter } = this.state;
       const rect = e.target.getBoundingClientRect();
       const screenX = e.pageX - rect.left;
@@ -389,9 +395,14 @@ class Graph extends React.Component {
       this.fetchLidarCrossfilter();
       let count = 0;
       if (lidarCrossfilter) {
-        const { ranges } = lidarCrossfilter.obsCrossfilter.dimensions[
-          "emb/umap_0:umap_1"
-        ].selection;
+        const dim =
+          lidarCrossfilter.obsCrossfilter.dimensions[
+            `emb/${layoutChoice.current}_0:${layoutChoice.current}_1`
+          ];
+        if (!dim) {
+          return;
+        }
+        const { ranges } = dim.selection;
         ranges.forEach((range) => {
           count += range[1] - range[0];
         });
@@ -617,6 +628,7 @@ class Graph extends React.Component {
     const { currentDimNames } = layoutChoice;
     const X = layoutDf.col(currentDimNames[0]).asArray();
     const Y = layoutDf.col(currentDimNames[1]).asArray();
+
     const positions = this.computePointPositions(X, Y, modelTF);
 
     const colorTable = this.updateColorTable(colorsProp, colorDf);
@@ -624,6 +636,7 @@ class Graph extends React.Component {
 
     const { colorAccessor } = colorsProp;
     const colorByData = colorDf?.col(colorAccessor)?.asArray();
+
     const {
       metadataField: pointDilationCategory,
       categoryField: pointDilationLabel,
@@ -631,6 +644,7 @@ class Graph extends React.Component {
     const pointDilationData = pointDilationDf
       ?.col(pointDilationCategory)
       ?.asArray();
+
     const flags = this.computePointFlags(
       crossfilter,
       colorByData,
@@ -685,7 +699,7 @@ class Graph extends React.Component {
 
   fetchLidarCrossfilter() {
     const { lidarRadius, pointX, pointY, screenX, screenY } = this.state;
-    const { crossfilter } = this.props;
+    const { crossfilter, layoutChoice } = this.props;
 
     const dummyPoint = this.mapScreenToPoint([
       screenX - (lidarRadius ?? 20),
@@ -699,7 +713,7 @@ class Graph extends React.Component {
       center: [pointX, pointY],
       radius,
     };
-    crossfilter.select("emb", "umap", selection).then((cf) => {
+    crossfilter.select("emb", layoutChoice.current, selection).then((cf) => {
       this.setState((state) => {
         return { ...state, lidarCrossfilter: cf };
       });
@@ -912,7 +926,17 @@ class Graph extends React.Component {
       if (colorMode === "color by categorical metadata" && lidarCrossfilter) {
         const arr = new Array(annoMatrix.nObs);
         lidarCrossfilter.fillByIsSelected(arr, 1, 0);
-        const df = colorData.withCol("New", arr);
+        let df;
+        try {
+          df = colorData.withCol("New", arr);
+        } catch (e) {
+          return (
+            <Card interactive elevation={Elevation.TWO}>
+              {`Hovering over ${numCellsInLidar ?? 0} cells.`}
+            </Card>
+          );
+        }
+
         const dfcol = df.col(colorAccessor);
         let els;
         if (dfcol) {
@@ -1087,6 +1111,7 @@ class Graph extends React.Component {
       regl,
       lidarRadius,
     } = this.state;
+
     const radius = lidarRadius ?? 20;
     const cameraTF = camera?.view()?.slice();
     return (

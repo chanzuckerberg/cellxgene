@@ -77,7 +77,7 @@ class EndPoints(object):
         # first check that re-embedding is turned on
         result = self.session.get(f"{self.URL_BASE}config")
         config_data = result.json()
-        re_embed = config_data["config"]["parameters"]["enable-reembedding"]
+        re_embed = True
         if not re_embed:
             return
         # attempt to reembed with umap over 100 cells.
@@ -389,7 +389,6 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
                 f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
                 "--disable-annotations",
                 "--disable-gene-sets-save",
-                "--experimental-enable-reembedding",
             ],
         )
 

@@ -75,7 +75,6 @@ dataset:
 
   embeddings:
     names : []
-    enable_reembedding: false
 
   diffexp:
     enable: true
