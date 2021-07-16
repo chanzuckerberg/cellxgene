@@ -5,7 +5,6 @@ import Async from "react-async";
 import memoize from "memoize-one";
 import * as globals from "../../globals";
 import actions from "../../actions";
-import { histogramContinuous } from "../../util/dataframe/histogram";
 import { makeContinuousDimensionName } from "../../util/nameCreators";
 import HistogramHeader from "./header";
 import Histogram from "./histogram";

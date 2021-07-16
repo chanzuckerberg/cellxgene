@@ -1,9 +1,6 @@
 import React from "react";
-import { connect } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
-import actions from "../../actions";
 import Gene from "./gene";
-import { memoize } from "../../util/dataframe/util";
 import Truncate from "../util/truncate";
 import * as globals from "../../globals";
 import GenesetMenus from "./menus/genesetMenus";
@@ -46,11 +43,7 @@ class GeneSet extends React.Component {
   }
 
   render() {
-    const {
-      setName,
-      genesetDescription,
-      setGenes,
-    } = this.props;
+    const { setName, genesetDescription, setGenes } = this.props;
     const { isOpen } = this.state;
     const genesetNameLengthVisible = 150; /* this magic number determines how much of a long geneset name we see */
     const genesetIsEmpty = setGenes.size === 0;
