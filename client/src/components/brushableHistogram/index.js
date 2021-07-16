@@ -285,10 +285,11 @@ class HistogramBrush extends React.PureComponent {
       .domain([domainMin, domainMax])
       .range([leftMargin, leftMargin + newWidth]);
 
-    histogramCache.bins = histogramContinuous(col, numBins, [
+    histogramCache.bins = col.histogram(numBins, [
       domainMin,
       domainMax,
     ]); /* memoized */
+
     histogramCache.binWidth = (domainMax - domainMin) / numBins;
 
     histogramCache.binStart = (i) => domainMin + i * histogramCache.binWidth;
@@ -306,7 +307,13 @@ class HistogramBrush extends React.PureComponent {
   }
 
   createQuery() {
-    const { isObs, isGeneSetSummary, field, setGenes, annoMatrix } = this.props;
+    const {
+      isObs,
+      isGeneSetSummary,
+      field,
+      setGenes,
+      annoMatrix,
+    } = this.props;
     const { schema } = annoMatrix;
     if (isObs) {
       return ["obs", field];
@@ -322,7 +329,7 @@ class HistogramBrush extends React.PureComponent {
             method: "mean",
             field: "var",
             column: varIndex,
-            values: setGenes,
+            values: [...setGenes.keys()],
           },
         },
       ];
