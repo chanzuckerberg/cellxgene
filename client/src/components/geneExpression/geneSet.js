@@ -1,9 +1,6 @@
 import React from "react";
-import { connect } from "react-redux";
 import { FaChevronRight, FaChevronDown } from "react-icons/fa";
-import actions from "../../actions";
 import Gene from "./gene";
-import { memoize } from "../../util/dataframe/util";
 import Truncate from "../util/truncate";
 import * as globals from "../../globals";
 import GenesetMenus from "./menus/genesetMenus";
@@ -12,17 +9,7 @@ import HistogramBrush from "../brushableHistogram";
 
 import { diffexpPopNamePrefix1, diffexpPopNamePrefix2 } from "../../globals";
 
-@connect((state, ownProps) => {
-  return {
-    world: state.world,
-    userDefinedGenes: state.controls.userDefinedGenes,
-    userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
-    isColorAccessor: state.colors.colorAccessor === ownProps.setName,
-  };
-})
 class GeneSet extends React.Component {
-  _memoGenesToUpper = memoize(this._genesToUpper, (arr) => arr);
-
   constructor(props) {
     super(props);
     this.state = {
@@ -30,64 +17,18 @@ class GeneSet extends React.Component {
     };
   }
 
-  _genesToUpper = (listGenes) => {
-    // Has to be a Map to preserve index
-    const upperGenes = new Map();
-    for (let i = 0, { length } = listGenes; i < length; i += 1) {
-      upperGenes.set(listGenes[i].toUpperCase(), i);
-    }
-
-    return upperGenes;
-  };
-
-  fetchGenes = () => {
-    const { world, dispatch, setGenes } = this.props;
-    const varIndexName = world.schema.annotations.var.index;
-
-    const worldGenes = world.varAnnotations.col(varIndexName).asArray();
-
-    const upperGenes = this._genesToUpper(setGenes);
-    const upperWorldGenes = this._memoGenesToUpper(worldGenes);
-
-    dispatch({ type: "bulk user defined gene start" });
-
-    Promise.all(
-      [...upperGenes.keys()].map((upperGene) => {
-        const indexOfGene = upperWorldGenes.get(upperGene);
-
-        return dispatch(
-          actions.requestUserDefinedGene(worldGenes[indexOfGene])
-        );
-      })
-    ).then(
-      () => dispatch({ type: "bulk user defined gene complete" }),
-      () => dispatch({ type: "bulk user defined gene error" })
-    );
-
-    return undefined;
-  };
-
   onGenesetMenuClick = () => {
     const { isOpen } = this.state;
     this.setState({ isOpen: !isOpen });
   };
 
-  onColorChangeClick = () => {
-    //   const { dispatch, setName } = this.props;
-    //   dispatch({
-    //     type: "color by gene set",
-    //     colorAccessor: setName,
-    //   });
-  };
-
   renderGenes() {
-    const { setName, setGenes, setGenesWithDescriptions } = this.props;
-
+    const { setName, setGenes } = this.props;
+    const setGenesNames = [...setGenes.keys()];
     return (
       <div data-testclass="gene-set-genes">
-        {setGenes.map((gene) => {
-          const { geneDescription } = setGenesWithDescriptions.get(gene);
-
+        {setGenesNames.map((gene) => {
+          const { geneDescription } = setGenes.get(gene);
           return (
             <Gene
               key={gene}
@@ -102,10 +43,10 @@ class GeneSet extends React.Component {
   }
 
   render() {
-    const { setName, setGenes, genesetDescription } = this.props;
+    const { setName, genesetDescription, setGenes } = this.props;
     const { isOpen } = this.state;
     const genesetNameLengthVisible = 150; /* this magic number determines how much of a long geneset name we see */
-    const genesetIsEmpty = setGenes.length === 0;
+    const genesetIsEmpty = setGenes.size === 0;
     let testClass = "geneset-expand";
 
     if (setName.includes(diffexpPopNamePrefix1))
@@ -174,7 +115,7 @@ class GeneSet extends React.Component {
             </p>
           )}
         </div>
-        {isOpen && !genesetIsEmpty && setGenes.length > 0 && (
+        {isOpen && !genesetIsEmpty && (
           <HistogramBrush
             isGeneSetSummary
             field={setName}
