@@ -18,10 +18,8 @@ import annotations from "./annotations";
 import genesets from "./genesets";
 import genesetsUI from "./genesetsUI";
 import autosave from "./autosave";
-import ontology from "./ontology";
 import centroidLabels from "./centroidLabels";
 import pointDialation from "./pointDilation";
-import { reembedController } from "./reembed";
 import { gcMiddleware as annoMatrixGC } from "../annoMatrix";
 
 import undoableConfig from "./undoableConfig";
@@ -31,7 +29,6 @@ const Reducer = undoable(
     ["config", config],
     ["annoMatrix", annoMatrix],
     ["obsCrossfilter", obsCrossfilter],
-    ["ontology", ontology],
     ["annotations", annotations],
     ["genesets", genesets],
     ["genesetsUI", genesetsUI],
@@ -44,7 +41,6 @@ const Reducer = undoable(
     ["differential", differential],
     ["centroidLabels", centroidLabels],
     ["pointDilation", pointDialation],
-    ["reembedController", reembedController],
     ["autosave", autosave],
     ["userInfo", userInfo],
   ]),

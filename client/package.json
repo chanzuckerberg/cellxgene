@@ -1,6 +1,6 @@
 {
   "name": "cellxgene",
-  "version": "0.16.7",
+  "version": "0.17.0",
   "license": "MIT",
   "description": "cellxgene is a web application for the interactive exploration of single cell sequence data.",
   "repository": "https://github.com/chanzuckerberg/cellxgene",
@@ -31,11 +31,11 @@
   },
   "browserslist": [
     "Chrome > 60",
-    "Safari >= 10.1",
     "iOS >= 10.3",
     "Firefox >= 60",
     "Edge >= 79",
-    "not Explorer > 0"
+    "not Explorer > 0",
+    "not Safari > 0"
   ],
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.13.0",
@@ -47,7 +47,6 @@
     "core-js": "^3.6.5",
     "d3": "^4.10.0",
     "d3-scale-chromatic": "^1.5.0",
-    "fastestsmallesttextencoderdecoder": "^1.0.22",
     "flatbuffers": "^1.11.0",
     "fuzzysort": "^1.1.4",
     "gl-mat4": "^1.2.0",

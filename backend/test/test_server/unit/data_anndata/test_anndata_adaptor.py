@@ -198,39 +198,3 @@ class AdaptorTest(unittest.TestCase):
         self.assertEqual(data["n_rows"], 2638)
         self.assertEqual(data["n_cols"], 3)
         self.assertTrue((data["col_idx"] == [15, 1818, 1837]).all())
-
-    def test_compute_embedding(self):
-        filter = {"obs": {"index": [[0, 100]]}}
-
-        # Verify that we correctly handle the case where we lack scanpy
-        import unittest.mock
-
-        with unittest.mock.patch.dict(sys.modules, {"scanpy": None}):
-            with self.assertRaises(NotImplementedError):
-                self.data.compute_embedding("umap", filter)
-
-        # if we happen to have scanpy, test the full API, else punt
-        import importlib
-
-        scanpy_spec = importlib.util.find_spec("scanpy")
-        if scanpy_spec is None:
-            print("Skipping compute_embedding test as ScanPy not installed")
-            return
-
-        # this feature is unsupported in backed mode, and we expect an error
-        if self.data.data.isbacked:
-            with self.assertRaises(NotImplementedError):
-                self.data.compute_embedding("umap", filter)
-            return
-
-        schema = self.data.compute_embedding("umap", filter)
-
-        self.assertIsInstance(schema["name"], str)
-        name = schema["name"]
-        self.assertEqual(schema["type"], "float32")
-        self.assertEqual(schema["dims"], [f"{name}_0", f"{name}_1"])
-
-        emb = self.data.data.obsm[f"X_{name}"]
-        self.assertEqual(emb.shape, (2638, 2))
-        self.assertTrue(np.isfinite(emb[0:100]).all())
-        self.assertTrue(np.isnan(emb[100:]).all())
