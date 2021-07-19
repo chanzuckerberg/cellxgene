@@ -1,4 +1,5 @@
 import React from "react";
+import { interpolateCool } from "d3-scale-chromatic";
 import * as d3 from "d3";
 
 const Dot = (props) => {
@@ -9,6 +10,7 @@ const Dot = (props) => {
     _geneSymbol,
     _geneIndex,
     rowColumnSize,
+    // dotColorScale,
   } = props;
 
   const bins = histogramMap.has(categoryValue)
@@ -18,7 +20,14 @@ const Dot = (props) => {
   const totalCells = bins.reduce(
     (acc, current) => acc + current
   ); /* SUM REMAINING ELEMENTS */
+  /* 
+    TODO(colinmegill) #632 this is a heuristic —
+    we need to figure out what non expressing means
+    and use it, rather than shifting off the first bin
+    for prototyping
+  */
   bins.shift(); /* MUTATES, REMOVES FIRST ELEMENT */
+
   const expressing = bins.reduce(
     (acc, current) => acc + current
   ); /* SUM REMAINING ELEMENTS */
@@ -53,8 +62,8 @@ const Dot = (props) => {
         cx="11"
         cy="-3.5"
         style={{
-          fill: "steelblue",
-          fillOpacity: 0.5,
+          fill: interpolateCool(Math.random()),
+          fillOpacity: 1,
           stroke: "none",
         }}
       />

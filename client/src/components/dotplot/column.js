@@ -1,6 +1,8 @@
 import React from "react";
 import { connect, shallowEqual } from "react-redux";
 
+// import * as d3 from "d3";
+
 import memoize from "memoize-one";
 
 import Async from "react-async";
@@ -10,10 +12,7 @@ import Dot from "./dot";
 
 import { createCategorySummaryFromDfCol } from "../../util/stateManager/controlsHelpers";
 
-import {
-  createColorTable,
-  createColorQuery,
-} from "../../util/stateManager/colorHelpers";
+import { createColorQuery } from "../../util/stateManager/colorHelpers";
 
 @connect((state) => ({
   annoMatrix: state.annoMatrix,
@@ -56,23 +55,23 @@ class Column extends React.Component {
 
   async fetchData(annoMatrix, metadataField, colors, _geneSymbol) {
     /*
-        fetch our data and the color-by data if appropriate, and then build a summary
-        of our category and a color table for the color-by annotation.
-        */
+      fetch our data and the color-by data if appropriate, and then build a summary
+      of our category and a color table for the color-by annotation.
+      */
     const { schema } = annoMatrix;
     const { colorMode } = colors;
     const { genesets, differential } = this.props;
     let colorDataPromise = Promise.resolve(null);
-    if (_geneSymbol) {
-      const query = createColorQuery(
-        colorMode,
-        _geneSymbol,
-        schema,
-        genesets,
-        differential.diffExp
-      );
-      if (query) colorDataPromise = annoMatrix.fetch(...query);
-    }
+
+    const query = createColorQuery(
+      colorMode,
+      _geneSymbol,
+      schema,
+      genesets,
+      differential.diffExp
+    );
+    if (query) colorDataPromise = annoMatrix.fetch(...query);
+
     const [categoryData, colorData] = await Promise.all([
       annoMatrix.fetch("obs", metadataField),
       colorDataPromise,
@@ -88,45 +87,6 @@ class Column extends React.Component {
     );
 
     return [categoryData, categorySummary, colorData];
-  }
-
-  updateColorTable(colors, colorDf) {
-    const { annoMatrix } = this.props;
-    const { schema } = annoMatrix;
-
-    /* update color table state */
-    if (!colors || !colorDf) {
-      return createColorTable(
-        null, // default mode
-        null,
-        null,
-        schema,
-        null
-      );
-    }
-
-    const { colorAccessor, userColors, colorMode } = colors;
-    return createColorTable(
-      colorMode,
-      colorAccessor /* TODO(colinmegill) #632 dotplot wiring */,
-      colorDf,
-      schema,
-      userColors
-    );
-  }
-
-  createColorByQuery(colors) {
-    const { annoMatrix, genesets, differential } = this.props;
-    const { schema } = annoMatrix;
-    const { colorMode, colorAccessor } = colors;
-
-    return createColorQuery(
-      colorMode,
-      colorAccessor /* TODO(colinmegill) #632 dotplot wiring */,
-      schema,
-      genesets,
-      differential.diffExp
-    );
   }
 
   render() {
@@ -170,13 +130,7 @@ class Column extends React.Component {
           </Async.Rejected>
           <Async.Fulfilled persist>
             {(asyncProps) => {
-              const {
-                categoryData,
-                width,
-                height,
-                categorySummary,
-                colorData,
-              } = asyncProps;
+              const { categoryData, categorySummary, colorData } = asyncProps;
 
               if (!_geneSymbol || !colorData) return null;
 
@@ -186,27 +140,30 @@ class Column extends React.Component {
               const col = colorData.icol(0);
               const range = col.summarize();
 
+              console.log(_geneSymbol, metadataField, categoryData);
+
               const histogramMap = col.histogram(
                 100,
                 [range.min, range.max],
                 groupBy
               );
 
+              // const dotColorScale = d3
+              //   .scaleLinear()
+              //   .domain([range.min, range.max])
+              //   .range([0, 1]);
+
               return categorySummary.categoryValues.map(
                 (val, _categoryValueIndex) => {
                   return (
                     <Dot
                       key={val}
-                      metadataField={metadataField}
-                      categoryData={categoryData}
-                      _geneSymbol={_geneSymbol}
-                      colorData={colorData}
                       categoryValue={val}
-                      width={width}
-                      height={height}
                       _categoryValueIndex={_categoryValueIndex}
                       histogramMap={histogramMap}
+                      _geneSymbol={_geneSymbol}
                       _geneIndex={_geneIndex}
+                      colorData={colorData}
                       rowColumnSize={rowColumnSize}
                     />
                   );
@@ -221,3 +178,42 @@ class Column extends React.Component {
 }
 
 export default Column;
+
+// updateColorTable(colors, colorDf) {
+//   const { annoMatrix } = this.props;
+//   const { schema } = annoMatrix;
+
+//   /* update color table state */
+//   if (!colors || !colorDf) {
+//     return createColorTable(
+//       null, // default mode
+//       null,
+//       null,
+//       schema,
+//       null
+//     );
+//   }
+
+//   const { colorAccessor, userColors, colorMode } = colors;
+//   return createColorTable(
+//     colorMode,
+//     colorAccessor /* TODO(colinmegill) #632 dotplot wiring */,
+//     colorDf,
+//     schema,
+//     userColors
+//   );
+// }
+
+// createColorByQuery(colors) {
+//   const { annoMatrix, genesets, differential } = this.props;
+//   const { schema } = annoMatrix;
+//   const { colorMode, colorAccessor } = colors;
+
+//   return createColorQuery(
+//     colorMode,
+//     colorAccessor /* TODO(colinmegill) #632 dotplot wiring */,
+//     schema,
+//     genesets,
+//     differential.diffExp
+//   );
+// }

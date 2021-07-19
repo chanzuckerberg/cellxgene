@@ -55,6 +55,28 @@ export function createColorQuery(colorMode, colorByAccessor, schema, genesets) {
         },
       ];
     }
+    case "color by dotplot columns": {
+      /* 
+        Color by COLUMNS is a mode at the UI level, 
+        as we are going to be keeping track of many color scales —
+        one per column in the dotplot. The query is for
+        one gene at a time. 
+      */
+      const varIndex = schema?.annotations?.var?.index;
+
+      if (!varIndex) return null;
+
+      return [
+        "X",
+        {
+          where: {
+            field: "var",
+            column: varIndex,
+            value: colorByAccessor,
+          },
+        },
+      ];
+    }
     default: {
       return null;
     }
