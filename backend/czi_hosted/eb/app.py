@@ -164,7 +164,6 @@ try:
         app_config.update_server_config(multi_dataset__dataroot=dataroot)
 
     # overwrite configuration for the eb app
-    app_config.update_default_dataset_config(embeddings__enable_reembedding=False,)
     app_config.update_server_config(multi_dataset__allowed_matrix_types=["cxg"],)
 
     # complete config

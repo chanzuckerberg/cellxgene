@@ -66,15 +66,11 @@ dataset:
       directory: null
       file: null            # annotations file name
       gene_sets_file: null  # gene sets file name
-    ontology:
-      enable: false
-      obo_location: null
     gene_sets:
       readonly: false       # gene sets CRUD enabled/disabled
 
   embeddings:
     names : []
-    enable_reembedding: false
 
   diffexp:
     enable: true

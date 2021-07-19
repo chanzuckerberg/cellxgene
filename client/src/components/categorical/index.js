@@ -13,7 +13,6 @@ import actions from "../../actions";
 @connect((state) => ({
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
   schema: state.annoMatrix?.schema,
-  ontology: state.ontology,
   userInfo: state.userInfo,
 }))
 class Categories extends React.Component {
@@ -130,10 +129,8 @@ class Categories extends React.Component {
     const {
       writableCategoriesEnabled,
       schema,
-      ontology,
       userInfo,
     } = this.props;
-    const ontologyEnabled = ontology?.enabled ?? false;
     /* all names, sorted in display order.  Will be rendered in this order */
     const allCategoryNames = ControlsHelpers.selectableCategoryNames(
       schema
@@ -158,7 +155,7 @@ class Categories extends React.Component {
           handleCancel={this.handleDisableAnnoMode}
           annoInput={
             <LabelInput
-              labelSuggestions={ontologyEnabled ? ontology.terms : null}
+              labelSuggestions={null}
               onChange={this.handleChange}
               onSelect={this.handleSelect}
               inputProps={{

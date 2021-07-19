@@ -115,7 +115,7 @@ class AnnotationsLocalFile(Annotations):
         return os.getcwd()
 
     def _get_filename(self, data_adaptor):
-        """ return the current annotation file name """
+        """return the current annotation file name"""
         if self.output_file:
             return self.output_file
 
@@ -174,12 +174,6 @@ class AnnotationsLocalFile(Annotations):
         params = {}
         params["annotations"] = True
         params["user_annotation_collection_name_enabled"] = True
-
-        if self.ontology_data:
-            params["annotations_cell_ontology_enabled"] = True
-            params["annotations_cell_ontology_terms"] = self.ontology_data
-        else:
-            params["annotations_cell_ontology_enabled"] = False
 
         if self.output_file is not None:
             # user has hard-wired the name of the annotation data collection

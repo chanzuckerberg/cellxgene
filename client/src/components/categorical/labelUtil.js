@@ -3,7 +3,7 @@ import { Colors } from "@blueprintjs/core";
 
 import { AnnotationsHelpers } from "../../util/stateManager";
 
-export function isLabelErroneous(label, metadataField, ontology, schema) {
+export function isLabelErroneous(label, metadataField, schema) {
   /*
     return false if this is a LEGAL/acceptable category name or NULL/empty string,
     or return an error type.
@@ -12,10 +12,9 @@ export function isLabelErroneous(label, metadataField, ontology, schema) {
   /* allow empty string */
   if (label === "") return false;
 
-  /* check for label syntax errors, but allow terms in ontology */
-  const termInOntology = ontology?.termSet.has(label) ?? false;
+  /* check for label syntax errors */
   const error = AnnotationsHelpers.annotationNameIsErroneous(label);
-  if (error && !termInOntology) return error;
+  if (error) return error;
 
   /* disallow duplicates */
   const { obsByName } = schema.annotations;

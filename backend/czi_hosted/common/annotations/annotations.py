@@ -1,10 +1,8 @@
-import fastobo
-import fsspec
 import os
 
 from flask import current_app, has_request_context
 
-from backend.common.errors import OntologyLoadFailure, DisabledFeatureError
+from backend.common.errors import DisabledFeatureError
 from backend.common.utils.type_conversion_utils import get_schema_type_hint_of_array
 from backend.common.genesets import write_gene_sets_tidycsv, read_gene_sets_tidycsv, validate_gene_sets
 from backend.common.utils.data_locator import DataLocator
@@ -12,14 +10,9 @@ from backend.common.utils.utils import path_join
 
 
 class Annotations:
-    """ baseclass for annotations, including ontologies and genesets """
-
-    """ our default ontology is the PURL for the Cell Ontology.
-    See http://www.obofoundry.org/ontology/cl.html """
-    DefaultOnotology = "http://purl.obolibrary.org/obo/cl.obo"
+    """baseclass for annotations and genesets"""
 
     def __init__(self, config={}):
-        self.ontology_data = None
         self.config = config
 
     def user_annotations_enabled(self):
@@ -28,27 +21,6 @@ class Annotations:
     def check_user_annotations_enabled(self):
         if not self.user_annotations_enabled():
             raise DisabledFeatureError("User annotations are disabled.")
-
-    def load_ontology(self, path):
-        """Load and parse ontologies - currently support OBO files only."""
-        if path is None:
-            path = self.DefaultOnotology
-
-        try:
-            with fsspec.open(path) as f:
-                obo = fastobo.iter(f)
-                terms = filter(lambda stanza: type(stanza) is fastobo.term.TermFrame, obo)
-                names = [tag.name for term in terms for tag in term if type(tag) is fastobo.term.NameClause]
-                self.ontology_data = names
-
-        except FileNotFoundError as e:
-            raise OntologyLoadFailure("Unable to find OBO ontology path") from e
-
-        except SyntaxError as e:
-            raise OntologyLoadFailure(f"{path}:{e.lineno}:{e.offset} OBO syntax error, unable to read ontology") from e
-
-        except Exception as e:
-            raise OntologyLoadFailure(f"{path}:Error loading OBO file") from e
 
     def get_schema(self, data_adaptor):
         schema = []
@@ -126,7 +98,7 @@ class Annotations:
 
 
 def dataset_uri_to_geneset_uri(data_uri_or_path):
-    """ given a dataset URI, return the associated gene set URI """
+    """given a dataset URI, return the associated gene set URI"""
     data_basename = os.path.basename(data_uri_or_path)
     base, ext = os.path.splitext(data_basename)
     if ext is not None:  # strip extension, if any

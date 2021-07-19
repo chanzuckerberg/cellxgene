@@ -5,9 +5,6 @@ import {
   doJsonRequest,
   dispatchNetworkErrorMessageToUser,
 } from "../util/actionHelpers";
-import {
-  requestReembed /* , reembedResetWorldToUniverse -- disabled temporarily, TODO issue #1606 */,
-} from "./reembed";
 import { loadUserColorConfig } from "../util/stateManager/colorHelpers";
 import * as selnActions from "./selection";
 import * as annoActions from "./annotation";
@@ -243,7 +240,6 @@ export default {
   requestDifferentialExpression,
   requestSingleGeneExpressionCountsForColoringPOST,
   requestUserDefinedGene,
-  requestReembed,
   selectContinuousMetadataAction: selnActions.selectContinuousMetadataAction,
   selectCategoricalMetadataAction: selnActions.selectCategoricalMetadataAction,
   selectCategoricalAllMetadataAction:

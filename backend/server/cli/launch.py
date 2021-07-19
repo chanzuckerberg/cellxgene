@@ -45,20 +45,6 @@ def annotation_args(func):
         "Incompatible with --annotations-file and --gene-sets-file.",
     )
     @click.option(
-        "--experimental-annotations-ontology",
-        is_flag=True,
-        default=DEFAULT_CONFIG.dataset_config.user_annotations__ontology__enable,
-        show_default=True,
-        help="When creating annotations, optionally autocomplete names from ontology terms.",
-    )
-    @click.option(
-        "--experimental-annotations-ontology-obo",
-        default=DEFAULT_CONFIG.dataset_config.user_annotations__ontology__obo_location,
-        show_default=True,
-        metavar="<path or url>",
-        help="Location of OBO file defining cell annotation autosuggest terms.",
-    )
-    @click.option(
         "--disable-gene-sets-save",
         is_flag=True,
         default=DEFAULT_CONFIG.dataset_config.user_annotations__gene_sets__readonly,
@@ -120,14 +106,6 @@ def config_args(func):
         show_default=False,
         metavar="<text>",
         help="Embedding name, eg, 'umap'. Repeat option for multiple embeddings. Defaults to all.",
-    )
-    @click.option(
-        "--experimental-enable-reembedding",
-        is_flag=True,
-        default=DEFAULT_CONFIG.dataset_config.embeddings__enable_reembedding,
-        show_default=False,
-        hidden=True,
-        help="Enable experimental on-demand re-embedding using UMAP. WARNING: may be very slow.",
     )
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -338,9 +316,6 @@ def launch(
     disable_gene_sets_save,
     backed,
     disable_diffexp,
-    experimental_annotations_ontology,
-    experimental_annotations_ontology_obo,
-    experimental_enable_reembedding,
     config_file,
     dump_default_config,
 ):
@@ -396,12 +371,9 @@ def launch(
             user_annotations__local_file_csv__directory=user_generated_data_dir,
             user_annotations__local_file_csv__gene_sets_file=gene_sets_file,
             user_annotations__gene_sets__readonly=disable_gene_sets_save,
-            user_annotations__ontology__enable=experimental_annotations_ontology,
-            user_annotations__ontology__obo_location=experimental_annotations_ontology_obo,
             presentation__max_categories=max_category_items,
             presentation__custom_colors=not disable_custom_colors,
             embeddings__names=embedding,
-            embeddings__enable_reembedding=experimental_enable_reembedding,
             diffexp__enable=not disable_diffexp,
             diffexp__lfc_cutoff=diffexp_lfc_cutoff,
         )
