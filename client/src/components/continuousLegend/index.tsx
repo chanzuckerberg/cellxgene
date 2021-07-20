@@ -110,68 +110,53 @@ const continuous = (selectorId: any, colorScale: any, colorAccessor: any) => {
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
-    annoMatrix: (state as any).annoMatrix,
-    colors: (state as any).colors,
-    genesets: (state as any).genesets.genesets,
+  annoMatrix: (state as any).annoMatrix,
+  colors: (state as any).colors,
+  genesets: (state as any).genesets.genesets,
 }))
 class ContinuousLegend extends React.Component {
-    async componentDidUpdate(prevProps: any) {
-        // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
-        const { annoMatrix, colors, genesets } = this.props;
-        if (!colors || !annoMatrix)
-            return;
-        if (colors !== prevProps?.colors || annoMatrix !== prevProps?.annoMatrix) {
-            const { schema } = annoMatrix;
-            const { colorMode, colorAccessor, userColors } = colors;
-            const colorQuery = createColorQuery(colorMode, colorAccessor, schema, genesets);
-            const colorDf = colorQuery ? await annoMatrix.fetch(...colorQuery) : null;
-            const colorTable = createColorTable(colorMode, colorAccessor, colorDf, schema, userColors);
-            const colorScale = colorTable.scale;
-            // @ts-expect-error ts-migrate(2339) FIXME: Property 'range' does not exist on type '((idx: an... Remove this comment to see the full error message
-            const range = colorScale?.range;
-            // @ts-expect-error ts-migrate(2339) FIXME: Property 'domain' does not exist on type '((idx: a... Remove this comment to see the full error message
-            const [domainMin, domainMax] = colorScale?.domain?.() ?? [0, 0];
-            /* always remove it, if it's not continuous we don't put it back. */
-            d3.select("#continuous_legend").selectAll("*").remove();
-            if (colorAccessor && colorScale && range && domainMin < domainMax) {
-                /* fragile! continuous range is 0 to 1, not [#fa4b2c, ...], make this a flag? */
-                if (range()[0][0] !== "#") {
-                    // @ts-expect-error ts-migrate(2339) FIXME: Property 'domain' does not exist on type '((idx: a... Remove this comment to see the full error message
-                    continuous("#continuous_legend", d3.scaleSequential(interpolateCool).domain(colorScale.domain()), colorAccessor);
-                }
-            }
-        }
-    }
-    render() {
-        return (<div id="continuous_legend" style={{
-                position: "absolute",
-                left: 8,
-                top: 35,
-                zIndex: 1,
-                pointerEvents: "none",
-            }}/>);
-    }
-}
-      // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'colorScale'.
-      const range = (colorScale as any)?.range;
-      // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'colorScale'.
-      const [domainMin, domainMax] = (colorScale as any)?.domain?.() ?? [0, 0];
-
+  async componentDidUpdate(prevProps: any) {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
+    const { annoMatrix, colors, genesets } = this.props;
+    if (!colors || !annoMatrix) return;
+    if (colors !== prevProps?.colors || annoMatrix !== prevProps?.annoMatrix) {
+      const { schema } = annoMatrix;
+      const { colorMode, colorAccessor, userColors } = colors;
+      const colorQuery = createColorQuery(
+        colorMode,
+        colorAccessor,
+        schema,
+        genesets
+      );
+      const colorDf = colorQuery ? await annoMatrix.fetch(...colorQuery) : null;
+      const colorTable = createColorTable(
+        colorMode,
+        colorAccessor,
+        colorDf,
+        schema,
+        userColors
+      );
+      const colorScale = colorTable.scale;
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'range' does not exist on type '((idx: an... Remove this comment to see the full error message
+      const range = colorScale?.range;
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'domain' does not exist on type '((idx: a... Remove this comment to see the full error message
+      const [domainMin, domainMax] = colorScale?.domain?.() ?? [0, 0];
       /* always remove it, if it's not continuous we don't put it back. */
       d3.select("#continuous_legend").selectAll("*").remove();
-
-      // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'colorAccessor'.
       if (colorAccessor && colorScale && range && domainMin < domainMax) {
         /* fragile! continuous range is 0 to 1, not [#fa4b2c, ...], make this a flag? */
         if (range()[0][0] !== "#") {
-          // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'colorScale'.
-          continuous("#continuous_legend", d3.scaleSequential(interpolateCool).domain((colorScale as any).domain()), colorAccessor);
+          continuous(
+            "#continuous_legend",
+            // @ts-expect-error ts-migrate(2339) FIXME: Property 'domain' does not exist on type '((idx: a... Remove this comment to see the full error message
+            d3.scaleSequential(interpolateCool).domain(colorScale.domain()),
+            colorAccessor
+          );
         }
       }
     }
   }
 
-  // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'render'.
   render() {
     return (
       <div
