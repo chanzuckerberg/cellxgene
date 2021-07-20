@@ -10,7 +10,7 @@ import { __getMemoId } from "./util";
 /*
 Private utility functions
 */
-function extent(tarr) {
+function extent(tarr: any) {
   let min = 0x7fffffff;
   let max = ~min; // eslint-disable-line no-bitwise -- Establishes 0 of same size
   for (let i = 0, l = tarr.length; i < l; i += 1) {
@@ -26,10 +26,12 @@ function extent(tarr) {
 }
 
 class IdentityInt32Index {
+  maxOffset: any;
+
   /*
   identity/noop index, with small assumptions that labels are int32
   */
-  constructor(maxOffset) {
+  constructor(maxOffset: any) {
     this.maxOffset = maxOffset;
   }
 
@@ -46,31 +48,31 @@ class IdentityInt32Index {
     return k;
   }
 
-  getOffset(i) {
+  getOffset(i: any) {
     // label to offset
     return Number.isInteger(i) && i >= 0 && i < this.maxOffset ? i : undefined;
   }
 
-  getOffsets(arr) {
+  getOffsets(arr: any) {
     // labels to offsets
-    return arr.map((i) => this.getOffset(i));
+    return arr.map((i: any) => this.getOffset(i));
   }
 
-  getLabel(i) {
+  getLabel(i: any) {
     // offset to label
     return Number.isInteger(i) && i >= 0 && i < this.maxOffset ? i : undefined;
   }
 
-  getLabels(arr) {
+  getLabels(arr: any) {
     // offsets to labels
-    return arr.map((i) => this.getLabel(i));
+    return arr.map((i: any) => this.getLabel(i));
   }
 
   size() {
     return this.maxOffset;
   }
 
-  __promote(labelArray) {
+  __promote(labelArray: any) {
     /*
     time/space decision - based on the resulting density
     */
@@ -84,10 +86,11 @@ class IdentityInt32Index {
     if (density < 0.1) {
       return new KeyIndex(labelArray);
     }
+    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'number[]' is not assignable to p... Remove this comment to see the full error message
     return new DenseInt32Index(labelArray, [minLabel, maxLabel]);
   }
 
-  subset(labels) {
+  subset(labels: any) {
     /* validate subset */
     const { maxOffset } = this;
     for (let i = 0, l = labels.length; i < l; i += 1) {
@@ -99,12 +102,12 @@ class IdentityInt32Index {
   }
 
   /* identity index - labels are offsets */
-  isubset(offsets) {
+  isubset(offsets: any) {
     return this.subset(offsets);
   }
 
   /* identity index - labels are offsets */
-  isubsetMask(mask) {
+  isubsetMask(mask: any) {
     let count = 0;
     if (mask.length !== this.maxOffset) {
       throw new RangeError("mask has invalid length for index");
@@ -120,18 +123,18 @@ class IdentityInt32Index {
     return this.subset(labels);
   }
 
-  withLabel(label) {
+  withLabel(label: any) {
     if (label === this.maxOffset) {
       return new IdentityInt32Index(label + 1);
     }
     return this.__promote([...this.labels(), label]);
   }
 
-  withLabels(labels) {
+  withLabels(labels: any) {
     return this.__promote([...this.labels(), ...labels]);
   }
 
-  dropLabel(label) {
+  dropLabel(label: any) {
     if (label === this.maxOffset - 1) {
       return new IdentityInt32Index(label);
     }
@@ -142,20 +145,38 @@ class IdentityInt32Index {
 }
 
 class DenseInt32Index {
+  __id: any;
+
+  getLabel: any;
+
+  getLabels: any;
+
+  getOffset: any;
+
+  getOffsets: any;
+
+  index: any;
+
+  minLabel: any;
+
+  rindex: any;
+
   /*
   DenseInt32Index indexes integer labels, and uses Int32Array typed arrays
   for both forward and reverse indexing.   This means that the min/max range
   of the forward index labels must be known a priori (so that the index
   array can be pre-allocated).
   */
-  constructor(labels, labelRange = null) {
+  constructor(labels: any, labelRange = null) {
     if (labels.constructor !== Int32Array) {
       labels = new Int32Array(labels);
     }
 
     if (!labelRange) {
+      // @ts-expect-error ts-migrate(2322) FIXME: Type 'number[]' is not assignable to type 'null'.
       labelRange = extent(labels);
     }
+    // @ts-expect-error ts-migrate(2488) FIXME: Type 'null' must have a '[Symbol.iterator]()' meth... Remove this comment to see the full error message
     const [minLabel, maxLabel] = labelRange;
     const labelSpaceSize = maxLabel - minLabel + 1;
     const index = new Int32Array(labelSpaceSize).fill(-1);
@@ -173,22 +194,22 @@ class DenseInt32Index {
 
   __compile() {
     const { minLabel, index, rindex } = this;
-    this.getOffset = function getOffset(l) {
+    this.getOffset = function getOffset(l: any) {
       if (!Number.isInteger(l)) return undefined;
       const offset = index[l - minLabel];
       return offset === -1 ? undefined : offset;
     };
 
-    this.getOffsets = function getOffsets(arr) {
-      return arr.map((i) => this.getOffset(i));
+    this.getOffsets = function getOffsets(arr: any) {
+      return arr.map((i: any) => this.getOffset(i));
     };
 
-    this.getLabel = function getLabel(i) {
+    this.getLabel = function getLabel(i: any) {
       return Number.isInteger(i) ? rindex[i] : undefined;
     };
 
-    this.getLabels = function getLabels(arr) {
-      return arr.map((i) => this.getLabel(i));
+    this.getLabels = function getLabels(arr: any) {
+      return arr.map((i: any) => this.getLabel(i));
     };
   }
 
@@ -200,7 +221,7 @@ class DenseInt32Index {
     return this.rindex.length;
   }
 
-  __promote(labelArray) {
+  __promote(labelArray: any) {
     /*
     time/space decision - if we are going to use less than 10% of the
     dense index space, switch to a KeyIndex (which is slower, but uses
@@ -213,10 +234,11 @@ class DenseInt32Index {
     if (density < 0.1) {
       return new KeyIndex(labelArray);
     }
+    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'number[]' is not assignable to p... Remove this comment to see the full error message
     return new DenseInt32Index(labelArray, [minLabel, maxLabel]);
   }
 
-  subset(labels) {
+  subset(labels: any) {
     /* validate subset */
     for (let i = 0, l = labels.length; i < l; i += 1) {
       const label = labels[i];
@@ -227,7 +249,7 @@ class DenseInt32Index {
     return this.__promote(labels);
   }
 
-  isubset(offsets) {
+  isubset(offsets: any) {
     /* validate subset */
     const { rindex } = this;
     const maxOffset = rindex.length;
@@ -241,7 +263,7 @@ class DenseInt32Index {
     return this.__promote(labels);
   }
 
-  isubsetMask(mask) {
+  isubsetMask(mask: any) {
     const { rindex } = this;
     if (mask.length !== rindex.length)
       throw new RangeError("mask has invalid length for index");
@@ -257,15 +279,15 @@ class DenseInt32Index {
     return this.__promote(labels);
   }
 
-  withLabel(label) {
+  withLabel(label: any) {
     return this.__promote([...this.labels(), label]);
   }
 
-  withLabels(labels) {
+  withLabels(labels: any) {
     return this.__promote([...this.labels(), ...labels]);
   }
 
-  dropLabel(label) {
+  dropLabel(label: any) {
     const labelArray = [...this.labels()];
     labelArray.splice(labelArray.indexOf(label), 1);
     return this.__promote(labelArray);
@@ -273,17 +295,31 @@ class DenseInt32Index {
 }
 
 class KeyIndex {
+  __id: any;
+
+  getLabel: any;
+
+  getLabels: any;
+
+  getOffset: any;
+
+  getOffsets: any;
+
+  index: any;
+
+  rindex: any;
+
   /*
   KeyIndex indexes arbitrary JS primitive types, and uses a Map()
   as its core data structure.
   */
-  constructor(labels) {
+  constructor(labels: any) {
     const index = new Map();
     if (labels === undefined) {
       labels = [];
     }
     const rindex = labels;
-    labels.forEach((v, i) => {
+    labels.forEach((v: any, i: any) => {
       index.set(v, i);
     });
 
@@ -300,20 +336,20 @@ class KeyIndex {
 
   __compile() {
     const { index, rindex } = this;
-    this.getOffset = function getOffset(k) {
+    this.getOffset = function getOffset(k: any) {
       return index.get(k);
     };
 
-    this.getOffsets = function getOffsets(arr) {
-      return arr.map((l) => this.getOffset(l));
+    this.getOffsets = function getOffsets(arr: any) {
+      return arr.map((l: any) => this.getOffset(l));
     };
 
-    this.getLabel = function getLabel(i) {
+    this.getLabel = function getLabel(i: any) {
       return Number.isInteger(i) ? rindex[i] : undefined;
     };
 
-    this.getLabels = function getLabels(arr) {
-      return arr.map((i) => this.getLabel(i));
+    this.getLabels = function getLabels(arr: any) {
+      return arr.map((i: any) => this.getLabel(i));
     };
   }
 
@@ -325,7 +361,7 @@ class KeyIndex {
     return this.rindex.length;
   }
 
-  subset(labels) {
+  subset(labels: any) {
     /* validate subset */
     for (let i = 0, l = labels.length; i < l; i += 1) {
       const label = labels[i];
@@ -338,7 +374,7 @@ class KeyIndex {
     return new KeyIndex(labels);
   }
 
-  isubset(offsets) {
+  isubset(offsets: any) {
     const { rindex } = this;
     const maxOffset = rindex.length;
     const labels = new Array(offsets.length);
@@ -352,7 +388,7 @@ class KeyIndex {
     return new KeyIndex(labels);
   }
 
-  isubsetMask(mask) {
+  isubsetMask(mask: any) {
     const { rindex } = this;
     if (mask.length !== rindex.length)
       throw new RangeError("mask has invalid length for index");
@@ -368,15 +404,15 @@ class KeyIndex {
     return new KeyIndex(labels);
   }
 
-  withLabel(label) {
+  withLabel(label: any) {
     return new KeyIndex([...this.rindex, label]);
   }
 
-  withLabels(labels) {
+  withLabels(labels: any) {
     return new KeyIndex([...this.rindex, ...labels]);
   }
 
-  dropLabel(label) {
+  dropLabel(label: any) {
     const idx = this.rindex.indexOf(label);
     const labelArray = [...this.rindex];
     labelArray.splice(idx, 1);
@@ -384,7 +420,7 @@ class KeyIndex {
   }
 }
 
-function isLabelIndex(i) {
+function isLabelIndex(i: any) {
   return (
     i instanceof IdentityInt32Index ||
     i instanceof DenseInt32Index ||

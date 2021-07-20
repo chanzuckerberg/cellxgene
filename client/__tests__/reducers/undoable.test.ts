@@ -2,6 +2,7 @@ import undoable from "../../src/reducers/undoable";
 
 describe("create", () => {
   test("no keys", () => {
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 2-3 arguments, but got 1.
     expect(() => undoable(() => {})).toThrow();
     expect(() => undoable(() => {}, null)).toThrow();
     expect(() => undoable(() => {}, [])).toThrow();
@@ -23,7 +24,7 @@ describe("create", () => {
 describe("undo", () => {
   test("expected state modifications", () => {
     const initialState = { a: 0, b: 1000 };
-    const reducer = (state) => {
+    const reducer = (state: any) => {
       return { a: state.a + 1, b: state.b + 1 };
     };
     const undoableReducer = undoable(reducer, ["a"]);
@@ -43,10 +44,10 @@ describe("undo", () => {
 
 describe("redo", () => {
   const initialState = { a: 0, b: 1000 };
-  const reducer = (state) => {
+  const reducer = (state: any) => {
     return { a: state.a + 1, b: state.b + 1 };
   };
-  let UR;
+  let UR: any;
 
   beforeEach(() => {
     UR = undoable(reducer, ["a"]);

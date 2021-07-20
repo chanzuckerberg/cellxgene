@@ -5,20 +5,24 @@ import LabelInput from "../../labelInput";
 import { labelPrompt, isLabelErroneous } from "../labelUtil";
 import actions from "../../../actions";
 
+type State = any;
+
+// @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
-  annotations: state.annotations,
-  schema: state.annoMatrix?.schema,
-  obsCrossfilter: state.obsCrossfilter,
+  annotations: (state as any).annotations,
+  schema: (state as any).annoMatrix?.schema,
+  obsCrossfilter: (state as any).obsCrossfilter,
 }))
-class Category extends React.PureComponent {
-  constructor(props) {
+class Category extends React.PureComponent<{}, State> {
+  constructor(props: {}) {
     super(props);
     this.state = {
       newLabelText: "",
     };
   }
 
-  disableAddNewLabelMode = (e) => {
+  disableAddNewLabelMode = (e: any) => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
     this.setState({
       newLabelText: "",
@@ -29,10 +33,11 @@ class Category extends React.PureComponent {
     if (e) e.preventDefault();
   };
 
-  handleAddNewLabelToCategory = (e) => {
+  handleAddNewLabelToCategory = (e: any) => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField } = this.props;
     const { newLabelText } = this.state;
-
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
     this.disableAddNewLabelMode();
     dispatch(
       actions.annotationCreateLabelInCategory(
@@ -44,10 +49,11 @@ class Category extends React.PureComponent {
     e.preventDefault();
   };
 
-  addLabelAndAssignCells = (e) => {
+  addLabelAndAssignCells = (e: any) => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField } = this.props;
     const { newLabelText } = this.state;
-
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
     this.disableAddNewLabelMode();
     dispatch(
       actions.annotationCreateLabelInCategory(metadataField, newLabelText, true)
@@ -55,26 +61,28 @@ class Category extends React.PureComponent {
     e.preventDefault();
   };
 
-  labelNameError = (name) => {
+  labelNameError = (name: any) => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type 'R... Remove this comment to see the full error message
     const { metadataField, schema } = this.props;
     return isLabelErroneous(name, metadataField, schema);
   };
 
-  instruction = (label) => {
+  instruction = (label: any) => {
     return labelPrompt(this.labelNameError(label), "New, unique label", ":");
   };
 
-  handleChangeOrSelect = (label) => {
+  handleChangeOrSelect = (label: any) => {
     this.setState({ newLabelText: label });
   };
 
   render() {
     const { newLabelText } = this.state;
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type 'R... Remove this comment to see the full error message
     const { metadataField, annotations, obsCrossfilter } = this.props;
-
     return (
       <>
         <AnnoDialog
+          // @ts-expect-error ts-migrate(2322) FIXME: Type '{ isActive: any; inputProps: { "data-testid"... Remove this comment to see the full error message
           isActive={
             annotations.isAddingNewLabel &&
             annotations.categoryAddingNewLabel === metadataField
@@ -95,6 +103,7 @@ class Category extends React.PureComponent {
           handleCancel={this.disableAddNewLabelMode}
           annoInput={
             <LabelInput
+              // @ts-expect-error ts-migrate(2322) FIXME: Type '{ labelSuggestions: null; onChange: (label: ... Remove this comment to see the full error message
               labelSuggestions={null}
               onChange={this.handleChangeOrSelect}
               onSelect={this.handleChangeOrSelect}

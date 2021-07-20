@@ -43,13 +43,23 @@ Example:
 
 */
 export default class StateMachine {
-  constructor(initState, transitions, onError) {
+  events: any;
+
+  graph: any;
+
+  onError: any;
+
+  state: any;
+
+  states: any;
+
+  constructor(initState: any, transitions: any, onError: any) {
     this.onError = onError || (() => undefined);
     this.state = initState;
 
     // all states
     this.states = new Set(
-      transitions.reduce((names, tsn) => {
+      transitions.reduce((names: any, tsn: any) => {
         names.push(tsn.from);
         names.push(tsn.to);
         return names;
@@ -57,11 +67,11 @@ export default class StateMachine {
     );
 
     // all transition names (aka events)
-    this.events = new Set(transitions.map((tsn) => tsn.event));
+    this.events = new Set(transitions.map((tsn: any) => tsn.event));
 
     // the transition graph.
     // graph[event][from] -> transition
-    this.graph = transitions.reduce((graph, tsn) => {
+    this.graph = transitions.reduce((graph: any, tsn: any) => {
       const { event, from } = tsn;
       if (!graph.has(event)) graph.set(event, new Map());
       const tsnMap = graph.get(event);
@@ -70,7 +80,8 @@ export default class StateMachine {
     }, new Map());
   }
 
-  clone(initState) {
+  clone(initState: any) {
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
     const fsm = new StateMachine(initState, []);
     fsm.onError = this.onError;
     fsm.states = this.states;
@@ -79,7 +90,7 @@ export default class StateMachine {
     return fsm;
   }
 
-  next(event, data) {
+  next(event: any, data: any) {
     const { graph, state } = this;
     const tsnMap = graph.get(event);
     if (!tsnMap) return this.onError(this, event, state, undefined);

@@ -7,7 +7,7 @@ import { rangeFill as fillRange } from "../range";
 
 // slice out of one array into another, using an index array
 //
-export function sliceByIndex(src, index) {
+export function sliceByIndex(src: any, index: any) {
   if (index === undefined || index === null) {
     return src;
   }
@@ -18,7 +18,7 @@ export function sliceByIndex(src, index) {
   return dst;
 }
 
-export function makeSortIndex(src) {
+export function makeSortIndex(src: any) {
   const index = fillRange(new Uint32Array(src.length));
   sortIndex(index, src);
   return index;

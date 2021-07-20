@@ -21,7 +21,10 @@ The behavior manifest in these action creators:
 Note that crossfilter indices are lazy created, as needed.
 */
 
-export const genesetDelete = (genesetName) => (dispatch, getState) => {
+export const genesetDelete = (genesetName: any) => (
+  dispatch: any,
+  getState: any
+) => {
   const state = getState();
   const { genesets } = state;
   const gs = genesets?.genesets?.get(genesetName) ?? {};
@@ -40,9 +43,9 @@ export const genesetDelete = (genesetName) => (dispatch, getState) => {
   });
 };
 
-export const genesetAddGenes = (genesetName, genes) => async (
-  dispatch,
-  getState
+export const genesetAddGenes = (genesetName: any, genes: any) => async (
+  dispatch: any,
+  getState: any
 ) => {
   const state = getState();
   const { obsCrossfilter: prevObsCrossfilter, annoMatrix } = state;
@@ -50,7 +53,7 @@ export const genesetAddGenes = (genesetName, genes) => async (
   const varIndex = schema.annotations.var.index;
   const df = await annoMatrix.fetch("var", varIndex);
   const geneNames = df.col(varIndex).asArray();
-  genes = genes.reduce((acc, gene) => {
+  genes = genes.reduce((acc: any, gene: any) => {
     if (geneNames.indexOf(gene.geneSymbol) === -1) {
       postUserErrorToast(
         `${gene.geneSymbol} doesn't appear to be a valid gene name.`
@@ -78,9 +81,9 @@ export const genesetAddGenes = (genesetName, genes) => async (
   });
 };
 
-export const genesetDeleteGenes = (genesetName, geneSymbols) => (
-  dispatch,
-  getState
+export const genesetDeleteGenes = (genesetName: any, geneSymbols: any) => (
+  dispatch: any,
+  getState: any
 ) => {
   const state = getState();
   const obsCrossfilter = dropGeneset(dispatch, state, genesetName, geneSymbols);
@@ -97,7 +100,11 @@ export const genesetDeleteGenes = (genesetName, geneSymbols) => (
 Private
 */
 
-function dropGenesetSummaryDimension(obsCrossfilter, state, genesetName) {
+function dropGenesetSummaryDimension(
+  obsCrossfilter: any,
+  state: any,
+  genesetName: any
+) {
   const { annoMatrix, genesets } = state;
   const varIndex = annoMatrix.schema.annotations?.var?.index;
   const gs = genesets?.genesets?.get(genesetName) ?? {};
@@ -113,7 +120,7 @@ function dropGenesetSummaryDimension(obsCrossfilter, state, genesetName) {
   return obsCrossfilter.dropDimension("X", query);
 }
 
-function dropGeneDimension(obsCrossfilter, state, gene) {
+function dropGeneDimension(obsCrossfilter: any, state: any, gene: any) {
   const { annoMatrix } = state;
   const varIndex = annoMatrix.schema.annotations?.var?.index;
   const query = {
@@ -126,10 +133,16 @@ function dropGeneDimension(obsCrossfilter, state, gene) {
   return obsCrossfilter.dropDimension("X", query);
 }
 
-function dropGeneset(dispatch, state, genesetName, geneSymbols) {
+function dropGeneset(
+  dispatch: any,
+  state: any,
+  genesetName: any,
+  geneSymbols: any
+) {
   const { obsCrossfilter: prevObsCrossfilter } = state;
   const obsCrossfilter = geneSymbols.reduce(
-    (crossfilter, gene) => dropGeneDimension(crossfilter, state, gene),
+    (crossfilter: any, gene: any) =>
+      dropGeneDimension(crossfilter, state, gene),
     dropGenesetSummaryDimension(prevObsCrossfilter, state, genesetName)
   );
   dispatch({
@@ -137,7 +150,7 @@ function dropGeneset(dispatch, state, genesetName, geneSymbols) {
     continuousNamespace: { isGeneSetSummary: true },
     selection: genesetName,
   });
-  geneSymbols.forEach((g) =>
+  geneSymbols.forEach((g: any) =>
     dispatch({
       type: "continuous metadata histogram cancel",
       continuousNamespace: { isUserDefined: true },

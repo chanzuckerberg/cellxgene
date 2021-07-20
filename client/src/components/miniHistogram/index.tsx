@@ -7,12 +7,15 @@ import {
 } from "@blueprintjs/core";
 
 export default class MiniHistogram extends React.PureComponent {
-  constructor(props) {
+  canvasRef: any;
+
+  constructor(props: any) {
     super(props);
     this.canvasRef = React.createRef();
   }
 
   drawHistogram = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'xScale' does not exist on type 'Readonly... Remove this comment to see the full error message
     const { xScale, yScale, bins, width, height } = this.props;
 
     if (!bins) return;
@@ -39,7 +42,8 @@ export default class MiniHistogram extends React.PureComponent {
     this.drawHistogram();
   };
 
-  componentDidUpdate = (prevProps) => {
+  componentDidUpdate = (prevProps: any) => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'obsOrVarContinuousFieldDisplayName' does... Remove this comment to see the full error message
     const { obsOrVarContinuousFieldDisplayName, bins } = this.props;
     if (
       prevProps.obsOrVarContinuousFieldDisplayName !==
@@ -51,9 +55,13 @@ export default class MiniHistogram extends React.PureComponent {
 
   render() {
     const {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'domainLabel' does not exist on type 'Rea... Remove this comment to see the full error message
       domainLabel,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'obsOrVarContinuousFieldDisplayName' does... Remove this comment to see the full error message
       obsOrVarContinuousFieldDisplayName,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'width' does not exist on type 'Readonly<... Remove this comment to see the full error message
       width,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'height' does not exist on type 'Readonly... Remove this comment to see the full error message
       height,
     } = this.props;
 

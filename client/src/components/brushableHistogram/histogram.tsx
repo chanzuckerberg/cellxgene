@@ -18,7 +18,7 @@ const Histogram = ({
   isColorBy,
   selectionRange,
   mini,
-}) => {
+}: any) => {
   const svgRef = useRef(null);
   const [brush, setBrush] = useState(null);
 
@@ -69,14 +69,18 @@ const Histogram = ({
         .data(bins)
         .enter()
         .append("rect")
+        // @ts-expect-error ts-migrate(6133) FIXME: 'd' is declared but its value is never read.
         .attr("x", (d, i) => x(binStart(i)) + 1)
         .attr("y", (d) => y(d))
+        // @ts-expect-error ts-migrate(6133) FIXME: 'd' is declared but its value is never read.
         .attr("width", (d, i) => x(binEnd(i)) - x(binStart(i)) - binPadding)
         .attr("height", (d) => y(0) - y(d))
         .style(
           "fill",
+          // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
           isColorBy
-            ? (d, i) => colorScale(histogramScale(binStart(i)))
+            ? // @ts-expect-error ts-migrate(6133) FIXME: 'd' is declared but its value is never read.
+              (d: any, i: any) => colorScale(histogramScale(binStart(i)))
             : defaultBarColor
         );
     }
@@ -101,6 +105,7 @@ const Histogram = ({
       const brushXselection = container
         .insert("g")
         .attr("class", "brush")
+        // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
         .attr("data-testid", `${svgRef.current.dataset.testid}-brushable-area`)
         .call(brushX);
 
@@ -113,6 +118,7 @@ const Histogram = ({
           d3
             .axisBottom(x)
             .ticks(4)
+            // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
             .tickFormat(d3.format(maybeScientific(x)))
         );
 
@@ -126,8 +132,9 @@ const Histogram = ({
             .axisRight(y)
             .ticks(3)
             .tickFormat(
+              // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
               d3.format(
-                y.domain().some((n) => Math.abs(n) >= 10000) ? ".0e" : ","
+                y.domain().some((n: any) => Math.abs(n) >= 10000) ? ".0e" : ","
               )
             )
         );
@@ -137,6 +144,7 @@ const Histogram = ({
       svg.selectAll(".axis path").style("stroke", "rgb(230,230,230)");
       svg.selectAll(".axis line").style("stroke", "rgb(230,230,230)");
 
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '{ brushX: d3.BrushBehavior<unkno... Remove this comment to see the full error message
       setBrush({ brushX, brushXselection });
     }
   }, [histogram, isColorBy]);
@@ -146,6 +154,7 @@ const Histogram = ({
       paint/update selection brush
       */
     if (!brush) return;
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'brushX' does not exist on type 'null'.
     const { brushX, brushXselection } = brush;
     const selection = d3.brushSelection(brushXselection.node());
     if (!selectionRange && selection) {
@@ -162,7 +171,9 @@ const Histogram = ({
       } else {
         /* there is an active selection and a brush - make sure they match */
         const moveDeltaThreshold = 1;
+        // @ts-expect-error ts-migrate(2363) FIXME: The right-hand side of an arithmetic operation mus... Remove this comment to see the full error message
         const dX0 = Math.abs(x0 - selection[0]);
+        // @ts-expect-error ts-migrate(2363) FIXME: The right-hand side of an arithmetic operation mus... Remove this comment to see the full error message
         const dX1 = Math.abs(x1 - selection[1]);
         /*
           only update the brush if it is grossly incorrect,

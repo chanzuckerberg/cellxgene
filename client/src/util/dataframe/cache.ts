@@ -11,12 +11,12 @@ objects.
 
 import { memoize } from "./util";
 
-function hashDataframe(df) {
+function hashDataframe(df: any) {
   if (df.isEmpty()) return "";
-  return df.__columnsAccessor.map((c) => c.__id).join(",");
+  return df.__columnsAccessor.map((c: any) => c.__id).join(",");
 }
 
-function noop(df) {
+function noop(df: any) {
   return df;
 }
 

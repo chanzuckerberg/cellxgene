@@ -23,6 +23,7 @@ beforeEach(async () => {
   const userAgent = await browser.userAgent();
   await page.setUserAgent(`${userAgent}bot`);
 
+  // @ts-expect-error ts-migrate(2341) FIXME: Property '_client' is private and only accessible ... Remove this comment to see the full error message
   await page._client.send("Animation.setPlaybackRate", { playbackRate: 12 });
 
   page.on("pageerror", (err) => {
@@ -49,7 +50,7 @@ beforeEach(async () => {
         }
         const errorMsgText = await Promise.all(
           // TODO can we do this without internal properties?
-          msg.args().map((arg) => arg._remoteObject.description)
+          msg.args().map((arg: any) => arg._remoteObject.description)
         );
         throw new Error(`Console error: ${errorMsgText}`);
       }

@@ -218,10 +218,15 @@ describe("whereCache", () => {
         },
       })
     );
-    expect(wc.where.field.queryField.has("queryColumn")).toEqual(true);
-    expect(wc.where.field.queryField.get("queryColumn")).toBeInstanceOf(Map);
+    // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
+    expect((wc.where as any).field.queryField.has("queryColumn")).toEqual(true);
     expect(
-      wc.where.field.queryField.get("queryColumn").has("queryValue")
+      // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
+      (wc.where as any).field.queryField.get("queryColumn")
+    ).toBeInstanceOf(Map);
+    expect(
+      // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
+      (wc.where as any).field.queryField.get("queryColumn").has("queryValue")
     ).toEqual(true);
     expect(_whereCacheGet(wc, schema, "field", query)).toEqual([0, 1, 2]);
   });

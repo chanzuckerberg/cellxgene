@@ -1,14 +1,14 @@
 import { H3, H1, UL, HTMLTable, Classes } from "@blueprintjs/core";
 import React from "react";
 
-const renderContributors = (contributors, affiliations) => {
+const renderContributors = (contributors: any, affiliations: any) => {
   // eslint-disable-next-line no-constant-condition --  Temp removed contributor section to avoid publishing PII
   if (!contributors || contributors.length === 0 || true) return null;
   return (
     <>
       <H3>Contributors</H3>
       <p>
-        {contributors.map((contributor) => {
+        {contributors.map((contributor: any) => {
           const { email, name, institution } = contributor;
 
           return (
@@ -27,7 +27,7 @@ const renderContributors = (contributors, affiliations) => {
 
 // generates a list of unique institutions by order of appearance in contributors
 const buildAffiliations = (contributors = []) => {
-  const affiliations = [];
+  const affiliations: any = [];
   contributors.forEach((contributor) => {
     const { institution } = contributor;
     if (affiliations.indexOf(institution) === -1) {
@@ -37,13 +37,13 @@ const buildAffiliations = (contributors = []) => {
   return affiliations;
 };
 
-const renderAffiliations = (affiliations) => {
+const renderAffiliations = (affiliations: any) => {
   if (affiliations.length === 0) return null;
   return (
     <>
       <H3>Affiliations</H3>
       <UL>
-        {affiliations.map((item, index) => (
+        {affiliations.map((item: any, index: any) => (
           <div key={item}>
             <sup>{index + 1}</sup>
             {"  "}
@@ -55,7 +55,7 @@ const renderAffiliations = (affiliations) => {
   );
 };
 
-const renderDOILink = (type, doi) => {
+const renderDOILink = (type: any, doi: any) => {
   if (!doi) return null;
   return (
     <>
@@ -71,7 +71,10 @@ const renderDOILink = (type, doi) => {
 
 const ONTOLOGY_KEY = "ontology_term_id";
 // Render list of metadata attributes found in categorical field
-const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
+const renderDatasetMetadata = (
+  singleValueCategories: any,
+  corporaMetadata: any
+) => {
   if (singleValueCategories.size === 0) return null;
   return (
     <>
@@ -93,28 +96,30 @@ const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
             return (
               <tr {...{ key }}>
                 <td>{`${key}:`}</td>
+                {/* @ts-expect-error ts-migrate(2322) FIXME: Type 'unknown' is not assignable to type 'ReactNod... Remove this comment to see the full error message */}
                 <td>{value}</td>
                 <td />
               </tr>
             );
           })}
           {Array.from(singleValueCategories).reduce((elems, pair) => {
+            // @ts-expect-error ts-migrate(2488) FIXME: Type 'unknown' must have a '[Symbol.iterator]()' m... Remove this comment to see the full error message
             const [category, value] = pair;
             // If the value is empty skip it
             if (!value) return elems;
 
             // If this category is a ontology term, let's add its value to the previous node
             if (String(category).includes(ONTOLOGY_KEY)) {
-              const prevElem = elems.pop();
+              const prevElem = (elems as any).pop();
               const newChildren = [...prevElem.props.children];
               newChildren.splice(2, 1, [<td key="ontology">{value}</td>]);
               // Props aren't extensible so we must clone and alter the component to append the new child
-              elems.push(
+              (elems as any).push(
                 React.cloneElement(prevElem, prevElem.props, newChildren)
               );
             } else {
               // Create the list item
-              elems.push(
+              (elems as any).push(
                 <tr key={category}>
                   <td>{`${category}:`}</td>
                   <td>{value}</td>
@@ -132,14 +137,14 @@ const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
 
 // Renders any links found in the config where link_type is not "SUMMARY"
 // If there are no links in the config, render the aboutURL
-const renderLinks = (projectLinks, aboutURL) => {
+const renderLinks = (projectLinks: any, aboutURL: any) => {
   if (!projectLinks && !aboutURL) return null;
   if (projectLinks)
     return (
       <>
         <H3>Project Links</H3>
         <UL>
-          {projectLinks.map((link) => {
+          {projectLinks.map((link: any) => {
             if (link.link_type === "SUMMARY") return null;
             return (
               <li key={link.link_name}>
@@ -166,6 +171,7 @@ const renderLinks = (projectLinks, aboutURL) => {
 };
 
 const InfoFormat = React.memo(
+  // @ts-expect-error ts-migrate(2339) FIXME: Property 'datasetTitle' does not exist on type '{ ... Remove this comment to see the full error message
   ({ datasetTitle, singleValueCategories, aboutURL, dataPortalProps = {} }) => {
     if (
       ["1.0.0", "1.1.0"].indexOf(

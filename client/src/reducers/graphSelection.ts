@@ -3,7 +3,7 @@ const GraphSelection = (
     tool: "lasso", // what selection tool mode (lasso, brush, ...)
     selection: { mode: "all" }, // current selection, which is tool specific
   },
-  action
+  action: any
 ) => {
   switch (action.type) {
     case "set clip quantiles":

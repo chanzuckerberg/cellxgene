@@ -13,6 +13,7 @@ import {
   Position,
 } from "@blueprintjs/core";
 import * as globals from "../../../globals";
+// @ts-expect-error ts-migrate(2307) FIXME: Cannot find module '../categorical.css' or its cor... Remove this comment to see the full error message
 import styles from "../categorical.css";
 import AnnoDialog from "../../annoDialog";
 import LabelInput from "../../labelInput";
@@ -29,15 +30,20 @@ const STACKED_BAR_HEIGHT = 11;
 const STACKED_BAR_WIDTH = 100;
 
 /* this is defined outside of the class so we can use it in connect() */
-function _currentLabelAsString(ownProps) {
+function _currentLabelAsString(ownProps: any) {
   const { label } = ownProps;
   // when called as a function, the String() constructor performs type conversion,
   // and returns a primitive string.
   return String(label);
 }
 
+type State = any;
+
+// @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state, ownProps) => {
+  // @ts-expect-error ts-migrate(2339) FIXME: Property 'pointDilation' does not exist on type 'D... Remove this comment to see the full error message
   const { pointDilation, categoricalSelection } = state;
+  // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type '{... Remove this comment to see the full error message
   const { metadataField, categorySummary, categoryIndex } = ownProps;
   const isDilated =
     pointDilation.metadataField === metadataField &&
@@ -48,27 +54,28 @@ function _currentLabelAsString(ownProps) {
   const isSelected = category.get(label) ?? true;
 
   return {
-    annotations: state.annotations,
-    schema: state.annoMatrix?.schema,
+    annotations: (state as any).annotations,
+    schema: (state as any).annoMatrix?.schema,
     isDilated,
     isSelected,
     label,
   };
 })
-class CategoryValue extends React.Component {
-  constructor(props) {
+class CategoryValue extends React.Component<{}, State> {
+  constructor(props: {}) {
     super(props);
     this.state = {
       editedLabelText: this.currentLabelAsString(),
     };
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: {}) {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type 'R... Remove this comment to see the full error message
     const { metadataField, categoryIndex, categorySummary } = this.props;
     if (
-      prevProps.metadataField !== metadataField ||
-      prevProps.categoryIndex !== categoryIndex ||
-      prevProps.categorySummary !== categorySummary
+      (prevProps as any).metadataField !== metadataField ||
+      (prevProps as any).categoryIndex !== categoryIndex ||
+      (prevProps as any).categorySummary !== categorySummary
     ) {
       // eslint-disable-next-line react/no-did-update-set-state --- adequately checked to prevent looping
       this.setState({
@@ -79,22 +86,26 @@ class CategoryValue extends React.Component {
 
   // If coloring by and this isn't the colorAccessor and it isn't being edited
   get shouldRenderStackedBarOrHistogram() {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorAccessor' does not exist on type 'R... Remove this comment to see the full error message
     const { colorAccessor, isColorBy, annotations } = this.props;
 
     return !!colorAccessor && !isColorBy && !annotations.isEditingLabelName;
   }
 
   handleDeleteValue = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField, label } = this.props;
     dispatch(actions.annotationDeleteLabelFromCategory(metadataField, label));
   };
 
   handleAddCurrentSelectionToThisLabel = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField, label } = this.props;
     dispatch(actions.annotationLabelCurrentSelection(metadataField, label));
   };
 
-  handleEditValue = (e) => {
+  handleEditValue = (e: any) => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField, label } = this.props;
     const { editedLabelText } = this.state;
     this.cancelEditMode();
@@ -108,7 +119,8 @@ class CategoryValue extends React.Component {
     e.preventDefault();
   };
 
-  handleCreateArbitraryLabel = (txt) => {
+  handleCreateArbitraryLabel = (txt: any) => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField, label } = this.props;
     this.cancelEditMode();
     dispatch(
@@ -116,17 +128,19 @@ class CategoryValue extends React.Component {
     );
   };
 
-  labelNameError = (name) => {
+  labelNameError = (name: any) => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type 'R... Remove this comment to see the full error message
     const { metadataField, schema } = this.props;
     if (name === this.currentLabelAsString()) return false;
     return isLabelErroneous(name, metadataField, schema);
   };
 
-  instruction = (label) => {
+  instruction = (label: any) => {
     return labelPrompt(this.labelNameError(label), "New, unique label", ":");
   };
 
   activateEditLabelMode = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField, categoryIndex, label } = this.props;
     dispatch({
       type: "annotation: activate edit label mode",
@@ -137,6 +151,7 @@ class CategoryValue extends React.Component {
   };
 
   cancelEditMode = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField, categoryIndex, label } = this.props;
     this.setState({
       editedLabelText: this.currentLabelAsString(),
@@ -151,9 +166,13 @@ class CategoryValue extends React.Component {
 
   toggleOff = () => {
     const {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
       dispatch,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type 'R... Remove this comment to see the full error message
       metadataField,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'categoryIndex' does not exist on type 'R... Remove this comment to see the full error message
       categoryIndex,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'categorySummary' does not exist on type ... Remove this comment to see the full error message
       categorySummary,
     } = this.props;
     const label = categorySummary.categoryValues[categoryIndex];
@@ -168,7 +187,7 @@ class CategoryValue extends React.Component {
     );
   };
 
-  shouldComponentUpdate = (nextProps, nextState) => {
+  shouldComponentUpdate = (nextProps: any, nextState: any) => {
     /*
     Checks to see if at least one of the following changed:
     * world state
@@ -179,6 +198,7 @@ class CategoryValue extends React.Component {
     If and only if true, update the component
     */
     const { props, state } = this;
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'categoryIndex' does not exist on type 'R... Remove this comment to see the full error message
     const { categoryIndex, categorySummary, isSelected } = props;
     const {
       categoryIndex: newCategoryIndex,
@@ -191,10 +211,12 @@ class CategoryValue extends React.Component {
     const labelChanged = label !== newLabel;
     const valueSelectionChange = isSelected !== newIsSelected;
 
-    const colorAccessorChange = props.colorAccessor !== nextProps.colorAccessor;
-    const annotationsChange = props.annotations !== nextProps.annotations;
+    const colorAccessorChange =
+      (props as any).colorAccessor !== nextProps.colorAccessor;
+    const annotationsChange =
+      (props as any).annotations !== nextProps.annotations;
     const editingLabel = state.editedLabelText !== nextState.editedLabelText;
-    const dilationChange = props.isDilated !== nextProps.isDilated;
+    const dilationChange = (props as any).isDilated !== nextProps.isDilated;
 
     const count = categorySummary.categoryValueCounts[categoryIndex];
     const newCount = newCategorySummary.categoryValueCounts[newCategoryIndex];
@@ -205,7 +227,7 @@ class CategoryValue extends React.Component {
     // if any one changes, but only for the currently colored-by category.
     const colorMightHaveChanged =
       nextProps.colorAccessor === nextProps.metadataField &&
-      props.categorySummary !== nextProps.categorySummary;
+      (props as any).categorySummary !== nextProps.categorySummary;
 
     return (
       labelChanged ||
@@ -221,9 +243,13 @@ class CategoryValue extends React.Component {
 
   toggleOn = () => {
     const {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
       dispatch,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type 'R... Remove this comment to see the full error message
       metadataField,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'categoryIndex' does not exist on type 'R... Remove this comment to see the full error message
       categoryIndex,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'categorySummary' does not exist on type ... Remove this comment to see the full error message
       categorySummary,
     } = this.props;
     const label = categorySummary.categoryValues[categoryIndex];
@@ -239,6 +265,7 @@ class CategoryValue extends React.Component {
   };
 
   handleMouseEnter = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField, categoryIndex, label } = this.props;
     dispatch({
       type: "category value mouse hover start",
@@ -249,6 +276,7 @@ class CategoryValue extends React.Component {
   };
 
   handleMouseExit = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField, categoryIndex, label } = this.props;
     dispatch({
       type: "category value mouse hover end",
@@ -258,23 +286,24 @@ class CategoryValue extends React.Component {
     });
   };
 
-  handleTextChange = (text) => {
+  handleTextChange = (text: any) => {
     this.setState({ editedLabelText: text });
   };
 
-  handleChoice = (e) => {
+  handleChoice = (e: any) => {
     /* Blueprint Suggest format */
     this.setState({ editedLabelText: e.target });
   };
 
   createHistogramBins = (
-    metadataField,
-    categoryData,
-    colorAccessor,
-    colorData,
-    categoryValue,
-    width,
-    height
+    metadataField: any,
+    categoryData: any,
+    // @ts-expect-error ts-migrate(6133) FIXME: 'colorAccessor' is declared but its value is never... Remove this comment to see the full error message
+    colorAccessor: any,
+    colorData: any,
+    categoryValue: any,
+    width: any,
+    height: any
   ) => {
     /*
       Knowing that colorScale is based off continuous data,
@@ -309,14 +338,15 @@ class CategoryValue extends React.Component {
   };
 
   createStackedGraphBins = (
-    metadataField,
-    categoryData,
-    colorAccessor,
-    colorData,
-    categoryValue,
-    colorTable,
-    schema,
-    width
+    metadataField: any,
+    categoryData: any,
+    colorAccessor: any,
+    colorData: any,
+    categoryValue: any,
+    // @ts-expect-error ts-migrate(6133) FIXME: 'colorTable' is declared but its value is never re... Remove this comment to see the full error message
+    colorTable: any,
+    schema: any,
+    width: any
   ) => {
     /*
       Knowing that the color scale is based off of categorical data,
@@ -357,12 +387,13 @@ class CategoryValue extends React.Component {
     return _currentLabelAsString(this.props);
   }
 
-  isAddCurrentSelectionDisabled(crossfilter, category, value) {
+  isAddCurrentSelectionDisabled(crossfilter: any, category: any, value: any) {
     /*
     disable "add current selection to label", if one of the following is true:
     1. no cells are selected
     2. all currently selected cells already have this label, on this category
     */
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'categoryData' does not exist on type 'Re... Remove this comment to see the full error message
     const { categoryData } = this.props;
 
     // 1. no cells selected?
@@ -382,12 +413,19 @@ class CategoryValue extends React.Component {
 
   renderMiniStackedBar = () => {
     const {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorAccessor' does not exist on type 'R... Remove this comment to see the full error message
       colorAccessor,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type 'R... Remove this comment to see the full error message
       metadataField,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'categoryData' does not exist on type 'Re... Remove this comment to see the full error message
       categoryData,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorData' does not exist on type 'Reado... Remove this comment to see the full error message
       colorData,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorTable' does not exist on type 'Read... Remove this comment to see the full error message
       colorTable,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'schema' does not exist on type 'Readonly... Remove this comment to see the full error message
       schema,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'label' does not exist on type 'Readonly<... Remove this comment to see the full error message
       label,
     } = this.props;
     const isColorBy = metadataField === colorAccessor;
@@ -425,6 +463,7 @@ class CategoryValue extends React.Component {
           domain,
           occupancy,
         }}
+        // @ts-expect-error ts-migrate(2322) FIXME: Type '{ height: number; width: number; colorTable:... Remove this comment to see the full error message
         height={STACKED_BAR_HEIGHT}
         width={STACKED_BAR_WIDTH}
       />
@@ -433,12 +472,19 @@ class CategoryValue extends React.Component {
 
   renderMiniHistogram = () => {
     const {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorAccessor' does not exist on type 'R... Remove this comment to see the full error message
       colorAccessor,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type 'R... Remove this comment to see the full error message
       metadataField,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorData' does not exist on type 'Reado... Remove this comment to see the full error message
       colorData,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'categoryData' does not exist on type 'Re... Remove this comment to see the full error message
       categoryData,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorTable' does not exist on type 'Read... Remove this comment to see the full error message
       colorTable,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'schema' does not exist on type 'Readonly... Remove this comment to see the full error message
       schema,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'label' does not exist on type 'Readonly<... Remove this comment to see the full error message
       label,
     } = this.props;
     const colorScale = colorTable?.scale;
@@ -473,6 +519,7 @@ class CategoryValue extends React.Component {
           yScale,
           bins,
         }}
+        // @ts-expect-error ts-migrate(2322) FIXME: Type '{ obsOrVarContinuousFieldDisplayName: any; d... Remove this comment to see the full error message
         obsOrVarContinuousFieldDisplayName={colorAccessor}
         domainLabel={label}
         height={STACKED_BAR_HEIGHT}
@@ -483,15 +530,25 @@ class CategoryValue extends React.Component {
 
   render() {
     const {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type 'R... Remove this comment to see the full error message
       metadataField,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'categoryIndex' does not exist on type 'R... Remove this comment to see the full error message
       categoryIndex,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorAccessor' does not exist on type 'R... Remove this comment to see the full error message
       colorAccessor,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorTable' does not exist on type 'Read... Remove this comment to see the full error message
       colorTable,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'isUserAnno' does not exist on type 'Read... Remove this comment to see the full error message
       isUserAnno,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'annotations' does not exist on type 'Rea... Remove this comment to see the full error message
       annotations,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'isDilated' does not exist on type 'Reado... Remove this comment to see the full error message
       isDilated,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'isSelected' does not exist on type 'Read... Remove this comment to see the full error message
       isSelected,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'categorySummary' does not exist on type ... Remove this comment to see the full error message
       categorySummary,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'label' does not exist on type 'Readonly<... Remove this comment to see the full error message
       label,
     } = this.props;
     const colorScale = colorTable?.scale;
@@ -587,6 +644,7 @@ class CategoryValue extends React.Component {
               <span
                 data-testid={`categorical-value-${metadataField}-${displayString}`}
                 data-testclass="categorical-value"
+                // @ts-expect-error ts-migrate(2322) FIXME: Type 'string' is not assignable to type 'number | ... Remove this comment to see the full error message
                 tabIndex="-1"
                 style={{
                   width: labelWidth,
@@ -612,6 +670,7 @@ class CategoryValue extends React.Component {
             {editModeActive ? (
               <div>
                 <AnnoDialog
+                  // @ts-expect-error ts-migrate(2322) FIXME: Type '{ isActive: any; inputProps: { "data-testid"... Remove this comment to see the full error message
                   isActive={editModeActive}
                   inputProps={{
                     "data-testid": `${metadataField}:edit-label-name-dialog`,
@@ -630,6 +689,7 @@ class CategoryValue extends React.Component {
                   handleCancel={this.cancelEditMode}
                   annoInput={
                     <LabelInput
+                      // @ts-expect-error ts-migrate(2322) FIXME: Type '{ label: any; labelSuggestions: null; onChan... Remove this comment to see the full error message
                       label={editedLabelText}
                       labelSuggestions={null}
                       onChange={this.handleTextChange}

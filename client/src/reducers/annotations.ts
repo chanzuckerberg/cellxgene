@@ -28,7 +28,7 @@ const Annotations = (
     labelEditable: { category: null, label: null },
     promptForFilename: true,
   },
-  action
+  action: any
 ) => {
   switch (action.type) {
     case "configuration load complete": {

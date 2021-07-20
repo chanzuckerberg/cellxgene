@@ -2,6 +2,7 @@ import React from "react";
 import * as globals from "../../globals";
 
 class Layout extends React.Component {
+  viewportRef: any;
   /*
     Layout - this react component contains all the layout style and logic for the application once it has loaded.
 
@@ -23,6 +24,7 @@ class Layout extends React.Component {
 
   render() {
     const { children } = this.props;
+    // @ts-expect-error ts-migrate(2488) FIXME: Type 'ReactNode' must have a '[Symbol.iterator]()'... Remove this comment to see the full error message
     const [leftSidebar, renderGraph, rightSidebar] = children;
     return (
       <div

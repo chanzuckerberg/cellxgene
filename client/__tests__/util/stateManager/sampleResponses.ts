@@ -75,6 +75,7 @@ const aSchemaResponse = {
 
 const anAnnotationsObsJSONResponse = {
   names: ["name", "field1", "field2", "field3", "field4"],
+  // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
   data: _()
     .range(nObs)
     .map((idx) => [
@@ -91,6 +92,7 @@ const anAnnotationsObsJSONResponse = {
 
 const anAnnotationsVarJSONResponse = {
   names: ["fieldA", "fieldB", "fieldC", "fieldD", "name"],
+  // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
   data: _()
     .range(nVar)
     .map((idx) => [
@@ -105,7 +107,7 @@ const anAnnotationsVarJSONResponse = {
     .value(),
 };
 
-function encodeTypedArray(builder, uType, uData) {
+function encodeTypedArray(builder: any, uType: any, uData: any) {
   const uTypeName = NetEncoding.TypedArray[uType];
   const ArrayType = NetEncoding[uTypeName];
   const dv = ArrayType.createDataVector(builder, uData);
@@ -114,7 +116,7 @@ function encodeTypedArray(builder, uType, uData) {
   return builder.endObject();
 }
 
-function encodeMatrix(columns, colIndex = undefined) {
+function encodeMatrix(columns: any, colIndex = undefined) {
   /*
   IMPORTANT: this is not a general purpose encoder.  in particular,
   it doesn't correctly handle all column index types, nor does it
@@ -123,6 +125,7 @@ function encodeMatrix(columns, colIndex = undefined) {
   encodeMatrixFBS in matrix.py is more general.  This is used only
   as a testing santity check (alt implementation).
   */
+  // @ts-expect-error ts-migrate(2554) FIXME: Expected 0 arguments, but got 1.
   const utf8Encoder = new TextEncoder("utf-8");
   const builder = new flatbuffers.Builder(1024);
   const cols = map(columns, (carr) => {
@@ -172,11 +175,13 @@ function encodeMatrix(columns, colIndex = undefined) {
 
 const anAnnotationsObsFBSResponse = (() => {
   const columns = zip(...anAnnotationsObsJSONResponse.data).slice(1);
+  // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
   return encodeMatrix(columns, anAnnotationsObsJSONResponse.names);
 })();
 
 const anAnnotationsVarFBSResponse = (() => {
   const columns = zip(...anAnnotationsVarJSONResponse.data).slice(1);
+  // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
   return encodeMatrix(columns, anAnnotationsVarJSONResponse.names);
 })();
 
@@ -185,11 +190,13 @@ const aLayoutFBSResponse = (() => {
     new Float32Array(nObs).fill(Math.random()),
     new Float32Array(nObs).fill(Math.random()),
   ];
+  // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
   return encodeMatrix(coords, ["umap_0", "umap_1"]);
 })();
 
 const aDataObsResponse = {
   var: [2, 4, 29],
+  // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
   obs: _()
     .range(nObs)
     .map((idx) => [idx, Math.random(), Math.random(), Math.random()])

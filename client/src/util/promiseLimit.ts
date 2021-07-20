@@ -28,6 +28,7 @@ Priority is a numeric value.  Lower first.  Stable ordering.
 
 import TinyQueue from "tinyqueue";
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
 function compare(a, b) {
   const diff = a.priority - b.priority;
   if (diff) return diff;
@@ -36,12 +37,13 @@ function compare(a, b) {
 
 export default class PromiseLimit {
   constructor(maxConcurrency = 5) {
-    this.queue = new TinyQueue([], compare);
-    this.maxConcurrency = maxConcurrency;
-    this.pending = 0;
-    this.insertCounter = 0;
+    (this as any).queue = new TinyQueue([], compare);
+    (this as any).maxConcurrency = maxConcurrency;
+    (this as any).pending = 0;
+    (this as any).insertCounter = 0;
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
   priorityAdd(p, fn, ...args) {
     // p - numermic priority (lower first)
     // fn - must return a promise
@@ -49,6 +51,7 @@ export default class PromiseLimit {
     return this._push(p, fn, args);
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'fn' implicitly has an 'any' type.
   add(fn, ...args) {
     // fn - must return a promise
     // args - will be passed to fn
@@ -59,21 +62,25 @@ export default class PromiseLimit {
   Private below
   **/
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'priority' implicitly has an 'any' type.
   _push(priority, fn, args) {
-    const order = this.insertCount;
-    this.insertCount += 1;
+    const order = (this as any).insertCount;
+    (this as any).insertCount += 1;
     return new Promise((resolve, reject) => {
-      this.queue.push({ priority, order, fn, args, resolve, reject });
+      (this as any).queue.push({ priority, order, fn, args, resolve, reject });
       this._resolveNext(false);
     });
   }
 
   _resolveNext = (completed = true) => {
-    if (completed) this.pending -= 1;
+    if (completed) (this as any).pending -= 1;
 
-    while (this.queue.length > 0 && this.pending < this.maxConcurrency) {
-      const task = this.queue.pop(); // order of insertion
-      this.pending += 1;
+    while (
+      (this as any).queue.length > 0 &&
+      (this as any).pending < (this as any).maxConcurrency
+    ) {
+      const task = (this as any).queue.pop(); // order of insertion
+      (this as any).pending += 1;
       const { resolve, reject, fn, args } = task;
 
       try {

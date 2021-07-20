@@ -7,15 +7,15 @@ about commonly used names.  Preferentially, pick in the following order:
   3. "pca"
   4. give up, use the first available
 */
-function bestDefaultLayout(layouts) {
+function bestDefaultLayout(layouts: any) {
   const preferredNames = ["umap", "tsne", "pca"];
   const idx = preferredNames.findIndex((name) => layouts.indexOf(name) !== -1);
   if (idx !== -1) return preferredNames[idx];
   return layouts[0];
 }
 
-function setToDefaultLayout(schema) {
-  const available = schema.layout.obs.map((v) => v.name).sort();
+function setToDefaultLayout(schema: any) {
+  const available = schema.layout.obs.map((v: any) => v.name).sort();
   const current = bestDefaultLayout(available);
   const currentDimNames = schema.layout.obsByName[current].dims;
   return { available, current, currentDimNames };
@@ -27,8 +27,8 @@ const LayoutChoice = (
     current: undefined, // name of the current layout, eg, 'umap'
     currentDimNames: [], // dimension name
   },
-  action,
-  nextSharedState
+  action: any,
+  nextSharedState: any
 ) => {
   switch (action.type) {
     case "initial data load complete": {

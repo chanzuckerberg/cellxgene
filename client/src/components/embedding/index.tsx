@@ -15,25 +15,30 @@ import * as globals from "../../globals";
 import actions from "../../actions";
 import { getDiscreteCellEmbeddingRowIndex } from "../../util/stateManager/viewStackHelpers";
 
+type EmbeddingState = any;
+
+// @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => {
   return {
-    layoutChoice: state.layoutChoice, // TODO: really should clean up naming, s/layout/embedding/g
-    schema: state.annoMatrix?.schema,
-    crossfilter: state.obsCrossfilter,
+    layoutChoice: (state as any).layoutChoice,
+    schema: (state as any).annoMatrix?.schema,
+    crossfilter: (state as any).obsCrossfilter,
   };
 })
-class Embedding extends React.PureComponent {
-  constructor(props) {
+class Embedding extends React.PureComponent<{}, EmbeddingState> {
+  constructor(props: {}) {
     super(props);
     this.state = {};
   }
 
-  handleLayoutChoiceChange = (e) => {
+  handleLayoutChoiceChange = (e: any) => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
     dispatch(actions.layoutChoiceAction(e.currentTarget.value));
   };
 
   render() {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'layoutChoice' does not exist on type 'Re... Remove this comment to see the full error message
     const { layoutChoice, schema, crossfilter } = this.props;
     const { annoMatrix } = crossfilter;
     return (
@@ -100,10 +105,11 @@ class Embedding extends React.PureComponent {
 
 export default Embedding;
 
-const loadAllEmbeddingCounts = async ({ annoMatrix, available }) => {
+const loadAllEmbeddingCounts = async ({ annoMatrix, available }: any) => {
   const embeddings = await Promise.all(
-    available.map((name) => annoMatrix.base().fetch("emb", name))
+    available.map((name: any) => annoMatrix.base().fetch("emb", name))
   );
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
   return available.map((name, idx) => ({
     embeddingName: name,
     embedding: embeddings[idx],
@@ -111,7 +117,7 @@ const loadAllEmbeddingCounts = async ({ annoMatrix, available }) => {
   }));
 };
 
-const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice }) => {
+const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice }: any) => {
   const { available } = layoutChoice;
   const { data, error, isPending } = useAsync({
     promiseFn: loadAllEmbeddingCounts,
@@ -127,7 +133,7 @@ const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice }) => {
     /* still loading, or errored out - just omit counts (TODO: spinner?) */
     return (
       <RadioGroup onChange={onChange} selectedValue={layoutChoice.current}>
-        {layoutChoice.available.map((name) => (
+        {layoutChoice.available.map((name: any) => (
           <Radio label={`${name}`} value={name} key={name} />
         ))}
       </RadioGroup>
@@ -136,7 +142,7 @@ const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice }) => {
   if (data) {
     return (
       <RadioGroup onChange={onChange} selectedValue={layoutChoice.current}>
-        {data.map((summary) => {
+        {data.map((summary: any) => {
           const { discreteCellIndex, embeddingName } = summary;
           const sizeHint = `${discreteCellIndex.size()} cells`;
           return (

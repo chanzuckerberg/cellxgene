@@ -9,17 +9,23 @@ import actions from "../../actions";
 
 const MINI_HISTOGRAM_WIDTH = 110;
 
+type State = any;
+
+// @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state, ownProps) => {
+  // @ts-expect-error ts-migrate(2339) FIXME: Property 'gene' does not exist on type '{}'.
   const { gene } = ownProps;
 
   return {
-    isColorAccessor: state.colors.colorAccessor === gene,
-    isScatterplotXXaccessor: state.controls.scatterplotXXaccessor === gene,
-    isScatterplotYYaccessor: state.controls.scatterplotYYaccessor === gene,
+    isColorAccessor: (state as any).colors.colorAccessor === gene,
+    isScatterplotXXaccessor:
+      (state as any).controls.scatterplotXXaccessor === gene,
+    isScatterplotYYaccessor:
+      (state as any).controls.scatterplotYYaccessor === gene,
   };
 })
-class Gene extends React.Component {
-  constructor(props) {
+class Gene extends React.Component<{}, State> {
+  constructor(props: {}) {
     super(props);
     this.state = {
       geneIsExpanded: false,
@@ -27,6 +33,7 @@ class Gene extends React.Component {
   }
 
   onColorChangeClick = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, gene } = this.props;
     dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(gene));
   };
@@ -37,6 +44,7 @@ class Gene extends React.Component {
   };
 
   handleSetGeneAsScatterplotX = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, gene } = this.props;
     dispatch({
       type: "set scatterplot x",
@@ -45,6 +53,7 @@ class Gene extends React.Component {
   };
 
   handleSetGeneAsScatterplotY = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, gene } = this.props;
     dispatch({
       type: "set scatterplot y",
@@ -53,18 +62,26 @@ class Gene extends React.Component {
   };
 
   handleDeleteGeneFromSet = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, gene, geneset } = this.props;
     dispatch(actions.genesetDeleteGenes(geneset, [gene]));
   };
 
   render() {
     const {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'gene' does not exist on type 'Readonly<{... Remove this comment to see the full error message
       gene,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'geneDescription' does not exist on type ... Remove this comment to see the full error message
       geneDescription,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'isColorAccessor' does not exist on type ... Remove this comment to see the full error message
       isColorAccessor,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'isScatterplotXXaccessor' does not exist ... Remove this comment to see the full error message
       isScatterplotXXaccessor,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'isScatterplotYYaccessor' does not exist ... Remove this comment to see the full error message
       isScatterplotYYaccessor,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'quickGene' does not exist on type 'Reado... Remove this comment to see the full error message
       quickGene,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'removeGene' does not exist on type 'Read... Remove this comment to see the full error message
       removeGene,
     } = this.props;
     const { geneIsExpanded } = this.state;
@@ -84,6 +101,7 @@ class Gene extends React.Component {
         >
           <div
             role="menuitem"
+            // @ts-expect-error ts-migrate(2322) FIXME: Type 'string' is not assignable to type 'number | ... Remove this comment to see the full error message
             tabIndex="0"
             data-testclass="gene-expand"
             data-testid={`${gene}:gene-expand`}
@@ -124,6 +142,7 @@ class Gene extends React.Component {
             </div>
             {!geneIsExpanded ? (
               <HistogramBrush
+                // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
                 isUserDefined
                 field={gene}
                 mini
@@ -188,6 +207,7 @@ class Gene extends React.Component {
             />
           </div>
         </div>
+        {/* @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call. */}
         {geneIsExpanded && <HistogramBrush isUserDefined field={gene} />}
       </div>
     );

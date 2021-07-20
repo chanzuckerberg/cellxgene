@@ -16,16 +16,20 @@ import { IconNames } from "@blueprintjs/icons";
 import * as globals from "../../../globals";
 import actions from "../../../actions";
 
+type State = any;
+
+// @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
-  annotations: state.annotations,
+  annotations: (state as any).annotations,
 }))
-class AnnoMenuCategory extends React.PureComponent {
-  constructor(props) {
+class AnnoMenuCategory extends React.PureComponent<{}, State> {
+  constructor(props: {}) {
     super(props);
     this.state = {};
   }
 
   activateAddNewLabelMode = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField } = this.props;
     dispatch({
       type: "annotation: activate add new label mode",
@@ -34,8 +38,8 @@ class AnnoMenuCategory extends React.PureComponent {
   };
 
   activateEditCategoryMode = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField } = this.props;
-
     dispatch({
       type: "annotation: activate category edit mode",
       data: metadataField,
@@ -43,20 +47,26 @@ class AnnoMenuCategory extends React.PureComponent {
   };
 
   handleDeleteCategory = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField } = this.props;
     dispatch(actions.annotationDeleteCategoryAction(metadataField));
   };
 
   render() {
     const {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type 'R... Remove this comment to see the full error message
       metadataField,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'annotations' does not exist on type 'Rea... Remove this comment to see the full error message
       annotations,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'isUserAnno' does not exist on type 'Read... Remove this comment to see the full error message
       isUserAnno,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'createText' does not exist on type 'Read... Remove this comment to see the full error message
       createText,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'editText' does not exist on type 'Readon... Remove this comment to see the full error message
       editText,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'deleteText' does not exist on type 'Read... Remove this comment to see the full error message
       deleteText,
     } = this.props;
-
     return (
       <>
         {isUserAnno ? (

@@ -2,7 +2,7 @@
 Reducer for the obsCrossfilter
 */
 
-const ObsCrossfilter = (state = null, action) => {
+const ObsCrossfilter = (state = null, action: any) => {
   if (action.obsCrossfilter) {
     return action.obsCrossfilter;
   }

@@ -3,7 +3,7 @@ import { Colors } from "@blueprintjs/core";
 
 import { AnnotationsHelpers } from "../../util/stateManager";
 
-export function isLabelErroneous(label, metadataField, schema) {
+export function isLabelErroneous(label: any, metadataField: any, schema: any) {
   /*
     return false if this is a LEGAL/acceptable category name or NULL/empty string,
     or return an error type.
@@ -35,9 +35,10 @@ const errorMessageMap = {
   "multi-space-run": "Multiple consecutive spaces not allowed",
 };
 
-export function labelPrompt(err, prolog, epilog) {
+export function labelPrompt(err: any, prolog: any, epilog: any) {
   let errPrompt = null;
   if (err) {
+    // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     let errMsg = errorMessageMap[err] ?? "error";
     errMsg = errMsg[0].toLowerCase() + errMsg.slice(1);
     errPrompt = (

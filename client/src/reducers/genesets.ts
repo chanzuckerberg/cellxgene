@@ -30,7 +30,7 @@ const GeneSets = (
     lastTid: undefined,
     genesets: new Map(),
   },
-  action
+  action: any
 ) => {
   switch (action.type) {
     /**
@@ -353,6 +353,7 @@ const GeneSets = (
       const { tid } = action;
       if (!Number.isInteger(tid) || tid < 0)
         throw new Error("TID must be a positive integer number");
+      // @ts-expect-error ts-migrate(2532) FIXME: Object is possibly 'undefined'.
       if (state.lastTid !== undefined && tid < state.lastTid)
         throw new Error("TID may not be decremented.");
       return {
@@ -374,7 +375,7 @@ const GeneSets = (
       const diffExpGeneSets = [];
       for (const polarity of Object.keys(genesetNames)) {
         const genes = new Map(
-          data[polarity].map((diffExpGene) => [
+          data[polarity].map((diffExpGene: any) => [
             diffExpGene[0],
             {
               geneSymbol: diffExpGene[0],
@@ -382,8 +383,10 @@ const GeneSets = (
           ])
         );
         diffExpGeneSets.push([
+          // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
           genesetNames[polarity],
           {
+            // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             genesetName: genesetNames[polarity],
             genesetDescription: "",
             genes,
@@ -391,6 +394,7 @@ const GeneSets = (
         ]);
       }
 
+      // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
       const genesets = new Map([...diffExpGeneSets, ...state.genesets]); // clone
 
       return {

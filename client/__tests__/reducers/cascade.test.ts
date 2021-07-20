@@ -20,7 +20,12 @@ describe("cascade", () => {
     const reducer = cascadeReducers([
       [
         "foo",
-        (currentState, action, nextSharedState, prevSharedState) => {
+        (
+          currentState: any,
+          action: any,
+          nextSharedState: any,
+          prevSharedState: any
+        ) => {
           expect(currentState).toBeUndefined();
           expect(action).toEqual(topLevelAction);
           expect(nextSharedState).toStrictEqual({});
@@ -30,7 +35,12 @@ describe("cascade", () => {
       ],
       [
         "bar",
-        (currentState, action, nextSharedState, prevSharedState) => {
+        (
+          currentState: any,
+          action: any,
+          nextSharedState: any,
+          prevSharedState: any
+        ) => {
           expect(currentState).toBeUndefined();
           expect(action).toEqual(topLevelAction);
           expect(nextSharedState).toStrictEqual({ foo: 0 });

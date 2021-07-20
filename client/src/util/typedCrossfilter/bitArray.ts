@@ -17,7 +17,17 @@
 // The underlying data structure uses TypedArrays for performance.
 //
 class BitArray {
-  constructor(length) {
+  bitarray: any;
+
+  bitmask: any;
+
+  dimensionCount: any;
+
+  length: any;
+
+  width: any;
+
+  constructor(length: any) {
     // Initially allocate a 32 bit wide array.  allocDimension() will expand
     // as necessary.
     //
@@ -76,7 +86,7 @@ class BitArray {
 
   // count trailing zeros - hard to do fast in JS!
   // https://en.wikipedia.org/wiki/Find_first_set#CTZ
-  static ctz(av) {
+  static ctz(av: any) {
     let c = 32;
     let v = av;
     v &= -v; // isolate lowest non-zero bit
@@ -130,7 +140,7 @@ class BitArray {
   // free a dimension for later use.  MUST deselect the dimension, as other
   // code assume the column will be zero valued.
   //
-  freeDimension(dim) {
+  freeDimension(dim: any) {
     // all selection tests assume unallocated dimensions are zero valued.
     this.deselectAll(dim);
     const col = dim >>> 5;
@@ -140,7 +150,7 @@ class BitArray {
 
   // return true if this index is selected in ALL dimensions.
   //
-  isSelected(index) {
+  isSelected(index: any) {
     const { width, length, bitarray } = this;
 
     for (let w = 0; w < width; w += 1) {
@@ -152,7 +162,7 @@ class BitArray {
 
   // return true if this index is selected in ALL dimensions IGNORING dim
   //
-  isSelectedIgnoringDim(index, dim) {
+  isSelectedIgnoringDim(index: any, dim: any) {
     const ignoreOffset = dim >>> 5;
     const ignoreMask = ~(1 << dim % 32);
 
@@ -176,7 +186,7 @@ class BitArray {
 
   // select index on dimension
   //
-  selectOne(dim, index) {
+  selectOne(dim: any, index: any) {
     const col = dim >>> 5;
     const before = this.bitarray[col * this.length + index];
     const after = before | (1 << dim % 32);
@@ -185,7 +195,7 @@ class BitArray {
 
   // deselect index on dimension
   //
-  deselectOne(dim, index) {
+  deselectOne(dim: any, index: any) {
     const col = dim >>> 5;
     const before = this.bitarray[col * this.length + index];
     const after = before & ~(1 << dim % 32);
@@ -194,7 +204,7 @@ class BitArray {
 
   // select all indices on dimension.
   //
-  selectAll(dim) {
+  selectAll(dim: any) {
     const col = dim >> 5;
     const one = 1 << dim % 32;
     for (let i = col * this.length, len = i + this.length; i < len; i += 1) {
@@ -204,7 +214,7 @@ class BitArray {
 
   // deselect all indices on dimension
   //
-  deselectAll(dim) {
+  deselectAll(dim: any) {
     const col = dim >> 5;
     const zero = ~(1 << dim % 32);
     for (let i = col * this.length, len = i + this.length; i < len; i += 1) {
@@ -214,7 +224,7 @@ class BitArray {
 
   // select range of indices on a dimension
   //
-  selectFromRange(dim, range) {
+  selectFromRange(dim: any, range: any) {
     const col = dim >>> 5;
     const first = range[0];
     const last = range[1];
@@ -228,7 +238,7 @@ class BitArray {
   // select range of indices on a dimension, indirect through a sort map.
   // Indirect functions are used to map between sort and natural order.
   //
-  selectIndirectFromRange(dim, indirect, range) {
+  selectIndirectFromRange(dim: any, indirect: any, range: any) {
     const col = dim >>> 5;
     const first = range[0];
     const last = range[1];
@@ -241,7 +251,7 @@ class BitArray {
 
   // deselect range of indices on a dimension
   //
-  deselectFromRange(dim, range) {
+  deselectFromRange(dim: any, range: any) {
     const col = dim >>> 5;
     const first = range[0];
     const last = range[1];
@@ -254,7 +264,7 @@ class BitArray {
 
   // deselect range of indices on a dimension, indirect through a sort map.
   //
-  deselectIndirectFromRange(dim, indirect, range) {
+  deselectIndirectFromRange(dim: any, indirect: any, range: any) {
     const col = dim >>> 5;
     const first = range[0];
     const last = range[1];
@@ -268,7 +278,7 @@ class BitArray {
   // Fill the array with selected|deselected value based upon the
   // current selection state.
   //
-  fillBySelection(result, selectedValue, deselectedValue) {
+  fillBySelection(result: any, selectedValue: any, deselectedValue: any) {
     // special case (width === 1) for performance
     if (this.width === 1) {
       const { bitmask, bitarray } = this;

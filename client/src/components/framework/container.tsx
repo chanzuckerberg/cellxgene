@@ -1,6 +1,6 @@
 import React from "react";
 
-function Container(props) {
+function Container(props: any) {
   const { children } = props;
   return (
     <div

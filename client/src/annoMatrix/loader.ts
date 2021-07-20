@@ -23,6 +23,8 @@ import {
 const promiseThrottle = new PromiseLimit(5);
 
 export default class AnnoMatrixLoader extends AnnoMatrix {
+  baseURL: any;
+
   /*
   AnnoMatrix implementation which proxies to HTTP server using the CXG REST API.
   Used as the base (non-view) instance.
@@ -33,7 +35,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     new AnnoMatrixLoader(serverBaseURL, schema) -> instance
 
   */
-  constructor(baseURL, schema) {
+  constructor(baseURL: any, schema: any) {
     const { nObs, nVar } = schema.dataframe;
     super(schema, nObs, nVar);
 
@@ -48,7 +50,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
   /**
    ** Public.  API described in base class.
    **/
-  addObsAnnoCategory(col, category) {
+  addObsAnnoCategory(col: any, category: any) {
     /*
     Add a new category (aka label) to the schema for an obs column.
     */
@@ -60,7 +62,11 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  async removeObsAnnoCategory(col, category, unassignedCategory) {
+  async removeObsAnnoCategory(
+    col: any,
+    category: any,
+    unassignedCategory: any
+  ) {
     /*
     Remove a single "category" (aka "label") from the data & schema of an obs column.
     */
@@ -80,7 +86,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  dropObsColumn(col) {
+  dropObsColumn(col: any) {
     /*
 		drop column from field
 		*/
@@ -88,11 +94,12 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     _writableCheck(colSchema); // throws on error
 
     const newAnnoMatrix = this._clone();
-    newAnnoMatrix._cache.obs = this._cache.obs.dropCol(col);
+    newAnnoMatrix._cache.obs = (this as any)._cache.obs.dropCol(col);
     newAnnoMatrix.schema = removeObsAnnoColumn(this.schema, col);
     return newAnnoMatrix;
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'colSchema' implicitly has an 'any' type... Remove this comment to see the full error message
   addObsColumn(colSchema, Ctor, value) {
     /*
 		add a column to field, initializing with value.  Value may 
@@ -105,7 +112,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     const colName = colSchema.name;
     if (
       _getColumnSchema(this.schema, "obs", colName) ||
-      this._cache.obs.hasCol(colName)
+      (this as any)._cache.obs.hasCol(colName)
     ) {
       throw new Error("column already exists");
     }
@@ -121,7 +128,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     } else {
       data = new Ctor(this.nObs).fill(value);
     }
-    newAnnoMatrix._cache.obs = this._cache.obs.withCol(colName, data);
+    newAnnoMatrix._cache.obs = (this as any)._cache.obs.withCol(colName, data);
     _normalizeCategoricalSchema(
       colSchema,
       newAnnoMatrix._cache.obs.col(colName)
@@ -130,15 +137,15 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'oldCol' implicitly has an 'any' type.
   renameObsColumn(oldCol, newCol) {
     /*
     Rename the obs oldColName to newColName.  oldCol must be writable.
     */
     const oldColSchema = _getColumnSchema(this.schema, "obs", oldCol);
-    _writableCheck(oldColSchema); // throws on error
-
-    const value = this._cache.obs.hasCol(oldCol)
-      ? this._cache.obs.col(oldCol).asArray()
+    _writableCheck(oldColSchema);
+    const value = (this as any)._cache.obs.hasCol(oldCol)
+      ? (this as any)._cache.obs.col(oldCol).asArray()
       : undefined;
     return this.dropObsColumn(oldCol).addObsColumn(
       {
@@ -150,6 +157,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     );
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'col' implicitly has an 'any' type.
   async setObsColumnValues(col, rowLabels, value) {
     /*
 		Set all rows identified by rowLabels to value.
@@ -159,11 +167,11 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
 
     // ensure that we have the data in cache before we manipulate it
     await this.fetch("obs", col);
-    if (!this._cache.obs.hasCol(col))
+    if (!(this as any)._cache.obs.hasCol(col))
       throw new Error("Internal error - user annotation data missing");
 
     const rowIndices = this.rowIndex.getOffsets(rowLabels);
-    const data = this._cache.obs.col(col).asArray().slice();
+    const data = (this as any)._cache.obs.col(col).asArray().slice();
     for (let i = 0, len = rowIndices.length; i < len; i += 1) {
       const idx = rowIndices[i];
       if (idx === undefined) throw new Error("Unknown row label");
@@ -171,7 +179,10 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     }
 
     const newAnnoMatrix = this._clone();
-    newAnnoMatrix._cache.obs = this._cache.obs.replaceColData(col, data);
+    newAnnoMatrix._cache.obs = (this as any)._cache.obs.replaceColData(
+      col,
+      data
+    );
     const { categories } = colSchema;
     if (!categories?.includes(value)) {
       newAnnoMatrix.schema = addObsAnnoCategory(this.schema, col, value);
@@ -179,6 +190,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'col' implicitly has an 'any' type.
   async resetObsColumnValues(col, oldValue, newValue) {
     /*
     Set all rows with value 'oldValue' to 'newValue'.
@@ -192,16 +204,19 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
 
     // ensure that we have the data in cache before we manipulate it
     await this.fetch("obs", col);
-    if (!this._cache.obs.hasCol(col))
+    if (!(this as any)._cache.obs.hasCol(col))
       throw new Error("Internal error - user annotation data missing");
 
-    const data = this._cache.obs.col(col).asArray().slice();
+    const data = (this as any)._cache.obs.col(col).asArray().slice();
     for (let i = 0, l = data.length; i < l; i += 1) {
       if (data[i] === oldValue) data[i] = newValue;
     }
 
     const newAnnoMatrix = this._clone();
-    newAnnoMatrix._cache.obs = this._cache.obs.replaceColData(col, data);
+    newAnnoMatrix._cache.obs = (this as any)._cache.obs.replaceColData(
+      col,
+      data
+    );
     const { categories } = colSchema;
     if (!categories?.includes(newValue)) {
       newAnnoMatrix.schema = addObsAnnoCategory(this.schema, col, newValue);
@@ -209,6 +224,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'colSchema' implicitly has an 'any' type... Remove this comment to see the full error message
   addEmbedding(colSchema) {
     /*
     add new layout to the obs embeddings
@@ -226,6 +242,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
   /**
    ** Private below
    **/
+  // @ts-expect-error ts-migrate(2416) FIXME: Property '_doLoad' in type 'AnnoMatrixLoader' is n... Remove this comment to see the full error message
   async _doLoad(field, query) {
     /*
     _doLoad - evaluates the query against the field. Returns:
@@ -280,12 +297,14 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
 Utility functions below
 */
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'colSchema' implicitly has an 'any' type... Remove this comment to see the full error message
 function _writableCheck(colSchema) {
   if (!colSchema?.writable) {
     throw new Error("Unknown or readonly obs column");
   }
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'colSchema' implicitly has an 'any' type... Remove this comment to see the full error message
 function _writableCategoryTypeCheck(colSchema) {
   _writableCheck(colSchema);
   if (colSchema.type !== "categorical") {
@@ -293,6 +312,7 @@ function _writableCategoryTypeCheck(colSchema) {
   }
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'baseURL' implicitly has an 'any' type.
 function _embLoader(baseURL, _field, query) {
   _expectSimpleQuery(query);
 
@@ -302,6 +322,7 @@ function _embLoader(baseURL, _field, query) {
   return () => doBinaryRequest(url);
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'baseURL' implicitly has an 'any' type.
 function _obsOrVarLoader(baseURL, field, query) {
   _expectSimpleQuery(query);
 
@@ -311,6 +332,7 @@ function _obsOrVarLoader(baseURL, field, query) {
   return () => doBinaryRequest(url);
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'baseURL' implicitly has an 'any' type.
 function _XLoader(baseURL, field, query) {
   _expectComplexQuery(query);
 

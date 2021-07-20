@@ -16,10 +16,10 @@ class PositiveIntervals {
   //  1. no overlapping intervals
   //  2. sorted in order of interval min.
   //
-  static canonicalize(A) {
+  static canonicalize(A: any) {
     if (A.length <= 1) return A;
     const copy = A.slice();
-    copy.sort((a, b) => a[0] - b[0]);
+    copy.sort((a: any, b: any) => a[0] - b[0]);
     const res = [];
     res.push(copy[0]);
     for (let i = 1, len = copy.length; i < len; i += 1) {
@@ -38,11 +38,11 @@ class PositiveIntervals {
   // Return interval with values belonging to both A and B. Essentially
   // a set union operation.
   //
-  static union(A, B) {
+  static union(A: any, B: any) {
     return PositiveIntervals.canonicalize([...A, ...B]);
   }
 
-  static _flatten(A, B) {
+  static _flatten(A: any, B: any) {
     const points = []; /* point, A, start */
     for (let a = 0; a < A.length; a += 1) {
       points.push([A[a][0], true, true]);
@@ -60,7 +60,7 @@ class PositiveIntervals {
   // A - B, ie, the interval with all values in A that are not in B.  Essentially
   // a set difference operation.
   //
-  static difference(A, B) {
+  static difference(A: any, B: any) {
     // Corner cases
     if (A.length === 0 || B.length === 0) {
       return PositiveIntervals.canonicalize(A);
@@ -96,7 +96,7 @@ class PositiveIntervals {
   // Return interval with values belonging to A or B.  Essentially a set
   // intersection.
   //
-  static intersection(A, B) {
+  static intersection(A: any, B: any) {
     if (A.length === 0 || B.length === 0) {
       return [];
     }

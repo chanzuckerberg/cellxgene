@@ -8,9 +8,9 @@ import { indexEntireSchema } from "../../src/util/stateManager/schemaHelpers";
 import { _normalizeCategoricalSchema } from "../../src/annoMatrix/schema";
 
 describe("centroid", () => {
-  let schema;
-  let obsAnnotations;
-  let obsLayout;
+  let schema: any;
+  let obsAnnotations: any;
+  let obsLayout: any;
 
   beforeAll(() => {
     schema = indexEntireSchema(cloneDeep(REST.schema.schema));
@@ -44,7 +44,7 @@ describe("centroid", () => {
       quantile([0.5], obsLayout.col("umap_1").asArray())[0],
     ];
 
-    centroidResult.forEach((coordinate) => {
+    centroidResult.forEach((coordinate: any) => {
       expect(coordinate).toEqual(expectedResult);
     });
   });
@@ -68,7 +68,7 @@ describe("centroid", () => {
       quantile([0.5], obsLayout.col("umap_1").asArray())[0],
     ];
 
-    centroidResult.forEach((coordinate) => {
+    centroidResult.forEach((coordinate: any) => {
       expect(coordinate).toEqual(expectedResult);
     });
   });

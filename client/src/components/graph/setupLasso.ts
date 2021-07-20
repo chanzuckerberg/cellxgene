@@ -4,16 +4,15 @@ import { Colors } from "@blueprintjs/core";
 const Lasso = () => {
   const dispatch = d3.dispatch("start", "end", "cancel");
 
-  const lasso = (svg) => {
-    let lassoPolygon;
-    let lassoPath;
-    let closePath;
-    let lassoInProgress;
+  const lasso = (svg: any) => {
+    let lassoPolygon: any;
+    let lassoPath: any;
+    let closePath: any;
+    let lassoInProgress: any;
 
-    const polygonToPath = (polygon) =>
-      `M${polygon.map((d) => d.join(",")).join("L")}`;
+    const polygonToPath = (polygon: any) => `M${polygon.map((d: any) => d.join(",")).join("L")}`;
 
-    const distance = (pt1, pt2) =>
+    const distance = (pt1: any, pt2: any) =>
       Math.sqrt((pt2[0] - pt1[0]) ** 2 + (pt2[1] - pt1[1]) ** 2);
 
     // distance last point has to be to first point before it auto closes when mouse is released
@@ -21,7 +20,8 @@ const Lasso = () => {
     const lassoPathColor = Colors.BLUE5;
 
     const handleDragStart = () => {
-      lassoPolygon = [d3.mouse(svg.node())]; // current x y of mouse within element
+      lassoPolygon = [(d3 as any).mouse(svg.node())]; // current x y of mouse within element
+ // current x y of mouse within element
 
       if (lassoPath) {
         // If the existing path is in progress
@@ -53,7 +53,7 @@ const Lasso = () => {
     };
 
     const handleDrag = () => {
-      const point = d3.mouse(svg.node());
+      const point = (d3 as any).mouse(svg.node());
       lassoPolygon.push(point);
       lassoPath.attr("d", polygonToPath(lassoPolygon));
 
@@ -123,23 +123,36 @@ const Lasso = () => {
 
     area.call(drag);
 
-    lasso.reset = () => {
-      if (lassoPath) {
+    (lasso as any).reset = () => {
+    if (lassoPath) {
         lassoPath.remove();
         lassoPath = null;
-      }
-
-      lassoPolygon = null;
-      if (closePath) {
+    }
+    lassoPolygon = null;
+    if (closePath) {
         closePath.remove();
         closePath = null;
-      }
-    };
+    }
+};
 
-    lasso.move = (polygon) => {
-      if (polygon !== lassoPolygon || polygon.length !== lassoPolygon.length) {
+    (lasso as any).move = (polygon: any) => {
+    if (polygon !== lassoPolygon || polygon.length !== lassoPolygon.length) {
+        // @ts-expect-error ts-migrate(2339) FIXME: Property 'reset' does not exist on type '(svg: any... Remove this comment to see the full error message
         lasso.reset();
+        lassoPolygon = polygon;
+        lassoPath = g
+            .append("path")
+            .attr("data-testid", "lasso-element")
+            .attr("fill", lassoPathColor)
+            .attr("fill-opacity", 0.1)
+            .attr("stroke", lassoPathColor)
+            .attr("stroke-dasharray", "3, 3");
+        lassoPath.attr("d", `${polygonToPath(lassoPolygon)}Z`);
+    }
+};
+        (lasso as any).reset();
 
+        // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'polygon'.
         lassoPolygon = polygon;
         lassoPath = g
           .append("path")
@@ -154,8 +167,11 @@ const Lasso = () => {
     };
   };
 
-  lasso.on = (type, callback) => {
+  // @ts-expect-error ts-migrate(2552) FIXME: Cannot find name 'lasso'. Did you mean 'Lasso'?
+  lasso.on = (type: any, callback: any) => {
+    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'dispatch'.
     dispatch.on(type, callback);
+    // @ts-expect-error ts-migrate(2552) FIXME: Cannot find name 'lasso'. Did you mean 'Lasso'?
     return lasso;
   };
 

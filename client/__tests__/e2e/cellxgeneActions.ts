@@ -18,12 +18,17 @@ import {
 
 import { appUrlBase, TEST_EMAIL, TEST_PASSWORD } from "./config";
 
-export async function drag(testId, start, end, lasso = false) {
+export async function drag(testId: any, start: any, end: any, lasso = false) {
   const layout = await waitByID(testId);
+  // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
   const elBox = await layout.boxModel();
+  // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
   const x1 = elBox.content[0].x + start.x;
+  // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
   const x2 = elBox.content[0].x + end.x;
+  // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
   const y1 = elBox.content[0].y + start.y;
+  // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
   const y2 = elBox.content[0].y + end.y;
   await page.mouse.move(x1, y1);
   await page.mouse.down();
@@ -38,7 +43,7 @@ export async function drag(testId, start, end, lasso = false) {
   await page.mouse.up();
 }
 
-export async function clickOnCoordinate(testId, coord) {
+export async function clickOnCoordinate(testId: any, coord: any) {
   const layout = await expect(page).toMatchElement(getTestId(testId));
   const elBox = await layout.boxModel();
 
@@ -51,11 +56,12 @@ export async function clickOnCoordinate(testId, coord) {
   await page.mouse.click(x, y);
 }
 
-export async function getAllHistograms(testclass, testIds) {
-  const histTestIds = testIds.map((tid) => `histogram-${tid}`);
+export async function getAllHistograms(testclass: any, testIds: any) {
+  const histTestIds = testIds.map((tid: any) => `histogram-${tid}`);
 
   // these load asynchronously, so we need to wait for each histogram individually,
   // and they may be quite slow in some cases.
+  // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 2.
   await waitForAllByIds(histTestIds, { timeout: 4 * 60 * 1000 });
 
   const allHistograms = await getAllByClass(testclass);
@@ -71,7 +77,7 @@ export async function getAllHistograms(testclass, testIds) {
   return testIDs.map((id) => id.replace(/^histogram-/, ""));
 }
 
-export async function getAllCategoriesAndCounts(category) {
+export async function getAllCategoriesAndCounts(category: any) {
   // these load asynchronously, so we have to wait for the specific category.
   await waitByID(`category-${category}`);
 
@@ -80,13 +86,14 @@ export async function getAllCategoriesAndCounts(category) {
     (rows) =>
       Object.fromEntries(
         rows.map((row) => {
+          // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
           const cat = row
             .querySelector("[data-testclass='categorical-value']")
             .getAttribute("aria-label");
 
-          const count = row.querySelector(
+          const count = (row.querySelector(
             "[data-testclass='categorical-value-count']"
-          ).innerText;
+          ) as any).innerText;
 
           return [cat, count];
         })
@@ -94,12 +101,12 @@ export async function getAllCategoriesAndCounts(category) {
   );
 }
 
-export async function getCellSetCount(num) {
+export async function getCellSetCount(num: any) {
   await clickOn(`cellset-button-${num}`);
   return getOneElementInnerText(`[data-testid='cellset-count-${num}']`);
 }
 
-export async function resetCategory(category) {
+export async function resetCategory(category: any) {
   const checkboxId = `${category}:category-select`;
   await waitByID(checkboxId);
   const checkedPseudoclass = await page.$eval(
@@ -110,6 +117,7 @@ export async function resetCategory(category) {
 
   const categoryRow = await waitByID(`${category}:category-expand`);
 
+  // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
   const isExpanded = await categoryRow.$(
     "[data-testclass='category-expand-is-expanded']"
   );
@@ -117,16 +125,26 @@ export async function resetCategory(category) {
   if (isExpanded) await clickOn(`${category}:category-expand`);
 }
 
-export async function calcCoordinate(testId, xAsPercent, yAsPercent) {
+export async function calcCoordinate(
+  testId: any,
+  xAsPercent: any,
+  yAsPercent: any
+) {
   const el = await waitByID(testId);
+  // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
   const size = await el.boxModel();
   return {
+    // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
     x: Math.floor(size.width * xAsPercent),
+    // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
     y: Math.floor(size.height * yAsPercent),
   };
 }
 
-export async function calcDragCoordinates(testId, coordinateAsPercent) {
+export async function calcDragCoordinates(
+  testId: any,
+  coordinateAsPercent: any
+) {
   return {
     start: await calcCoordinate(
       testId,
@@ -141,7 +159,7 @@ export async function calcDragCoordinates(testId, coordinateAsPercent) {
   };
 }
 
-export async function selectCategory(category, values, reset = true) {
+export async function selectCategory(category: any, values: any, reset = true) {
   if (reset) await resetCategory(category);
 
   await clickOn(`${category}:category-expand`);
@@ -152,8 +170,9 @@ export async function selectCategory(category, values, reset = true) {
   }
 }
 
-export async function expandCategory(category) {
+export async function expandCategory(category: any) {
   const expand = await waitByID(`${category}:category-expand`);
+  // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
   const notExpanded = await expand.$(
     "[data-testclass='category-expand-is-not-expanded']"
   );
@@ -167,7 +186,7 @@ export async function clip(min = 0, max = 100) {
   await clickOn("clip-commit");
 }
 
-export async function createCategory(categoryName) {
+export async function createCategory(categoryName: any) {
   await clickOnUntil("open-annotation-dialog", async () => {
     await expect(page).toMatchElement(getTestId("new-category-name"));
   });
@@ -182,17 +201,18 @@ export async function createCategory(categoryName) {
 
 */
 
-export async function colorByGeneset(genesetName) {
+export async function colorByGeneset(genesetName: any) {
   await clickOn(`${genesetName}:colorby-entire-geneset`);
 }
 
-export async function colorByGene(gene) {
+export async function colorByGene(gene: any) {
   await clickOn(`colorby-${gene}`);
 }
 
-export async function assertColorLegendLabel(label) {
+export async function assertColorLegendLabel(label: any) {
   const handle = await waitByID("continuous_legend_color_by_label");
 
+  // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
   const result = await handle.evaluate((node) => {
     return node.getAttribute("aria-label");
   });
@@ -200,15 +220,16 @@ export async function assertColorLegendLabel(label) {
   return expect(result).toBe(label);
 }
 
-export async function expandGeneset(genesetName) {
+export async function expandGeneset(genesetName: any) {
   const expand = await waitByID(`${genesetName}:geneset-expand`);
+  // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
   const notExpanded = await expand.$(
     "[data-testclass='geneset-expand-is-not-expanded']"
   );
   if (notExpanded) await clickOn(`${genesetName}:geneset-expand`);
 }
 
-export async function createGeneset(genesetName) {
+export async function createGeneset(genesetName: any) {
   await clickOnUntil("open-create-geneset-dialog", async () => {
     await expect(page).toMatchElement(getTestId("create-geneset-input"));
   });
@@ -218,7 +239,7 @@ export async function createGeneset(genesetName) {
   await waitByClass("autosave-complete");
 }
 
-export async function editGenesetName(genesetName, editText) {
+export async function editGenesetName(genesetName: any, editText: any) {
   const editButton = `${genesetName}:edit-genesetName-mode`;
   const submitButton = `${genesetName}:submit-geneset`;
   await clickOnUntil(`${genesetName}:see-actions`, async () => {
@@ -229,7 +250,7 @@ export async function editGenesetName(genesetName, editText) {
   await clickOn(submitButton);
 }
 
-export async function deleteGeneset(genesetName) {
+export async function deleteGeneset(genesetName: any) {
   const targetId = `${genesetName}:delete-geneset`;
 
   await clickOnUntil(`${genesetName}:see-actions`, async () => {
@@ -242,16 +263,18 @@ export async function deleteGeneset(genesetName) {
   await waitByClass("autosave-complete");
 }
 
-export async function assertGenesetDoesNotExist(genesetName) {
+export async function assertGenesetDoesNotExist(genesetName: any) {
+  // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
   const result = await isElementPresent(
     getTestId(`${genesetName}:geneset-name`)
   );
   await expect(result).toBe(false);
 }
 
-export async function assertGenesetExists(genesetName) {
+export async function assertGenesetExists(genesetName: any) {
   const handle = await waitByID(`${genesetName}:geneset-name`);
 
+  // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
   const result = await handle.evaluate((node) => {
     return node.getAttribute("aria-label");
   });
@@ -265,7 +288,7 @@ export async function assertGenesetExists(genesetName) {
 
 */
 
-export async function addGeneToSet(genesetName, geneToAddToSet) {
+export async function addGeneToSet(genesetName: any, geneToAddToSet: any) {
   const submitButton = `${genesetName}:submit-gene`;
 
   await clickOn(`${genesetName}:add-new-gene-to-geneset`);
@@ -273,7 +296,7 @@ export async function addGeneToSet(genesetName, geneToAddToSet) {
   await clickOn(submitButton);
 }
 
-export async function removeGene(geneSymbol) {
+export async function removeGene(geneSymbol: any) {
   const targetId = `delete-from-geneset:${geneSymbol}`;
 
   await clickOn(targetId);
@@ -281,9 +304,10 @@ export async function removeGene(geneSymbol) {
   await waitByClass("autosave-complete");
 }
 
-export async function assertGeneExistsInGeneset(geneSymbol) {
+export async function assertGeneExistsInGeneset(geneSymbol: any) {
   const handle = await waitByID(`${geneSymbol}:gene-label`);
 
+  // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
   const result = await handle.evaluate((node) => {
     return node.getAttribute("aria-label");
   });
@@ -291,13 +315,14 @@ export async function assertGeneExistsInGeneset(geneSymbol) {
   return expect(result).toBe(geneSymbol);
 }
 
-export async function assertGeneDoesNotExist(geneSymbol) {
+export async function assertGeneDoesNotExist(geneSymbol: any) {
+  // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
   const result = await isElementPresent(getTestId(`${geneSymbol}:gene-label`));
 
   await expect(result).toBe(false);
 }
 
-export async function expandGene(geneSymbol) {
+export async function expandGene(geneSymbol: any) {
   await clickOn(`maximize-${geneSymbol}`);
 }
 
@@ -307,7 +332,7 @@ export async function expandGene(geneSymbol) {
 
 */
 
-export async function duplicateCategory(categoryName) {
+export async function duplicateCategory(categoryName: any) {
   await clickOn("open-annotation-dialog");
 
   await typeInto("new-category-name", categoryName);
@@ -333,7 +358,10 @@ export async function duplicateCategory(categoryName) {
   await waitByClass("autosave-complete");
 }
 
-export async function renameCategory(oldCategoryName, newCategoryName) {
+export async function renameCategory(
+  oldCategoryName: any,
+  newCategoryName: any
+) {
   await clickOn(`${oldCategoryName}:see-actions`);
   await clickOn(`${oldCategoryName}:edit-category-mode`);
   await clearInputAndTypeInto(
@@ -343,7 +371,7 @@ export async function renameCategory(oldCategoryName, newCategoryName) {
   await clickOn(`${oldCategoryName}:submit-category-edit`);
 }
 
-export async function deleteCategory(categoryName) {
+export async function deleteCategory(categoryName: any) {
   const targetId = `${categoryName}:delete-category`;
 
   await clickOnUntil(`${categoryName}:see-actions`, async () => {
@@ -352,10 +380,11 @@ export async function deleteCategory(categoryName) {
 
   await clickOn(targetId);
 
+  // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
   await assertCategoryDoesNotExist();
 }
 
-export async function createLabel(categoryName, labelName) {
+export async function createLabel(categoryName: any, labelName: any) {
   /**
    * (thuang): This explicit wait is needed, since currently showing
    * the modal again quickly after the previous action dismissing the
@@ -380,13 +409,17 @@ export async function createLabel(categoryName, labelName) {
   await clickOn(`${categoryName}:submit-label`);
 }
 
-export async function deleteLabel(categoryName, labelName) {
+export async function deleteLabel(categoryName: any, labelName: any) {
   await expandCategory(categoryName);
   await clickOn(`${categoryName}:${labelName}:see-actions`);
   await clickOn(`${categoryName}:${labelName}:delete-label`);
 }
 
-export async function renameLabel(categoryName, oldLabelName, newLabelName) {
+export async function renameLabel(
+  categoryName: any,
+  oldLabelName: any,
+  newLabelName: any
+) {
   await expandCategory(categoryName);
   await clickOn(`${categoryName}:${oldLabelName}:see-actions`);
   await clickOn(`${categoryName}:${oldLabelName}:edit-label`);
@@ -397,13 +430,13 @@ export async function renameLabel(categoryName, oldLabelName, newLabelName) {
   await clickOn(`${categoryName}:${oldLabelName}:submit-label-edit`);
 }
 
-export async function addGeneToSearch(geneName) {
+export async function addGeneToSearch(geneName: any) {
   await typeInto("gene-search", geneName);
   await page.keyboard.press("Enter");
   await page.waitForSelector(`[data-testid='histogram-${geneName}']`);
 }
 
-export async function subset(coordinatesAsPercent) {
+export async function subset(coordinatesAsPercent: any) {
   // In order to deselect the selection after the subset, make sure we have some clear part
   // of the scatterplot we can click on
   assert(coordinatesAsPercent.x2 < 0.99 || coordinatesAsPercent.y2 < 0.99);
@@ -417,8 +450,8 @@ export async function subset(coordinatesAsPercent) {
   await clickOnCoordinate("layout-graph", clearCoordinate);
 }
 
-export async function setSellSet(cellSet, cellSetNum) {
-  const selections = cellSet.filter((sel) => sel.kind === "categorical");
+export async function setSellSet(cellSet: any, cellSetNum: any) {
+  const selections = cellSet.filter((sel: any) => sel.kind === "categorical");
 
   for (const selection of selections) {
     await selectCategory(selection.metadata, selection.values, true);
@@ -427,19 +460,20 @@ export async function setSellSet(cellSet, cellSetNum) {
   await getCellSetCount(cellSetNum);
 }
 
-export async function runDiffExp(cellSet1, cellSet2) {
+export async function runDiffExp(cellSet1: any, cellSet2: any) {
   await setSellSet(cellSet1, 1);
   await setSellSet(cellSet2, 2);
   await clickOn("diffexp-button");
 }
 
-export async function bulkAddGenes(geneNames) {
+export async function bulkAddGenes(geneNames: any) {
   await clickOn("section-bulk-add");
   await typeInto("input-bulk-add", geneNames.join(","));
   await page.keyboard.press("Enter");
 }
 
-export async function assertCategoryDoesNotExist(categoryName) {
+export async function assertCategoryDoesNotExist(categoryName: any) {
+  // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
   const result = await isElementPresent(
     getTestId(`${categoryName}:category-label`)
   );
@@ -480,7 +514,7 @@ export async function logout() {
   await waitByID("log-in");
 }
 
-async function waitUntilFormFieldStable(selector) {
+async function waitUntilFormFieldStable(selector: any) {
   const MAX_RETRY = 10;
   const WAIT_FOR_MS = 200;
 

@@ -13,15 +13,17 @@ anno matrix namespaces. It is still used by the component tier.
 
 */
 
-const makeDimensionName = (namespace, key) => `${namespace}_${key}`;
+const makeDimensionName = (namespace: any, key: any) => `${namespace}_${key}`;
 
-export const layoutDimensionName = (key) => makeDimensionName("layout", key);
-export const obsAnnoDimensionName = (key) => makeDimensionName("obsAnno", key);
-export const diffexpDimensionName = (key) =>
+export const layoutDimensionName = (key: any) =>
+  makeDimensionName("layout", key);
+export const obsAnnoDimensionName = (key: any) =>
+  makeDimensionName("obsAnno", key);
+export const diffexpDimensionName = (key: any) =>
   makeDimensionName("varData_diffexp", key);
-export const userDefinedDimensionName = (key) =>
+export const userDefinedDimensionName = (key: any) =>
   makeDimensionName("varData_userDefined", key);
-export const geneSetSummaryDimensionName = (key) =>
+export const geneSetSummaryDimensionName = (key: any) =>
   makeDimensionName("geneSetSummary", key);
 
 /*
@@ -35,7 +37,10 @@ export const geneSetSummaryDimensionName = (key) =>
   ie., makeContinuousDimensionName(continuousNamespace = {isObs: true}, "total_reads")
   see: histogram brush, as it doesn't know what type of continuous it was with only field
 */
-export const makeContinuousDimensionName = (continuousNamespace, key) => {
+export const makeContinuousDimensionName = (
+  continuousNamespace: any,
+  key: any
+) => {
   let name;
   if (continuousNamespace.isObs) {
     name = obsAnnoDimensionName(key);

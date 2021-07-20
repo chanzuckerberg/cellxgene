@@ -76,7 +76,7 @@ const brushThisGeneGeneset = "brush_this_gene";
 const geneBrushedCellCount = "109";
 const subsetGeneBrushedCellCount = "96";
 
-async function setup(config) {
+async function setup(config: any) {
   await goToPage(appUrlBase);
 
   if (config.categoricalAnno) {
@@ -150,7 +150,7 @@ describe.each([
     await expect(page).toClick(getTestClass("pop-1-geneset-expand"));
 
     await page.waitForFunction(
-      (selector) => !document.querySelector(selector),
+      (selector: any) => !document.querySelector(selector),
       {},
       getTestClass("gene-loading-spinner")
     );
@@ -165,7 +165,7 @@ describe.each([
     await expect(page).toClick(getTestClass("pop-2-geneset-expand"));
 
     await page.waitForFunction(
-      (selector) => !document.querySelector(selector),
+      (selector: any) => !document.querySelector(selector),
       {},
       getTestClass("gene-loading-spinner")
     );
@@ -362,8 +362,11 @@ describe.each([
     expect(actualLabelName).toBe(expectedLabelName);
     expect(actualLabelCount).toBe(expectedLabelCount);
 
-    async function getInnerText(element, className) {
-      return element.$eval(getTestClass(className), (node) => node?.innerText);
+    async function getInnerText(element: any, className: any) {
+      return element.$eval(
+        getTestClass(className),
+        (node: any) => node?.innerText
+      );
     }
   });
 
@@ -388,7 +391,9 @@ describe.each([
       `categorical-value-count-${perTestCategoryName}-${perTestLabelName}`
     );
 
+    // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
     expect(await result.evaluate((node) => node.innerText)).toBe(
+      // @ts-expect-error ts-migrate(2538) FIXME: Type 'boolean' cannot be used as an index type.
       data.categoryLabel.newCount.bySubsetConfig[config.withSubset]
     );
   });
@@ -448,6 +453,7 @@ describe.each([
     await createLabel(perTestCategoryName, labelName);
     await assertLabelExists(perTestCategoryName, labelName);
     await clickOn("undo");
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
     await assertLabelDoesNotExist(perTestCategoryName);
     await clickOn("redo");
     await assertLabelExists(perTestCategoryName, labelName);
@@ -457,10 +463,12 @@ describe.each([
     await setup(config);
 
     await deleteLabel(perTestCategoryName, perTestLabelName);
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
     await assertLabelDoesNotExist(perTestCategoryName);
     await clickOn("undo");
     await assertLabelExists(perTestCategoryName, perTestLabelName);
     await clickOn("redo");
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
     await assertLabelDoesNotExist(perTestCategoryName);
   });
 
@@ -523,9 +531,10 @@ describe.each([
     expect(result).toMatchSnapshot();
   });
 
-  async function assertCategoryExists(categoryName) {
+  async function assertCategoryExists(categoryName: any) {
     const handle = await waitByID(`${categoryName}:category-label`);
 
+    // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
     const result = await handle.evaluate((node) =>
       node.getAttribute("aria-label")
     );
@@ -533,7 +542,7 @@ describe.each([
     return expect(result).toBe(categoryName);
   }
 
-  async function assertLabelExists(categoryName, labelName) {
+  async function assertLabelExists(categoryName: any, labelName: any) {
     await expect(page).toMatchElement(
       getTestId(`${categoryName}:category-expand`)
     );
@@ -545,11 +554,12 @@ describe.each([
     );
 
     expect(
+      // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
       await previous.evaluate((node) => node.getAttribute("aria-label"))
     ).toBe(labelName);
   }
 
-  async function assertLabelDoesNotExist(categoryName, labelName) {
+  async function assertLabelDoesNotExist(categoryName: any, labelName: any) {
     await expandCategory(categoryName);
     const result = await page.$(
       `[data-testid='categorical-value-${categoryName}-${labelName}']`

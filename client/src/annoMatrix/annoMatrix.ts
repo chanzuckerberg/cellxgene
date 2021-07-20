@@ -17,6 +17,20 @@ import { _queryValidate, _queryCacheKey } from "./query";
 const _dataframeCache = dataframeMemo(128);
 
 export default class AnnoMatrix {
+  isView: any;
+
+  nObs: any;
+
+  nVar: any;
+
+  rowIndex: any;
+
+  schema: any;
+
+  userFlags: any;
+
+  viewOf: any;
+
   /*
   Abstract base class for all AnnoMatrix objects.  This class provides a proxy
   to the annotated matrix data authoritatively served by the server/back-end.
@@ -54,7 +68,7 @@ export default class AnnoMatrix {
     return ["obs", "var", "emb", "X"];
   }
 
-  constructor(schema, nObs, nVar, rowIndex = null) {
+  constructor(schema: any, nObs: any, nVar: any, rowIndex = null) {
     /*
     Private constructor - this is an abstract base class.  Do not use.
     */
@@ -83,32 +97,33 @@ export default class AnnoMatrix {
     this.userFlags = {};
 
     /*
-		Private instance variables.
+    Private instance variables.
 
-		These are caches - lazily loaded. The only guarantee is that if they
-		are loaded, they will conform to the schema & dimensionality constraints.
+    These are caches - lazily loaded. The only guarantee is that if they
+    are loaded, they will conform to the schema & dimensionality constraints.
 
-		Do NOT use directly - instead, use the fetch() and preload() API.
-		*/
-    this._cache = {
+    Do NOT use directly - instead, use the fetch() and preload() API.
+    */
+    (this as any)._cache = {
       obs: Dataframe.empty(this.rowIndex),
       var: Dataframe.empty(this.rowIndex),
       emb: Dataframe.empty(this.rowIndex),
       X: Dataframe.empty(this.rowIndex),
     };
-    this._pendingLoad = {
+    (this as any)._pendingLoad = {
       obs: {},
       var: {},
       emb: {},
       X: {},
     };
-    this._whereCache = {};
-    this._gcInfo = new Map();
+    (this as any)._whereCache = {};
+    (this as any)._gcInfo = new Map();
   }
 
   /**
    ** Schema helper/accessors
    **/
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   getMatrixColumns(field) {
     /*
     Return array of column names in the field.  ONLY supported on the
@@ -132,6 +147,7 @@ export default class AnnoMatrix {
     return AnnoMatrix.fields();
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   getColumnSchema(field, col) {
     /*
     Return the schema for the field & column ,eg,
@@ -144,6 +160,7 @@ export default class AnnoMatrix {
     return _getColumnSchema(this.schema, field, col);
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   getColumnDimensions(field, col) {
     /*
     Return the dimensions on this field / column.  For most fields, which are 1D,
@@ -174,6 +191,7 @@ export default class AnnoMatrix {
   /**
    ** Load / read interfaces
    **/
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   fetch(field, q) {
     /*
 		Return the given query on a single matrix field as a single dataframe.
@@ -231,6 +249,7 @@ export default class AnnoMatrix {
     return this._fetch(field, q);
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   prefetch(field, q) {
     /*
 		Start a data fetch & cache fill.  Identical to fetch() except it does
@@ -261,6 +280,7 @@ export default class AnnoMatrix {
    ** The actual implementation is in the sub-classes, which MUST override these.
    **/
 
+  // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
   // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
   addObsAnnoCategory(col, category) {
     /*
@@ -278,6 +298,7 @@ export default class AnnoMatrix {
     _subclassResponsibility();
   }
 
+  // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
   // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
   async removeObsAnnoCategory(col, category, unassignedCategory) {
     /*
@@ -299,6 +320,7 @@ export default class AnnoMatrix {
     _subclassResponsibility();
   }
 
+  // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
   // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
   dropObsColumn(col) {
     /*
@@ -315,6 +337,7 @@ export default class AnnoMatrix {
     _subclassResponsibility();
   }
 
+  // @ts-expect-error ts-migrate(6133) FIXME: 'colSchema' is declared but its value is never rea... Remove this comment to see the full error message
   // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
   addObsColumn(colSchema, Ctor, value) {
     /*
@@ -344,6 +367,7 @@ export default class AnnoMatrix {
     _subclassResponsibility();
   }
 
+  // @ts-expect-error ts-migrate(6133) FIXME: 'oldCol' is declared but its value is never read.
   // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
   renameObsColumn(oldCol, newCol) {
     /*
@@ -359,6 +383,7 @@ export default class AnnoMatrix {
     _subclassResponsibility();
   }
 
+  // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
   // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
   async setObsColumnValues(col, obsLabels, value) {
     /*
@@ -377,6 +402,7 @@ export default class AnnoMatrix {
     _subclassResponsibility();
   }
 
+  // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
   // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
   async resetObsColumnValues(col, oldValue, newValue) {
     /*
@@ -394,6 +420,7 @@ export default class AnnoMatrix {
     _subclassResponsibility();
   }
 
+  // @ts-expect-error ts-migrate(6133) FIXME: 'colSchema' is declared but its value is never rea... Remove this comment to see the full error message
   // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
   addEmbedding(colSchema) {
     /*
@@ -407,28 +434,41 @@ export default class AnnoMatrix {
     _subclassResponsibility();
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   getCacheKeys(field, query) {
     /*
-    Return cache keys for columns associated with this query.  May return
-    [unknown] if no keys are known (ie, nothing is or was cached).
-    */
-    return _whereCacheGet(this._whereCache, this.schema, field, query);
+Return cache keys for columns associated with this query.  May return
+[unknown] if no keys are known (ie, nothing is or was cached).
+*/
+    return _whereCacheGet((this as any)._whereCache, this.schema, field, query);
   }
 
   /**
    ** Private interfaces below.
    **/
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   _resolveCachedQueries(field, queries) {
-    return queries
-      .map((query) =>
-        _whereCacheGet(this._whereCache, this.schema, field, query).filter(
-          (cacheKey) =>
-            cacheKey !== undefined && this._cache[field].hasCol(cacheKey)
+    return (
+      queries
+        // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'query' implicitly has an 'any' type.
+        .map((query) =>
+          _whereCacheGet(
+            (this as any)._whereCache,
+            this.schema,
+            field,
+            query
+          ).filter(
+            // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'cacheKey' implicitly has an 'any' type.
+            (cacheKey) =>
+              cacheKey !== undefined &&
+              (this as any)._cache[field].hasCol(cacheKey)
+          )
         )
-      )
-      .flat();
+        .flat()
+    );
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   async _fetch(field, q) {
     if (!AnnoMatrix.fields().includes(field)) return undefined;
     const queries = Array.isArray(q) ? q : [q];
@@ -440,9 +480,11 @@ export default class AnnoMatrix {
 
     /* find any query not already cached */
     const uncachedQueries = queries.filter((query) =>
-      _whereCacheGet(this._whereCache, this.schema, field, query).some(
+      _whereCacheGet((this as any)._whereCache, this.schema, field, query).some(
+        // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'cacheKey' implicitly has an 'any' type.
         (cacheKey) =>
-          cacheKey === undefined || !this._cache[field].hasCol(cacheKey)
+          cacheKey === undefined ||
+          !(this as any)._cache[field].hasCol(cacheKey)
       )
     );
 
@@ -450,12 +492,16 @@ export default class AnnoMatrix {
     if (uncachedQueries.length > 0) {
       await Promise.all(
         uncachedQueries.map((query) =>
+          // @ts-expect-error ts-migrate(7006) FIXME: Parameter '_field' implicitly has an 'any' type.
           this._getPendingLoad(field, query, async (_field, _query) => {
             /* fetch, then index.  _doLoad is subclass interface */
+            // @ts-expect-error ts-migrate(2488) FIXME: Type 'void' must have a '[Symbol.iterator]()' meth... Remove this comment to see the full error message
             const [whereCacheUpdate, df] = await this._doLoad(_field, _query);
-            this._cache[_field] = this._cache[_field].withColsFrom(df);
-            this._whereCache = _whereCacheMerge(
-              this._whereCache,
+            (this as any)._cache[_field] = (this as any)._cache[
+              _field
+            ].withColsFrom(df);
+            (this as any)._whereCache = _whereCacheMerge(
+              (this as any)._whereCache,
               whereCacheUpdate
             );
           })
@@ -466,12 +512,13 @@ export default class AnnoMatrix {
     /* everything we need is in the cache, so just cherry-pick requested columns */
     const requestedCacheKeys = this._resolveCachedQueries(field, queries);
     const response = _dataframeCache(
-      this._cache[field].subset(null, requestedCacheKeys)
+      (this as any)._cache[field].subset(null, requestedCacheKeys)
     );
     this._gcUpdateStats(field, response);
     return response;
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   async _getPendingLoad(field, query, fetchFn) {
     /*
     Given a query on a field, ensure that we only have a single outstanding
@@ -482,15 +529,15 @@ export default class AnnoMatrix {
     fetch promise.
     */
     const key = _queryCacheKey(field, query);
-    if (!this._pendingLoad[field][key]) {
-      this._pendingLoad[field][key] = fetchFn(field, query);
+    if (!(this as any)._pendingLoad[field][key]) {
+      (this as any)._pendingLoad[field][key] = fetchFn(field, query);
       try {
-        await this._pendingLoad[field][key];
+        await (this as any)._pendingLoad[field][key];
       } finally {
-        delete this._pendingLoad[field][key];
+        delete (this as any)._pendingLoad[field][key];
       }
     }
-    return this._pendingLoad[field][key];
+    return (this as any)._pendingLoad[field][key];
   }
 
   // eslint-disable-next-line class-methods-use-this -- make sure subclass implements
@@ -527,19 +574,22 @@ export default class AnnoMatrix {
   To be effective, the GC callback needs to be invoked from the undo/redo code,
   as much of the cache is pinned by that data structure.
   */
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   _gcField(field, isHot, pinnedColumns) {
-    const maxColumns = isHot ? 256 : 10; // maybe to aggressive?
-
-    const cache = this._cache[field];
+    const maxColumns = isHot ? 256 : 10;
+    const cache = (this as any)._cache[field];
     if (cache.colIndex.size() < maxColumns) return; // trivial rejection
 
     const candidates = cache.colIndex
       .labels()
+      // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'col' implicitly has an 'any' type.
       .filter((col) => !pinnedColumns.includes(col));
 
     const excessCount = candidates.length + pinnedColumns.length - maxColumns;
     if (excessCount > 0) {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property '_gcInfo' does not exist on type 'AnnoMat... Remove this comment to see the full error message
       const { _gcInfo } = this;
+      // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
       candidates.sort((a, b) => {
         let atime = _gcInfo.get(_columnCacheKey(field, a));
         if (atime === undefined) atime = 0;
@@ -557,14 +607,17 @@ export default class AnnoMatrix {
       //     ", "
       //   )}]`
       // );
-      this._cache[field] = toDrop.reduce(
+      (this as any)._cache[field] = toDrop.reduce(
+        // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'df' implicitly has an 'any' type.
         (df, col) => df.dropCol(col),
-        this._cache[field]
+        (this as any)._cache[field]
       );
+      // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'col' implicitly has an 'any' type.
       toDrop.forEach((col) => _gcInfo.delete(_columnCacheKey(field, col)));
     }
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   _gcFetchCleanup(field, pinnedColumns) {
     /*
     Called during data load/fetch.  By definition, this is 'hot', so we
@@ -579,6 +632,7 @@ export default class AnnoMatrix {
     }
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'hints' implicitly has an 'any' type.
   _gc(hints) {
     /*
     Called from middleware, or elsewhere.  isHot is true if we are in the active store, 
@@ -591,6 +645,7 @@ export default class AnnoMatrix {
     );
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   _gcUpdateStats(field, dataframe) {
     /*
     called each time a query is performed, allowing the gc to update any bookkeeping
@@ -598,8 +653,10 @@ export default class AnnoMatrix {
     in a Map.
     */
     const cols = dataframe.colIndex.labels();
+    // @ts-expect-error ts-migrate(2339) FIXME: Property '_gcInfo' does not exist on type 'AnnoMat... Remove this comment to see the full error message
     const { _gcInfo } = this;
     const now = Date.now();
+    // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
     cols.forEach((c) => {
       _gcInfo.set(_columnCacheKey(field, c), now);
     });
@@ -617,8 +674,9 @@ export default class AnnoMatrix {
 
   Do not override _clone();
   **/
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'clone' implicitly has an 'any' type.
   _cloneDeeper(clone) {
-    clone._cache = _shallowClone(this._cache);
+    clone._cache = _shallowClone((this as any)._cache);
     clone._gcInfo = new Map();
     clone._pendingLoad = {
       obs: {},
@@ -640,6 +698,7 @@ export default class AnnoMatrix {
 /*
 private utility functions below
 */
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
 function _columnCacheKey(field, column) {
   return `${field}/${column}`;
 }

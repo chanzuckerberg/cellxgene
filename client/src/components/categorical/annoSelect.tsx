@@ -2,16 +2,21 @@ import React from "react";
 import { Button, MenuItem } from "@blueprintjs/core";
 import { Select } from "@blueprintjs/select";
 
-class DuplicateCategorySelect extends React.PureComponent {
-  constructor(props) {
+type State = any;
+
+class DuplicateCategorySelect extends React.PureComponent<{}, State> {
+  constructor(props: {}) {
     super(props);
     this.state = {};
   }
 
   render() {
     const {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'allCategoryNames' does not exist on type... Remove this comment to see the full error message
       allCategoryNames,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'categoryToDuplicate' does not exist on t... Remove this comment to see the full error message
       categoryToDuplicate,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'handleModalDuplicateCategorySelection' d... Remove this comment to see the full error message
       handleModalDuplicateCategorySelection,
     } = this.props;
     return (
@@ -31,7 +36,9 @@ class DuplicateCategorySelect extends React.PureComponent {
               <MenuItem
                 data-testclass="duplicate-category-dropdown-option"
                 onClick={handleClick}
+                // @ts-expect-error ts-migrate(2322) FIXME: Type 'unknown' is not assignable to type 'Key | nu... Remove this comment to see the full error message
                 key={d}
+                // @ts-expect-error ts-migrate(2322) FIXME: Type 'unknown' is not assignable to type 'ReactNod... Remove this comment to see the full error message
                 text={d}
               />
             );

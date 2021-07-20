@@ -17,19 +17,23 @@ import * as globals from "../../../globals";
 import actions from "../../../actions";
 import AddGeneToGenesetDialogue from "./addGeneToGenesetDialogue";
 
+type State = any;
+
+// @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => {
   return {
-    genesetsUI: state.genesetsUI,
-    colorAccessor: state.colors.colorAccessor,
+    genesetsUI: (state as any).genesetsUI,
+    colorAccessor: (state as any).colors.colorAccessor,
   };
 })
-class GenesetMenus extends React.PureComponent {
-  constructor(props) {
+class GenesetMenus extends React.PureComponent<{}, State> {
+  constructor(props: {}) {
     super(props);
     this.state = {};
   }
 
   activateAddGeneToGenesetMode = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, geneset } = this.props;
     dispatch({
       type: "geneset: activate add new genes mode",
@@ -38,6 +42,7 @@ class GenesetMenus extends React.PureComponent {
   };
 
   activateEditGenesetNameMode = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, geneset } = this.props;
 
     dispatch({
@@ -47,6 +52,7 @@ class GenesetMenus extends React.PureComponent {
   };
 
   handleColorByEntireGeneset = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, geneset } = this.props;
 
     dispatch({
@@ -56,11 +62,13 @@ class GenesetMenus extends React.PureComponent {
   };
 
   handleDeleteGeneset = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, geneset } = this.props;
     dispatch(actions.genesetDelete(geneset));
   };
 
   render() {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'geneset' does not exist on type 'Readonl... Remove this comment to see the full error message
     const { geneset, genesetsEditable, createText, colorAccessor } = this.props;
 
     const isColorBy = geneset === colorAccessor;
@@ -84,6 +92,7 @@ class GenesetMenus extends React.PureComponent {
                 minimal
               />
             </Tooltip2>
+            {/* @ts-expect-error ts-migrate(2322) FIXME: Type '{ geneset: any; }' is not assignable to type... Remove this comment to see the full error message */}
             <AddGeneToGenesetDialogue geneset={geneset} />
             <Popover
               interactionKind={PopoverInteractionKind.HOVER}

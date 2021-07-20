@@ -14,7 +14,7 @@ const indexedSchema = {
   ),
 };
 
-function makeMockColumn(s, length) {
+function makeMockColumn(s: any, length: any) {
   const { type } = s;
   switch (type) {
     case "int32":
@@ -37,20 +37,22 @@ function makeMockColumn(s, length) {
   }
 }
 
-function getEncodedDataframe(colNames, length, colSchemas) {
+function getEncodedDataframe(colNames: any, length: any, colSchemas: any) {
   const colIndex = new KeyIndex(colNames);
-  const columns = colSchemas.map((s) => makeMockColumn(s, length));
+  const columns = colSchemas.map((s: any) => makeMockColumn(s, length));
+  // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
   const df = new Dataframe([length, colNames.length], columns, null, colIndex);
   const body = encodeMatrixFBS(df);
   return body;
 }
 
-export function dataframeResponse(colNames, columns) {
+export function dataframeResponse(colNames: any, columns: any) {
   const colIndex = new KeyIndex(colNames);
   const df = new Dataframe(
     [columns[0].length, colNames.length],
     columns,
     null,
+    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
     colIndex
   );
   const body = encodeMatrixFBS(df);
@@ -60,15 +62,19 @@ export function dataframeResponse(colNames, columns) {
   return () => Promise.resolve({ body, init: { status: 200, headers } });
 }
 
-function annotationObsResponse(request) {
+function annotationObsResponse(request: any) {
   const url = new URL(request.url);
-  const params = Array.from(url.searchParams.entries());
+  const params = Array.from((url.searchParams as any).entries());
   const names = params
+    // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
     .filter(([k]) => k === "annotation-name")
+    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '([, v]: [any, any]) => any' is n... Remove this comment to see the full error message
     .map(([, v]) => v);
+  // @ts-expect-error ts-migrate(2538) FIXME: Type 'unknown' cannot be used as an index type.
   if (!names.every((n) => indexedSchema.obsByName[n])) {
     return Promise.reject(new Error("bad obs annotation name in URL"));
   }
+  // @ts-expect-error ts-migrate(2538) FIXME: Type 'unknown' cannot be used as an index type.
   const colSchemas = names.map((n) => indexedSchema.obsByName[n]);
   const body = getEncodedDataframe(
     names,
@@ -85,15 +91,19 @@ function annotationObsResponse(request) {
   });
 }
 
-function annotationVarResponse(request) {
+function annotationVarResponse(request: any) {
   const url = new URL(request.url);
-  const params = Array.from(url.searchParams.entries());
+  const params = Array.from((url.searchParams as any).entries());
   const names = params
+    // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
     .filter(([k]) => k === "annotation-name")
+    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '([, v]: [any, any]) => any' is n... Remove this comment to see the full error message
     .map(([, v]) => v);
+  // @ts-expect-error ts-migrate(2538) FIXME: Type 'unknown' cannot be used as an index type.
   if (!names.every((n) => indexedSchema.varByName[n])) {
     return Promise.reject(new Error("bad var annotation name in URL"));
   }
+  // @ts-expect-error ts-migrate(2538) FIXME: Type 'unknown' cannot be used as an index type.
   const colSchemas = names.map((n) => indexedSchema.varByName[n]);
   const body = getEncodedDataframe(
     names,
@@ -110,15 +120,19 @@ function annotationVarResponse(request) {
   });
 }
 
-function layoutObsResponse(request) {
+function layoutObsResponse(request: any) {
   const url = new URL(request.url);
-  const params = Array.from(url.searchParams.entries());
+  const params = Array.from((url.searchParams as any).entries());
+  // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
   const names = params.filter(([k]) => k === "layout-name").map(([, v]) => v);
+  // @ts-expect-error ts-migrate(2538) FIXME: Type 'unknown' cannot be used as an index type.
   if (!names.every((n) => indexedSchema.embByName[n])) {
     return Promise.reject(new Error("bad layout name in URL"));
   }
+  // @ts-expect-error ts-migrate(2538) FIXME: Type 'unknown' cannot be used as an index type.
   const dims = names.map((n) => indexedSchema.embByName[n].dims).flat();
   const colSchemas = names
+    // @ts-expect-error ts-migrate(2538) FIXME: Type 'unknown' cannot be used as an index type.
     .map((n) => [indexedSchema.embByName[n], indexedSchema.embByName[n]])
     .flat();
   const body = getEncodedDataframe(
@@ -136,11 +150,11 @@ function layoutObsResponse(request) {
   });
 }
 
-function dataVarResponse(request) {
+function dataVarResponse(request: any) {
   const url = new URL(request.url);
-  const params = Array.from(url.searchParams.entries());
+  const params = Array.from((url.searchParams as any).entries());
 
-  const colNames = params.map((v) => `${v[0]}/${v[1]}`);
+  const colNames = params.map((v) => `${(v as any)[0]}/${(v as any)[1]}`);
   const colSchemas = colNames.map(() => schema.schema.dataframe);
   const body = getEncodedDataframe(
     colNames,
@@ -157,7 +171,7 @@ function dataVarResponse(request) {
   });
 }
 
-export function responder(request) {
+export function responder(request: any) {
   const url = new URL(request.url);
   const { pathname } = url;
   if (pathname.endsWith("/annotations/obs")) {
@@ -175,25 +189,30 @@ export function responder(request) {
   return Promise.reject(new Error("bad URL"));
 }
 
-export function withExpected(expectedURL, expectedParams) {
+export function withExpected(expectedURL: any, expectedParams: any) {
   /*
   Do some additional error checking
   */
-  return (request) => {
+  return (request: any) => {
     // if URL is bogus, reject the promise
     const url = new URL(request.url);
     if (!url.pathname.endsWith(expectedURL)) {
       return Promise.reject(new Error("Unexpected URL!"));
     }
-    const params = Array.from(url.searchParams.entries()).sort(
-      (a, b) => a[0] < b[0]
+    const params = Array.from((url.searchParams as any).entries()).sort(
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '(a: unknown, b: unknown) => bool... Remove this comment to see the full error message
+      (a, b) => (a as any)[0] < (b as any)[0]
     );
-    expectedParams = expectedParams.slice().sort((a, b) => a[0] < b[0]);
+    expectedParams = expectedParams
+      .slice()
+      .sort((a: any, b: any) => a[0] < b[0]);
 
     if (
       params.length !== expectedParams.length ||
       !params.every(
-        (p, i) => p[0] === expectedParams[i][0] && p[1] === expectedParams[i][1]
+        (p, i) =>
+          (p as any)[0] === expectedParams[i][0] &&
+          (p as any)[1] === expectedParams[i][1]
       )
     ) {
       return Promise.reject(new Error("unexpected name requested in URL"));
@@ -203,9 +222,9 @@ export function withExpected(expectedURL, expectedParams) {
   };
 }
 
-export function annotationsObs(names) {
+export function annotationsObs(names: any) {
   return withExpected(
     "/annotations/obs",
-    names.map((name) => ["annotation-name", name])
+    names.map((name: any) => ["annotation-name", name])
   );
 }

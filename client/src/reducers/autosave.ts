@@ -11,8 +11,8 @@ const Autosave = (
     // error state
     error: false,
   },
-  action,
-  nextSharedState
+  action: any,
+  nextSharedState: any
 ) => {
   switch (action.type) {
     case "annoMatrix: init complete": {

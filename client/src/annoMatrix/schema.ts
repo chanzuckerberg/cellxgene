@@ -4,7 +4,7 @@ Private helper functions related to schema
 import catLabelSort from "../util/catLabelSort";
 import { unassignedCategoryLabel } from "../globals";
 
-export function _getColumnSchema(schema, field, col) {
+export function _getColumnSchema(schema: any, field: any, col: any) {
   /* look up the column definition */
   switch (field) {
     case "obs":
@@ -26,7 +26,7 @@ export function _getColumnSchema(schema, field, col) {
   }
 }
 
-export function _getColumnDimensionNames(schema, field, col) {
+export function _getColumnDimensionNames(schema: any, field: any, col: any) {
   /*
 		field/col may be an alias for multiple columns. Currently used to map ND 
 		values to 1D dataframe columns for embeddings/layout. Signified by the presence
@@ -39,6 +39,7 @@ export function _getColumnDimensionNames(schema, field, col) {
   return colSchema.dims || [col];
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
 export function _schemaColumns(schema, field) {
   switch (field) {
     case "obs":
@@ -52,18 +53,25 @@ export function _schemaColumns(schema, field) {
   }
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
 export function _getWritableColumns(schema, field) {
   if (field !== "obs") return [];
-  return schema.annotations.obs.columns
-    .filter((v) => v.writable)
-    .map((v) => v.name);
+  return (
+    schema.annotations.obs.columns
+      // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'v' implicitly has an 'any' type.
+      .filter((v) => v.writable)
+      // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'v' implicitly has an 'any' type.
+      .map((v) => v.name)
+  );
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
 export function _isContinuousType(schema) {
   const { type } = schema;
   return !(type === "string" || type === "boolean" || type === "categorical");
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'colSchema' implicitly has an 'any' type... Remove this comment to see the full error message
 export function _normalizeCategoricalSchema(colSchema, col) {
   const { type, writable } = colSchema;
   if (

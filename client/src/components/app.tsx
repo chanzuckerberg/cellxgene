@@ -15,30 +15,32 @@ import TermsOfServicePrompt from "./termsPrompt";
 
 import actions from "../actions";
 
+// @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
-  loading: state.controls.loading,
-  error: state.controls.error,
-  graphRenderCounter: state.controls.graphRenderCounter,
+  loading: (state as any).controls.loading,
+  error: (state as any).controls.error,
+  graphRenderCounter: (state as any).controls.graphRenderCounter,
 }))
 class App extends React.Component {
   componentDidMount() {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
-
     /* listen for url changes, fire one when we start the app up */
     window.addEventListener("popstate", this._onURLChanged);
     this._onURLChanged();
-
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 0 arguments, but got 1.
     dispatch(actions.doInitialDataLoad(window.location.search));
     this.forceUpdate();
   }
 
   _onURLChanged() {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
-
     dispatch({ type: "url changed", url: document.location.href });
   }
 
   render() {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'loading' does not exist on type 'Readonl... Remove this comment to see the full error message
     const { loading, error, graphRenderCounter } = this.props;
     return (
       <Container>
@@ -70,13 +72,15 @@ class App extends React.Component {
         {loading || error ? null : (
           <Layout>
             <LeftSideBar />
-            {(viewportRef) => (
+            {(viewportRef: any) => (
               <>
                 <MenuBar />
                 <Embedding />
                 <Autosave />
                 <TermsOfServicePrompt />
+                {/* @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call. */}
                 <Legend viewportRef={viewportRef} />
+                {/* @ts-expect-error ts-migrate(2322) FIXME: Type '{ key: any; viewportRef: any; }' is not assi... Remove this comment to see the full error message */}
                 <Graph key={graphRenderCounter} viewportRef={viewportRef} />
               </>
             )}

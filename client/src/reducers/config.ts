@@ -4,7 +4,7 @@ const Config = (
     features: null,
     parameters: null,
   },
-  action
+  action: any
 ) => {
   switch (action.type) {
     case "initial data load start":

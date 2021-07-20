@@ -10,7 +10,7 @@ If `setTo` is not undefined, values outside the [lower, upper] range will be set
 `setTo`.
 
 */
-export default function clip(arr, lower, upper, setTo) {
+export default function clip(arr: any, lower: any, upper: any, setTo: any) {
   const lowerSet = setTo === undefined ? lower : setTo;
   const upperSet = setTo === undefined ? upper : setTo;
   for (let i = 0, l = arr.length; i < l; i += 1) {

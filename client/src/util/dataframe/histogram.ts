@@ -3,7 +3,7 @@ Dataframe histogram
 */
 import { isTypedArray } from "./util";
 
-function _histogramContinuous(column, bins, min, max) {
+function _histogramContinuous(column: any, bins: any, min: any, max: any) {
   const valBins = new Array(bins).fill(0);
   if (!column) {
     return valBins;
@@ -21,7 +21,13 @@ function _histogramContinuous(column, bins, min, max) {
   return valBins;
 }
 
-function _histogramContinuousBy(column, bins, min, max, by) {
+function _histogramContinuousBy(
+  column: any,
+  bins: any,
+  min: any,
+  max: any,
+  by: any
+) {
   const byMap = new Map();
   if (!column || !by) {
     return byMap;
@@ -46,7 +52,7 @@ function _histogramContinuousBy(column, bins, min, max, by) {
   return byMap;
 }
 
-function _histogramCategorical(column) {
+function _histogramCategorical(column: any) {
   const valMap = new Map();
   if (!column) {
     return valMap;
@@ -63,7 +69,7 @@ function _histogramCategorical(column) {
   return valMap;
 }
 
-function _histogramCategoricalBy(column, by) {
+function _histogramCategoricalBy(column: any, by: any) {
   const byMap = new Map();
   if (!column || !by) {
     return byMap;
@@ -90,7 +96,7 @@ function _histogramCategoricalBy(column, by) {
 /*
 Count category occupancy.  Optional group-by category.
 */
-export function histogramCategorical(column, by) {
+export function histogramCategorical(column: any, by: any) {
   if (by && isTypedArray(by)) {
     throw new Error("Group by column must be categorical");
   }
@@ -102,7 +108,7 @@ export function histogramCategorical(column, by) {
 /*
 Memoization hash for histogramCategorical()
 */
-export function hashCategorical(column, by) {
+export function hashCategorical(column: any, by: any) {
   if (by) {
     return `${column.__id}:${by.__id}`;
   }
@@ -113,7 +119,12 @@ export function hashCategorical(column, by) {
 Bin counts for continuous/scalar values, with optional group-by category.
 Values outside domain are ignored.
 */
-export function histogramContinuous(column, bins = 40, domain = [0, 1], by) {
+export function histogramContinuous(
+  column: any,
+  bins = 40,
+  domain = [0, 1],
+  by: any
+) {
   if (by && isTypedArray(by)) {
     throw new Error("Group by column must be categorical");
   }
@@ -126,7 +137,12 @@ export function histogramContinuous(column, bins = 40, domain = [0, 1], by) {
 /*
 Memoization hash for histogramContinuous
 */
-export function hashContinuous(column, bins = "", domain = [0, 0], by) {
+export function hashContinuous(
+  column: any,
+  bins = "",
+  domain = [0, 0],
+  by: any
+) {
   const [min, max] = domain;
   if (by) {
     return `${column.__id}:${bins}:${min}:${max}:${by.__id}`;

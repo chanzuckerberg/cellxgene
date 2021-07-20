@@ -6,6 +6,6 @@
 import pull from "lodash.pull";
 import uniq from "lodash.uniq";
 
-export default function parseBulkGeneString(geneString) {
+export default function parseBulkGeneString(geneString: any) {
   return pull(uniq(geneString.split(/[ ,]+/)), "");
 }

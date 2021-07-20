@@ -1,31 +1,31 @@
 /* eslint-disable no-await-in-loop -- await in loop is needed to emulate sequential user actions */
-export function getTestId(id) {
+export function getTestId(id: any) {
   return `[data-testid='${id}']`;
 }
 
-export function getTestClass(className) {
+export function getTestClass(className: any) {
   return `[data-testclass='${className}']`;
 }
 
-export async function waitByID(testId, props = {}) {
+export async function waitByID(testId: any, props = {}) {
   return page.waitForSelector(getTestId(testId), props);
 }
 
-export async function waitByClass(testClass, props = {}) {
+export async function waitByClass(testClass: any, props = {}) {
   return page.waitForSelector(`[data-testclass='${testClass}']`, props);
 }
 
-export async function waitForAllByIds(testIds) {
+export async function waitForAllByIds(testIds: any) {
   await Promise.all(
-    testIds.map((testId) => page.waitForSelector(getTestId(testId)))
+    testIds.map((testId: any) => page.waitForSelector(getTestId(testId)))
   );
 }
 
-export async function getAllByClass(testClass) {
+export async function getAllByClass(testClass: any) {
   return page.$$(`[data-testclass=${testClass}]`);
 }
 
-export async function typeInto(testId, text) {
+export async function typeInto(testId: any, text: any) {
   // blueprint's  typeahead is treating typing weird, clicking & waiting first solves this
   // only works for text without special characters
   await waitByID(testId);
@@ -36,7 +36,7 @@ export async function typeInto(testId, text) {
   await page.type(selector, text);
 }
 
-export async function clearInputAndTypeInto(testId, text) {
+export async function clearInputAndTypeInto(testId: any, text: any) {
   await waitByID(testId);
   const selector = getTestId(testId);
   // only works for text without special characters
@@ -49,7 +49,7 @@ export async function clearInputAndTypeInto(testId, text) {
   await page.type(selector, text);
 }
 
-export async function clickOn(testId, options = {}) {
+export async function clickOn(testId: any, options = {}) {
   await expect(page).toClick(getTestId(testId), options);
 }
 
@@ -57,7 +57,7 @@ export async function clickOn(testId, options = {}) {
  * (thuang): There are times when Puppeteer clicks on a button and the page doesn't respond.
  * So I added clickOnUntil() to retry clicking until a given condition is met.
  */
-export async function clickOnUntil(testId, assert) {
+export async function clickOnUntil(testId: any, assert: any) {
   const MAX_RETRY = 10;
   const WAIT_FOR_MS = 200;
 
@@ -81,19 +81,19 @@ export async function clickOnUntil(testId, assert) {
   }
 }
 
-export async function getOneElementInnerHTML(selector, options = {}) {
+export async function getOneElementInnerHTML(selector: any, options = {}) {
   await page.waitForSelector(selector, options);
 
   return page.$eval(selector, (el) => el.innerHTML);
 }
 
-export async function getOneElementInnerText(selector) {
+export async function getOneElementInnerText(selector: any) {
   expect(page).toMatchElement(selector);
 
-  return page.$eval(selector, (el) => el.innerText);
+  return page.$eval(selector, (el) => (el as any).innerText);
 }
 
-export async function getElementCoordinates(testId) {
+export async function getElementCoordinates(testId: any) {
   return page.$eval(getTestId(testId), (elem) => {
     const { left, top } = elem.getBoundingClientRect();
     return [left, top];
@@ -101,12 +101,14 @@ export async function getElementCoordinates(testId) {
 }
 
 async function clickTermsOfService() {
+  // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
   if (!(await isElementPresent(getTestId("tos-cookies-accept")))) return;
 
   await clickOn("tos-cookies-accept");
 }
 
 async function nameNewAnnotation() {
+  // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
   if (await isElementPresent(getTestId("annotation-dialog"))) {
     await typeInto("new-annotation-name", "ignoreE2E");
     await clickOn("submit-annotation");
@@ -116,7 +118,7 @@ async function nameNewAnnotation() {
   }
 }
 
-export async function goToPage(url) {
+export async function goToPage(url: any) {
   await page.goto(url, {
     waitUntil: "networkidle0",
   });
@@ -125,7 +127,8 @@ export async function goToPage(url) {
   await clickTermsOfService();
 }
 
-export async function isElementPresent(selector, options) {
+export async function isElementPresent(selector: any, options: any) {
+  // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 2.
   return Boolean(await page.$(selector, options));
 }
 /* eslint-enable no-await-in-loop -- await in loop is needed to emulate sequential user actions */

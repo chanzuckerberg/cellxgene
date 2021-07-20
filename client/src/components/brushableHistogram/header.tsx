@@ -5,14 +5,23 @@ import * as globals from "../../globals";
 
 const HistogramHeader = React.memo(
   ({
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'fieldId' does not exist on type '{ child... Remove this comment to see the full error message
     fieldId,
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'isColorBy' does not exist on type '{ chi... Remove this comment to see the full error message
     isColorBy,
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'onColorByClick' does not exist on type '... Remove this comment to see the full error message
     onColorByClick,
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'onRemoveClick' does not exist on type '{... Remove this comment to see the full error message
     onRemoveClick,
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'isScatterPlotX' does not exist on type '... Remove this comment to see the full error message
     isScatterPlotX,
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'isScatterPlotY' does not exist on type '... Remove this comment to see the full error message
     isScatterPlotY,
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'onScatterPlotXClick' does not exist on t... Remove this comment to see the full error message
     onScatterPlotXClick,
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'onScatterPlotYClick' does not exist on t... Remove this comment to see the full error message
     onScatterPlotYClick,
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'isObs' does not exist on type '{ childre... Remove this comment to see the full error message
     isObs,
   }) => {
     /*

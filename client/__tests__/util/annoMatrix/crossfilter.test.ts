@@ -17,11 +17,12 @@ import { rangeFill } from "../../../src/util/range";
 enableFetchMocks();
 
 describe("AnnoMatrixCrossfilter", () => {
-  let annoMatrix;
-  let crossfilter;
+  let annoMatrix: any;
+  let crossfilter: any;
 
   beforeEach(async () => {
-    fetch.resetMocks(); // reset all fetch mocking state
+    (fetch as any).resetMocks(); // reset all fetch mocking state
+    // reset all fetch mocking state
     annoMatrix = new AnnoMatrixLoader(
       serverMocks.baseDataURL,
       serverMocks.schema.schema
@@ -67,7 +68,9 @@ describe("AnnoMatrixCrossfilter", () => {
         crossfilter.obsCrossfilter.hasDimension("obs/louvain")
       ).toBeFalsy();
 
-      fetch.once(serverMocks.dataframeResponse(["louvain"], [obsLouvain]));
+      (fetch as any).once(
+        serverMocks.dataframeResponse(["louvain"], [obsLouvain])
+      );
       let newCrossfilter = await crossfilter.select("obs", "louvain", {
         mode: "none",
       });
@@ -76,7 +79,7 @@ describe("AnnoMatrixCrossfilter", () => {
       expect(
         newCrossfilter.obsCrossfilter.hasDimension("obs/louvain")
       ).toBeTruthy();
-      expect(fetch.mock.calls).toHaveLength(1);
+      expect((fetch as any).mock.calls).toHaveLength(1);
 
       newCrossfilter = await crossfilter.select("obs", "louvain", {
         mode: "all",
@@ -87,7 +90,9 @@ describe("AnnoMatrixCrossfilter", () => {
     test("simple column select", async () => {
       let xfltr;
 
-      fetch.once(serverMocks.dataframeResponse(["louvain"], [obsLouvain]));
+      (fetch as any).once(
+        serverMocks.dataframeResponse(["louvain"], [obsLouvain])
+      );
       xfltr = await crossfilter.select("obs", "louvain", {
         mode: "exact",
         values: ["NK cells", "B cells"],
@@ -105,6 +110,7 @@ describe("AnnoMatrixCrossfilter", () => {
       expect(xfltr.allSelectedLabels()).toEqual(
         Int32Array.from(
           obsLouvain.reduce((acc, val, idx) => {
+            // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
             if (val === "NK cells" || val === "B cells") acc.push(idx);
             return acc;
           }, [])
@@ -124,10 +130,11 @@ describe("AnnoMatrixCrossfilter", () => {
       const values = df.col("louvain").asArray();
       const selected = xfltr.allSelectedMask();
       values.every(
-        (val, idx) => !["NK cells", "B cells"].includes(val) !== !selected[idx]
+        (val: any, idx: any) =>
+          !["NK cells", "B cells"].includes(val) !== !selected[idx]
       );
 
-      fetch.once(
+      (fetch as any).once(
         serverMocks.dataframeResponse(["n_genes"], [new Int32Array(obsNGenes)])
       );
       xfltr = await xfltr.select("obs", "n_genes", {
@@ -146,6 +153,7 @@ describe("AnnoMatrixCrossfilter", () => {
               val < 500 &&
               (louvain === "NK cells" || louvain === "B cells")
             )
+              // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
               acc.push(idx);
             return acc;
           }, [])
@@ -160,7 +168,7 @@ describe("AnnoMatrixCrossfilter", () => {
       const varIndex = annoMatrix.schema.annotations.var.index;
 
       const { nObs } = annoMatrix.schema.dataframe;
-      fetch.once(
+      (fetch as any).once(
         serverMocks.dataframeResponse(
           ["TEST"],
           [rangeFill(new Float32Array(nObs), 0, 0.1)]
@@ -196,14 +204,16 @@ describe("AnnoMatrixCrossfilter", () => {
       });
       const values = df.icol(0).asArray();
       const selected = xfltr.allSelectedMask();
-      values.every((val, idx) => !(val >= 0 && val <= 50) !== !selected[idx]);
-      expect(selected.reduce((acc, val) => (val ? acc + 1 : acc), 0)).toEqual(
-        xfltr.countSelected()
+      values.every(
+        (val: any, idx: any) => !(val >= 0 && val <= 50) !== !selected[idx]
       );
+      expect(
+        selected.reduce((acc: any, val: any) => (val ? acc + 1 : acc), 0)
+      ).toEqual(xfltr.countSelected());
     });
 
     test("spatial column select", async () => {
-      fetch.once(
+      (fetch as any).once(
         serverMocks.dataframeResponse(
           ["umap_0", "umap_1"],
           [Float32Array.from(embUmap[0]), Float32Array.from(embUmap[1])]
@@ -222,6 +232,7 @@ describe("AnnoMatrixCrossfilter", () => {
     test("select on subset", async () => {
       const mask = new Uint8Array(annoMatrix.nObs).fill(0);
       for (let i = 0; i < mask.length; i += 2) {
+        // @ts-expect-error ts-migrate(2322) FIXME: Type 'boolean' is not assignable to type 'number'.
         mask[i] = true;
       }
       const annoMatrixSubset = isubsetMask(annoMatrix, mask);
@@ -230,7 +241,9 @@ describe("AnnoMatrixCrossfilter", () => {
       let xfltr = new AnnoMatrixObsCrossfilter(annoMatrixSubset);
       expect(xfltr.countSelected()).toEqual(annoMatrixSubset.nObs);
 
-      fetch.once(serverMocks.dataframeResponse(["louvain"], [obsLouvain]));
+      (fetch as any).once(
+        serverMocks.dataframeResponse(["louvain"], [obsLouvain])
+      );
       xfltr = await xfltr.select("obs", "louvain", {
         mode: "exact",
         values: ["NK cells", "B cells"],
@@ -243,7 +256,8 @@ describe("AnnoMatrixCrossfilter", () => {
       const values = df.col("louvain").asArray();
       const selected = xfltr.allSelectedMask();
       values.every(
-        (val, idx) => !["NK cells", "B cells"].includes(val) !== !selected[idx]
+        (val: any, idx: any) =>
+          !["NK cells", "B cells"].includes(val) !== !selected[idx]
       );
     });
 
@@ -256,7 +270,7 @@ describe("AnnoMatrixCrossfilter", () => {
         "unable to obsSelect upon the var dimension"
       );
 
-      fetch.mockRejectOnce(new Error("unknown column name"));
+      (fetch as any).mockRejectOnce(new Error("unknown column name"));
       await expect(crossfilter.select("obs", "foo")).rejects.toThrow(
         "unknown column name"
       );
@@ -267,24 +281,27 @@ describe("AnnoMatrixCrossfilter", () => {
     /*
     test the matrix mutators via crossfilter proxy
     */
-    async function helperAddTestCol(cf, colName, colSchema = null) {
+    async function helperAddTestCol(cf: any, colName: any, colSchema = null) {
       expect(
         cf.annoMatrix.getMatrixColumns("obs").includes(colName)
       ).toBeFalsy();
 
       if (colSchema === null) {
+        // @ts-expect-error ts-migrate(2322) FIXME: Type '{ name: any; type: string; categories: strin... Remove this comment to see the full error message
         colSchema = {
           name: colName,
           type: "categorical",
           categories: ["toasty"],
         };
       }
+      // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
       colSchema.name = colName;
+      // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
       const initValue = colSchema.categories[0];
       const xfltr = cf.addObsColumn(colSchema, Array, initValue);
       expect(
         xfltr.annoMatrix.schema.annotations.obs.columns.filter(
-          (v) => v.name === colName
+          (v: any) => v.name === colName
         )
       ).toHaveLength(1);
       const df = await xfltr.annoMatrix.fetch("obs", colName);
@@ -314,7 +331,7 @@ describe("AnnoMatrixCrossfilter", () => {
       });
       expect(
         xfltr.annoMatrix.schema.annotations.obs.columns.filter(
-          (v) => v.name === "foo"
+          (v: any) => v.name === "foo"
         )
       ).toHaveLength(1);
 
@@ -324,7 +341,7 @@ describe("AnnoMatrixCrossfilter", () => {
         df
           .col("foo")
           .asArray()
-          .every((v) => v === "A")
+          .every((v: any) => v === "A")
       ).toBeTruthy();
 
       // check that we catch dups
@@ -361,11 +378,11 @@ describe("AnnoMatrixCrossfilter", () => {
       xfltr = xfltr.dropObsColumn("foo");
       expect(
         xfltr.annoMatrix.schema.annotations.obs.columns.filter(
-          (v) => v.name === "foo"
+          (v: any) => v.name === "foo"
         )
       ).toHaveLength(0);
       expect(xfltr.annoMatrix.schema.annotations.obsByName.foo).toBeUndefined();
-      fetch.mockRejectOnce(new Error("unknown column name"));
+      (fetch as any).mockRejectOnce(new Error("unknown column name"));
       await expect(xfltr.annoMatrix.fetch("obs", "foo")).rejects.toThrow(
         "unknown column name"
       );
@@ -378,7 +395,7 @@ describe("AnnoMatrixCrossfilter", () => {
       });
       xfltr = xfltr.dropObsColumn("bar");
 
-      fetch.mockRejectOnce(new Error("unknown column name"));
+      (fetch as any).mockRejectOnce(new Error("unknown column name"));
       await expect(xfltr.select("obs", "bar", { mode: "all" })).rejects.toThrow(
         "unknown column name"
       );
@@ -404,7 +421,7 @@ describe("AnnoMatrixCrossfilter", () => {
         type: "categorical",
       });
 
-      fetch.mockRejectOnce(new Error("unknown column name"));
+      (fetch as any).mockRejectOnce(new Error("unknown column name"));
       await expect(xfltr.annoMatrix.fetch("obs", "foo")).rejects.toThrow(
         "unknown column name"
       );
@@ -419,7 +436,7 @@ describe("AnnoMatrixCrossfilter", () => {
       });
       xfltr = xfltr.renameObsColumn("bar", "xyz");
 
-      fetch.mockRejectOnce(new Error("unknown column name"));
+      (fetch as any).mockRejectOnce(new Error("unknown column name"));
       await expect(xfltr.select("obs", "bar", { mode: "all" })).rejects.toThrow(
         "unknown column name"
       );
@@ -429,7 +446,7 @@ describe("AnnoMatrixCrossfilter", () => {
     });
 
     test("addObsAnnoCategory", async () => {
-      let xfltr;
+      let xfltr: any;
 
       // catch unknown or readonly columns
       expect(() => crossfilter.addObsAnnoCategory("louvain", "mumble")).toThrow(
@@ -440,6 +457,7 @@ describe("AnnoMatrixCrossfilter", () => {
       ).toThrow("Unknown or readonly obs column");
 
       // add a column and then add category to it
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '{ name: string; type: string; ca... Remove this comment to see the full error message
       xfltr = await helperAddTestCol(crossfilter, "foo", {
         name: "foo",
         type: "categorical",
@@ -458,6 +476,7 @@ describe("AnnoMatrixCrossfilter", () => {
       );
 
       // now same, but ensure we have built an index before doing the operation
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '{ name: string; type: string; ca... Remove this comment to see the full error message
       xfltr = await helperAddTestCol(crossfilter, "bar", {
         name: "bar",
         type: "categorical",
@@ -486,6 +505,7 @@ describe("AnnoMatrixCrossfilter", () => {
         crossfilter.removeObsAnnoCategory("undefined-name", "mumble")
       ).rejects.toThrow("Unknown or readonly obs column");
 
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '{ name: string; type: string; ca... Remove this comment to see the full error message
       xfltr = await helperAddTestCol(crossfilter, "foo", {
         name: "foo",
         type: "categorical",
@@ -496,7 +516,7 @@ describe("AnnoMatrixCrossfilter", () => {
         (await xfltr.annoMatrix.fetch("obs", "foo"))
           .col("foo")
           .asArray()
-          .every((v) => v === "unassigned")
+          .every((v: any) => v === "unassigned")
       ).toBeTruthy();
       expect(xfltr.annoMatrix.getColumnSchema("obs", "foo")).toMatchObject({
         name: "foo",
@@ -515,7 +535,7 @@ describe("AnnoMatrixCrossfilter", () => {
         (await xfltr1.annoMatrix.fetch("obs", "foo"))
           .col("foo")
           .asArray()
-          .every((v) => v === "unassigned")
+          .every((v: any) => v === "unassigned")
       ).toBeTruthy();
       expect(xfltr1.annoMatrix.getColumnSchema("obs", "foo")).toMatchObject({
         name: "foo",
@@ -538,7 +558,7 @@ describe("AnnoMatrixCrossfilter", () => {
         (await xfltr2.annoMatrix.fetch("obs", "foo"))
           .col("foo")
           .asArray()
-          .every((v) => v === "red")
+          .every((v: any) => v === "red")
       ).toBeTruthy();
       expect(xfltr2.annoMatrix.getColumnSchema("obs", "foo")).toMatchObject({
         name: "foo",
@@ -556,6 +576,7 @@ describe("AnnoMatrixCrossfilter", () => {
         crossfilter.setObsColumnValues("undefined-name", [0], "mumble")
       ).rejects.toThrow("Unknown or readonly obs column");
 
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '{ name: string; type: string; ca... Remove this comment to see the full error message
       let xfltr = await helperAddTestCol(crossfilter, "foo", {
         name: "foo",
         type: "categorical",
@@ -573,7 +594,7 @@ describe("AnnoMatrixCrossfilter", () => {
         (await xfltr.annoMatrix.fetch("obs", "foo"))
           .col("foo")
           .asArray()
-          .every((v) => v === "unassigned")
+          .every((v: any) => v === "unassigned")
       ).toBeTruthy();
       const xfltr1 = await xfltr.setObsColumnValues("foo", [0, 10], "purple");
       expect(
@@ -581,7 +602,7 @@ describe("AnnoMatrixCrossfilter", () => {
           .col("foo")
           .asArray()
           .every(
-            (v, i) =>
+            (v: any, i: any) =>
               v === "unassigned" || (v === "purple" && (i === 0 || i === 10))
           )
       ).toBeTruthy();
@@ -615,6 +636,7 @@ describe("AnnoMatrixCrossfilter", () => {
         crossfilter.resetObsColumnValues("undefined-name", "red", "blue")
       ).rejects.toThrow("Unknown or readonly obs column");
 
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '{ name: string; type: string; ca... Remove this comment to see the full error message
       let xfltr = await helperAddTestCol(crossfilter, "foo", {
         name: "foo",
         type: "categorical",
@@ -639,7 +661,7 @@ describe("AnnoMatrixCrossfilter", () => {
         (await xfltr1.annoMatrix.fetch("obs", "foo"))
           .col("foo")
           .asArray()
-          .filter((v) => v === "purple")
+          .filter((v: any) => v === "purple")
       ).toHaveLength(2);
 
       xfltr1 = await xfltr1.resetObsColumnValues("foo", "purple", "magenta");
@@ -647,13 +669,13 @@ describe("AnnoMatrixCrossfilter", () => {
         (await xfltr1.annoMatrix.fetch("obs", "foo"))
           .col("foo")
           .asArray()
-          .filter((v) => v === "magenta")
+          .filter((v: any) => v === "magenta")
       ).toHaveLength(2);
       expect(
         (await xfltr1.annoMatrix.fetch("obs", "foo"))
           .col("foo")
           .asArray()
-          .filter((v) => v === "purple")
+          .filter((v: any) => v === "purple")
       ).toHaveLength(0);
       expect(xfltr1.annoMatrix.getColumnSchema("obs", "foo")).toMatchObject({
         name: "foo",
@@ -673,12 +695,14 @@ describe("AnnoMatrixCrossfilter", () => {
   describe("edge cases", () => {
     test("transition from empty annoMatrix", async () => {
       // select before fetch needs to work
-      fetch.once(serverMocks.dataframeResponse(["louvain"], [obsLouvain]));
+      (fetch as any).once(
+        serverMocks.dataframeResponse(["louvain"], [obsLouvain])
+      );
       const xfltr = await crossfilter.select("obs", "louvain", {
         mode: "exact",
         values: "B cells",
       });
-      expect(fetch.mock.calls).toHaveLength(1);
+      expect((fetch as any).mock.calls).toHaveLength(1);
       expect(xfltr.obsCrossfilter.hasDimension("obs/louvain")).toBeTruthy();
       expect(xfltr.obsCrossfilter.all()).toBe(xfltr.annoMatrix._cache.obs);
       expect(xfltr.countSelected()).toEqual(

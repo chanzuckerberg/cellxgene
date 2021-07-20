@@ -11,20 +11,20 @@ TL;DR: sort order is:
 import isNumber from "is-number";
 import * as globals from "../globals";
 
-function caseInsensitiveCompare(a, b) {
+function caseInsensitiveCompare(a: any, b: any) {
   const textA = String(a).toUpperCase();
   const textB = String(b).toUpperCase();
   return textA < textB ? -1 : textA > textB ? 1 : 0;
 }
 
-const catLabelSort = (isUserAnno, values) => {
+const catLabelSort = (isUserAnno: any, values: any) => {
   /* this sort could be memoized for perf */
 
-  const strings = [];
-  const ints = [];
-  const unassignedOrNaN = [];
+  const strings: any = [];
+  const ints: any = [];
+  const unassignedOrNaN: any = [];
 
-  values.forEach((v) => {
+  values.forEach((v: any) => {
     if (isUserAnno && v === globals.unassignedCategoryLabel) {
       unassignedOrNaN.push(v);
     } else if (String(v).toLowerCase() === "nan") {
@@ -37,6 +37,7 @@ const catLabelSort = (isUserAnno, values) => {
   });
 
   strings.sort(caseInsensitiveCompare);
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
   ints.sort((a, b) => +a - +b);
   unassignedOrNaN.sort(caseInsensitiveCompare);
 

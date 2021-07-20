@@ -18,7 +18,10 @@ import {
   _userResetSubsetAnnoMatrix,
 } from "../util/stateManager/viewStackHelpers";
 
-export const clipAction = (min, max) => (dispatch, getState) => {
+export const clipAction = (min: any, max: any) => (
+  dispatch: any,
+  getState: any
+) => {
   /*
   apply a clip to the current annoMatrix.  By convention, the clip
   view is ALWAYS the top view.
@@ -34,7 +37,7 @@ export const clipAction = (min, max) => (dispatch, getState) => {
   });
 };
 
-export const subsetAction = () => (dispatch, getState) => {
+export const subsetAction = () => (dispatch: any, getState: any) => {
   /*
   Subset the annoMatrix to the current crossfilter selection by pushing a 
   subset view.
@@ -58,7 +61,7 @@ export const subsetAction = () => (dispatch, getState) => {
   });
 };
 
-export const resetSubsetAction = () => (dispatch, getState) => {
+export const resetSubsetAction = () => (dispatch: any, getState: any) => {
   /*
   Reset the annoMatrix to all data.  Because we may have multiple views
   stacked, we pop them all.  By convention, any clip transformation will

@@ -6,14 +6,20 @@ describe("range", () => {
   });
 
   test("range(stop)", () => {
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     expect(range(3)).toMatchObject([0, 1, 2]);
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     expect(range(0)).toMatchObject([]);
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
     expect(range(1)).toMatchObject([0]);
   });
 
   test("range(start,stop)", () => {
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
     expect(range(0, 0)).toMatchObject([]);
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
     expect(range(0, 2)).toMatchObject([0, 1]);
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
     expect(range(4, 8)).toMatchObject([4, 5, 6, 7]);
   });
 

@@ -32,7 +32,7 @@ const SECOND_HALF_INNER_STYLE = {
   right: 0,
 };
 
-export default (props) => {
+export default (props: any) => {
   const { children, tooltipAddendum = "" } = props;
   // Truncate only support a single child with a text child
 
@@ -70,9 +70,12 @@ export default (props) => {
 
   const truncatedJSX = (
     <span style={splitStyle}>
+      {/* @ts-expect-error ts-migrate(2322) FIXME: Type '{ overflow: string; textOverflow: string; wh... Remove this comment to see the full error message */}
       <span style={FIRST_HALF_STYLE}>{firstString}</span>
+      {/* @ts-expect-error ts-migrate(2322) FIXME: Type '{ position: string; overflow: string; whiteS... Remove this comment to see the full error message */}
       <span style={SECOND_HALF_STYLE}>
         <span style={SECOND_HALF_SPACING_STYLE}>{secondString}</span>
+        {/* @ts-expect-error ts-migrate(2322) FIXME: Type '{ color: any; position: string; right: numbe... Remove this comment to see the full error message */}
         <span style={secondHalfContentStyle}>{secondString}</span>
       </span>
     </span>
@@ -89,6 +92,7 @@ export default (props) => {
     <Tooltip2
       content={`${originalString}${tooltipAddendum}`}
       hoverOpenDelay={tooltipHoverOpenDelayQuick}
+      // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
       targetProps={{ style: children.props.style }}
     >
       {newChildren}

@@ -81,6 +81,7 @@ describe("categorical color helpers", () => {
         ),
     ],
     null,
+    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
     new Dataframe.KeyIndex(["continuousColumn", "categoricalColumn"])
   );
 
@@ -95,6 +96,7 @@ describe("categorical color helpers", () => {
     const data = obsDataframe.col("categoricalColumn").asArray();
     const cats = schema.annotations.obsByName.categoricalColumn.categories;
     for (let i = 0; i < schema.dataframe.nObs; i += 1) {
+      // @ts-expect-error ts-migrate(2722) FIXME: Cannot invoke an object which is possibly 'undefin... Remove this comment to see the full error message
       expect(makeScale(ct.rgb[i])).toEqual(ct.scale(cats.indexOf(data[i])));
     }
   });
@@ -112,6 +114,7 @@ describe("categorical color helpers", () => {
     const data = obsDataframe.col("categoricalColumn").asArray();
     const cats = schemaClone.annotations.obsByName.categoricalColumn.categories;
     for (let i = 0; i < schemaClone.dataframe.nObs; i += 1) {
+      // @ts-expect-error ts-migrate(2722) FIXME: Cannot invoke an object which is possibly 'undefin... Remove this comment to see the full error message
       expect(makeScale(ct.rgb[i])).toEqual(ct.scale(cats.indexOf(data[i])));
     }
   });
@@ -122,7 +125,7 @@ describe("categorical color helpers", () => {
       Array.from(schema.annotations.obsByName.categoricalColumn.categories)
     );
     const userDefinedColorTable = {
-      categoricalColumn: shuffleCats.reduce((acc, label) => {
+      categoricalColumn: shuffleCats.reduce((acc: any, label: any) => {
         acc[label] = randRGBColor();
         return acc;
       }, {}),
@@ -136,12 +139,14 @@ describe("categorical color helpers", () => {
       "categoricalColumn",
       obsDataframe,
       schema,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '{}' is not assignable to paramet... Remove this comment to see the full error message
       userColors
     );
     expect(ct).toBeDefined();
     const data = obsDataframe.col("categoricalColumn").asArray();
     for (let i = 0; i < schema.dataframe.nObs; i += 1) {
       expect(makeScale(ct.rgb[i])).toEqual(
+        // @ts-expect-error ts-migrate(2722) FIXME: Cannot invoke an object which is possibly 'undefin... Remove this comment to see the full error message
         ct.scale(cats.indexOf(data[i])).toString()
       );
     }
@@ -154,31 +159,31 @@ TODO:
 2. user defined colors
 */
 
-function indexSchema(schema) {
+function indexSchema(schema: any) {
   schema.annotations.obsByName = Object.fromEntries(
-    schema.annotations?.obs?.columns?.map((v) => [v.name, v]) ?? []
+    schema.annotations?.obs?.columns?.map((v: any) => [v.name, v]) ?? []
   );
   schema.annotations.varByName = Object.fromEntries(
-    schema.annotations?.var?.columns?.map((v) => [v.name, v]) ?? []
+    schema.annotations?.var?.columns?.map((v: any) => [v.name, v]) ?? []
   );
   schema.layout.obsByName = Object.fromEntries(
-    schema.layout?.obs?.map((v) => [v.name, v]) ?? []
+    schema.layout?.obs?.map((v: any) => [v.name, v]) ?? []
   );
   schema.layout.varByName = Object.fromEntries(
-    schema.layout?.var?.map((v) => [v.name, v]) ?? []
+    schema.layout?.var?.map((v: any) => [v.name, v]) ?? []
   );
 
   return schema;
 }
 
-function makeScale(rgb) {
+function makeScale(rgb: any) {
   // make a scale string from a rgb float triple
   return `rgb(${(rgb[0] * 255) >>> 0}, ${(rgb[1] * 255) >>> 0}, ${
     (rgb[2] * 256) >>> 0
   })`;
 }
 
-function shuffle(array) {
+function shuffle(array: any) {
   for (let i = array.length - 1; i > 0; i -= 1) {
     const j = (Math.random() * (i + 1)) >>> 0;
     [array[i], array[j]] = [array[j], array[i]];

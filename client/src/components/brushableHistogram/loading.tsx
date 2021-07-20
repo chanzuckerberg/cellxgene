@@ -3,7 +3,7 @@ import { Button } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
 
-const StillLoading = ({ zebra, displayName }) => {
+const StillLoading = ({ zebra, displayName }: any) => {
   /*
     Render a loading indicator for the field.
     */

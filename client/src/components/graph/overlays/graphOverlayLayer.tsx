@@ -1,22 +1,25 @@
 import React, { PureComponent, cloneElement } from "react";
 
+// @ts-expect-error ts-migrate(2307) FIXME: Cannot find module '../graph.css' or its correspon... Remove this comment to see the full error message
 import styles from "../graph.css";
 
-export default class GraphOverlayLayer extends PureComponent {
+type State = any;
+
+export default class GraphOverlayLayer extends PureComponent<{}, State> {
   /*
     This component takes its children (assumed in the data coordinate space ([0, 1] range, origin in bottom left corner))
     and transforms itself multiple times resulting in screen space ([0, screenWidth/Height] range, origin in top left corner)
 
     Children are assigned in the graph component and must implement onDisplayChange()
    */
-  constructor(props) {
+  constructor(props: {}) {
     super(props);
     this.state = {
       display: {},
     };
   }
 
-  matrixToTransformString = (m) => {
+  matrixToTransformString = (m: any) => {
     /* 
       Translates the gl-matrix mat3 to SVG matrix transform style
 
@@ -28,25 +31,31 @@ export default class GraphOverlayLayer extends PureComponent {
     return `matrix(${m[0]} ${m[1]} ${m[3]} ${m[4]} ${m[6]} ${m[7]})`;
   };
 
-  reverseMatrixScaleTransformString = (m) => {
+  reverseMatrixScaleTransformString = (m: any) => {
     return `matrix(${1 / m[0]} 0 0 ${1 / m[4]} 0 0)`;
   };
 
   // This is passed to all children, should be called when an overlay's display state is toggled along with the overlay name and its new display state in boolean form
-  overlaySetShowing = (overlay, displaying) => {
-    this.setState((state) => {
+  overlaySetShowing = (overlay: any, displaying: any) => {
+    this.setState((state: any) => {
       return { ...state, display: { ...state.display, [overlay]: displaying } };
     });
   };
 
   render() {
     const {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'cameraTF' does not exist on type 'Readon... Remove this comment to see the full error message
       cameraTF,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'modelTF' does not exist on type 'Readonl... Remove this comment to see the full error message
       modelTF,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'projectionTF' does not exist on type 'Re... Remove this comment to see the full error message
       projectionTF,
       children,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'handleCanvasEvent' does not exist on typ... Remove this comment to see the full error message
       handleCanvasEvent,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'width' does not exist on type 'Readonly<... Remove this comment to see the full error message
       width,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'height' does not exist on type 'Readonly... Remove this comment to see the full error message
       height,
     } = this.props;
     const { display } = this.state;
@@ -65,6 +74,7 @@ export default class GraphOverlayLayer extends PureComponent {
 
     // Copy the children passed with the overlay and add the inverse transform and onDisplayChange props
     const newChildren = React.Children.map(children, (child) =>
+      // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
       cloneElement(child, {
         inverseTransform,
         overlaySetShowing: this.overlaySetShowing,

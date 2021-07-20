@@ -6,6 +6,7 @@ describe("Dataframe column histogram", () => {
       [3, 3],
       [["n1", "n2", "n3"], ["c1", "c2", "c3"], new Int32Array([0, 1, 2])],
       null,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex(["name", "cat", "value"])
     );
 
@@ -26,6 +27,7 @@ describe("Dataframe column histogram", () => {
       [3, 3],
       [["n1", "n2", "n3"], ["c1", "c2", "c3"], new Int32Array([0, 1, 2])],
       null,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex(["name", "cat", "value"])
     );
 
@@ -48,6 +50,7 @@ describe("Dataframe column histogram", () => {
       [3, 3],
       [["n1", "n2", "n3"], ["c1", "c2", "c3"], new Int32Array([0, 1, 2])],
       null,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex(["name", "cat", "value"])
     );
 
@@ -68,6 +71,7 @@ describe("Dataframe column histogram", () => {
       [3, 3],
       [["n1", "n2", "n3"], ["c1", "c2", "c3"], new Int32Array([0, 1, 2])],
       null,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex(["name", "cat", "value"])
     );
 

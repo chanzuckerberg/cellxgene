@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import { ButtonGroup, AnchorButton, Tooltip } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
+// @ts-expect-error ts-migrate(2307) FIXME: Cannot find module './menubar.css' or its correspo... Remove this comment to see the full error message
 import styles from "./menubar.css";
 import actions from "../../actions";
 import Clip from "./clip";
@@ -13,9 +14,13 @@ import UndoRedoReset from "./undoRedo";
 import DiffexpButtons from "./diffexpButtons";
 import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
 
+type State = any;
+
+// @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => {
+  // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Defa... Remove this comment to see the full error message
   const { annoMatrix } = state;
-  const crossfilter = state.obsCrossfilter;
+  const crossfilter = (state as any).obsCrossfilter;
   const selectedCount = crossfilter.countSelected();
 
   const subsetPossible =
@@ -28,30 +33,33 @@ import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
   return {
     subsetPossible,
     subsetResetPossible,
-    graphInteractionMode: state.controls.graphInteractionMode,
+    graphInteractionMode: (state as any).controls.graphInteractionMode,
     clipPercentileMin: Math.round(100 * (annoMatrix?.clipRange?.[0] ?? 0)),
     clipPercentileMax: Math.round(100 * (annoMatrix?.clipRange?.[1] ?? 1)),
-    userDefinedGenes: state.controls.userDefinedGenes,
-    colorAccessor: state.colors.colorAccessor,
-    scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
-    scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
-    libraryVersions: state.config?.library_versions,
-    auth: state.config?.authentication,
-    userInfo: state.userInfo,
+    userDefinedGenes: (state as any).controls.userDefinedGenes,
+    colorAccessor: (state as any).colors.colorAccessor,
+    scatterplotXXaccessor: (state as any).controls.scatterplotXXaccessor,
+    scatterplotYYaccessor: (state as any).controls.scatterplotYYaccessor,
+    libraryVersions: (state as any).config?.library_versions,
+    auth: (state as any).config?.authentication,
+    userInfo: (state as any).userInfo,
+    // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     undoDisabled: state["@@undoable/past"].length === 0,
+    // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     redoDisabled: state["@@undoable/future"].length === 0,
-    aboutLink: state.config?.links?.["about-dataset"],
-    disableDiffexp: state.config?.parameters?.["disable-diffexp"] ?? false,
+    aboutLink: (state as any).config?.links?.["about-dataset"],
+    disableDiffexp:
+      (state as any).config?.parameters?.["disable-diffexp"] ?? false,
     diffexpMayBeSlow:
-      state.config?.parameters?.["diffexp-may-be-slow"] ?? false,
-    showCentroidLabels: state.centroidLabels.showLabels,
-    tosURL: state.config?.parameters?.about_legal_tos,
-    privacyURL: state.config?.parameters?.about_legal_privacy,
-    categoricalSelection: state.categoricalSelection,
+      (state as any).config?.parameters?.["diffexp-may-be-slow"] ?? false,
+    showCentroidLabels: (state as any).centroidLabels.showLabels,
+    tosURL: (state as any).config?.parameters?.about_legal_tos,
+    privacyURL: (state as any).config?.parameters?.about_legal_privacy,
+    categoricalSelection: (state as any).categoricalSelection,
   };
 })
-class MenuBar extends React.PureComponent {
-  static isValidDigitKeyEvent(e) {
+class MenuBar extends React.PureComponent<{}, State> {
+  static isValidDigitKeyEvent(e: any) {
     /*
     Return true if this event is necessary to enter a percent number input.
     Return false if not.
@@ -75,7 +83,7 @@ class MenuBar extends React.PureComponent {
     return key >= 0 && key <= 9;
   }
 
-  constructor(props) {
+  constructor(props: {}) {
     super(props);
     this.state = {
       pendingClipPercentiles: null,
@@ -90,7 +98,9 @@ class MenuBar extends React.PureComponent {
     const clipPercentileMin = pendingClipPercentiles?.clipPercentileMin;
     const clipPercentileMax = pendingClipPercentiles?.clipPercentileMax;
     const {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'clipPercentileMin' does not exist on typ... Remove this comment to see the full error message
       clipPercentileMin: currentClipMin,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'clipPercentileMax' does not exist on typ... Remove this comment to see the full error message
       clipPercentileMax: currentClipMax,
     } = this.props;
 
@@ -104,7 +114,7 @@ class MenuBar extends React.PureComponent {
     return isDisabled;
   };
 
-  handleClipOnKeyPress = (e) => {
+  handleClipOnKeyPress = (e: any) => {
     /*
     allow only numbers, plus other critical keys which
     may be required to make a number
@@ -114,7 +124,7 @@ class MenuBar extends React.PureComponent {
     }
   };
 
-  handleClipPercentileMinValueChange = (v) => {
+  handleClipPercentileMinValueChange = (v: any) => {
     /*
     Ignore anything that isn't a legit number
     */
@@ -134,7 +144,7 @@ class MenuBar extends React.PureComponent {
     });
   };
 
-  handleClipPercentileMaxValueChange = (v) => {
+  handleClipPercentileMaxValueChange = (v: any) => {
     /*
     Ignore anything that isn't a legit number
     */
@@ -156,6 +166,7 @@ class MenuBar extends React.PureComponent {
   };
 
   handleClipCommit = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
     const { pendingClipPercentiles } = this.state;
     const { clipPercentileMin, clipPercentileMax } = pendingClipPercentiles;
@@ -165,6 +176,7 @@ class MenuBar extends React.PureComponent {
   };
 
   handleClipOpening = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'clipPercentileMin' does not exist on typ... Remove this comment to see the full error message
     const { clipPercentileMin, clipPercentileMax } = this.props;
     this.setState({
       pendingClipPercentiles: { clipPercentileMin, clipPercentileMax },
@@ -176,6 +188,7 @@ class MenuBar extends React.PureComponent {
   };
 
   handleCentroidChange = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, showCentroidLabels } = this.props;
 
     dispatch({
@@ -185,31 +198,48 @@ class MenuBar extends React.PureComponent {
   };
 
   handleSubset = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
     dispatch(actions.subsetAction());
   };
 
   handleSubsetReset = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
     dispatch(actions.resetSubsetAction());
   };
 
   render() {
     const {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
       dispatch,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'disableDiffexp' does not exist on type '... Remove this comment to see the full error message
       disableDiffexp,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'undoDisabled' does not exist on type 'Re... Remove this comment to see the full error message
       undoDisabled,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'redoDisabled' does not exist on type 'Re... Remove this comment to see the full error message
       redoDisabled,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'selectionTool' does not exist on type 'R... Remove this comment to see the full error message
       selectionTool,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'clipPercentileMin' does not exist on typ... Remove this comment to see the full error message
       clipPercentileMin,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'clipPercentileMax' does not exist on typ... Remove this comment to see the full error message
       clipPercentileMax,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'graphInteractionMode' does not exist on ... Remove this comment to see the full error message
       graphInteractionMode,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'showCentroidLabels' does not exist on ty... Remove this comment to see the full error message
       showCentroidLabels,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'categoricalSelection' does not exist on ... Remove this comment to see the full error message
       categoricalSelection,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorAccessor' does not exist on type 'R... Remove this comment to see the full error message
       colorAccessor,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'subsetPossible' does not exist on type '... Remove this comment to see the full error message
       subsetPossible,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'subsetResetPossible' does not exist on t... Remove this comment to see the full error message
       subsetResetPossible,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'userInfo' does not exist on type 'Readon... Remove this comment to see the full error message
       userInfo,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'auth' does not exist on type 'Readonly<{... Remove this comment to see the full error message
       auth,
     } = this.props;
     const { pendingClipPercentiles } = this.state;
@@ -238,11 +268,13 @@ class MenuBar extends React.PureComponent {
       >
         <AuthButtons {...{ auth, userInfo }} />
         <UndoRedoReset
+          // @ts-expect-error ts-migrate(2322) FIXME: Type '{ dispatch: any; undoDisabled: any; redoDisa... Remove this comment to see the full error message
           dispatch={dispatch}
           undoDisabled={undoDisabled}
           redoDisabled={redoDisabled}
         />
         <Clip
+          // @ts-expect-error ts-migrate(2322) FIXME: Type '{ pendingClipPercentiles: any; clipPercentil... Remove this comment to see the full error message
           pendingClipPercentiles={pendingClipPercentiles}
           clipPercentileMin={clipPercentileMin}
           clipPercentileMax={clipPercentileMax}
@@ -283,6 +315,7 @@ class MenuBar extends React.PureComponent {
             <AnchorButton
               type="button"
               data-testid="mode-lasso"
+              // @ts-expect-error ts-migrate(2322) FIXME: Type 'string' is not assignable to type 'IconName ... Remove this comment to see the full error message
               icon={selectionButtonIcon}
               active={graphInteractionMode === "select"}
               onClick={() => {
@@ -313,6 +346,7 @@ class MenuBar extends React.PureComponent {
           </Tooltip>
         </ButtonGroup>
         <Subset
+          // @ts-expect-error ts-migrate(2322) FIXME: Type '{ subsetPossible: any; subsetResetPossible: ... Remove this comment to see the full error message
           subsetPossible={subsetPossible}
           subsetResetPossible={subsetResetPossible}
           handleSubset={this.handleSubset}

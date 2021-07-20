@@ -15,25 +15,25 @@ System wide schema assumptions:
   - schema will be internally self-consistent (eg, index matches columns)
 */
 
-export function indexEntireSchema(schema) {
+export function indexEntireSchema(schema: any) {
   /* Index schema for ease of use */
   schema.annotations.obsByName = fromEntries(
-    schema.annotations?.obs?.columns?.map((v) => [v.name, v]) ?? []
+    schema.annotations?.obs?.columns?.map((v: any) => [v.name, v]) ?? []
   );
   schema.annotations.varByName = fromEntries(
-    schema.annotations?.var?.columns?.map((v) => [v.name, v]) ?? []
+    schema.annotations?.var?.columns?.map((v: any) => [v.name, v]) ?? []
   );
   schema.layout.obsByName = fromEntries(
-    schema.layout?.obs?.map((v) => [v.name, v]) ?? []
+    schema.layout?.obs?.map((v: any) => [v.name, v]) ?? []
   );
   schema.layout.varByName = fromEntries(
-    schema.layout?.var?.map((v) => [v.name, v]) ?? []
+    schema.layout?.var?.map((v: any) => [v.name, v]) ?? []
   );
 
   return schema;
 }
 
-function _copyObsAnno(schema) {
+function _copyObsAnno(schema: any) {
   /* redux copy conventions - WARNING, only for modifying obs annotations */
   return {
     ...schema,
@@ -44,7 +44,7 @@ function _copyObsAnno(schema) {
   };
 }
 
-function _copyObsLayout(schema) {
+function _copyObsLayout(schema: any) {
   return {
     ...schema,
     layout: {
@@ -54,36 +54,37 @@ function _copyObsLayout(schema) {
   };
 }
 
-function _reindexObsAnno(schema) {
+function _reindexObsAnno(schema: any) {
   /* reindex obs annotations ONLY */
   schema.annotations.obsByName = fromEntries(
-    schema.annotations.obs.columns.map((v) => [v.name, v])
+    schema.annotations.obs.columns.map((v: any) => [v.name, v])
   );
   return schema;
 }
 
-function _reindexObsLayout(schema) {
+function _reindexObsLayout(schema: any) {
   schema.layout.obsByName = fromEntries(
-    schema.layout.obs.map((v) => [v.name, v])
+    schema.layout.obs.map((v: any) => [v.name, v])
   );
   return schema;
 }
 
-export function removeObsAnnoColumn(schema, name) {
+export function removeObsAnnoColumn(schema: any, name: any) {
   const newSchema = _copyObsAnno(schema);
   newSchema.annotations.obs.columns = schema.annotations.obs.columns.filter(
-    (v) => v.name !== name
+    (v: any) => v.name !== name
   );
   return _reindexObsAnno(newSchema);
 }
 
-export function addObsAnnoColumn(schema, name, defn) {
+// @ts-expect-error ts-migrate(6133) FIXME: 'name' is declared but its value is never read.
+export function addObsAnnoColumn(schema: any, name: any, defn: any) {
   const newSchema = _copyObsAnno(schema);
   newSchema.annotations.obs.columns.push(defn);
   return _reindexObsAnno(newSchema);
 }
 
-export function removeObsAnnoCategory(schema, name, category) {
+export function removeObsAnnoCategory(schema: any, name: any, category: any) {
   /* remove a category from a categorical annotation */
   const categories = schema.annotations.obsByName[name]?.categories;
   if (!categories)
@@ -99,7 +100,7 @@ export function removeObsAnnoCategory(schema, name, category) {
   return newSchema;
 }
 
-export function addObsAnnoCategory(schema, name, category) {
+export function addObsAnnoCategory(schema: any, name: any, category: any) {
   /* add a category to a categorical annotation */
   const categories = schema.annotations.obsByName[name]?.categories;
   if (!categories)
@@ -119,16 +120,16 @@ export function addObsAnnoCategory(schema, name, category) {
   return newSchema;
 }
 
-export function addObsLayout(schema, layout) {
+export function addObsLayout(schema: any, layout: any) {
   /* add or replace a layout */
   const newSchema = _copyObsLayout(schema);
   newSchema.layout.obs.push(layout);
   return _reindexObsLayout(newSchema);
 }
 
-export function removeObsLayout(schema, name) {
+export function removeObsLayout(schema: any, name: any) {
   /* remove a layout */
   const newSchema = _copyObsLayout(schema);
-  newSchema.layout.obs = schema.layout.obs.filter((v) => v.name !== name);
+  newSchema.layout.obs = schema.layout.obs.filter((v: any) => v.name !== name);
   return _reindexObsLayout(newSchema);
 }

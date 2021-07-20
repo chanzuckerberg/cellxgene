@@ -125,7 +125,7 @@ See graph definition for the transitions that use each.
 
 Signature:  (fsm, transition, reducerState, reducerAction) => undoableAction
 */
-const stashPending = (fsm) => ({
+const stashPending = (fsm: any) => ({
   [actionKey]: "stashPending",
   [stateKey]: { fsm },
 });
@@ -137,11 +137,13 @@ const applyPending = () => ({
   [actionKey]: "applyPending",
   [stateKey]: { fsm: null },
 });
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'fsm' implicitly has an 'any' type.
 const skip = (fsm, transition) => ({
   [actionKey]: "skip",
   [stateKey]: { fsm: transition.to !== "done" ? fsm : null },
 });
 const clear = () => ({ [actionKey]: "clear", [stateKey]: { fsm: null } });
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'fsm' implicitly has an 'any' type.
 const save = (fsm, transition) => ({
   [actionKey]: "save",
   [stateKey]: { fsm: transition.to !== "done" ? fsm : null },
@@ -153,7 +155,7 @@ StateMachine when it doesn't know what to do.
 
 Signature:  (fsm, event, from) => undoableAction
 */
-const onFsmError = (fsm, event, from) => {
+const onFsmError = (fsm: any, event: any, from: any) => {
   console.error(`FSM error [event: "${event}", state: "${from}"]`, fsm);
   // In production, try to recover gracefully if we have unexpected state
   return clear();
@@ -181,7 +183,11 @@ Basic approach:
   * only implement complex state machines where absolutely required (eg,
     multi-event selection and the like)
 */
-const actionFilter = (debug) => (state, action, prevFilterState) => {
+const actionFilter = (debug: any) => (
+  state: any,
+  action: any,
+  prevFilterState: any
+) => {
   const actionType = action.type;
   const filterState = {
     ...prevFilterState,
@@ -191,6 +197,7 @@ const actionFilter = (debug) => (state, action, prevFilterState) => {
     return { [actionKey]: "skip", [stateKey]: filterState };
   }
   if (
+    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     debounceOnActions.has(actionType) &&
     shallowObjectEq(action, prevFilterState.prevAction)
   ) {
@@ -226,7 +233,7 @@ return true if objA and objB are ===, OR if:
   - have same own properties
   - all values are strict equal (===)
 */
-function shallowObjectEq(objA, objB) {
+function shallowObjectEq(objA: any, objB: any) {
   if (objA === objB) return true;
   if (!objA || !objB) return false;
   if (!shallowArrayEq(Object.keys(objA), Object.keys(objB))) return false;
@@ -238,7 +245,7 @@ function shallowObjectEq(objA, objB) {
 return true if arrA and arrB contain the same strict-equal values,
 in the same order.
 */
-function shallowArrayEq(arrA, arrB) {
+function shallowArrayEq(arrA: any, arrB: any) {
   if (arrA.length !== arrB.length) return false;
   for (let i = 0, l = arrA.length; i < l; i += 1) {
     if (arrA[i] !== arrB[i]) return false;

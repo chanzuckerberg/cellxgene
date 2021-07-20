@@ -20,7 +20,7 @@ const Controls = (
 
     datasetDrawer: false,
   },
-  action
+  action: any
 ) => {
   /*
   For now, log anything looking like an error to the console.

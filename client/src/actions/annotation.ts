@@ -9,9 +9,9 @@ import { MatrixFBS, AnnotationsHelpers } from "../util/stateManager";
 const { isUserAnnotation } = AnnotationsHelpers;
 
 export const annotationCreateCategoryAction = (
-  newCategoryName,
-  categoryToDuplicate
-) => async (dispatch, getState) => {
+  newCategoryName: any,
+  categoryToDuplicate: any
+) => async (dispatch: any, getState: any) => {
   /*
   Add a new user-created category to the obs annotations.
 
@@ -89,9 +89,9 @@ export const annotationCreateCategoryAction = (
 };
 
 export const annotationRenameCategoryAction = (
-  oldCategoryName,
-  newCategoryName
-) => (dispatch, getState) => {
+  oldCategoryName: any,
+  newCategoryName: any
+) => (dispatch: any, getState: any) => {
   /*
   Rename a user-created annotation category
   */
@@ -124,9 +124,9 @@ export const annotationRenameCategoryAction = (
   });
 };
 
-export const annotationDeleteCategoryAction = (categoryName) => (
-  dispatch,
-  getState
+export const annotationDeleteCategoryAction = (categoryName: any) => (
+  dispatch: any,
+  getState: any
 ) => {
   /*
   Delete a user-created category
@@ -149,10 +149,10 @@ export const annotationDeleteCategoryAction = (categoryName) => (
 };
 
 export const annotationCreateLabelInCategory = (
-  categoryName,
-  labelName,
-  assignSelected
-) => async (dispatch, getState) => {
+  categoryName: any,
+  labelName: any,
+  assignSelected: any
+) => async (dispatch: any, getState: any) => {
   /*
   Add a new label to a user-defined category.  If assignSelected is true, assign
   the label to all currently selected cells.
@@ -188,9 +188,9 @@ export const annotationCreateLabelInCategory = (
 };
 
 export const annotationDeleteLabelFromCategory = (
-  categoryName,
-  labelName
-) => async (dispatch, getState) => {
+  categoryName: any,
+  labelName: any
+) => async (dispatch: any, getState: any) => {
   /*
   delete a label from a user-defined category
   */
@@ -218,10 +218,10 @@ export const annotationDeleteLabelFromCategory = (
 };
 
 export const annotationRenameLabelInCategory = (
-  categoryName,
-  oldLabelName,
-  newLabelName
-) => async (dispatch, getState) => {
+  categoryName: any,
+  oldLabelName: any,
+  newLabelName: any
+) => async (dispatch: any, getState: any) => {
   /*
   label name change
   */
@@ -255,9 +255,9 @@ export const annotationRenameLabelInCategory = (
 };
 
 export const annotationLabelCurrentSelection = (
-  categoryName,
-  labelName
-) => async (dispatch, getState) => {
+  categoryName: any,
+  labelName: any
+) => async (dispatch: any, getState: any) => {
   /*
   set the label on all currently selected
   */
@@ -284,13 +284,16 @@ export const annotationLabelCurrentSelection = (
   });
 };
 
-function writableAnnotations(annoMatrix) {
+function writableAnnotations(annoMatrix: any) {
   return annoMatrix.schema.annotations.obs.columns
-    .filter((s) => s.writable)
-    .map((s) => s.name);
+    .filter((s: any) => s.writable)
+    .map((s: any) => s.name);
 }
 
-export const needToSaveObsAnnotations = (annoMatrix, lastSavedAnnoMatrix) => {
+export const needToSaveObsAnnotations = (
+  annoMatrix: any,
+  lastSavedAnnoMatrix: any
+) => {
   /*
   Return true if there are LIKELY user-defined annotation modifications between the two
   annoMatrices.  Technically not an action creator, but intimately intertwined
@@ -314,11 +317,14 @@ export const needToSaveObsAnnotations = (annoMatrix, lastSavedAnnoMatrix) => {
 
   // no schema changes; check for change in contents
   return currentWritable.some(
-    (col) => annoMatrix.col(col) !== lastSavedAnnoMatrix.col(col)
+    (col: any) => annoMatrix.col(col) !== lastSavedAnnoMatrix.col(col)
   );
 };
 
-export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
+export const saveObsAnnotationsAction = () => async (
+  dispatch: any,
+  getState: any
+) => {
   /*
   Save the user-created obs annotations IF any have changed.
   */
@@ -388,7 +394,10 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
   }
 };
 
-export const saveGenesetsAction = () => async (dispatch, getState) => {
+export const saveGenesetsAction = () => async (
+  dispatch: any,
+  getState: any
+) => {
   const state = getState();
 
   // bail if gene sets not available, or in readonly mode.
@@ -465,7 +474,7 @@ export const saveGenesetsAction = () => async (dispatch, getState) => {
         res,
       });
     }
-    return Promise.all([
+    return await Promise.all([
       dispatch({
         type: "autosave: genesets complete",
         lastSavedGenesets: genesets,

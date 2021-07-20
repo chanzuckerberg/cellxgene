@@ -3,7 +3,9 @@ import { InputGroup, MenuItem, Keys } from "@blueprintjs/core";
 import { Suggest } from "@blueprintjs/select";
 import fuzzysort from "fuzzysort";
 
-export default class LabelInput extends React.PureComponent {
+type State = any;
+
+export default class LabelInput extends React.PureComponent<{}, State> {
   /*
   Input widget for text labels, which acts like an InputGroup, but will also 
   accept a suggestion list (of labels), with sublime-like suggest search.
@@ -26,9 +28,10 @@ export default class LabelInput extends React.PureComponent {
   /* maxinum number of suggestions */
   static QueryResultLimit = 100;
 
-  constructor(props) {
+  constructor(props: {}) {
     super(props);
 
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'label' does not exist on type '{}'.
     const { label } = props;
     const query = label || "";
     const queryResults = this.filterLabels(query);
@@ -38,7 +41,7 @@ export default class LabelInput extends React.PureComponent {
     };
   }
 
-  handleQueryChange = (query, event) => {
+  handleQueryChange = (query: any, event: any) => {
     // https://github.com/palantir/blueprint/issues/2983
     if (!event) return;
 
@@ -48,19 +51,21 @@ export default class LabelInput extends React.PureComponent {
       queryResults,
     });
 
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'onChange' does not exist on type 'Readon... Remove this comment to see the full error message
     const { onChange } = this.props;
     if (onChange) onChange(query, event);
   };
 
-  handleItemSelect = (item, event) => {
+  handleItemSelect = (item: any, event: any) => {
     /* only report the select if not already reported via onChange() */
     const { target } = item;
     const { query } = this.state;
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'onSelect' does not exist on type 'Readon... Remove this comment to see the full error message
     const { onSelect } = this.props;
     if (target !== query && onSelect) onSelect(target, event);
   };
 
-  handleKeyDown = (e) => {
+  handleKeyDown = (e: any) => {
     /* 
     prevent these events from propagating to containing form/dialog
     and causing further side effects (eg, closing dialog, submitting
@@ -75,13 +80,18 @@ export default class LabelInput extends React.PureComponent {
     }
   };
 
-  handleChange = (e) => {
+  handleChange = (e: any) => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'onChange' does not exist on type 'Readon... Remove this comment to see the full error message
     const { onChange } = this.props;
     if (onChange) onChange(e.target.value);
   };
 
-  renderLabelSuggestion = (queryResult, { handleClick, modifiers }) => {
+  renderLabelSuggestion = (
+    queryResult: any,
+    { handleClick, modifiers }: any
+  ) => {
     if (queryResult.newLabel) {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'newLabelMessage' does not exist on type ... Remove this comment to see the full error message
       const { newLabelMessage } = this.props;
       return (
         <MenuItem
@@ -106,7 +116,8 @@ export default class LabelInput extends React.PureComponent {
     );
   };
 
-  filterLabels(query) {
+  filterLabels(query: any) {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'labelSuggestions' does not exist on type... Remove this comment to see the full error message
     const { labelSuggestions } = this.props;
     if (!labelSuggestions) return [];
 
@@ -114,7 +125,7 @@ export default class LabelInput extends React.PureComponent {
     if (query === "") {
       return labelSuggestions
         .slice(0, LabelInput.QueryResultLimit)
-        .map((l) => ({
+        .map((l: any) => ({
           target: l,
           score: -10000,
         }));
@@ -128,6 +139,7 @@ export default class LabelInput extends React.PureComponent {
     let queryResults = fuzzysort.go(query, labelSuggestions, options);
     /* exact match will always be first in list */
     if (query !== "" && queryResults[0]?.target !== query)
+      // @ts-expect-error ts-migrate(2322) FIXME: Type '{ target: any; newLabel: true; }' is not ass... Remove this comment to see the full error message
       queryResults = [{ target: query, newLabel: true }, ...queryResults];
 
     return queryResults;
@@ -135,6 +147,7 @@ export default class LabelInput extends React.PureComponent {
 
   render() {
     const { props } = this;
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'labelSuggestions' does not exist on type... Remove this comment to see the full error message
     const { labelSuggestions, label, autoFocus = true } = props;
     const suggestEnabled = !!labelSuggestions && labelSuggestions.length > 0;
 
@@ -142,7 +155,7 @@ export default class LabelInput extends React.PureComponent {
       return (
         <InputGroup
           autoFocus={autoFocus}
-          {...props.inputProps} // eslint-disable-line react/jsx-props-no-spreading --- Allows for modularity
+          {...(props as any).inputProps} // eslint-disable-line react/jsx-props-no-spreading --- Allows for modularity
           value={label}
           onChange={this.handleChange}
         />
@@ -151,10 +164,10 @@ export default class LabelInput extends React.PureComponent {
 
     const popoverProps = {
       minimal: true,
-      ...props.popoverProps,
+      ...(props as any).popoverProps,
     };
     const inputProps = {
-      ...props.inputProps,
+      ...(props as any).inputProps,
       autoFocus: false,
     };
     const { queryResults } = this.state;
@@ -170,6 +183,7 @@ export default class LabelInput extends React.PureComponent {
           onQueryChange={this.handleQueryChange}
           popoverProps={popoverProps}
           inputProps={inputProps}
+          // @ts-expect-error ts-migrate(2322) FIXME: Type '{ fill: true; inputValueRenderer: (i: any) =... Remove this comment to see the full error message
           onKeyDown={this.handleKeyDown}
         />
       </>

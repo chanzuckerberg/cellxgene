@@ -11,12 +11,20 @@ const panBound = 0.8;
 const scratch0 = new Float32Array(16);
 const scratch1 = new Float32Array(16);
 
-function clamp(val, rng) {
+function clamp(val: any, rng: any) {
   return Math.max(Math.min(val, rng[1]), rng[0]);
 }
 
 class Camera {
-  constructor(canvas) {
+  canvas: any;
+
+  prevEvent: any;
+
+  viewMatrix: any;
+
+  viewMatrixInv: any;
+
+  constructor(canvas: any) {
     this.prevEvent = {
       clientX: 0,
       clientY: 0,
@@ -39,7 +47,7 @@ class Camera {
     return this.viewMatrix[0];
   }
 
-  pan(dx, dy) {
+  pan(dx: any, dy: any) {
     const m = this.viewMatrix;
     const dyRange = [
       -panBound - (m[7] + 1) / m[4],
@@ -59,7 +67,7 @@ class Camera {
     mat3.invert(this.viewMatrixInv, m);
   }
 
-  zoomAt(d, x = 0, y = 0) {
+  zoomAt(d: any, x = 0, y = 0) {
     /*
     Camera zoom at [x,y]
     */
@@ -82,13 +90,13 @@ class Camera {
   Event handling
   */
 
-  flush(e) {
+  flush(e: any) {
     this.prevEvent.type = e.type;
     this.prevEvent.clientX = e.clientX;
     this.prevEvent.clientY = e.clientY;
   }
 
-  localPosition(target, canvasX, canvasY, projectionInvTF) {
+  localPosition(target: any, canvasX: any, canvasY: any, projectionInvTF: any) {
     /*
     Convert mouse position to local
     */
@@ -108,7 +116,7 @@ class Camera {
     return pos;
   }
 
-  mousePan(e, projectionTF) {
+  mousePan(e: any, projectionTF: any) {
     const projectionInvTF = mat3.invert(scratch0, projectionTF);
     const pos = this.localPosition(
       this.canvas,
@@ -128,7 +136,7 @@ class Camera {
     return true;
   }
 
-  wheelZoom(e, projectionTF) {
+  wheelZoom(e: any, projectionTF: any) {
     const { height } = this.canvas;
     const { deltaY, deltaMode, clientX, clientY } = e;
     const scale = scaleSpeed * (deltaMode === 1 ? 12 : 1) * (deltaY || 0);
@@ -144,7 +152,7 @@ class Camera {
     return true;
   }
 
-  handleEvent(e, projectionTF) {
+  handleEvent(e: any, projectionTF: any) {
     /*
     process the event, and return true if camera view changed
     */
@@ -173,7 +181,7 @@ class Camera {
   }
 }
 
-function attachCamera(canvas) {
+function attachCamera(canvas: any) {
   return new Camera(canvas);
 }
 

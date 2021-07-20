@@ -1,4 +1,4 @@
-const UserInfo = (state = {}, action) => {
+const UserInfo = (state = {}, action: any) => {
   switch (action.type) {
     case "initial data load start":
       return {

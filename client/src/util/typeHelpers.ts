@@ -5,7 +5,7 @@ Various type and schema related helper functions.
 /*
 Utility function to test for a typed array
 */
-export function isTypedArray(x) {
+export function isTypedArray(x: any) {
   return (
     ArrayBuffer.isView(x) &&
     Object.prototype.toString.call(x) !== "[object DataView]"
@@ -15,7 +15,7 @@ export function isTypedArray(x) {
 /*
 Test for float typed array, ie, Float32TypedArray or Float64TypedArray
 */
-export function isFpTypedArray(x) {
+export function isFpTypedArray(x: any) {
   let constructor;
   const isFloatArray =
     x &&
@@ -24,6 +24,6 @@ export function isFpTypedArray(x) {
   return isFloatArray;
 }
 
-export function isArrayOrTypedArray(x) {
+export function isArrayOrTypedArray(x: any) {
   return Array.isArray(x) || isTypedArray(x);
 }
