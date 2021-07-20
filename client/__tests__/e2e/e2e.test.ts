@@ -58,10 +58,12 @@ describe("metadata loads", () => {
       const categories = await getAllCategoriesAndCounts(label);
 
       expect(Object.keys(categories)).toMatchObject(
+        // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         Object.keys(data.categorical[label])
       );
 
       expect(Object.values(categories)).toMatchObject(
+        // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         Object.values(data.categorical[label])
       );
     }
@@ -159,10 +161,12 @@ describe("subset", () => {
       const categories = await getAllCategoriesAndCounts(label);
 
       expect(Object.keys(categories)).toMatchObject(
+        // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         Object.keys(data.subset.categorical[label])
       );
 
       expect(Object.values(categories)).toMatchObject(
+        // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         Object.values(data.subset.categorical[label])
       );
     }
@@ -195,6 +199,7 @@ describe("clipping", () => {
   test("clip continuous", async () => {
     await goToPage(appUrlBase);
 
+    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     await clip(data.clip.min, data.clip.max);
     const histBrushableAreaId = `histogram-${data.clip.metadata}-plot-brushable-area`;
     const coords = await calcDragCoordinates(
@@ -254,6 +259,7 @@ describe("centroid labels", () => {
       const generatedLabels = await getAllByClass("centroid-label");
       // Number of labels generated should be equal to size of the object
       expect(generatedLabels).toHaveLength(
+        // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         Object.keys(data.categorical[label]).length
       );
     }
@@ -275,6 +281,7 @@ describe("graph overlay", () => {
       data.pan["coordinates-as-percent"]
     );
 
+    // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const categoryValue = Object.keys(data.categorical[category])[0];
     const initialCoordinates = await getElementCoordinates(
       `${categoryValue}-centroid-label`

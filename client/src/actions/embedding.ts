@@ -6,9 +6,9 @@ import { AnnoMatrixObsCrossfilter } from "../annoMatrix";
 import { _setEmbeddingSubset } from "../util/stateManager/viewStackHelpers";
 
 export async function _switchEmbedding(
-  prevAnnoMatrix,
-  prevCrossfilter,
-  newEmbeddingName
+  prevAnnoMatrix: any,
+  prevCrossfilter: any,
+  newEmbeddingName: any
 ) {
   /*
   DRY helper used by embedding action creators
@@ -25,9 +25,9 @@ export async function _switchEmbedding(
   return [annoMatrix, obsCrossfilter];
 }
 
-export const layoutChoiceAction = (newLayoutChoice) => async (
-  dispatch,
-  getState
+export const layoutChoiceAction = (newLayoutChoice: any) => async (
+  dispatch: any,
+  getState: any
 ) => {
   /*
   On layout choice, make sure we have selected all on the previous layout, AND the new

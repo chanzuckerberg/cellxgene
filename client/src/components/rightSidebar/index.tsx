@@ -3,9 +3,10 @@ import { connect } from "react-redux";
 import GeneExpression from "../geneExpression";
 import * as globals from "../../globals";
 
+// @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
-  scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
-  scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
+  scatterplotXXaccessor: (state as any).controls.scatterplotXXaccessor,
+  scatterplotYYaccessor: (state as any).controls.scatterplotYYaccessor,
 }))
 class RightSidebar extends React.Component {
   render() {

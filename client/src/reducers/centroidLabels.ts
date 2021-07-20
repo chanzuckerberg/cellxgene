@@ -2,7 +2,11 @@ const initialState = {
   showLabels: false,
 };
 
-const centroidLabels = (state = initialState, action, sharedNextState) => {
+const centroidLabels = (
+  state = initialState,
+  action: any,
+  sharedNextState: any
+) => {
   const {
     colors: { colorAccessor },
   } = sharedNextState;

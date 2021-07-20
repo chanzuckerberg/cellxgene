@@ -8,6 +8,7 @@ import memoize from "memoize-one";
 import Async from "react-async";
 
 import * as globals from "../../globals";
+// @ts-expect-error ts-migrate(2307) FIXME: Cannot find module './scatterplot.css' or its corr... Remove this comment to see the full error message
 import styles from "./scatterplot.css";
 import _drawPoints from "./drawPointsRegl";
 import { margin, width, height } from "./util";
@@ -22,7 +23,7 @@ import {
   flagHighlight,
 } from "../../util/glHelpers";
 
-function createProjectionTF(viewportWidth, viewportHeight) {
+function createProjectionTF(viewportWidth: any, viewportHeight: any) {
   /*
   the projection transform accounts for the screen size & other layout
   */
@@ -30,7 +31,7 @@ function createProjectionTF(viewportWidth, viewportHeight) {
   return mat3.projection(m, viewportWidth, viewportHeight);
 }
 
-function getScale(col, rangeMin, rangeMax) {
+function getScale(col: any, rangeMin: any, rangeMax: any) {
   if (!col) return null;
   const { min, max } = col.summarize();
   return d3.scaleLinear().domain([min, max]).range([rangeMin, rangeMax]);
@@ -38,25 +39,36 @@ function getScale(col, rangeMin, rangeMax) {
 const getXScale = memoize(getScale);
 const getYScale = memoize(getScale);
 
+type State = any;
+
+// @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => {
+  // @ts-expect-error ts-migrate(2339) FIXME: Property 'obsCrossfilter' does not exist on type '... Remove this comment to see the full error message
   const { obsCrossfilter: crossfilter } = state;
-  const { scatterplotXXaccessor, scatterplotYYaccessor } = state.controls;
+  const {
+    scatterplotXXaccessor,
+    scatterplotYYaccessor,
+  } = (state as any).controls;
 
   return {
-    annoMatrix: state.annoMatrix,
-    colors: state.colors,
-    pointDilation: state.pointDilation,
-
+    annoMatrix: (state as any).annoMatrix,
+    colors: (state as any).colors,
+    pointDilation: (state as any).pointDilation,
     // Accessors are var/gene names (strings)
     scatterplotXXaccessor,
     scatterplotYYaccessor,
-
     crossfilter,
-    genesets: state.genesets.genesets,
+    genesets: (state as any).genesets.genesets,
   };
 })
-class Scatterplot extends React.PureComponent {
-  static createReglState(canvas) {
+class Scatterplot extends React.PureComponent<{}, State> {
+  axes: any;
+
+  reglCanvas: any;
+
+  renderCache: any;
+
+  static createReglState(canvas: any) {
     /*
     Must be created for each canvas
     */
@@ -70,8 +82,11 @@ class Scatterplot extends React.PureComponent {
     const drawPoints = _drawPoints(regl);
 
     // preallocate webgl buffers
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
     const pointBuffer = regl.buffer();
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
     const colorBuffer = regl.buffer();
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
     const flagBuffer = regl.buffer();
 
     return {
@@ -83,7 +98,7 @@ class Scatterplot extends React.PureComponent {
     };
   }
 
-  static watchAsync(props, prevProps) {
+  static watchAsync(props: any, prevProps: any) {
     return !shallowEqual(props.watchProps, prevProps.watchProps);
   }
 
@@ -183,7 +198,7 @@ class Scatterplot extends React.PureComponent {
     }
   );
 
-  constructor(props) {
+  constructor(props: {}) {
     super(props);
     const viewport = this.getViewportDimensions();
     this.axes = false;
@@ -207,7 +222,7 @@ class Scatterplot extends React.PureComponent {
     window.removeEventListener("resize", this.handleResize);
   }
 
-  setReglCanvas = (canvas) => {
+  setReglCanvas = (canvas: any) => {
     this.reglCanvas = canvas;
     if (canvas) {
       // no need to update this state if we are detaching.
@@ -233,7 +248,7 @@ class Scatterplot extends React.PureComponent {
     });
   };
 
-  fetchAsyncProps = async (props) => {
+  fetchAsyncProps = async (props: any) => {
     const {
       scatterplotXXaccessor,
       scatterplotYYaccessor,
@@ -295,7 +310,8 @@ class Scatterplot extends React.PureComponent {
     };
   };
 
-  createXQuery(geneName) {
+  createXQuery(geneName: any) {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
     const { annoMatrix } = this.props;
     const { schema } = annoMatrix;
     const varIndex = schema?.annotations?.var?.index;
@@ -312,15 +328,17 @@ class Scatterplot extends React.PureComponent {
     ];
   }
 
-  createColorByQuery(colors) {
+  createColorByQuery(colors: any) {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
     const { annoMatrix, genesets } = this.props;
     const { schema } = annoMatrix;
     const { colorMode, colorAccessor } = colors;
     return createColorQuery(colorMode, colorAccessor, schema, genesets);
   }
 
-  updateColorTable(colors, colorDf) {
+  updateColorTable(colors: any, colorDf: any) {
     /* update color table state */
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
     const { annoMatrix } = this.props;
     const { schema } = annoMatrix;
     const { colorAccessor, userColors, colorMode } = colors;
@@ -334,17 +352,19 @@ class Scatterplot extends React.PureComponent {
   }
 
   async fetchData(
-    scatterplotXXaccessor,
-    scatterplotYYaccessor,
-    colors,
-    pointDilation
+    scatterplotXXaccessor: any,
+    scatterplotYYaccessor: any,
+    colors: any,
+    pointDilation: any
   ) {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
     const { annoMatrix } = this.props;
     const { metadataField: pointDilationAccessor } = pointDilation;
 
     const promises = [];
     // X and Y dimensions
     promises.push(
+      // @ts-expect-error ts-migrate(2488) FIXME: Type '(string | { where: { field: string; column: ... Remove this comment to see the full error message
       annoMatrix.fetch(...this.createXQuery(scatterplotXXaccessor))
     );
     promises.push(
@@ -388,7 +408,7 @@ class Scatterplot extends React.PureComponent {
     );
   });
 
-  updateReglAndRender(newRenderCache) {
+  updateReglAndRender(newRenderCache: any) {
     const { positions, colors, flags } = newRenderCache;
     this.renderCache = newRenderCache;
     const { pointBuffer, colorBuffer, flagBuffer } = this.state;
@@ -399,13 +419,14 @@ class Scatterplot extends React.PureComponent {
   }
 
   renderPoints(
-    regl,
-    drawPoints,
-    flagBuffer,
-    colorBuffer,
-    pointBuffer,
-    projectionTF
+    regl: any,
+    drawPoints: any,
+    flagBuffer: any,
+    colorBuffer: any,
+    pointBuffer: any,
+    projectionTF: any
   ) {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
     const { annoMatrix } = this.props;
     if (!this.reglCanvas || !annoMatrix) return;
 
@@ -433,12 +454,19 @@ class Scatterplot extends React.PureComponent {
 
   render() {
     const {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
       dispatch,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
       annoMatrix,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'scatterplotXXaccessor' does not exist on... Remove this comment to see the full error message
       scatterplotXXaccessor,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'scatterplotYYaccessor' does not exist on... Remove this comment to see the full error message
       scatterplotYYaccessor,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'colors' does not exist on type 'Readonly... Remove this comment to see the full error message
       colors,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'crossfilter' does not exist on type 'Rea... Remove this comment to see the full error message
       crossfilter,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'pointDilation' does not exist on type 'R... Remove this comment to see the full error message
       pointDilation,
     } = this.props;
     const { minimized, regl, viewport } = this.state;
@@ -505,6 +533,7 @@ class Scatterplot extends React.PureComponent {
             style={{
               marginLeft: margin.left,
               marginTop: margin.top,
+              // @ts-expect-error ts-migrate(2322) FIXME: Type '"none" | null' is not assignable to type 'Di... Remove this comment to see the full error message
               display: minimized ? "none" : null,
             }}
             ref={this.setReglCanvas}
@@ -531,11 +560,12 @@ class Scatterplot extends React.PureComponent {
                 }
                 return (
                   <ScatterplotAxis
+                    // @ts-expect-error ts-migrate(2322) FIXME: Type '{ minimized: any; scatterplotYYaccessor: any... Remove this comment to see the full error message
                     minimized={minimized}
                     scatterplotYYaccessor={scatterplotYYaccessor}
                     scatterplotXXaccessor={scatterplotXXaccessor}
-                    xScale={asyncProps.xScale}
-                    yScale={asyncProps.yScale}
+                    xScale={(asyncProps as any).xScale}
+                    yScale={(asyncProps as any).yScale}
                   />
                 );
               }}
@@ -551,10 +581,15 @@ export default Scatterplot;
 
 const ScatterplotAxis = React.memo(
   ({
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'minimized' does not exist on type '{ chi... Remove this comment to see the full error message
     minimized,
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'scatterplotYYaccessor' does not exist on... Remove this comment to see the full error message
     scatterplotYYaccessor,
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'scatterplotXXaccessor' does not exist on... Remove this comment to see the full error message
     scatterplotXXaccessor,
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'xScale' does not exist on type '{ childr... Remove this comment to see the full error message
     xScale,
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'yScale' does not exist on type '{ childr... Remove this comment to see the full error message
     yScale,
   }) => {
     /*
@@ -578,7 +613,9 @@ const ScatterplotAxis = React.memo(
 
       // the axes are much cleaner and easier now. No need to rotate and orient
       // the axis, just call axisBottom, axisLeft etc.
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
       const xAxis = d3.axisBottom().ticks(7).scale(xScale);
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
       const yAxis = d3.axisLeft().ticks(7).scale(yScale);
 
       // adding axes is also simpler now, just translate x-axis to (0,height)
@@ -621,6 +658,7 @@ const ScatterplotAxis = React.memo(
         height={height + margin.top + margin.bottom}
         data-testid="scatterplot-svg"
         style={{
+          // @ts-expect-error ts-migrate(2322) FIXME: Type '"none" | null' is not assignable to type 'Di... Remove this comment to see the full error message
           display: minimized ? "none" : null,
         }}
       >

@@ -10,34 +10,43 @@ import InformationMenu from "./infoMenu";
 
 const DATASET_TITLE_FONT_SIZE = 14;
 
+// @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => {
-  const { corpora_props: corporaProps } = state.config;
+  const { corpora_props: corporaProps } = (state as any).config;
   const correctVersion =
     ["1.0.0", "1.1.0"].indexOf(corporaProps?.version?.corpora_schema_version) >
     -1;
   return {
-    datasetTitle: state.config?.displayNames?.dataset ?? "",
-    libraryVersions: state.config?.library_versions,
-    aboutLink: state.config?.links?.["about-dataset"],
-    tosURL: state.config?.parameters?.about_legal_tos,
-    privacyURL: state.config?.parameters?.about_legal_privacy,
+    datasetTitle: (state as any).config?.displayNames?.dataset ?? "",
+    libraryVersions: (state as any).config?.library_versions,
+    aboutLink: (state as any).config?.links?.["about-dataset"],
+    tosURL: (state as any).config?.parameters?.about_legal_tos,
+    privacyURL: (state as any).config?.parameters?.about_legal_privacy,
     title: correctVersion ? corporaProps?.title : undefined,
   };
 })
 class LeftSideBar extends React.Component {
   handleClick = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
     dispatch({ type: "toggle dataset drawer" });
   };
 
   render() {
     const {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'datasetTitle' does not exist on type 'Re... Remove this comment to see the full error message
       datasetTitle,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'libraryVersions' does not exist on type ... Remove this comment to see the full error message
       libraryVersions,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'aboutLink' does not exist on type 'Reado... Remove this comment to see the full error message
       aboutLink,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'privacyURL' does not exist on type 'Read... Remove this comment to see the full error message
       privacyURL,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'tosURL' does not exist on type 'Readonly... Remove this comment to see the full error message
       tosURL,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
       dispatch,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'title' does not exist on type 'Readonly<... Remove this comment to see the full error message
       title,
     } = this.props;
 

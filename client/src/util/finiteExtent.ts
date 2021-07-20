@@ -6,7 +6,7 @@ If undefined or empty array, or array contains only non-finite numbers,
 will return [undefined, undefined]
 */
 
-function finiteExtent(tarr) {
+function finiteExtent(tarr: any) {
   let min;
   let max;
   let i;

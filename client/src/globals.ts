@@ -91,8 +91,8 @@ const CXG_SERVER_PORT =
 
 let _API;
 
-if (window.CELLXGENE && window.CELLXGENE.API) {
-  _API = window.CELLXGENE.API;
+if ((window as any).CELLXGENE && (window as any).CELLXGENE.API) {
+  _API = (window as any).CELLXGENE.API;
 } else {
   if (CXG_SERVER_PORT === undefined) {
     const errorMessage = "Please set the CXG_SERVER_PORT environment variable.";

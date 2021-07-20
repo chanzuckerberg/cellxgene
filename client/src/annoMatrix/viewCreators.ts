@@ -5,7 +5,7 @@ instances of AnnoMatrix, implementing common UI functions.
 
 import { AnnoMatrixRowSubsetView, AnnoMatrixClipView } from "./views";
 
-export function isubsetMask(annoMatrix, obsMask) {
+export function isubsetMask(annoMatrix: any, obsMask: any) {
   /*
 		Subset annomatrix to contain the rows which have truish value in the mask.
     Maks length must equal annoMatrix.nObs (row count).
@@ -13,6 +13,7 @@ export function isubsetMask(annoMatrix, obsMask) {
   return isubset(annoMatrix, _maskToList(obsMask));
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
 export function isubset(annoMatrix, obsOffsets) {
   /*
 		Subset annomatrix to contain the positions contained in the obsOffsets array
@@ -25,6 +26,7 @@ export function isubset(annoMatrix, obsOffsets) {
   return new AnnoMatrixRowSubsetView(annoMatrix, obsIndex);
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
 export function subset(annoMatrix, obsLabels) {
   /*
 		subset based on labels
@@ -33,6 +35,7 @@ export function subset(annoMatrix, obsLabels) {
   return new AnnoMatrixRowSubsetView(annoMatrix, obsIndex);
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
 export function subsetByIndex(annoMatrix, obsIndex) {
   /*
   subset based upon the new obs index.
@@ -40,6 +43,7 @@ export function subsetByIndex(annoMatrix, obsIndex) {
   return new AnnoMatrixRowSubsetView(annoMatrix, obsIndex);
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
 export function clip(annoMatrix, qmin, qmax) {
   /*
 		Create a view that clips all continuous data to the [min, max] range.
@@ -53,6 +57,7 @@ export function clip(annoMatrix, qmin, qmax) {
 Private utility functions below
 */
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'mask' implicitly has an 'any' type.
 function _maskToList(mask) {
   /* convert masks to lists - method wastes space, but is fast */
   if (!mask) {

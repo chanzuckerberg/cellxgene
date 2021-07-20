@@ -9,21 +9,28 @@ import { _whereCacheCreate } from "./whereCache";
 import { _isContinuousType, _getColumnSchema } from "./schema";
 
 class AnnoMatrixView extends AnnoMatrix {
-  constructor(viewOf, rowIndex = null) {
+  _cache: any;
+
+  constructor(viewOf: any, rowIndex = null) {
+    // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
     const nObs = rowIndex ? rowIndex.size() : viewOf.nObs;
     super(viewOf.schema, nObs, viewOf.nVar, rowIndex || viewOf.rowIndex);
     this.viewOf = viewOf;
     this.isView = true;
   }
 
-  addObsAnnoCategory(col, category) {
+  addObsAnnoCategory(col: any, category: any) {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix.viewOf = this.viewOf.addObsAnnoCategory(col, category);
     newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
     return newAnnoMatrix;
   }
 
-  async removeObsAnnoCategory(col, category, unassignedCategory) {
+  async removeObsAnnoCategory(
+    col: any,
+    category: any,
+    unassignedCategory: any
+  ) {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix.viewOf = await this.viewOf.removeObsAnnoCategory(
       col,
@@ -34,7 +41,7 @@ class AnnoMatrixView extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  dropObsColumn(col) {
+  dropObsColumn(col: any) {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix.viewOf = this.viewOf.dropObsColumn(col);
     newAnnoMatrix._cache.obs = this._cache.obs.dropCol(col);
@@ -42,21 +49,21 @@ class AnnoMatrixView extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  addObsColumn(colSchema, Ctor, value) {
+  addObsColumn(colSchema: any, Ctor: any, value: any) {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix.viewOf = this.viewOf.addObsColumn(colSchema, Ctor, value);
     newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
     return newAnnoMatrix;
   }
 
-  renameObsColumn(oldCol, newCol) {
+  renameObsColumn(oldCol: any, newCol: any) {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix.viewOf = this.viewOf.renameObsColumn(oldCol, newCol);
     newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
     return newAnnoMatrix;
   }
 
-  async setObsColumnValues(col, rowLabels, value) {
+  async setObsColumnValues(col: any, rowLabels: any, value: any) {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix.viewOf = await this.viewOf.setObsColumnValues(
       col,
@@ -68,7 +75,7 @@ class AnnoMatrixView extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  async resetObsColumnValues(col, oldValue, newValue) {
+  async resetObsColumnValues(col: any, oldValue: any, newValue: any) {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix.viewOf = await this.viewOf.resetObsColumnValues(
       col,
@@ -80,7 +87,7 @@ class AnnoMatrixView extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  addEmbedding(colSchema) {
+  addEmbedding(colSchema: any) {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix.viewOf = this.viewOf.addEmbedding(colSchema);
     newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
@@ -92,17 +99,20 @@ class AnnoMatrixMapView extends AnnoMatrixView {
   /*
 	A view which knows how to transform its data.
 	*/
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'viewOf' implicitly has an 'any' type.
   constructor(viewOf, mapFn) {
     super(viewOf);
-    this.mapFn = mapFn;
+    (this as any).mapFn = mapFn;
   }
 
+  // @ts-expect-error ts-migrate(2416) FIXME: Property '_doLoad' in type 'AnnoMatrixMapView' is ... Remove this comment to see the full error message
   async _doLoad(field, query) {
     const df = await this.viewOf._fetch(field, query);
+    // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'colData' implicitly has an 'any' type.
     const dfMapped = df.mapColumns((colData, colIdx) => {
       const colLabel = df.colIndex.getLabel(colIdx);
       const colSchema = _getColumnSchema(this.schema, field, colLabel);
-      return this.mapFn(field, colLabel, colSchema, colData, df);
+      return (this as any).mapFn(field, colLabel, colSchema, colData, df);
     });
     const whereCacheUpdate = _whereCacheCreate(
       field,
@@ -117,12 +127,14 @@ export class AnnoMatrixClipView extends AnnoMatrixMapView {
   /*
 	A view which is a clipped transformation of its parent
 	*/
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'viewOf' implicitly has an 'any' type.
   constructor(viewOf, qmin, qmax) {
+    // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
     super(viewOf, (field, colLabel, colSchema, colData, df) =>
       _clipAnnoMatrix(field, colLabel, colSchema, colData, df, qmin, qmax)
     );
-    this.isClipped = true;
-    this.clipRange = [qmin, qmax];
+    (this as any).isClipped = true;
+    (this as any).clipRange = [qmin, qmax];
     Object.seal(this);
   }
 }
@@ -131,11 +143,13 @@ export class AnnoMatrixRowSubsetView extends AnnoMatrixView {
   /*
 	A view which is a subset of total rows.
 	*/
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'viewOf' implicitly has an 'any' type.
   constructor(viewOf, rowIndex) {
     super(viewOf, rowIndex);
     Object.seal(this);
   }
 
+  // @ts-expect-error ts-migrate(2416) FIXME: Property '_doLoad' in type 'AnnoMatrixRowSubsetVie... Remove this comment to see the full error message
   async _doLoad(field, query) {
     const df = await this.viewOf._fetch(field, query);
 
@@ -158,6 +172,7 @@ export class AnnoMatrixRowSubsetView extends AnnoMatrixView {
 Utility functions below
 */
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
 function _clipAnnoMatrix(field, colLabel, colSchema, colData, df, qmin, qmax) {
   /* only clip obs and var scalar columns */
   if (field !== "obs" && field !== "X") return colData;

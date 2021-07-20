@@ -29,6 +29,7 @@ describe("dataframe constructor", () => {
     const df = new Dataframe.Dataframe(
       [3, 2],
       [new Int32Array([0, 1, 2]), new Int32Array([3, 4, 5])],
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'DenseInt32Index' is not assignab... Remove this comment to see the full error message
       new Dataframe.DenseInt32Index([2, 1, 0]),
       new Dataframe.KeyIndex(["A", "B"])
     );
@@ -55,6 +56,7 @@ describe("simple data access", () => {
       new Float64Array([0.0, Number.NaN, Number.POSITIVE_INFINITY, 3.14159]),
       ["red", "blue", "green", "nan"],
     ],
+    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'DenseInt32Index' is not assignab... Remove this comment to see the full error message
     new Dataframe.DenseInt32Index([3, 2, 1, 0]),
     new Dataframe.KeyIndex(["numbers", "colors"])
   );
@@ -139,10 +141,12 @@ describe("dataframe subsetting", () => {
         ["red", "green", "blue"],
       ],
       null, // identity index
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex(["int32", "string", "float32", "colors"])
     );
 
     test("all rows, one column", () => {
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
       const dfA = sourceDf.subset(null, ["colors"]);
       expect(dfA).toBeDefined();
       expect(dfA.dims).toEqual([3, 1]);
@@ -158,6 +162,7 @@ describe("dataframe subsetting", () => {
     });
 
     test("all rows, two columns", () => {
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
       const dfB = sourceDf.subset(null, ["float32", "colors"]);
       expect(dfB).toBeDefined();
       expect(dfB.dims).toEqual([3, 2]);
@@ -227,6 +232,7 @@ describe("dataframe subsetting", () => {
     });
 
     test("two rows, two colums", () => {
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
       const dfF = sourceDf.subset([0, 2], ["int32", "float32"]);
       expect(dfF).toBeDefined();
       expect(dfF.dims).toEqual([2, 2]);
@@ -236,6 +242,7 @@ describe("dataframe subsetting", () => {
       expect(dfF.colIndex.labels()).toEqual(["int32", "float32"]);
 
       // reverse the row and column order
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
       const dfFr = sourceDf.subset([2, 0], ["float32", "int32"]);
       expect(dfFr).toBeDefined();
       expect(dfFr.dims).toEqual([2, 2]);
@@ -248,6 +255,7 @@ describe("dataframe subsetting", () => {
     test("withRowIndex", () => {
       const df = sourceDf.subset(
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
         ["int32", "float32"],
         new Dataframe.DenseInt32Index([3, 2, 1])
       );
@@ -258,12 +266,15 @@ describe("dataframe subsetting", () => {
 
     test("withRowIndex error checks", () => {
       expect(() =>
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
         sourceDf.subset(null, ["red"], new Dataframe.IdentityInt32Index(1))
       ).toThrow(RangeError);
       expect(() =>
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
         sourceDf.subset(null, ["red"], new Dataframe.DenseInt32Index([0, 1]))
       ).toThrow(RangeError);
       expect(() =>
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
         sourceDf.subset(null, ["red"], new Dataframe.KeyIndex([0, 1, 2, 3]))
       ).toThrow(RangeError);
     });
@@ -278,12 +289,14 @@ describe("dataframe subsetting", () => {
         new Float32Array([4.4, 5.5, 6.6]),
         ["red", "green", "blue"],
       ],
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'DenseInt32Index' is not assignab... Remove this comment to see the full error message
       new Dataframe.DenseInt32Index([2, 4, 6]),
       new Dataframe.KeyIndex(["int32", "string", "float32", "colors"])
     );
 
     const dfA = sourceDf.isubsetMask(
       new Uint8Array([0, 1, 1]),
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'Uint8Array' is not assignable to... Remove this comment to see the full error message
       new Uint8Array([1, 0, 0, 1])
     );
     expect(dfA.dims).toEqual([2, 2]);
@@ -303,6 +316,7 @@ describe("dataframe subsetting", () => {
         ["red", "green", "blue"],
       ],
       null, // identity index
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex(["int32", "string", "float32", "colors"])
     );
 
@@ -316,6 +330,7 @@ describe("dataframe subsetting", () => {
     });
 
     test("all rows, two cols", () => {
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'number[]' is not assignable to p... Remove this comment to see the full error message
       const dfA = sourceDf.isubset(null, [1, 2]);
       expect(dfA.dims).toEqual([3, 2]);
       expect(dfA.icol(0).asArray()).toEqual(["A", "B", "C"]);
@@ -361,6 +376,7 @@ describe("dataframe factories", () => {
     const dfA = new Dataframe.Dataframe(
       [3, 2],
       [new Int32Array([0, 1, 2]), new Int32Array([3, 4, 5])],
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'DenseInt32Index' is not assignab... Remove this comment to see the full error message
       new Dataframe.DenseInt32Index([2, 1, 0]),
       new Dataframe.KeyIndex(["A", "B"])
     );
@@ -385,6 +401,7 @@ describe("dataframe factories", () => {
           [true, false],
         ],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["colors", "bools"])
       );
       const dfA = df.withCol("numbers", [1, 0]);
@@ -408,6 +425,7 @@ describe("dataframe factories", () => {
           [true, false],
         ],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'DenseInt32Index' is not assignab... Remove this comment to see the full error message
         new Dataframe.DenseInt32Index([74, 75])
       );
       const dfA = df.withCol(72, [1, 0]);
@@ -433,6 +451,7 @@ describe("dataframe factories", () => {
           [true, false],
         ],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'DenseInt32Index' is not assignab... Remove this comment to see the full error message
         new Dataframe.DenseInt32Index([74, 75])
       );
       const dfA = df.withCol(999, [1, 0]);
@@ -541,6 +560,7 @@ describe("dataframe factories", () => {
           [1, 0],
         ],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["colors", "bools", "numbers"])
       );
 
@@ -549,11 +569,14 @@ describe("dataframe factories", () => {
         [3, 1],
         [["red", "blue", "green"]],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["colorsA"])
       );
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
       expect(() => dfA.withColsFrom(dfB)).toThrow(RangeError);
 
       /* duplicate labels should throw an error */
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
       expect(() => dfA.withColsFrom(dfA)).toThrow(Error);
     });
 
@@ -564,15 +587,18 @@ describe("dataframe factories", () => {
         [2, 1],
         [["red", "blue"]],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["colors"])
       );
       const dfB = new Dataframe.Dataframe(
         [2, 1],
         [[true, false]],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["bools"])
       );
 
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
       const dfLikeA = dfEmpty.withColsFrom(dfA);
       expect(dfLikeA).toBeDefined();
       expect(dfLikeA.dims).toEqual(dfA.dims);
@@ -581,6 +607,7 @@ describe("dataframe factories", () => {
       expect(dfLikeA.rowIndex.labels()).toEqual(dfA.rowIndex.labels());
       expect(dfLikeA.icol(0).asArray()).toEqual(dfA.icol(0).asArray());
 
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
       const dfAlsoLikeA = dfA.withColsFrom(dfEmpty);
       expect(dfAlsoLikeA).toBeDefined();
       expect(dfAlsoLikeA.dims).toEqual(dfA.dims);
@@ -589,6 +616,7 @@ describe("dataframe factories", () => {
       expect(dfAlsoLikeA.rowIndex.labels()).toEqual(dfA.rowIndex.labels());
       expect(dfAlsoLikeA.icol(0).asArray()).toEqual(dfA.icol(0).asArray());
 
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
       const dfC = dfA.withColsFrom(dfB);
       expect(dfC).toBeDefined();
       expect(dfC.dims).toEqual([2, 2]);
@@ -605,6 +633,7 @@ describe("dataframe factories", () => {
         [2, 1],
         [["red", "blue"]],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["colors"])
       );
       const dfB = new Dataframe.Dataframe(
@@ -615,6 +644,7 @@ describe("dataframe factories", () => {
           [1, 0],
         ],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["colors", "bools", "numbers"])
       );
 
@@ -647,6 +677,7 @@ describe("dataframe factories", () => {
         [2, 1],
         [["red", "blue"]],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["colors"])
       );
       const dfB = new Dataframe.Dataframe(
@@ -657,6 +688,7 @@ describe("dataframe factories", () => {
           [1, 0],
         ],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["colors", "bools", "numbers"])
       );
 
@@ -680,6 +712,7 @@ describe("dataframe factories", () => {
           [1, 0],
         ],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["colors", "bools", "numbers"])
       );
       const dfA = df.dropCol("colors");
@@ -751,6 +784,7 @@ describe("dataframe factories", () => {
           [1, 0],
         ],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'DenseInt32Index' is not assignab... Remove this comment to see the full error message
         new Dataframe.DenseInt32Index([102, 101, 100])
       );
       const dfA = df.dropCol(101);
@@ -777,7 +811,7 @@ describe("dataframe factories", () => {
           new Float64Array(3).fill(1.1),
         ]
       );
-      const dfB = dfA.mapColumns((col, idx) => {
+      const dfB = dfA.mapColumns((col: any, idx: any) => {
         expect(dfA.icol(idx).asArray()).toBe(col);
         return col;
       });
@@ -822,6 +856,7 @@ describe("dataframe factories", () => {
           [1, 0],
         ],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["A", "B"])
       );
       const dfB = dfA.renameCol("B", "C");
@@ -834,7 +869,7 @@ describe("dataframe factories", () => {
 });
 
 describe("dataframe col", () => {
-  let df = null;
+  let df: any = null;
   beforeEach(() => {
     df = new Dataframe.Dataframe(
       [2, 2],
@@ -843,6 +878,7 @@ describe("dataframe col", () => {
         [1, 0],
       ],
       null,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex(["A", "B"])
     );
   });
@@ -1195,6 +1231,7 @@ describe("label indexing", () => {
     test("create", () => {
       expect(Dataframe.isLabelIndex(idx)).toBeTruthy();
       expect(() => new Dataframe.KeyIndex(["dup", "dup"])).toThrow(Error);
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
       expect(new Dataframe.KeyIndex().size()).toEqual(0);
     });
 
@@ -1367,6 +1404,7 @@ describe("corner cases", () => {
         [1, 0],
       ],
       null,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex(["A", "B"])
     );
 

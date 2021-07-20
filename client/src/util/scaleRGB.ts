@@ -1,4 +1,4 @@
-export default (input) => {
+export default (input: any) => {
   const outputMax = 1;
   const outputMin = 0;
 

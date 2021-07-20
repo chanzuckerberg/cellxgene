@@ -15,7 +15,7 @@ import * as genesetActions from "./geneset";
 /*
 return promise fetching user-configured colors
 */
-async function userColorsFetchAndLoad(dispatch) {
+async function userColorsFetchAndLoad(dispatch: any) {
   return fetchJson("colors").then((response) =>
     dispatch({
       type: "universe: user color load success",
@@ -28,7 +28,7 @@ async function schemaFetch() {
   return fetchJson("schema");
 }
 
-async function configFetch(dispatch) {
+async function configFetch(dispatch: any) {
   return fetchJson("config").then((response) => {
     const config = { ...globals.configDefaults, ...response.config };
     dispatch({
@@ -39,7 +39,7 @@ async function configFetch(dispatch) {
   });
 }
 
-async function userInfoFetch(dispatch) {
+async function userInfoFetch(dispatch: any) {
   return fetchJson("userinfo").then((response) => {
     const { userinfo: userInfo } = response || {};
     dispatch({
@@ -50,7 +50,7 @@ async function userInfoFetch(dispatch) {
   });
 }
 
-async function genesetsFetch(dispatch, config) {
+async function genesetsFetch(dispatch: any, config: any) {
   /* request genesets ONLY if the backend supports the feature */
   const defaultResponse = {
     genesets: [],
@@ -71,25 +71,26 @@ async function genesetsFetch(dispatch, config) {
   }
 }
 
-function prefetchEmbeddings(annoMatrix) {
+function prefetchEmbeddings(annoMatrix: any) {
   /*
   prefetch requests for all embeddings
   */
   const { schema } = annoMatrix;
-  const available = schema.layout.obs.map((v) => v.name);
-  available.forEach((embName) => annoMatrix.prefetch("emb", embName));
+  const available = schema.layout.obs.map((v: any) => v.name);
+  available.forEach((embName: any) => annoMatrix.prefetch("emb", embName));
 }
 
 /*
 Application bootstrap
 */
 const doInitialDataLoad = () =>
-  catchErrorsWrap(async (dispatch) => {
+  catchErrorsWrap(async (dispatch: any) => {
     dispatch({ type: "initial data load start" });
 
     try {
       const [config, schema] = await Promise.all([
         configFetch(dispatch),
+        // @ts-expect-error ts-migrate(2554) FIXME: Expected 0 arguments, but got 1.
         schemaFetch(dispatch),
         userColorsFetchAndLoad(dispatch),
         userInfoFetch(dispatch),
@@ -113,7 +114,7 @@ const doInitialDataLoad = () =>
       const layoutSchema = schema?.schema?.layout?.obs ?? [];
       if (
         defaultEmbedding &&
-        layoutSchema.some((s) => s.name === defaultEmbedding)
+        layoutSchema.some((s: any) => s.name === defaultEmbedding)
       ) {
         dispatch(embActions.layoutChoiceAction(defaultEmbedding));
       }
@@ -122,21 +123,22 @@ const doInitialDataLoad = () =>
     }
   }, true);
 
-function requestSingleGeneExpressionCountsForColoringPOST(gene) {
+function requestSingleGeneExpressionCountsForColoringPOST(gene: any) {
   return {
     type: "color by expression",
     gene,
   };
 }
 
-const requestUserDefinedGene = (gene) => ({
+const requestUserDefinedGene = (gene: any) => ({
   type: "request user defined gene success",
+
   data: {
     genes: [gene],
   },
 });
 
-const dispatchDiffExpErrors = (dispatch, response) => {
+const dispatchDiffExpErrors = (dispatch: any, response: any) => {
   switch (response.status) {
     case 403:
       dispatchNetworkErrorMessageToUser(
@@ -159,10 +161,11 @@ const dispatchDiffExpErrors = (dispatch, response) => {
   }
 };
 
-const requestDifferentialExpression = (set1, set2, num_genes = 50) => async (
-  dispatch,
-  getState
-) => {
+const requestDifferentialExpression = (
+  set1: any,
+  set2: any,
+  num_genes = 50
+) => async (dispatch: any, getState: any) => {
   dispatch({ type: "request differential expression started" });
   try {
     /*
@@ -210,7 +213,8 @@ const requestDifferentialExpression = (set1, set2, num_genes = 50) => async (
     const varIndex = await annoMatrix.fetch("var", varIndexName);
     const diffexpLists = { negative: [], positive: [] };
     for (const polarity of Object.keys(diffexpLists)) {
-      diffexpLists[polarity] = response[polarity].map((v) => [
+      // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+      diffexpLists[polarity] = response[polarity].map((v: any) => [
         varIndex.at(v[0], varIndexName),
         ...v.slice(1),
       ]);
@@ -229,7 +233,7 @@ const requestDifferentialExpression = (set1, set2, num_genes = 50) => async (
   }
 };
 
-function fetchJson(pathAndQuery) {
+function fetchJson(pathAndQuery: any) {
   return doJsonRequest(
     `${globals.API.prefix}${globals.API.version}${pathAndQuery}`
   );

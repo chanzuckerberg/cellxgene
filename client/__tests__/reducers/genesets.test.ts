@@ -501,6 +501,7 @@ describe("geneset: set tid", () => {
   test("not a number error", () => {
     expect(() => {
       genesetsReducer(
+        // @ts-expect-error ts-migrate(2322) FIXME: Type 'number' is not assignable to type 'undefined... Remove this comment to see the full error message
         { lastTid: 1 },
         {
           type: "geneset: set tid",
@@ -513,6 +514,7 @@ describe("geneset: set tid", () => {
   test("decrement error", () => {
     expect(() => {
       genesetsReducer(
+        // @ts-expect-error ts-migrate(2322) FIXME: Type 'number' is not assignable to type 'undefined... Remove this comment to see the full error message
         { lastTid: 1 },
         {
           type: "geneset: set tid",

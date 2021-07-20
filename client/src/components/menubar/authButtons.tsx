@@ -17,6 +17,7 @@ import { IconNames } from "@blueprintjs/icons";
 
 import * as globals from "../../globals";
 
+// @ts-expect-error ts-migrate(2307) FIXME: Cannot find module './menubar.css' or its correspo... Remove this comment to see the full error message
 import styles from "./menubar.css";
 
 import { storageGet, storageSet, KEYS } from "../util/localStorage";
@@ -31,11 +32,12 @@ const LOGIN_PROMPT_OFF = "off";
 const Auth = React.memo((props) => {
   const [isPromptOpen, setIsPromptOpen] = useState(shouldShowPrompt());
 
+  // @ts-expect-error ts-migrate(2339) FIXME: Property 'auth' does not exist on type '{ children... Remove this comment to see the full error message
   const { auth, userInfo } = props;
 
   const isAuthenticated = userInfo && userInfo.is_authenticated;
 
-  window.userInfo = userInfo;
+  (window as any).userInfo = userInfo;
 
   const randomInt = Math.random() * 15;
   const sexIndex = Math.floor(randomInt / 5);
@@ -75,6 +77,7 @@ const Auth = React.memo((props) => {
         >
           {/*  eslint-disable-next-line no-constant-condition -- disable profile picture until CSP is tweaked */}
           {userInfo?.picture && false ? (
+            // @ts-expect-error ts-migrate(2322) FIXME: Type '{ alt: string; size: string; src: any; }' is... Remove this comment to see the full error message
             <img alt="profile" size="21px" src={userInfo?.picture} />
           ) : (
             <span style={{ fontSize: "18px" }}>{scientist}</span>
@@ -123,11 +126,12 @@ const Auth = React.memo((props) => {
   function shouldShowPrompt() {
     if (storageGet(KEYS.LOGIN_PROMPT) === LOGIN_PROMPT_OFF) return false;
 
+    // @ts-expect-error ts-migrate(2774) FIXME: This condition will always return true since the f... Remove this comment to see the full error message
     return shouldShowAuth && !isAuthenticated;
   }
 });
 
-function PromptContent({ setIsPromptOpen }) {
+function PromptContent({ setIsPromptOpen }: any) {
   const [isChecked, setIsChecked] = useState(false);
 
   function handleOKClick() {

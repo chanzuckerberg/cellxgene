@@ -11,18 +11,23 @@ import {
   Tooltip,
 } from "@blueprintjs/core";
 
+type State = any;
+
+// @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
-  idhash: state.config?.parameters?.["annotations-user-data-idhash"] ?? null,
-  annotations: state.annotations,
-  auth: state.config?.authentication,
-  userInfo: state.userInfo,
-  writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
+  idhash:
+    (state as any).config?.parameters?.["annotations-user-data-idhash"] ?? null,
+  annotations: (state as any).annotations,
+  auth: (state as any).config?.authentication,
+  userInfo: (state as any).userInfo,
+  writableCategoriesEnabled:
+    (state as any).config?.parameters?.annotations ?? false,
   writableGenesetsEnabled: !(
-    state.config?.parameters?.annotations_genesets_readonly ?? true
+    (state as any).config?.parameters?.annotations_genesets_readonly ?? true
   ),
 }))
-class FilenameDialog extends React.Component {
-  constructor(props) {
+class FilenameDialog extends React.Component<{}, State> {
+  constructor(props: {}) {
     super(props);
     this.state = {
       filenameText: "",
@@ -32,9 +37,9 @@ class FilenameDialog extends React.Component {
   dismissFilenameDialog = () => {};
 
   handleCreateFilename = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
     const { filenameText } = this.state;
-
     dispatch({
       type: "set annotations collection name",
       data: filenameText,
@@ -45,26 +50,26 @@ class FilenameDialog extends React.Component {
     const legalNames = /^\w+$/;
     const { filenameText } = this.state;
     let err = false;
-
     if (filenameText === "") {
+      // @ts-expect-error ts-migrate(2322) FIXME: Type 'string' is not assignable to type 'boolean'.
       err = "empty_string";
     } else if (!legalNames.test(filenameText)) {
       /*
-      IMPORTANT: this test must ultimately match the test applied by the
-      backend, which is designed to ensure a safe file name can be created
-      from the data collection name.  If you change this, you will also need
-      to change the validation code in the backend, or it will have no effect.
-      */
+            IMPORTANT: this test must ultimately match the test applied by the
+            backend, which is designed to ensure a safe file name can be created
+            from the data collection name.  If you change this, you will also need
+            to change the validation code in the backend, or it will have no effect.
+            */
+      // @ts-expect-error ts-migrate(2322) FIXME: Type 'string' is not assignable to type 'boolean'.
       err = "characters";
     }
-
     return err;
   };
 
   filenameErrorMessage = () => {
     const err = this.filenameError();
     let markup = null;
-
+    // @ts-expect-error ts-migrate(2367) FIXME: This condition will always return 'false' since th... Remove this comment to see the full error message
     if (err === "empty_string") {
       markup = (
         <span
@@ -78,6 +83,7 @@ class FilenameDialog extends React.Component {
           Name cannot be blank
         </span>
       );
+      // @ts-expect-error ts-migrate(2367) FIXME: This condition will always return 'false' since th... Remove this comment to see the full error message
     } else if (err === "characters") {
       markup = (
         <span
@@ -97,14 +103,18 @@ class FilenameDialog extends React.Component {
 
   render() {
     const {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'writableCategoriesEnabled' does not exis... Remove this comment to see the full error message
       writableCategoriesEnabled,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'writableGenesetsEnabled' does not exist ... Remove this comment to see the full error message
       writableGenesetsEnabled,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'annotations' does not exist on type 'Rea... Remove this comment to see the full error message
       annotations,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'idhash' does not exist on type 'Readonly... Remove this comment to see the full error message
       idhash,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'userInfo' does not exist on type 'Readon... Remove this comment to see the full error message
       userInfo,
     } = this.props;
     const { filenameText } = this.state;
-
     return (writableCategoriesEnabled || writableGenesetsEnabled) &&
       annotations.promptForFilename &&
       !annotations.dataCollectionNameIsReadOnly &&
@@ -128,6 +138,7 @@ class FilenameDialog extends React.Component {
               <InputGroup
                 autoFocus
                 value={filenameText}
+                // @ts-expect-error ts-migrate(2554) FIXME: Expected 0 arguments, but got 1.
                 intent={this.filenameError(filenameText) ? "warning" : "none"}
                 onChange={(e) =>
                   this.setState({ filenameText: e.target.value })
@@ -138,12 +149,14 @@ class FilenameDialog extends React.Component {
               <p
                 style={{
                   marginTop: 7,
+                  // @ts-expect-error ts-migrate(2554) FIXME: Expected 0 arguments, but got 1.
                   visibility: this.filenameError(filenameText)
                     ? "visible"
                     : "hidden",
                   color: Colors.ORANGE3,
                 }}
               >
+                {/* @ts-expect-error ts-migrate(2554) FIXME: Expected 0 arguments, but got 1. */}
                 {this.filenameErrorMessage(filenameText)}
               </p>
             </div>
@@ -171,6 +184,7 @@ class FilenameDialog extends React.Component {
                 <Button onClick={this.dismissFilenameDialog}>Cancel</Button>
               </Tooltip>
               <Button
+                // @ts-expect-error ts-migrate(2554) FIXME: Expected 0 arguments, but got 1.
                 disabled={!filenameText || this.filenameError(filenameText)}
                 onClick={this.handleCreateFilename}
                 intent="primary"

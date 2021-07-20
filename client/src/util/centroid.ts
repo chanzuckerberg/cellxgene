@@ -23,11 +23,11 @@ label -> {
 }
 */
 const getCoordinatesByLabel = (
-  schema,
-  categoryName,
-  categoryDf,
-  layoutChoice,
-  layoutDf
+  schema: any,
+  categoryName: any,
+  categoryDf: any,
+  layoutChoice: any,
+  layoutDf: any
 ) => {
   const coordsByCategoryLabel = new Map();
   // If the coloredBy is not a categorical col
@@ -72,6 +72,7 @@ const getCoordinatesByLabel = (
       let coords = coordsByCategoryLabel.get(label);
       if (coords === undefined) {
         // Get the number of cells which are in the label
+        // @ts-expect-error ts-migrate(2538) FIXME: Type 'unknown' cannot be used as an index type.
         const numInLabel = categoryValueCounts[labelIndex];
         coords = {
           hasFinite: false,
@@ -104,11 +105,11 @@ const getCoordinatesByLabel = (
 */
 
 const calcMedianCentroid = (
-  schema,
-  categoryName,
-  categoryDf,
-  layoutChoice,
-  layoutDf
+  schema: any,
+  categoryName: any,
+  categoryDf: any,
+  layoutChoice: any,
+  layoutDf: any
 ) => {
   // generate a map describing the coordinates for each label within the given category
   const dataMap = getCoordinatesByLabel(
@@ -143,11 +144,12 @@ const calcMedianCentroid = (
 
 // A simple function to hash the parameters
 const hashMedianCentroid = (
-  schema,
-  categoryName,
-  categoryDf,
-  layoutChoice,
-  layoutDf
+  // @ts-expect-error ts-migrate(6133) FIXME: 'schema' is declared but its value is never read.
+  schema: any,
+  categoryName: any,
+  categoryDf: any,
+  layoutChoice: any,
+  layoutDf: any
 ) => {
   const category = categoryDf.col(categoryName);
   const layoutDimNames = layoutChoice.currentDimNames;

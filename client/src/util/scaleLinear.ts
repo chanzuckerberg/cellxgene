@@ -6,15 +6,15 @@
 //     myScale(0) === -1
 // this is is equivalent to d3.scaleLinear().domain([0,1]).range([-1,1])
 
-export default (domain, range) => {
+export default (domain: any, range: any) => {
   const domainStart = domain[0];
   const scale = (range[1] - range[0]) / (domain[1] - domain[0]);
   const invScale = 1 / scale;
   const rangeStart = range[0];
-  const f = (value) => (value - domainStart) * scale + rangeStart;
+  const f = (value: any) => (value - domainStart) * scale + rangeStart;
 
   // inverter
-  f.invert = (value) => (value - rangeStart) * invScale + domainStart;
+  f.invert = (value: any) => (value - rangeStart) * invScale + domainStart;
 
   return f;
 };

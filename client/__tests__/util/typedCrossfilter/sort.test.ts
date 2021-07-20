@@ -15,7 +15,7 @@ paths for:
 const pInf = Number.POSITIVE_INFINITY;
 const nInf = Number.NEGATIVE_INFINITY;
 
-function fillRange(arr, start = 0) {
+function fillRange(arr: any, start = 0) {
   const larr = arr;
   for (let i = 0, len = larr.length; i < len; i += 1) {
     larr[i] = i + start;
@@ -23,7 +23,7 @@ function fillRange(arr, start = 0) {
   return larr;
 }
 
-function fillRand(arr) {
+function fillRand(arr: any) {
   for (let i = 0, len = arr.length; i < len; i += 1) {
     arr[i] = Math.random();
   }
@@ -48,16 +48,22 @@ describe("sortArray", () => {
   describe("finite numbers", () => {
     [Array, Float32Array, Uint32Array, Int32Array, Float64Array].map((Type) =>
       test(Type.name, () => {
+        // @ts-expect-error ts-migrate(2349) FIXME: This expression is not callable.
         expect(sortArray(Type.from([6, 5, 4, 3, 2, 1, 0]))).toMatchObject(
+          // @ts-expect-error ts-migrate(2349) FIXME: This expression is not callable.
           Type.from([0, 1, 2, 3, 4, 5, 6])
         );
 
+        // @ts-expect-error ts-migrate(2349) FIXME: This expression is not callable.
         expect(sortArray(Type.from([6, 5, 4, 3, 2, 1]))).toMatchObject(
+          // @ts-expect-error ts-migrate(2349) FIXME: This expression is not callable.
           Type.from([1, 2, 3, 4, 5, 6])
         );
 
         const source = fillRand(new Type(1000));
+        // @ts-expect-error ts-migrate(2349) FIXME: This expression is not callable.
         expect(sortArray(Type.from(source))).toMatchObject(
+          // @ts-expect-error ts-migrate(2349) FIXME: This expression is not callable.
           Type.from(source).sort()
         );
       })
@@ -130,22 +136,24 @@ describe("sortIndex", () => {
   describe("finite numbers", () => {
     [Array, Float32Array, Uint32Array, Int32Array, Float64Array].map((Type) =>
       test(Type.name, () => {
+        // @ts-expect-error ts-migrate(2349) FIXME: This expression is not callable.
         const source1 = Type.from([6, 5, 4, 3, 2, 1, 0]);
         const index1 = fillRange(new Uint32Array(source1.length));
         expect(sortIndex(index1, source1)).toMatchObject(
-          index1.sort((a, b) => source1[a] - source1[b])
+          index1.sort((a: any, b: any) => source1[a] - source1[b])
         );
 
+        // @ts-expect-error ts-migrate(2349) FIXME: This expression is not callable.
         const source2 = Type.from([6, 5, 4, 3, 2, 1]);
         const index2 = fillRange(new Uint32Array(source2.length));
         expect(sortIndex(index2, source2)).toMatchObject(
-          index2.sort((a, b) => source1[a] - source1[b])
+          index2.sort((a: any, b: any) => source1[a] - source1[b])
         );
 
         const source3 = fillRand(new Type(1000));
         const index3 = fillRange(new Uint32Array(source3.length));
         expect(sortIndex(index3, source3)).toMatchObject(
-          index3.sort((a, b) => source1[a] - source1[b])
+          index3.sort((a: any, b: any) => source1[a] - source1[b])
         );
       })
     );

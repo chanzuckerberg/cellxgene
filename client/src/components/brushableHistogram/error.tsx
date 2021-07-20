@@ -1,7 +1,7 @@
 import React from "react";
 import * as globals from "../../globals";
 
-const ErrorLoading = ({ displayName, zebra }) => {
+const ErrorLoading = ({ displayName, zebra }: any) => {
   return (
     <div
       style={{

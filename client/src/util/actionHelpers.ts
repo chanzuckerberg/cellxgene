@@ -6,8 +6,8 @@ import { postNetworkErrorToast } from "../components/framework/toasters";
 dispatch an action error to the user.   Currently we use
 async toasts.
 */
-let networkErrorToastKey = null;
-export const dispatchNetworkErrorMessageToUser = (message) => {
+let networkErrorToastKey: any = null;
+export const dispatchNetworkErrorMessageToUser = (message: any) => {
   if (!networkErrorToastKey) {
     networkErrorToastKey = postNetworkErrorToast(message);
   } else {
@@ -18,9 +18,9 @@ export const dispatchNetworkErrorMessageToUser = (message) => {
 /*
 Catch unexpected errors and make sure we don't lose them!
 */
-export function catchErrorsWrap(fn, dispatchToUser = false) {
-  return (dispatch, getState) => {
-    fn(dispatch, getState).catch((error) => {
+export function catchErrorsWrap(fn: any, dispatchToUser = false) {
+  return (dispatch: any, getState: any) => {
+    fn(dispatch, getState).catch((error: any) => {
       console.error(error);
       if (dispatchToUser) {
         dispatchNetworkErrorMessageToUser(error.message);
@@ -34,7 +34,7 @@ export function catchErrorsWrap(fn, dispatchToUser = false) {
  * Wrapper to perform async fetch with some modest error handling
  * and decoding.  Arguments are identical to standard fetch.
  */
-export const doFetch = async (url, init = {}) => {
+export const doFetch = async (url: any, init = {}) => {
   try {
     // add defaults to the fetch init param.
     init = {
@@ -42,10 +42,11 @@ export const doFetch = async (url, init = {}) => {
       credentials: "include",
       ...init,
     };
-    const acceptType = init.headers?.get("Accept");
+    const acceptType = (init as any).headers?.get("Accept");
     const res = await fetch(url, init);
     if (
       res.ok &&
+      // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
       (!acceptType || res.headers.get("Content-Type").includes(acceptType))
     ) {
       return res;
@@ -66,7 +67,7 @@ export const doFetch = async (url, init = {}) => {
 /*
 Wrapper to perform an async fetch and JSON decode response.
 */
-export const doJsonRequest = async (url, init = {}) => {
+export const doJsonRequest = async (url: any, init = {}) => {
   const res = await doFetch(url, {
     ...init,
     headers: new Headers({ Accept: "application/json" }),
@@ -77,7 +78,7 @@ export const doJsonRequest = async (url, init = {}) => {
 /*
 Wrapper to perform an async fetch for binary data.
 */
-export const doBinaryRequest = async (url, init = {}) => {
+export const doBinaryRequest = async (url: any, init = {}) => {
   const res = await doFetch(url, {
     ...init,
     headers: new Headers({ Accept: "application/octet-stream" }),
@@ -101,7 +102,7 @@ Parameters:
 So [1, 2, 3, 4, 10, 11, 14] -> [ [1, 4], [10, 11], 14]
 */
 export const rangeEncodeIndices = (
-  indices,
+  indices: any,
   minRangeLength = 3,
   sorted = false
 ) => {

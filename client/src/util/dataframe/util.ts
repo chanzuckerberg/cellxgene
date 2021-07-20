@@ -4,14 +4,14 @@ Private utility code for dataframe
 
 export { isTypedArray, isArrayOrTypedArray } from "../typeHelpers";
 
-export function callOnceLazy(f) {
+export function callOnceLazy(f: any) {
   /*
   call function once, and save the result, regardless of arguments (this is not
   the same as typical memoization).
   */
-  let value;
+  let value: any;
   let calledOnce = false;
-  const result = function result(...args) {
+  const result = function result(...args: any[]) {
     if (!calledOnce) {
       value = f(...args);
       calledOnce = true;
@@ -21,7 +21,7 @@ export function callOnceLazy(f) {
   return result;
 }
 
-export function memoize(fn, hashFn, maxResultsCached = -1) {
+export function memoize(fn: any, hashFn: any, maxResultsCached = -1) {
   /* 
   function memoization, with user-provided hash.  hashFn must return a
   key which will be unique as a Map key (ie, obeys "sameValueZero" algorithm
@@ -29,7 +29,7 @@ export function memoize(fn, hashFn, maxResultsCached = -1) {
   https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#Key_equality
   */
   const cache = new Map();
-  const wrap = function wrap(...args) {
+  const wrap = function wrap(...args: any[]) {
     const key = hashFn(...args);
     if (cache.has(key)) {
       return cache.get(key);

@@ -35,11 +35,11 @@ Remember that option values can be ANY js type, except undefined/null.
     }
   }
 */
-function topNCategories(colSchema, summary, N) {
+function topNCategories(colSchema: any, summary: any, N: any) {
   /* return top N categories by occurrences in the data */
   const { categories: allCategories } = colSchema;
   const counts = allCategories.map(
-    (cat) => summary.categoryCounts.get(cat) ?? 0
+    (cat: any) => summary.categoryCounts.get(cat) ?? 0
   );
 
   if (allCategories.length <= N) {
@@ -47,7 +47,7 @@ function topNCategories(colSchema, summary, N) {
   }
 
   const sortIndex = fillRange(new Array(allCategories.length)).sort(
-    (a, b) => counts[b] - counts[a]
+    (a: any, b: any) => counts[b] - counts[a]
   );
   const topNindices = new Set(sortIndex.slice(0, N));
 
@@ -62,7 +62,7 @@ function topNCategories(colSchema, summary, N) {
   return [allCategories, _topNCategories, topNCounts];
 }
 
-export function isSelectableCategoryName(schema, name) {
+export function isSelectableCategoryName(schema: any, name: any) {
   const { index } = schema.annotations.obs;
   const colSchema = schema.annotations.obsByName[name];
   return (
@@ -72,7 +72,7 @@ export function isSelectableCategoryName(schema, name) {
   );
 }
 
-export function selectableCategoryNames(schema, names) {
+export function selectableCategoryNames(schema: any, names: any) {
   /*
   return all obs annotation names that are categorical AND have a
   "reasonably" small number of categories AND are not the index column.
@@ -80,11 +80,11 @@ export function selectableCategoryNames(schema, names) {
   If the initial name list not provided, use everything in the schema.
   */
   if (!schema) return [];
-  if (!names) names = schema.annotations.obs.columns.map((c) => c.name);
-  return names.filter((name) => isSelectableCategoryName(schema, name));
+  if (!names) names = schema.annotations.obs.columns.map((c: any) => c.name);
+  return names.filter((name: any) => isSelectableCategoryName(schema, name));
 }
 
-export function createCategorySummaryFromDfCol(dfCol, colSchema) {
+export function createCategorySummaryFromDfCol(dfCol: any, colSchema: any) {
   const N = globals.maxCategoricalOptionsToDisplay;
   const { writable: isUserAnno } = colSchema;
 
@@ -99,7 +99,9 @@ export function createCategorySummaryFromDfCol(dfCol, colSchema) {
     categoryValues,
     categoryValueCounts,
   ] = topNCategories(colSchema, summary, N);
-  const categoryValueIndices = new Map(categoryValues.map((v, i) => [v, i]));
+  const categoryValueIndices = new Map(
+    categoryValues.map((v: any, i: any) => [v, i])
+  );
   const numCategoryValues = categoryValueIndices.size;
   const isTruncated = categoryValues.length < summary.numCategories;
 
@@ -114,11 +116,11 @@ export function createCategorySummaryFromDfCol(dfCol, colSchema) {
   };
 }
 
-export function createCategoricalSelection(names) {
-  return fromEntries(names.map((name) => [name, new Map()]));
+export function createCategoricalSelection(names: any) {
+  return fromEntries(names.map((name: any) => [name, new Map()]));
 }
 
-export function pruneVarDataCache(varData, needed) {
+export function pruneVarDataCache(varData: any, needed: any) {
   /*
   Remove any unneeded columns from the varData dataframe.  Will only
   prune / remove if the total column count exceeds VarDataCacheLowWatermark

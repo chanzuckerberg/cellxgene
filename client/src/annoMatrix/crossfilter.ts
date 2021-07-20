@@ -10,26 +10,31 @@ AnnoMatrix stay in sync:
 import Crossfilter from "../util/typedCrossfilter";
 import { _getColumnSchema } from "./schema";
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
 function _dimensionNameFromDf(field, df) {
   const colNames = df.colIndex.labels();
   return _dimensionName(field, colNames);
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
 function _dimensionName(field, colNames) {
   if (!Array.isArray(colNames)) return `${field}/${colNames}`;
   return `${field}/${colNames.join(":")}`;
 }
 
 export default class AnnoMatrixObsCrossfilter {
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
   constructor(annoMatrix, _obsCrossfilter = null) {
-    this.annoMatrix = annoMatrix;
-    this.obsCrossfilter =
+    (this as any).annoMatrix = annoMatrix;
+    (this as any).obsCrossfilter =
       _obsCrossfilter || new Crossfilter(annoMatrix._cache.obs);
-    this.obsCrossfilter = this.obsCrossfilter.setData(annoMatrix._cache.obs);
+    (this as any).obsCrossfilter = (this as any).obsCrossfilter.setData(
+      annoMatrix._cache.obs
+    );
   }
 
   size() {
-    return this.obsCrossfilter.size();
+    return (this as any).obsCrossfilter.size();
   }
 
   /**
@@ -39,14 +44,23 @@ export default class AnnoMatrixObsCrossfilter {
 
   See API documentation in annoMatrix.js.
   **/
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'colSchema' implicitly has an 'any' type... Remove this comment to see the full error message
   addObsColumn(colSchema, Ctor, value) {
-    const annoMatrix = this.annoMatrix.addObsColumn(colSchema, Ctor, value);
-    const obsCrossfilter = this.obsCrossfilter.setData(annoMatrix._cache.obs);
+    const annoMatrix = (this as any).annoMatrix.addObsColumn(
+      colSchema,
+      Ctor,
+      value
+    );
+    const obsCrossfilter = (this as any).obsCrossfilter.setData(
+      annoMatrix._cache.obs
+    );
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'col' implicitly has an 'any' type.
   dropObsColumn(col) {
-    const annoMatrix = this.annoMatrix.dropObsColumn(col);
+    const annoMatrix = (this as any).annoMatrix.dropObsColumn(col);
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'obsCrossfilter' does not exist on type '... Remove this comment to see the full error message
     let { obsCrossfilter } = this;
     const dimName = _dimensionName("obs", col);
     if (obsCrossfilter.hasDimension(dimName)) {
@@ -55,10 +69,12 @@ export default class AnnoMatrixObsCrossfilter {
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'oldCol' implicitly has an 'any' type.
   renameObsColumn(oldCol, newCol) {
-    const annoMatrix = this.annoMatrix.renameObsColumn(oldCol, newCol);
+    const annoMatrix = (this as any).annoMatrix.renameObsColumn(oldCol, newCol);
     const oldDimName = _dimensionName("obs", oldCol);
     const newDimName = _dimensionName("obs", newCol);
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'obsCrossfilter' does not exist on type '... Remove this comment to see the full error message
     let { obsCrossfilter } = this;
     if (obsCrossfilter.hasDimension(oldDimName)) {
       obsCrossfilter = obsCrossfilter.renameDimension(oldDimName, newDimName);
@@ -66,9 +82,14 @@ export default class AnnoMatrixObsCrossfilter {
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'col' implicitly has an 'any' type.
   addObsAnnoCategory(col, category) {
-    const annoMatrix = this.annoMatrix.addObsAnnoCategory(col, category);
+    const annoMatrix = (this as any).annoMatrix.addObsAnnoCategory(
+      col,
+      category
+    );
     const dimName = _dimensionName("obs", col);
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'obsCrossfilter' does not exist on type '... Remove this comment to see the full error message
     let { obsCrossfilter } = this;
     if (obsCrossfilter.hasDimension(dimName)) {
       obsCrossfilter = obsCrossfilter.delDimension(dimName);
@@ -76,13 +97,15 @@ export default class AnnoMatrixObsCrossfilter {
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'col' implicitly has an 'any' type.
   async removeObsAnnoCategory(col, category, unassignedCategory) {
-    const annoMatrix = await this.annoMatrix.removeObsAnnoCategory(
+    const annoMatrix = await (this as any).annoMatrix.removeObsAnnoCategory(
       col,
       category,
       unassignedCategory
     );
     const dimName = _dimensionName("obs", col);
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'obsCrossfilter' does not exist on type '... Remove this comment to see the full error message
     let { obsCrossfilter } = this;
     if (obsCrossfilter.hasDimension(dimName)) {
       obsCrossfilter = obsCrossfilter.delDimension(dimName);
@@ -90,13 +113,15 @@ export default class AnnoMatrixObsCrossfilter {
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'col' implicitly has an 'any' type.
   async setObsColumnValues(col, rowLabels, value) {
-    const annoMatrix = await this.annoMatrix.setObsColumnValues(
+    const annoMatrix = await (this as any).annoMatrix.setObsColumnValues(
       col,
       rowLabels,
       value
     );
     const dimName = _dimensionName("obs", col);
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'obsCrossfilter' does not exist on type '... Remove this comment to see the full error message
     let { obsCrossfilter } = this;
     if (obsCrossfilter.hasDimension(dimName)) {
       obsCrossfilter = obsCrossfilter.delDimension(dimName);
@@ -104,13 +129,15 @@ export default class AnnoMatrixObsCrossfilter {
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'col' implicitly has an 'any' type.
   async resetObsColumnValues(col, oldValue, newValue) {
-    const annoMatrix = await this.annoMatrix.resetObsColumnValues(
+    const annoMatrix = await (this as any).annoMatrix.resetObsColumnValues(
       col,
       oldValue,
       newValue
     );
     const dimName = _dimensionName("obs", col);
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'obsCrossfilter' does not exist on type '... Remove this comment to see the full error message
     let { obsCrossfilter } = this;
     if (obsCrossfilter.hasDimension(dimName)) {
       obsCrossfilter = obsCrossfilter.delDimension(dimName);
@@ -118,9 +145,13 @@ export default class AnnoMatrixObsCrossfilter {
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'colSchema' implicitly has an 'any' type... Remove this comment to see the full error message
   addEmbedding(colSchema) {
-    const annoMatrix = this.annoMatrix.addEmbedding(colSchema);
-    return new AnnoMatrixObsCrossfilter(annoMatrix, this.obsCrossfilter);
+    const annoMatrix = (this as any).annoMatrix.addEmbedding(colSchema);
+    return new AnnoMatrixObsCrossfilter(
+      annoMatrix,
+      (this as any).obsCrossfilter
+    );
   }
 
   /**
@@ -128,11 +159,15 @@ export default class AnnoMatrixObsCrossfilter {
    * want to stop trackin the selection state, but aren't sure we want to blow the
    * annomatrix cache.
    */
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   dropDimension(field, query) {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Anno... Remove this comment to see the full error message
     const { annoMatrix } = this;
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'obsCrossfilter' does not exist on type '... Remove this comment to see the full error message
     let { obsCrossfilter } = this;
     const keys = annoMatrix
       .getCacheKeys(field, query)
+      // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'k' implicitly has an 'any' type.
       .filter((k) => k !== undefined);
     const dimName = _dimensionName(field, keys);
     if (obsCrossfilter.hasDimension(dimName)) {
@@ -146,8 +181,11 @@ export default class AnnoMatrixObsCrossfilter {
   are just wrappers to lazy create indices.
   **/
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   async select(field, query, spec) {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Anno... Remove this comment to see the full error message
     const { annoMatrix } = this;
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'obsCrossfilter' does not exist on type '... Remove this comment to see the full error message
     let { obsCrossfilter } = this;
 
     if (!annoMatrix?._cache?.[field]) {
@@ -180,55 +218,59 @@ export default class AnnoMatrixObsCrossfilter {
     /*
 		Select all on any dimension in this field.
 		*/
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Anno... Remove this comment to see the full error message
     const { annoMatrix } = this;
-    const currentDims = this.obsCrossfilter.dimensionNames();
+    const currentDims = (this as any).obsCrossfilter.dimensionNames();
+    // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'xfltr' implicitly has an 'any' type.
     const obsCrossfilter = currentDims.reduce((xfltr, dim) => {
       return xfltr.select(dim, { mode: "all" });
-    }, this.obsCrossfilter);
+    }, (this as any).obsCrossfilter);
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
 
   countSelected() {
     /* if no data yet indexed in the crossfilter, just say everything is selected */
-    if (this.obsCrossfilter.size() === 0) return this.annoMatrix.nObs;
-    return this.obsCrossfilter.countSelected();
+    if ((this as any).obsCrossfilter.size() === 0)
+      return (this as any).annoMatrix.nObs;
+    return (this as any).obsCrossfilter.countSelected();
   }
 
   allSelectedMask() {
     /* if no data yet indexed in the crossfilter, just say everything is selected */
     if (
-      this.obsCrossfilter.size() === 0 ||
-      this.obsCrossfilter.dimensionNames().length === 0
+      (this as any).obsCrossfilter.size() === 0 ||
+      (this as any).obsCrossfilter.dimensionNames().length === 0
     ) {
       /* fake the mask */
-      return new Uint8Array(this.annoMatrix.nObs).fill(1);
+      return new Uint8Array((this as any).annoMatrix.nObs).fill(1);
     }
-    return this.obsCrossfilter.allSelectedMask();
+    return (this as any).obsCrossfilter.allSelectedMask();
   }
 
   allSelectedLabels() {
     /* if no data yet indexed in the crossfilter, just say everything is selected */
     if (
-      this.obsCrossfilter.size() === 0 ||
-      this.obsCrossfilter.dimensionNames().length === 0
+      (this as any).obsCrossfilter.size() === 0 ||
+      (this as any).obsCrossfilter.dimensionNames().length === 0
     ) {
-      return this.annoMatrix.rowIndex.labels();
+      return (this as any).annoMatrix.rowIndex.labels();
     }
 
-    const mask = this.obsCrossfilter.allSelectedMask();
-    const index = this.annoMatrix.rowIndex.isubsetMask(mask);
+    const mask = (this as any).obsCrossfilter.allSelectedMask();
+    const index = (this as any).annoMatrix.rowIndex.isubsetMask(mask);
     return index.labels();
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'array' implicitly has an 'any' type.
   fillByIsSelected(array, selectedValue, deselectedValue) {
     /* if no data yet indexed in the crossfilter, just say everything is selected */
     if (
-      this.obsCrossfilter.size() === 0 ||
-      this.obsCrossfilter.dimensionNames().length === 0
+      (this as any).obsCrossfilter.size() === 0 ||
+      (this as any).obsCrossfilter.dimensionNames().length === 0
     ) {
       return array.fill(selectedValue);
     }
-    return this.obsCrossfilter.fillByIsSelected(
+    return (this as any).obsCrossfilter.fillByIsSelected(
       array,
       selectedValue,
       deselectedValue
@@ -239,21 +281,29 @@ export default class AnnoMatrixObsCrossfilter {
    ** Private below
    **/
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
   _addObsCrossfilterDimension(annoMatrix, obsCrossfilter, field, df) {
     if (field === "var") return obsCrossfilter;
     const dimName = _dimensionNameFromDf(field, df);
     const dimParams = this._getObsDimensionParams(field, df);
     obsCrossfilter = obsCrossfilter.setData(annoMatrix._cache.obs);
+    // @ts-expect-error ts-migrate(2488) FIXME: Type 'any[] | undefined' must have a '[Symbol.iter... Remove this comment to see the full error message
     obsCrossfilter = obsCrossfilter.addDimension(dimName, ...dimParams);
     return obsCrossfilter;
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   _getColumnBaseType(field, col) {
     /* Look up the primitive type for this field/col */
-    const colSchema = _getColumnSchema(this.annoMatrix.schema, field, col);
+    const colSchema = _getColumnSchema(
+      (this as any).annoMatrix.schema,
+      field,
+      col
+    );
     return colSchema.type;
   }
 
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   _getObsDimensionParams(field, df) {
     /* return the crossfilter dimensiontype type and params for this field/dataframe */
 

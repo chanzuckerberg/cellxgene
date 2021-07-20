@@ -20,7 +20,7 @@ import {
 import { memoize } from "../../../util/dataframe/util";
 import parseBulkGeneString from "../../../util/parseBulkGeneString";
 
-const renderGene = (fuzzySortResult, { handleClick, modifiers }) => {
+const renderGene = (fuzzySortResult: any, { handleClick, modifiers }: any) => {
   if (!modifiers.matchesPredicate) {
     return null;
   }
@@ -33,8 +33,7 @@ const renderGene = (fuzzySortResult, { handleClick, modifiers }) => {
       disabled={modifiers.disabled}
       data-testid={`suggest-menu-item-${geneName}`}
       key={geneName}
-      onClick={(g) =>
-        /* this fires when user clicks a menu item */
+      onClick={(g: any /* this fires when user clicks a menu item */) =>
         handleClick(g)
       }
       text={geneName}
@@ -42,22 +41,25 @@ const renderGene = (fuzzySortResult, { handleClick, modifiers }) => {
   );
 };
 
-const filterGenes = (query, genes) =>
+const filterGenes = (query: any, genes: any) =>
   /* fires on load, once, and then for each character typed into the input */
   fuzzysort.go(query, genes, {
     limit: 5,
     threshold: -10000, // don't return bad results
   });
 
+type AddGenesState = any;
+
+// @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => {
   return {
-    annoMatrix: state.annoMatrix,
-    userDefinedGenes: state.controls.userDefinedGenes,
-    userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
+    annoMatrix: (state as any).annoMatrix,
+    userDefinedGenes: (state as any).controls.userDefinedGenes,
+    userDefinedGenesLoading: (state as any).controls.userDefinedGenesLoading,
   };
 })
-class AddGenes extends React.Component {
-  constructor(props) {
+class AddGenes extends React.Component<{}, AddGenesState> {
+  constructor(props: {}) {
     super(props);
     this.state = {
       bulkAdd: "",
@@ -69,14 +71,16 @@ class AddGenes extends React.Component {
   }
 
   componentDidMount() {
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
     this.updateState();
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: {}) {
     this.updateState(prevProps);
   }
 
-  handleClick(g) {
+  handleClick(g: any) {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, userDefinedGenes } = this.props;
     const { geneNames } = this.state;
     if (!g) return;
@@ -96,7 +100,7 @@ class AddGenes extends React.Component {
     }
   }
 
-  _genesToUpper = (listGenes) => {
+  _genesToUpper = (listGenes: any) => {
     // Has to be a Map to preserve index
     const upperGenes = new Map();
     for (let i = 0, { length } = listGenes; i < length; i += 1) {
@@ -107,9 +111,10 @@ class AddGenes extends React.Component {
   };
 
   // eslint-disable-next-line react/sort-comp -- memo requires a defined _genesToUpper
-  _memoGenesToUpper = memoize(this._genesToUpper, (arr) => arr);
+  _memoGenesToUpper = memoize(this._genesToUpper, (arr: any) => arr);
 
   handleBulkAddClick = () => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, userDefinedGenes } = this.props;
     const { bulkAdd, geneNames } = this.state;
 
@@ -159,7 +164,8 @@ class AddGenes extends React.Component {
     return undefined;
   };
 
-  async updateState(prevProps) {
+  async updateState(prevProps: any) {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
     const { annoMatrix } = this.props;
     if (!annoMatrix) return;
     if (annoMatrix !== prevProps?.annoMatrix) {
@@ -210,6 +216,7 @@ class AddGenes extends React.Component {
   }
 
   render() {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'userDefinedGenesLoading' does not exist ... Remove this comment to see the full error message
     const { userDefinedGenesLoading } = this.props;
     const { tab, bulkAdd, activeItem, status, geneNames } = this.state;
 
@@ -265,10 +272,12 @@ class AddGenes extends React.Component {
                 this.handleClick(g);
               }}
               initialContent={<MenuItem disabled text="Enter a gene…" />}
+              // @ts-expect-error ts-migrate(2322) FIXME: Type '{ "data-testid": string; }' is not assignabl... Remove this comment to see the full error message
               inputProps={{ "data-testid": "gene-search" }}
               inputValueRenderer={() => {
                 return "";
               }}
+              // @ts-expect-error ts-migrate(2322) FIXME: Type '(query: any, genes: any) => Fuzzysort.Result... Remove this comment to see the full error message
               itemListPredicate={filterGenes}
               onActiveItemChange={(item) => this.setState({ activeItem: item })}
               itemRenderer={renderGene}

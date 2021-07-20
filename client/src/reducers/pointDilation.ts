@@ -3,7 +3,7 @@ const initialState = {
   categoryField: "",
 };
 
-const pointDialation = (state = initialState, action) => {
+const pointDialation = (state = initialState, action: any) => {
   const { metadataField, label: categoryField } = action;
 
   switch (action.type) {

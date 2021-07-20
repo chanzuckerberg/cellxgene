@@ -7,7 +7,7 @@ const GeneSetsUI = (
     isEditingGenesetName: false,
     isAddingGenesToGeneset: false,
   },
-  action
+  action: any
 ) => {
   switch (action.type) {
     /**

@@ -17,7 +17,7 @@ Matrix flatbuffer decoding support.   See fbs/matrix.fbs
 /*
 Decode NetEncoding.TypedArray
 */
-function decodeTypedArray(uType, uValF, inplace = false) {
+function decodeTypedArray(uType: any, uValF: any, inplace = false) {
   if (uType === NetEncoding.TypedArray.NONE) {
     return null;
   }
@@ -48,7 +48,7 @@ Returns: object containing decoded Matrix:
   colIdx: []|null
 }
 */
-export function decodeMatrixFBS(arrayBuffer, inplace = false) {
+export function decodeMatrixFBS(arrayBuffer: any, inplace = false) {
   const bb = new flatbuffers.ByteBuffer(new Uint8Array(arrayBuffer));
   const matrix = NetEncoding.Matrix.getRootAsMatrix(bb);
 
@@ -79,7 +79,7 @@ export function decodeMatrixFBS(arrayBuffer, inplace = false) {
   };
 }
 
-function encodeTypedArray(builder, uType, uData) {
+function encodeTypedArray(builder: any, uType: any, uData: any) {
   const uTypeName = NetEncoding.TypedArray[uType];
   const ArrayType = NetEncoding[uTypeName];
   const dv = ArrayType.createDataVector(builder, uData);
@@ -88,7 +88,7 @@ function encodeTypedArray(builder, uType, uData) {
   return builder.endObject();
 }
 
-export function encodeMatrixFBS(df) {
+export function encodeMatrixFBS(df: any) {
   /*
   encode the dataframe as an FBS Matrix
   */
@@ -99,6 +99,7 @@ export function encodeMatrixFBS(df) {
   }
 
   const shape = df.dims;
+  // @ts-expect-error ts-migrate(2554) FIXME: Expected 0 arguments, but got 1.
   const utf8Encoder = new TextEncoder("utf-8");
   const builder = new flatbuffers.Builder(1024);
 
@@ -107,9 +108,9 @@ export function encodeMatrixFBS(df) {
   let encColumns;
 
   if (shape[0] > 0 && shape[1] > 0) {
-    const columns = df.columns().map((col) => col.asArray());
+    const columns = df.columns().map((col: any) => col.asArray());
 
-    const cols = columns.map((carr) => {
+    const cols = columns.map((carr: any) => {
       let uType;
       let tarr;
       if (isTypedArray(carr)) {
@@ -168,7 +169,7 @@ export function encodeMatrixFBS(df) {
   return builder.asUint8Array();
 }
 
-function promoteTypedArray(o) {
+function promoteTypedArray(o: any) {
   /*
   Decide what internal data type to use for the data returned from
   the server.
@@ -200,7 +201,7 @@ function promoteTypedArray(o) {
   return new TypedArrayCtor(o);
 }
 
-export function matrixFBSToDataframe(arrayBuffers) {
+export function matrixFBSToDataframe(arrayBuffers: any) {
   /*
   Convert array of Matrix FBS to a Dataframe.
 
@@ -216,19 +217,19 @@ export function matrixFBSToDataframe(arrayBuffers) {
     arrayBuffers = [arrayBuffers];
   }
   if (arrayBuffers.length === 0) {
-    return Dataframe.Dataframe.empty();
+    return (Dataframe as any).Dataframe.empty();
   }
 
-  const fbs = arrayBuffers.map((ab) => decodeMatrixFBS(ab, true)); // leave in place
+  const fbs = arrayBuffers.map((ab: any) => decodeMatrixFBS(ab, true)); // leave in place
   /* check that all FBS have same row dimensionality */
   const { nRows } = fbs[0];
-  fbs.forEach((b) => {
+  fbs.forEach((b: any) => {
     if (b.nRows !== nRows)
       throw new Error("FBS with inconsistent dimensionality");
   });
   const columns = fbs
-    .map((fb) =>
-      fb.columns.map((c) => {
+    .map((fb: any) =>
+      fb.columns.map((c: any) => {
         if (isFpTypedArray(c) || Array.isArray(c)) return c;
         return promoteTypedArray(c);
       })
@@ -236,10 +237,13 @@ export function matrixFBSToDataframe(arrayBuffers) {
     .flat();
   // colIdx may be TypedArray or Array
   const colIdx = fbs
-    .map((b) => (Array.isArray(b.colIdx) ? b.colIdx : Array.from(b.colIdx)))
+    .map((b: any) =>
+      Array.isArray(b.colIdx) ? b.colIdx : Array.from(b.colIdx)
+    )
     .flat();
   const nCols = columns.length;
 
+  // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
   const df = new Dataframe([nRows, nCols], columns, null, new KeyIndex(colIdx));
   return df;
 }

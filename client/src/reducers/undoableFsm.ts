@@ -19,12 +19,13 @@ b) compound actions that should be collapsed into a single history change.
 */
 
 const createFsmTransitions = (
-  stashPending,
-  cancelPending,
-  applyPending,
-  skip,
-  clear,
-  save
+  stashPending: any,
+  cancelPending: any,
+  applyPending: any,
+  skip: any,
+  // @ts-expect-error ts-migrate(6133) FIXME: 'clear' is declared but its value is never read.
+  clear: any,
+  save: any
 ) => {
   return [
     /* graph selection brushing */
@@ -45,7 +46,8 @@ const createFsmTransitions = (
       from: "graph brush in progress",
       to: "done",
       /* if current selection is all, cancelPending.  Else, applyPending */
-      action: (fsm, transition, data) =>
+      // @ts-expect-error ts-migrate(6133) FIXME: 'fsm' is declared but its value is never read.
+      action: (fsm: any, transition: any, data: any) =>
         data.state.graphSelection.selection.mode === "all"
           ? cancelPending()
           : applyPending(),
@@ -75,7 +77,8 @@ const createFsmTransitions = (
       from: "graph lasso in progress",
       to: "done",
       /* if current selection is all, cancelPending.  Else, applyPending */
-      action: (fsm, transition, data) =>
+      // @ts-expect-error ts-migrate(6133) FIXME: 'fsm' is declared but its value is never read.
+      action: (fsm: any, transition: any, data: any) =>
         data.state.graphSelection.selection.mode === "all"
           ? cancelPending()
           : applyPending(),

@@ -7,7 +7,7 @@ const ColorsReducer = (
     colorMode: null /* by continuous, by expression */,
     colorAccessor: null /* tissue, Apod */,
   },
-  action
+  action: any
 ) => {
   switch (action.type) {
     case "universe: user color load success": {

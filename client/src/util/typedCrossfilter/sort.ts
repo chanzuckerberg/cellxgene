@@ -10,12 +10,12 @@ import { isTypedArray, isFpTypedArray } from "../typeHelpers";
 /*
 Comparators for float sort.   -Infinity < finite < Infinity < NaN
 */
-function lt(a, b) {
+function lt(a: any, b: any) {
   if (Number.isNaN(b)) return !Number.isNaN(a);
   return a < b;
 }
 
-function gt(a, b) {
+function gt(a: any, b: any) {
   if (Number.isNaN(a)) return !Number.isNaN(b);
   return a > b;
 }
@@ -24,7 +24,7 @@ function gt(a, b) {
 insertion sort, used for small arrays (controlled by SMALL_ARRAY constant)
 */
 const SMALL_ARRAY = 32;
-function insertionsort(a, lo, hi) {
+function insertionsort(a: any, lo: any, hi: any) {
   for (let i = lo + 1; i < hi + 1; i += 1) {
     const x = a[i];
     let j;
@@ -36,7 +36,7 @@ function insertionsort(a, lo, hi) {
   return a;
 }
 
-function insertionsortFloats(a, lo, hi) {
+function insertionsortFloats(a: any, lo: any, hi: any) {
   for (let i = lo + 1; i < hi + 1; i += 1) {
     const x = a[i];
     let j;
@@ -48,7 +48,7 @@ function insertionsortFloats(a, lo, hi) {
   return a;
 }
 
-function insertionsortIndirect(a, s, lo, hi) {
+function insertionsortIndirect(a: any, s: any, lo: any, hi: any) {
   for (let i = lo + 1; i < hi + 1; i += 1) {
     const x = a[i];
     const t = s[x];
@@ -61,7 +61,7 @@ function insertionsortIndirect(a, s, lo, hi) {
   return a;
 }
 
-function insertionsortFloatsIndirect(a, s, lo, hi) {
+function insertionsortFloatsIndirect(a: any, s: any, lo: any, hi: any) {
   for (let i = lo + 1; i < hi + 1; i += 1) {
     const x = a[i];
     const t = s[x];
@@ -77,7 +77,7 @@ function insertionsortFloatsIndirect(a, s, lo, hi) {
 /*
 Quicksort - used for larger arrays
 */
-function quicksort(a, lo, hi) {
+function quicksort(a: any, lo: any, hi: any) {
   if (hi - lo < SMALL_ARRAY) {
     return insertionsort(a, lo, hi);
   }
@@ -107,7 +107,7 @@ function quicksort(a, lo, hi) {
   return a;
 }
 
-function quicksortFloats(a, lo, hi) {
+function quicksortFloats(a: any, lo: any, hi: any) {
   if (hi - lo < SMALL_ARRAY) {
     return insertionsortFloats(a, lo, hi);
   }
@@ -137,7 +137,7 @@ function quicksortFloats(a, lo, hi) {
   return a;
 }
 
-function quicksortIndirect(a, s, lo, hi) {
+function quicksortIndirect(a: any, s: any, lo: any, hi: any) {
   if (hi - lo < SMALL_ARRAY) {
     return insertionsortIndirect(a, s, lo, hi);
   }
@@ -168,7 +168,7 @@ function quicksortIndirect(a, s, lo, hi) {
   return a;
 }
 
-function quicksortFloatsIndirect(a, s, lo, hi) {
+function quicksortFloatsIndirect(a: any, s: any, lo: any, hi: any) {
   if (hi - lo < SMALL_ARRAY) {
     return insertionsortFloatsIndirect(a, s, lo, hi);
   }
@@ -203,7 +203,7 @@ function quicksortFloatsIndirect(a, s, lo, hi) {
 Convenience wrappers, handling optimization paths and default
 handlers for NaN comparisons.  Sorts in place.
 */
-export function sortArray(arr) {
+export function sortArray(arr: any) {
   if (Array.isArray(arr)) {
     return quicksort(arr, 0, arr.length - 1);
   }
@@ -217,7 +217,7 @@ export function sortArray(arr) {
   throw new Error("sortArray received unsupported object type");
 }
 
-export function sortIndex(index, source) {
+export function sortIndex(index: any, source: any) {
   if (isFpTypedArray(source))
     return quicksortFloatsIndirect(index, source, 0, index.length - 1);
   return quicksortIndirect(index, source, 0, index.length - 1);
@@ -234,7 +234,12 @@ export function sortIndex(index, source) {
 //    C++: lower_bound()
 //    Python: bisect.bisect_left()
 //
-function lowerBoundNonFloat(valueArray, value, first, last) {
+function lowerBoundNonFloat(
+  valueArray: any,
+  value: any,
+  first: any,
+  last: any
+) {
   let lfirst = first;
   let llast = last;
   // this is just a binary search
@@ -254,7 +259,7 @@ function lowerBoundNonFloat(valueArray, value, first, last) {
 // If the underlying array is a Float32Array or Float64Array, will enforce
 // the ordering -Infinity < finite < Infinity < NaN.
 //
-function lowerBoundFloat(valueArray, value, first, last) {
+function lowerBoundFloat(valueArray: any, value: any, first: any, last: any) {
   let lfirst = first;
   let llast = last;
   // this is just a binary search
@@ -269,7 +274,7 @@ function lowerBoundFloat(valueArray, value, first, last) {
   return lfirst;
 }
 
-export function lowerBound(valueArray, value, first, last) {
+export function lowerBound(valueArray: any, value: any, first: any, last: any) {
   if (isFpTypedArray(valueArray)) {
     return lowerBoundFloat(valueArray, value, first, last);
   }
@@ -279,11 +284,11 @@ export function lowerBound(valueArray, value, first, last) {
 // Inlined performance optimization - used to indirect through a sort map.
 //
 function lowerBoundNonFloatIndirect(
-  valueArray,
-  indexArray,
-  value,
-  first,
-  last
+  valueArray: any,
+  indexArray: any,
+  value: any,
+  first: any,
+  last: any
 ) {
   let lfirst = first;
   let llast = last;
@@ -299,7 +304,13 @@ function lowerBoundNonFloatIndirect(
   return lfirst;
 }
 
-function lowerBoundFloatIndirect(valueArray, indexArray, value, first, last) {
+function lowerBoundFloatIndirect(
+  valueArray: any,
+  indexArray: any,
+  value: any,
+  first: any,
+  last: any
+) {
   let lfirst = first;
   let llast = last;
   // this is just a binary search
@@ -314,7 +325,13 @@ function lowerBoundFloatIndirect(valueArray, indexArray, value, first, last) {
   return lfirst;
 }
 
-export function lowerBoundIndirect(valueArray, indexArray, value, first, last) {
+export function lowerBoundIndirect(
+  valueArray: any,
+  indexArray: any,
+  value: any,
+  first: any,
+  last: any
+) {
   if (isFpTypedArray(valueArray)) {
     return lowerBoundFloatIndirect(valueArray, indexArray, value, first, last);
   }
@@ -332,7 +349,12 @@ export function lowerBoundIndirect(valueArray, indexArray, value, first, last) {
 //    C++: upper_bound()
 //    Python: bisect.bisect_right()
 //
-function upperBoundNonFloat(valueArray, value, first, last) {
+function upperBoundNonFloat(
+  valueArray: any,
+  value: any,
+  first: any,
+  last: any
+) {
   let lfirst = first;
   let llast = last;
   // this is just a binary search
@@ -347,7 +369,7 @@ function upperBoundNonFloat(valueArray, value, first, last) {
   return lfirst;
 }
 
-function upperBoundFloat(valueArray, value, first, last) {
+function upperBoundFloat(valueArray: any, value: any, first: any, last: any) {
   let lfirst = first;
   let llast = last;
   // this is just a binary search
@@ -362,7 +384,7 @@ function upperBoundFloat(valueArray, value, first, last) {
   return lfirst;
 }
 
-export function upperBound(valueArray, value, first, last) {
+export function upperBound(valueArray: any, value: any, first: any, last: any) {
   if (isFpTypedArray(valueArray)) {
     return upperBoundFloat(valueArray, value, first, last);
   }
@@ -372,11 +394,11 @@ export function upperBound(valueArray, value, first, last) {
 // Inline performance optimization
 //
 function upperBoundNonFloatIndirect(
-  valueArray,
-  indexArray,
-  value,
-  first,
-  last
+  valueArray: any,
+  indexArray: any,
+  value: any,
+  first: any,
+  last: any
 ) {
   let lfirst = first;
   let llast = last;
@@ -392,7 +414,13 @@ function upperBoundNonFloatIndirect(
   return lfirst;
 }
 
-function upperBoundFloatIndirect(valueArray, indexArray, value, first, last) {
+function upperBoundFloatIndirect(
+  valueArray: any,
+  indexArray: any,
+  value: any,
+  first: any,
+  last: any
+) {
   let lfirst = first;
   let llast = last;
   // this is just a binary search
@@ -407,7 +435,13 @@ function upperBoundFloatIndirect(valueArray, indexArray, value, first, last) {
   return lfirst;
 }
 
-export function upperBoundIndirect(valueArray, indexArray, value, first, last) {
+export function upperBoundIndirect(
+  valueArray: any,
+  indexArray: any,
+  value: any,
+  first: any,
+  last: any
+) {
   if (isFpTypedArray(valueArray)) {
     return upperBoundFloatIndirect(valueArray, indexArray, value, first, last);
   }
@@ -421,7 +455,12 @@ export function upperBoundIndirect(valueArray, indexArray, value, first, last) {
 // The same semantics/behavior as:
 //    C++: binary_search()
 //
-export function binarySearch(valueArray, value, first, last) {
+export function binarySearch(
+  valueArray: any,
+  value: any,
+  first: any,
+  last: any
+) {
   const index = lowerBound(valueArray, value, first, last);
   if (index !== last && value === valueArray[index]) return index;
   return last;

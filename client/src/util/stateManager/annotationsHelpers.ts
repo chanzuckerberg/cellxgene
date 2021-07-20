@@ -17,6 +17,7 @@ In addition, the current state management only allows for
 categorical annotations to be writable.
 */
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
 export function isCategoricalAnnotation(schema, name) {
   /* 
   we treat any string, categorical or boolean as a categorical.
@@ -28,6 +29,7 @@ export function isCategoricalAnnotation(schema, name) {
   return type === "string" || type === "boolean" || type === "categorical";
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
 export function isContinuousAnnotation(schema, name) {
   /*
   Return true/false/undefined
@@ -38,14 +40,17 @@ export function isContinuousAnnotation(schema, name) {
   return !(type === "string" || type === "boolean" || type === "categorical");
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
 function _isUserAnnotation(schema, name) {
   return schema.annotations.obsByName[name]?.writable || false;
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
 export function isUserAnnotation(annoMatrix, name) {
   return _isUserAnnotation(annoMatrix.schema, name);
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'df' implicitly has an 'any' type.
 export function allHaveLabelByMask(df, colName, label, mask) {
   // return true if all rows as indicated by mask have the colname set to label.
   // False if not.
@@ -63,6 +68,7 @@ export function allHaveLabelByMask(df, colName, label, mask) {
 }
 
 const legalCharacters = /^(\w|[ .()-])+$/;
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function annotationNameIsErroneous(name) {
   /*
 	Validate the name - return:

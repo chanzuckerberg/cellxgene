@@ -1,8 +1,9 @@
-function toFilename(name) {
+function toFilename(name: any) {
   return name.replace(/[^a-z0-9.-]+/gi, "-");
 }
 
-async function takeScreenshot(currentTestName, page) {
+// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'takeScreen... Remove this comment to see the full error message
+async function takeScreenshot(currentTestName: any, page: any) {
   const testName = toFilename(currentTestName);
 
   // Take a screenshot at the point of failure

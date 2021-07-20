@@ -11,7 +11,11 @@ Label state default (if missing) is up to the component, but typically true.
   ...
 }
 */
-const CategoricalSelection = (state, action, nextSharedState) => {
+const CategoricalSelection = (
+  state: any,
+  action: any,
+  nextSharedState: any
+) => {
   switch (action.type) {
     case "initial data load complete":
     case "subset to selection":
@@ -19,6 +23,7 @@ const CategoricalSelection = (state, action, nextSharedState) => {
     case "set clip quantiles": {
       const { annoMatrix } = nextSharedState;
       const newState = CH.createCategoricalSelection(
+        // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
         CH.selectableCategoryNames(annoMatrix.schema)
       );
       return newState;

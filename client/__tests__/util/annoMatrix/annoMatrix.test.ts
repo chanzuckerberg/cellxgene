@@ -14,10 +14,11 @@ import { Dataframe } from "../../../src/util/dataframe";
 enableFetchMocks();
 
 describe("AnnoMatrix", () => {
-  let annoMatrix;
+  let annoMatrix: any;
 
   beforeEach(async () => {
-    fetch.resetMocks(); // reset all fetch mocking state
+    (fetch as any).resetMocks(); // reset all fetch mocking state
+    // reset all fetch mocking state
     annoMatrix = new AnnoMatrixLoader(
       serverMocks.baseDataURL,
       serverMocks.schema.schema
@@ -36,7 +37,7 @@ describe("AnnoMatrix", () => {
     });
 
     test("simple single column fetch", async () => {
-      fetch.once(serverMocks.annotationsObs(["name_0"]));
+      (fetch as any).once(serverMocks.annotationsObs(["name_0"]));
 
       const df = await annoMatrix.fetch("obs", "name_0");
       expect(df).toBeInstanceOf(Dataframe);
@@ -45,7 +46,7 @@ describe("AnnoMatrix", () => {
     });
 
     test("simple multi column fetch", async () => {
-      fetch
+      (fetch as any)
         .once(serverMocks.annotationsObs(["name_0"]))
         .once(serverMocks.annotationsObs(["n_genes"]));
 
@@ -55,9 +56,11 @@ describe("AnnoMatrix", () => {
     });
 
     describe("fetch from field", () => {
-      const getLastTwo = async (field) => {
+      const getLastTwo = async (field: any) => {
         const columnNames = annoMatrix.getMatrixColumns(field).slice(-2);
-        fetch.mockResponses(...columnNames.map(() => serverMocks.responder));
+        (fetch as any).mockResponses(
+          ...columnNames.map(() => serverMocks.responder)
+        );
         await expect(
           annoMatrix.fetch(field, columnNames)
         ).resolves.toBeInstanceOf(Dataframe);
@@ -70,19 +73,19 @@ describe("AnnoMatrix", () => {
 
     test("fetch - test all query forms", async () => {
       // single string is a column name
-      fetch.once(serverMocks.annotationsObs(["n_genes"]));
+      (fetch as any).once(serverMocks.annotationsObs(["n_genes"]));
       await expect(annoMatrix.fetch("obs", "n_genes")).resolves.toBeInstanceOf(
         Dataframe
       );
 
       // array of column names, expecting n_genes to be cached.
-      fetch.once(serverMocks.annotationsObs(["percent_mito"]));
+      (fetch as any).once(serverMocks.annotationsObs(["percent_mito"]));
       await expect(
         annoMatrix.fetch("obs", ["n_genes", "percent_mito"])
       ).resolves.toBeInstanceOf(Dataframe);
 
       // more complex value filter query, enumerated
-      fetch.once(serverMocks.responder);
+      (fetch as any).once(serverMocks.responder);
       await expect(
         annoMatrix.fetch("X", {
           where: {
@@ -95,7 +98,7 @@ describe("AnnoMatrix", () => {
 
       // more complex value filter query, range
       const varIndex = annoMatrix.schema.annotations.var.index;
-      fetch
+      (fetch as any)
         .once(
           serverMocks.withExpected("/data/var", [[`var:${varIndex}`, "SUMO3"]])
         )
@@ -171,7 +174,7 @@ describe("AnnoMatrix", () => {
       expect(am1.nObs).toEqual(am2.nObs);
       expect(am1.nVar).toEqual(am2.nVar);
 
-      fetch
+      (fetch as any)
         .once(serverMocks.annotationsObs(["n_genes"]))
         .once(serverMocks.annotationsObs(["n_genes"]));
       const ng1 = await am1.fetch("obs", "n_genes");
@@ -185,9 +188,10 @@ describe("AnnoMatrix", () => {
   });
 
   describe("add/drop column", () => {
+    // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'base' implicitly has an 'any' type.
     async function addDrop(base) {
       expect(base.getMatrixColumns("obs")).not.toContain("foo");
-      fetch.mockRejectOnce(new Error("unknown column name"));
+      (fetch as any).mockRejectOnce(new Error("unknown column name"));
       await expect(base.fetch("obs", "foo")).rejects.toThrow(
         "unknown column name"
       );
@@ -212,7 +216,7 @@ describe("AnnoMatrix", () => {
       const am2 = am1.dropObsColumn("foo");
       expect(base.getMatrixColumns("obs")).not.toContain("foo");
       expect(am2.getMatrixColumns("obs")).not.toContain("foo");
-      fetch.mockRejectOnce(new Error("unknown column name"));
+      (fetch as any).mockRejectOnce(new Error("unknown column name"));
       await expect(am2.fetch("obs", "foo")).rejects.toThrow(
         "unknown column name"
       );
@@ -235,14 +239,14 @@ describe("AnnoMatrix", () => {
       const am4 = clip(am3, 0, 1);
       await addDrop(am4);
 
-      fetch.mockResponse(serverMocks.responder);
+      (fetch as any).mockResponse(serverMocks.responder);
 
       await am1.fetch("obs", am1.getMatrixColumns("obs"));
       await am2.fetch("obs", am2.getMatrixColumns("obs"));
       await am3.fetch("obs", am3.getMatrixColumns("obs"));
       await am4.fetch("obs", am4.getMatrixColumns("obs"));
 
-      fetch.resetMocks();
+      (fetch as any).resetMocks();
 
       await addDrop(am1);
       await addDrop(am2);
@@ -252,6 +256,7 @@ describe("AnnoMatrix", () => {
   });
 
   describe("setObsColumnValues", () => {
+    // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'base' implicitly has an 'any' type.
     async function addSetDrop(base) {
       /* add column */
       let am = base.addObsColumn(
@@ -287,7 +292,7 @@ describe("AnnoMatrix", () => {
       );
 
       /* drop column */
-      fetch.mockRejectOnce(new Error("unknown column name"));
+      (fetch as any).mockRejectOnce(new Error("unknown column name"));
       am = am1.dropObsColumn("test");
       await expect(am.fetch("obs", "test")).rejects.toThrow(
         "unknown column name"
@@ -308,7 +313,7 @@ describe("AnnoMatrix", () => {
       const am3 = isubset(annoMatrix, [10, 1, 0, 30, 2]);
       await addSetDrop(am3);
 
-      fetch.mockResponse(serverMocks.responder);
+      (fetch as any).mockResponse(serverMocks.responder);
 
       await am1.fetch("obs", am1.getMatrixColumns("obs"));
       await am2.fetch("obs", am2.getMatrixColumns("obs"));

@@ -6,21 +6,22 @@ import { categoryLabelDisplayStringLongLength } from "../../../globals";
 import calcCentroid from "../../../util/centroid";
 import { createColorQuery } from "../../../util/stateManager/colorHelpers";
 
+// @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
-  annoMatrix: state.annoMatrix,
-  colors: state.colors,
-  layoutChoice: state.layoutChoice,
-  dilatedValue: state.pointDilation.categoryField,
-  categoricalSelection: state.categoricalSelection,
-  showLabels: state.centroidLabels?.showLabels,
-  genesets: state.genesets.genesets,
+  annoMatrix: (state as any).annoMatrix,
+  colors: (state as any).colors,
+  layoutChoice: (state as any).layoutChoice,
+  dilatedValue: (state as any).pointDilation.categoryField,
+  categoricalSelection: (state as any).categoricalSelection,
+  showLabels: (state as any).centroidLabels?.showLabels,
+  genesets: (state as any).genesets.genesets,
 }))
 export default class CentroidLabels extends PureComponent {
-  static watchAsync(props, prevProps) {
+  static watchAsync(props: any, prevProps: any) {
     return !shallowEqual(props.watchProps, prevProps.watchProps);
   }
 
-  fetchAsyncProps = async (props) => {
+  fetchAsyncProps = async (props: any) => {
     const {
       annoMatrix,
       colors,
@@ -30,7 +31,6 @@ export default class CentroidLabels extends PureComponent {
     } = props.watchProps;
     const { schema } = annoMatrix;
     const { colorAccessor } = colors;
-
     const [layoutDf, colorDf] = await this.fetchData();
     let labels;
     if (colorDf) {
@@ -44,10 +44,9 @@ export default class CentroidLabels extends PureComponent {
     } else {
       labels = new Map();
     }
-
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'overlaySetShowing' does not exist on typ... Remove this comment to see the full error message
     const { overlaySetShowing } = this.props;
     overlaySetShowing("centroidLabels", showLabels && labels.size > 0);
-
     return {
       labels,
       colorAccessor,
@@ -55,7 +54,9 @@ export default class CentroidLabels extends PureComponent {
     };
   };
 
-  handleMouseEnter = (e, colorAccessor, label) => {
+  // @ts-expect-error ts-migrate(6133) FIXME: 'e' is declared but its value is never read.
+  handleMouseEnter = (e: any, colorAccessor: any, label: any) => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
     dispatch({
       type: "category value mouse hover start",
@@ -64,7 +65,9 @@ export default class CentroidLabels extends PureComponent {
     });
   };
 
-  handleMouseOut = (e, colorAccessor, label) => {
+  // @ts-expect-error ts-migrate(6133) FIXME: 'e' is declared but its value is never read.
+  handleMouseOut = (e: any, colorAccessor: any, label: any) => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
     dispatch({
       type: "category value mouse hover end",
@@ -74,6 +77,7 @@ export default class CentroidLabels extends PureComponent {
   };
 
   colorByQuery() {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
     const { annoMatrix, colors, genesets } = this.props;
     const { schema } = annoMatrix;
     const { colorMode, colorAccessor } = colors;
@@ -81,6 +85,7 @@ export default class CentroidLabels extends PureComponent {
   }
 
   async fetchData() {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
     const { annoMatrix, layoutChoice } = this.props;
     // fetch all data we need: layout, category
     const promises = [];
@@ -93,21 +98,26 @@ export default class CentroidLabels extends PureComponent {
     } else {
       promises.push(Promise.resolve(null));
     }
-
     return Promise.all(promises);
   }
 
   render() {
     const {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'inverseTransform' does not exist on type... Remove this comment to see the full error message
       inverseTransform,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'dilatedValue' does not exist on type 'Re... Remove this comment to see the full error message
       dilatedValue,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'categoricalSelection' does not exist on ... Remove this comment to see the full error message
       categoricalSelection,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'showLabels' does not exist on type 'Read... Remove this comment to see the full error message
       showLabels,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'colors' does not exist on type 'Readonly... Remove this comment to see the full error message
       colors,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
       annoMatrix,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'layoutChoice' does not exist on type 'Re... Remove this comment to see the full error message
       layoutChoice,
     } = this.props;
-
     return (
       <Async
         watchFn={CentroidLabels.watchAsync}
@@ -124,14 +134,12 @@ export default class CentroidLabels extends PureComponent {
         <Async.Fulfilled>
           {(asyncProps) => {
             if (!showLabels) return null;
-
-            const labelSVGS = [];
+            const labelSVGS: any = [];
             const deselectOpacity = 0.375;
+            // @ts-expect-error ts-migrate(2339) FIXME: Property 'category' does not exist on type 'unknow... Remove this comment to see the full error message
             const { category, colorAccessor, labels } = asyncProps;
-
-            labels.forEach((coords, label) => {
+            labels.forEach((coords: any, label: any) => {
               const selected = category.get(label) ?? true;
-
               // Mirror LSB middle truncation
               let displayLabel = label;
               if (displayLabel.length > categoryLabelDisplayStringLongLength) {
@@ -140,7 +148,6 @@ export default class CentroidLabels extends PureComponent {
                   categoryLabelDisplayStringLongLength / 2
                 )}…${label.slice(-categoryLabelDisplayStringLongLength / 2)}`;
               }
-
               labelSVGS.push(
                 // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events -- the mouse actions for centroid labels do not have a screen reader alternative
                 <Label
@@ -157,7 +164,6 @@ export default class CentroidLabels extends PureComponent {
                 />
               );
             });
-
             return <>{labelSVGS}</>;
           }}
         </Async.Fulfilled>
@@ -176,7 +182,7 @@ const Label = ({
   displayLabel,
   onMouseEnter,
   onMouseOut,
-}) => {
+}: any) => {
   /*
   Render a label at a given coordinate.
   */
@@ -201,9 +207,11 @@ const Label = ({
         textAnchor="middle"
         style={{
           fontSize,
+          // @ts-expect-error ts-migrate(2322) FIXME: Type 'string | null' is not assignable to type 'Fo... Remove this comment to see the full error message
           fontWeight,
           fill: "black",
           userSelect: "none",
+          // @ts-expect-error ts-migrate(2322) FIXME: Type '{ opacity: any; }' is not assignable to type... Remove this comment to see the full error message
           opacity: { opacity },
         }}
         onMouseEnter={(e) => onMouseEnter(e, colorAccessor, label)}

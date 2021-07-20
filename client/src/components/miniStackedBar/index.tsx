@@ -1,19 +1,28 @@
 import React from "react";
 
 export default class MiniStackedBar extends React.PureComponent {
-  constructor(props) {
+  canvasRef: any;
+
+  constructor(props: any) {
     super(props);
     this.canvasRef = React.createRef();
   }
 
   drawStacks = () => {
     const {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'domainValues' does not exist on type 'Re... Remove this comment to see the full error message
       domainValues,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'scale' does not exist on type 'Readonly<... Remove this comment to see the full error message
       scale,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'domain' does not exist on type 'Readonly... Remove this comment to see the full error message
       domain,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorTable' does not exist on type 'Read... Remove this comment to see the full error message
       colorTable,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'occupancy' does not exist on type 'Reado... Remove this comment to see the full error message
       occupancy,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'width' does not exist on type 'Readonly<... Remove this comment to see the full error message
       width,
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'height' does not exist on type 'Readonly... Remove this comment to see the full error message
       height,
     } = this.props;
 
@@ -42,7 +51,8 @@ export default class MiniStackedBar extends React.PureComponent {
     }
   };
 
-  componentDidUpdate = (prevProps) => {
+  componentDidUpdate = (prevProps: any) => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'occupancy' does not exist on type 'Reado... Remove this comment to see the full error message
     const { occupancy } = this.props;
     if (occupancy !== prevProps.occupancy) this.drawStacks();
   };
@@ -52,7 +62,9 @@ export default class MiniStackedBar extends React.PureComponent {
   };
 
   render() {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'width' does not exist on type 'Readonly<... Remove this comment to see the full error message
     const { width, height } = this.props;
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'canvas' does not exist on type 'MiniStac... Remove this comment to see the full error message
     const { canvas } = this;
     if (canvas) canvas.getContext("2d").clearRect(0, 0, width, height);
 

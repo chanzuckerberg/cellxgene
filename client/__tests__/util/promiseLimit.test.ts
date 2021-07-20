@@ -1,7 +1,7 @@
 import PromiseLimit from "../../src/util/promiseLimit";
 import { range } from "../../src/util/range";
 
-const delay = (t) => new Promise((resolve) => setTimeout(resolve, t));
+const delay = (t: any) => new Promise((resolve) => setTimeout(resolve, t));
 
 describe("PromiseLimit", () => {
   test("simple evaluation, concurrency 1", async () => {
@@ -51,7 +51,8 @@ describe("PromiseLimit", () => {
       running -= 1;
     };
 
-    await Promise.all(range(10).map((i) => plimit.add(() => callback(i))));
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
+    await Promise.all(range(10).map((i: any) => plimit.add(() => callback(i))));
 
     expect(maxRunning).toEqual(2);
   });

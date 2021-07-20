@@ -1,3 +1,4 @@
+// @ts-expect-error ts-migrate(1208) FIXME: 'globalSetup.ts' cannot be compiled under '--isola... Remove this comment to see the full error message
 const {
   SecretsManagerClient,
   GetSecretValueCommand,

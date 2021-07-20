@@ -22,6 +22,7 @@ rangeFill(array, start, step) -> array
 
 */
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'arr' implicitly has an 'any' type.
 function _doFill(arr, start, step, count) {
   for (let idx = 0, val = start; idx < count; idx += 1, val += step) {
     arr[idx] = val;
@@ -29,10 +30,12 @@ function _doFill(arr, start, step, count) {
   return arr;
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'arr' implicitly has an 'any' type.
 export function rangeFill(arr, start = 0, step = 1) {
   return _doFill(arr, start, step, arr.length);
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'start' implicitly has an 'any' type.
 export function range(start, stop, step) {
   if (start === undefined) return [];
   if (stop === undefined) {
@@ -44,7 +47,10 @@ export function range(start, stop, step) {
   return _doFill(new Array(len), start, step, len);
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'start' implicitly has an 'any' type.
 export function linspace(start, stop, nsteps) {
+  // @ts-expect-error ts-migrate(2363) FIXME: The right-hand side of an arithmetic operation mus... Remove this comment to see the full error message
   const delta = (stop - start) / (nsteps - 1).toFixed();
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
   return range(0, nsteps, 1).map((i) => start + i * delta);
 }

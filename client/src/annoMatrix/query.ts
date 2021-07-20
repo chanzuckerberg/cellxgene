@@ -10,7 +10,7 @@ import { _dubEncURIComp } from "./fetchHelpers";
  * @param {object | string} query - the query
  * @returns {object | string} - the normalized query
  */
-export function _queryValidate(query) {
+export function _queryValidate(query: any) {
   if (typeof query !== "object") return query;
 
   if (query.where && query.summarize)
@@ -40,11 +40,11 @@ export function _queryValidate(query) {
   throw new Error("query must specify one of where or summarize");
 }
 
-export function _expectSimpleQuery(query) {
+export function _expectSimpleQuery(query: any) {
   if (typeof query === "object") throw new Error("expected simple query");
 }
 
-export function _expectComplexQuery(query) {
+export function _expectComplexQuery(query: any) {
   if (typeof query !== "object") throw new Error("expected complex query");
 }
 
@@ -55,7 +55,7 @@ export function _expectComplexQuery(query) {
  * @param {string|object} query
  * @returns the key
  */
-export function _queryCacheKey(field, query) {
+export function _queryCacheKey(field: any, query: any) {
   if (typeof query === "object") {
     // complex query
     if (query.where) {
@@ -84,22 +84,22 @@ export function _queryCacheKey(field, query) {
   return `${field}/${query}`;
 }
 
-function _urlEncodeWhereQuery(q) {
+function _urlEncodeWhereQuery(q: any) {
   const { field: queryField, column: queryColumn, value: queryValue } = q;
   return `${_dubEncURIComp(queryField)}:${_dubEncURIComp(
     queryColumn
   )}=${_dubEncURIComp(queryValue)}`;
 }
 
-function _urlEncodeSummarizeQuery(q) {
+function _urlEncodeSummarizeQuery(q: any) {
   const { method, field, column, values } = q;
   const filter = values
-    .map((value) => _urlEncodeWhereQuery({ field, column, value }))
+    .map((value: any) => _urlEncodeWhereQuery({ field, column, value }))
     .join("&");
   return `method=${method}&${filter}`;
 }
 
-export function _urlEncodeComplexQuery(q) {
+export function _urlEncodeComplexQuery(q: any) {
   if (typeof q === "object") {
     if (q.where) {
       return _urlEncodeWhereQuery(q.where);
@@ -111,7 +111,7 @@ export function _urlEncodeComplexQuery(q) {
   throw new Error("Unrecognized complex query type");
 }
 
-export function _urlEncodeLabelQuery(colKey, q) {
+export function _urlEncodeLabelQuery(colKey: any, q: any) {
   if (!colKey) throw new Error("Unsupported query by name");
   if (typeof q !== "string") throw new Error("Query must be a simple label.");
   return `${colKey}=${encodeURIComponent(q)}`;
@@ -120,7 +120,7 @@ export function _urlEncodeLabelQuery(colKey, q) {
 /**
  * Generate the column key the server will send us for this query.
  */
-export function _hashStringValues(arrayOfString) {
+export function _hashStringValues(arrayOfString: any) {
   const hash = sha1(arrayOfString.join(""));
   return hash;
 }

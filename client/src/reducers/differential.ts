@@ -5,7 +5,7 @@ const Differential = (
     celllist1: null,
     celllist2: null,
   },
-  action
+  action: any
 ) => {
   switch (action.type) {
     case "request differential expression started":

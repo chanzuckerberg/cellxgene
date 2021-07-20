@@ -1,4 +1,4 @@
-export default function cascadeReducers(arg) {
+export default function cascadeReducers(arg: any) {
   /*
   Combine a set of cascading reducers into a single reducer.  Cascading
   reducers are reducers which may rely on state computed by another reducer.
@@ -23,7 +23,7 @@ export default function cascadeReducers(arg) {
   */
   const reducers = arg instanceof Map ? arg : new Map(arg);
   const reducerKeys = [...reducers.keys()];
-  return (prevState, action) => {
+  return (prevState: any, action: any) => {
     const nextState = {};
     let stateChange = false;
     for (let i = 0, l = reducerKeys.length; i < l; i += 1) {
@@ -36,6 +36,7 @@ export default function cascadeReducers(arg) {
         nextState,
         prevState
       );
+      // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
       nextState[key] = nextStateForKey;
       stateChange = stateChange || nextStateForKey !== prevStateForKey;
     }

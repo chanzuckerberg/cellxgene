@@ -8,6 +8,6 @@
  * @returns a number
  */
 
-export default function clamp(val, rng) {
+export default function clamp(val: any, rng: any) {
   return Math.max(Math.min(val, rng[1]), rng[0]);
 }

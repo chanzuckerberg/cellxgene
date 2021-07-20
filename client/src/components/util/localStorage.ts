@@ -3,7 +3,7 @@ export const KEYS = {
   LOGIN_PROMPT: "cxg.LOGIN_PROMPT",
 };
 
-export function storageGet(key, defaultValue = null) {
+export function storageGet(key: any, defaultValue = null) {
   try {
     const val = window.localStorage.getItem(key);
     if (val === null) return defaultValue;
@@ -13,7 +13,7 @@ export function storageGet(key, defaultValue = null) {
   }
 }
 
-export function storageSet(key, value) {
+export function storageSet(key: any, value: any) {
   try {
     window.localStorage.setItem(key, value);
   } catch {

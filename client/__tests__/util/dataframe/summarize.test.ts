@@ -1,6 +1,6 @@
 import * as Dataframe from "../../../src/util/dataframe";
 
-function float32Conversion(f) {
+function float32Conversion(f: any) {
   return new Float32Array([f])[0];
 }
 
@@ -30,6 +30,7 @@ describe("Dataframe column summary", () => {
         [1],
       ],
       null,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex([
         "name",
         "nameString",
@@ -106,6 +107,7 @@ describe("Dataframe column summary", () => {
         [1, false, "0"],
       ],
       null,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex([
         "name",
         "nameString",
@@ -174,6 +176,7 @@ describe("Dataframe column summary", () => {
       expect.objectContaining({
         categorical: true,
         categories: expect.arrayContaining([1, false, "0"]),
+        // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
         categoryCounts: new Map([
           [1, 1],
           [false, 1],
@@ -201,6 +204,7 @@ describe("Dataframe column summary", () => {
         [1, false, "0", "0"],
       ],
       null,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex([
         "name",
         "nameString",
@@ -269,6 +273,7 @@ describe("Dataframe column summary", () => {
       expect.objectContaining({
         categorical: true,
         categories: expect.arrayContaining([1, false, "0"]),
+        // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
         categoryCounts: new Map([
           [1, 1],
           [false, 1],

@@ -10,7 +10,7 @@ import Gene from "./gene";
 import { postUserErrorToast } from "../framework/toasters";
 import actions from "../../actions";
 
-const usePrevious = (value) => {
+const usePrevious = (value: any) => {
   const ref = useRef();
   useEffect(() => {
     ref.current = value;
@@ -28,18 +28,20 @@ function QuickGene() {
   const { annoMatrix, userDefinedGenes, userDefinedGenesLoading } = useSelector(
     (state) => {
       return {
-        annoMatrix: state.annoMatrix,
-        userDefinedGenes: state.controls.userDefinedGenes,
-        userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
+        annoMatrix: (state as any).annoMatrix,
+        userDefinedGenes: (state as any).controls.userDefinedGenes,
+        userDefinedGenesLoading: (state as any).controls
+          .userDefinedGenesLoading,
       };
     }
   );
 
   const prevProps = usePrevious({ annoMatrix });
 
+  // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '() => Promise<void>' is not assi... Remove this comment to see the full error message
   useEffect(async () => {
     if (!annoMatrix) return;
-    if (annoMatrix !== prevProps?.annoMatrix) {
+    if (annoMatrix !== (prevProps as any)?.annoMatrix) {
       const { schema } = annoMatrix;
       const varIndex = schema.annotations.var.index;
 
@@ -57,7 +59,10 @@ function QuickGene() {
 
   const handleExpand = () => setIsExpanded(!isExpanded);
 
-  const renderGene = (fuzzySortResult, { handleClick, modifiers }) => {
+  const renderGene = (
+    fuzzySortResult: any,
+    { handleClick, modifiers }: any
+  ) => {
     if (!modifiers.matchesPredicate) {
       return null;
     }
@@ -70,8 +75,7 @@ function QuickGene() {
         disabled={modifiers.disabled}
         data-testid={`suggest-menu-item-${geneName}`}
         key={geneName}
-        onClick={(g) =>
-          /* this fires when user clicks a menu item */
+        onClick={(g: any /* this fires when user clicks a menu item */) =>
           handleClick(g)
         }
         text={geneName}
@@ -79,11 +83,12 @@ function QuickGene() {
     );
   };
 
-  const handleClick = (g) => {
+  const handleClick = (g: any) => {
     if (!g) return;
     const gene = g.target;
     if (userDefinedGenes.indexOf(gene) !== -1) {
       postUserErrorToast("That gene already exists");
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     } else if (geneNames.indexOf(gene) === undefined) {
       postUserErrorToast("That doesn't appear to be a valid gene name.");
     } else {
@@ -93,22 +98,23 @@ function QuickGene() {
     }
   };
 
-  const filterGenes = (query, genes) =>
+  const filterGenes = (query: any, genes: any) =>
     /* fires on load, once, and then for each character typed into the input */
     fuzzysort.go(query, genes, {
       limit: 5,
       threshold: -10000, // don't return bad results
     });
 
-  const removeGene = (gene) => () => {
+  const removeGene = (gene: any) => () => {
     dispatch({ type: "clear user defined gene", data: gene });
   };
 
   const QuickGenes = useMemo(() => {
-    return userDefinedGenes.map((gene) => {
+    return userDefinedGenes.map((gene: any) => {
       return (
         <Gene
           key={`quick=${gene}`}
+          // @ts-expect-error ts-migrate(2322) FIXME: Type '{ key: string; gene: any; removeGene: (gene:... Remove this comment to see the full error message
           gene={gene}
           removeGene={removeGene}
           quickGene
@@ -121,6 +127,7 @@ function QuickGene() {
     <div style={{ width: "100%", marginBottom: "16px" }}>
       <H4
         role="menuitem"
+        // @ts-expect-error ts-migrate(2322) FIXME: Type 'string' is not assignable to type 'number | ... Remove this comment to see the full error message
         tabIndex="0"
         data-testclass="quickgene-heading-expand"
         onKeyPress={handleExpand}
@@ -151,6 +158,7 @@ function QuickGene() {
               }}
               initialContent={<MenuItem disabled text="Enter a gene…" />}
               inputProps={{
+                // @ts-expect-error ts-migrate(2322) FIXME: Type '{ "data-testid": string; placeholder: string... Remove this comment to see the full error message
                 "data-testid": "gene-search",
                 placeholder: "Quick Gene Search",
                 leftIcon: IconNames.SEARCH,
@@ -159,6 +167,7 @@ function QuickGene() {
               inputValueRenderer={() => {
                 return "";
               }}
+              // @ts-expect-error ts-migrate(2322) FIXME: Type '(query: any, genes: any) => Fuzzysort.Result... Remove this comment to see the full error message
               itemListPredicate={filterGenes}
               itemRenderer={renderGene}
               items={geneNames || ["No genes"]}

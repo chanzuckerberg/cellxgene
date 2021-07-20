@@ -51,7 +51,12 @@ creates a cache entry of:
 import { _getColumnDimensionNames } from "./schema";
 import { _hashStringValues } from "./query";
 
-export function _whereCacheGet(whereCache, schema, field, query) {
+export function _whereCacheGet(
+  whereCache: any,
+  schema: any,
+  field: any,
+  query: any
+) {
   /* 
 	query will either be an where query (object) or a column name (string).
 
@@ -85,6 +90,7 @@ export function _whereCacheGet(whereCache, schema, field, query) {
   return _getColumnDimensionNames(schema, field, query) ?? [undefined];
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
 export function _whereCacheCreate(field, query, columnLabels) {
   /*
 	Create a new whereCache
@@ -131,10 +137,11 @@ export function _whereCacheCreate(field, query, columnLabels) {
   return {};
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'dst' implicitly has an 'any' type.
 function __mergeQueries(dst, src) {
   for (const [queryField, columnMap] of Object.entries(src)) {
     dst[queryField] = dst[queryField] || new Map();
-    for (const [queryColumn, valueMap] of columnMap) {
+    for (const [queryColumn, valueMap] of columnMap as any) {
       if (!dst[queryField].has(queryColumn))
         dst[queryField].set(queryColumn, new Map());
       for (const [queryValue, columnLabels] of valueMap) {
@@ -144,6 +151,7 @@ function __mergeQueries(dst, src) {
   }
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'dst' implicitly has an 'any' type.
 function __whereCacheMerge(dst, src) {
   /*
 	merge src into dst (modifies dst)
@@ -161,6 +169,7 @@ function __whereCacheMerge(dst, src) {
     dst.summarize = dst.summarize || {};
     for (const [field, method] of Object.entries(src.summarize)) {
       dst.summarize[field] = dst.summarize[field] || {};
+      // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
       for (const [methodName, query] of Object.entries(method)) {
         dst.summarize[field][methodName] =
           dst.summarize[field][methodName] || {};
@@ -171,6 +180,7 @@ function __whereCacheMerge(dst, src) {
   return dst;
 }
 
+// @ts-expect-error ts-migrate(7019) FIXME: Rest parameter 'caches' implicitly has an 'any[]' ... Remove this comment to see the full error message
 export function _whereCacheMerge(...caches) {
   return caches.reduce(__whereCacheMerge, {});
 }

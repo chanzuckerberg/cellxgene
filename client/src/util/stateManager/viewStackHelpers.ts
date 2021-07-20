@@ -38,6 +38,7 @@ Views can be interogated for their type with the following:
 import { clip, isubsetMask, isubset } from "../../annoMatrix";
 import { memoize } from "../dataframe/util";
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
 export function _clipAnnoMatrix(annoMatrix, min, max) {
   /*
   clip the annoMatrix.
@@ -47,6 +48,7 @@ export function _clipAnnoMatrix(annoMatrix, min, max) {
     : clip(annoMatrix, min, max);
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
 export function _userSubsetAnnoMatrix(annoMatrix, mask) {
   /*
   user-requested row subset of annoMatrix, to be added on top of any 
@@ -61,12 +63,14 @@ export function _userSubsetAnnoMatrix(annoMatrix, mask) {
   annoMatrix.userFlags.isUserSubsetView = true;
 
   if (clipRange) {
+    // @ts-expect-error ts-migrate(2556) FIXME: Expected 3 arguments, but got 1 or more.
     annoMatrix = clip(annoMatrix, ...clipRange);
   }
 
   return annoMatrix;
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
 export function _userResetSubsetAnnoMatrix(annoMatrix) {
   /*
   Reset/remove all user-requested subsets.  Do not remove clip or embedding subset.
@@ -85,12 +89,14 @@ export function _userResetSubsetAnnoMatrix(annoMatrix) {
 
   /* re-apply the clip, if any */
   if (clipRange) {
+    // @ts-expect-error ts-migrate(2556) FIXME: Expected 3 arguments, but got 1 or more.
     annoMatrix = clip(annoMatrix, ...clipRange);
   }
 
   return annoMatrix;
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
 export function _setEmbeddingSubset(annoMatrix, embeddingDf) {
   /*
   Set the embedding subset view.  Only create a subset view for the embedding
@@ -124,12 +130,14 @@ export function _setEmbeddingSubset(annoMatrix, embeddingDf) {
 
   /* re-apply clip, if needed */
   if (clipRange) {
+    // @ts-expect-error ts-migrate(2556) FIXME: Expected 3 arguments, but got 1 or more.
     annoMatrix = clip(annoMatrix, ...clipRange);
   }
 
   return annoMatrix;
 }
 
+// @ts-expect-error ts-migrate(6133) FIXME: 'baseRowIndex' is declared but its value is never ... Remove this comment to see the full error message
 function _getEmbeddingRowOffsets(baseRowIndex, embeddingDf) {
   /*
   given a dataframe containing an embedding:
@@ -155,6 +163,7 @@ function _getEmbeddingRowOffsets(baseRowIndex, embeddingDf) {
   return offsets.subarray(0, numOffsets);
 }
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'embeddingDf' implicitly has an 'any' ty... Remove this comment to see the full error message
 export function _getDiscreteCellEmbeddingRowIndex(embeddingDf) {
   const idx = _getEmbeddingRowOffsets(embeddingDf.rowIndex, embeddingDf);
   if (idx === null) return embeddingDf.rowIndex;
@@ -162,9 +171,11 @@ export function _getDiscreteCellEmbeddingRowIndex(embeddingDf) {
 }
 export const getDiscreteCellEmbeddingRowIndex = memoize(
   _getDiscreteCellEmbeddingRowIndex,
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'df' implicitly has an 'any' type.
   (df) => df.__id
 );
 
+// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
 export function getEmbSubsetView(annoMatrix) {
   /* if there is an embedding subset in the view stack, return it.  Falsish if not. */
   while (annoMatrix.isView) {

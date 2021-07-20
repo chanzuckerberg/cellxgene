@@ -11,7 +11,7 @@ import {
 import { makeSortIndex } from "./util";
 
 class NotImplementedError extends Error {
-  constructor(...params) {
+  constructor(...params: any[]) {
     super(...params);
 
     // Maintains proper stack trace for where our error was thrown (only available on V8)
@@ -22,7 +22,13 @@ class NotImplementedError extends Error {
 }
 
 export default class ImmutableTypedCrossfilter {
-  constructor(data, dimensions = {}, selectionCache = {}) {
+  data: any;
+
+  dimensions: any;
+
+  selectionCache: any;
+
+  constructor(data: any, dimensions = {}, selectionCache = {}) {
     /*
     Typically, parameter 'data' is one of:
       - Array of objects/records
@@ -59,7 +65,7 @@ export default class ImmutableTypedCrossfilter {
     return this.data;
   }
 
-  setData(data) {
+  setData(data: any) {
     if (this.data === data) return this;
     // please leave, WIP
     // console.log("...crossfilter set data, will drop cache");
@@ -71,11 +77,11 @@ export default class ImmutableTypedCrossfilter {
     return Object.keys(this.dimensions);
   }
 
-  hasDimension(name) {
+  hasDimension(name: any) {
     return !!this.dimensions[name];
   }
 
-  addDimension(name, type, ...rest) {
+  addDimension(name: any, type: any, ...rest: any[]) {
     /*
     Add a new dimension to this crossfilter, of type DimensionType.
     Remainder of parameters are dimension-type-specific.
@@ -94,6 +100,7 @@ export default class ImmutableTypedCrossfilter {
       id = bitArray.allocDimension();
       bitArray.selectAll(id);
     }
+    // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const DimensionType = DimTypes[type];
     const dim = new DimensionType(name, data, ...rest);
     Object.freeze(dim);
@@ -112,7 +119,7 @@ export default class ImmutableTypedCrossfilter {
     });
   }
 
-  delDimension(name) {
+  delDimension(name: any) {
     const { data } = this;
     const { bitArray } = this.selectionCache;
     const dimensions = { ...this.dimensions };
@@ -132,7 +139,7 @@ export default class ImmutableTypedCrossfilter {
     });
   }
 
-  renameDimension(oldName, newName) {
+  renameDimension(oldName: any, newName: any) {
     const { [oldName]: dim, ...dimensions } = this.dimensions;
     const { data, selectionCache } = this;
     const newDimensions = {
@@ -146,7 +153,7 @@ export default class ImmutableTypedCrossfilter {
     return new ImmutableTypedCrossfilter(data, newDimensions, selectionCache);
   }
 
-  select(name, spec) {
+  select(name: any, spec: any) {
     /*
     select on named dimension, as indicated by `spec`.   Spec is an object
     specifying the selection, and must contain at least a `mode` field.
@@ -174,7 +181,12 @@ export default class ImmutableTypedCrossfilter {
     return new ImmutableTypedCrossfilter(data, dimensions, newSelectionCache);
   }
 
-  static _dimSelnHasUpdated(selectionCache, id, newSeln, oldSeln) {
+  static _dimSelnHasUpdated(
+    selectionCache: any,
+    id: any,
+    newSeln: any,
+    oldSeln: any
+  ) {
     /*
     Selection has updated from oldSeln to newSeln.   Update the
     bit array if it exists.  If not, we will lazy create it when
@@ -208,19 +220,19 @@ export default class ImmutableTypedCrossfilter {
       If sort index exists in the dimension, assume sort ordered ranges.
       */
     if (oldSeln.index) {
-      dels.forEach((interval) =>
+      dels.forEach((interval: any) =>
         bitArray.deselectIndirectFromRange(id, oldSeln.index, interval)
       );
     } else {
-      dels.forEach((interval) => bitArray.deselectFromRange(id, interval));
+      dels.forEach((interval: any) => bitArray.deselectFromRange(id, interval));
     }
 
     if (newSeln.index) {
-      adds.forEach((interval) =>
+      adds.forEach((interval: any) =>
         bitArray.selectIndirectFromRange(id, newSeln.index, interval)
       );
     } else {
-      adds.forEach((interval) => bitArray.selectFromRange(id, interval));
+      adds.forEach((interval: any) => bitArray.selectFromRange(id, interval));
     }
 
     return { bitArray };
@@ -237,7 +249,7 @@ export default class ImmutableTypedCrossfilter {
         const id = bitArray.allocDimension();
         this.dimensions[name].id = id;
         const { ranges, index } = selection;
-        ranges.forEach((range) => {
+        ranges.forEach((range: any) => {
           if (index) {
             bitArray.selectIndirectFromRange(id, index, range);
           } else {
@@ -312,7 +324,7 @@ export default class ImmutableTypedCrossfilter {
     return countSelected;
   }
 
-  isElementSelected(i) {
+  isElementSelected(i: any) {
     /*
     return truthy/falsey if this record is selected on all dimensions
     */
@@ -320,7 +332,7 @@ export default class ImmutableTypedCrossfilter {
     return selectionCache.bitArray.isSelected(i);
   }
 
-  fillByIsSelected(array, selectedValue, deselectedValue) {
+  fillByIsSelected(array: any, selectedValue: any, deselectedValue: any) {
     /*
     fill array with one of two values, based upon selection state.
     */
@@ -345,7 +357,9 @@ for a dimension:
   - name - the dimension name/label.
 */
 class _ImmutableBaseDimension {
-  constructor(name) {
+  name: any;
+
+  constructor(name: any) {
     this.name = name;
   }
 
@@ -353,13 +367,13 @@ class _ImmutableBaseDimension {
     return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
   }
 
-  rename(name) {
+  rename(name: any) {
     const d = this.clone();
     d.name = name;
     return d;
   }
 
-  select(spec) {
+  select(spec: any) {
     const { mode } = spec;
     if (mode === undefined) {
       throw new Error("select spec does not contain 'mode'");
@@ -371,7 +385,11 @@ class _ImmutableBaseDimension {
 }
 
 class ImmutableScalarDimension extends _ImmutableBaseDimension {
-  constructor(name, data, value, ValueArrayType) {
+  index: any;
+
+  value: any;
+
+  constructor(name: any, data: any, value: any, ValueArrayType: any) {
     super(name);
 
     // Three modes - caller can provide a pre-created value array,
@@ -398,7 +416,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
       // only by enumerated dimensions
       array = this._createValueArray(
         data,
-        (i) => value[i],
+        (i: any) => value[i],
         new ValueArrayType(data.length)
       );
     } else {
@@ -413,7 +431,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
   }
 
   // eslint-disable-next-line class-methods-use-this -- needed for polymorphism
-  _createValueArray(data, mapf, array) {
+  _createValueArray(data: any, mapf: any, array: any) {
     // create dimension value array
     const len = data.length;
     const larray = array;
@@ -423,7 +441,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
     return larray;
   }
 
-  select(spec) {
+  select(spec: any) {
     const { mode } = spec;
     const { index } = this;
     switch (mode) {
@@ -440,7 +458,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
     }
   }
 
-  selectExact(spec) {
+  selectExact(spec: any) {
     const { value, index } = this;
     let { values } = spec;
     if (!Array.isArray(values)) {
@@ -459,7 +477,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
     return { ranges, index };
   }
 
-  selectRange(spec) {
+  selectRange(spec: any) {
     const { value, index } = this;
     /* 
     if !inclusive: [lo, hi) else [lo, hi]
@@ -478,11 +496,13 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
 }
 
 class ImmutableEnumDimension extends ImmutableScalarDimension {
-  constructor(name, data, value) {
+  enumIndex: any;
+
+  constructor(name: any, data: any, value: any) {
     super(name, data, value, Uint32Array);
   }
 
-  _createValueArray(data, mapf, array) {
+  _createValueArray(data: any, mapf: any, array: any) {
     const len = data.length;
     const larray = array;
 
@@ -505,7 +525,7 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
     return larray;
   }
 
-  selectExact(spec) {
+  selectExact(spec: any) {
     const { enumIndex } = this;
     let { values } = spec;
     if (!Array.isArray(values)) {
@@ -513,12 +533,13 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
     }
     return super.selectExact({
       mode: spec.mode,
-      values: values.map((v) =>
+      values: values.map((v: any) =>
         binarySearch(enumIndex, v, 0, enumIndex.length)
       ),
     });
   }
 
+  // @ts-expect-error ts-migrate(2416) FIXME: Property 'selectRange' in type 'ImmutableEnumDimen... Remove this comment to see the full error message
   // eslint-disable-next-line class-methods-use-this -- enables polymorphism
   selectRange() {
     throw new Error("range selection unsupported on Enumerated dimension");
@@ -526,7 +547,15 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
 }
 
 class ImmutableSpatialDimension extends _ImmutableBaseDimension {
-  constructor(name, data, X, Y) {
+  X: any;
+
+  Xindex: any;
+
+  Y: any;
+
+  Yindex: any;
+
+  constructor(name: any, data: any, X: any, Y: any) {
     super(name);
 
     if (X.length !== Y.length && X.length !== data.length) {
@@ -541,7 +570,7 @@ class ImmutableSpatialDimension extends _ImmutableBaseDimension {
     this.Yindex = makeSortIndex(Y);
   }
 
-  select(spec) {
+  select(spec: any) {
     const { mode } = spec;
     switch (mode) {
       case "all":
@@ -557,7 +586,7 @@ class ImmutableSpatialDimension extends _ImmutableBaseDimension {
     }
   }
 
-  selectWithinRect(spec) {
+  selectWithinRect(spec: any) {
     /*
       { mode: "within-rect", minX: 1, minY: 0, maxX: 3, maxY: 9 }
     */
@@ -590,7 +619,7 @@ class ImmutableSpatialDimension extends _ImmutableBaseDimension {
     * then the polygon test is applied
   */
 
-  selectWithinPolygon(spec) {
+  selectWithinPolygon(spec: any) {
     /*
       { mode: "within-polygon", polygon: [ [x0, y0], ... ] }
     */
@@ -645,7 +674,7 @@ export const DimTypes = {
   spatial: ImmutableSpatialDimension,
 };
 
-function isArrayOrTypedArray(x) {
+function isArrayOrTypedArray(x: any) {
   return (
     Array.isArray(x) ||
     (ArrayBuffer.isView(x) &&
@@ -654,7 +683,7 @@ function isArrayOrTypedArray(x) {
 }
 
 /* return bounding box of the polygon */
-function polygonBoundingBox(polygon) {
+function polygonBoundingBox(polygon: any) {
   let minX = Number.MAX_VALUE;
   let minY = Number.MAX_VALUE;
   let maxX = Number.MIN_VALUE;
@@ -678,7 +707,7 @@ function polygonBoundingBox(polygon) {
  *  @param {float} y - point y coordinate
  *  @type {boolean}
  */
-function withinPolygon(polygon, x, y) {
+function withinPolygon(polygon: any, x: any, y: any) {
   const n = polygon.length;
   let p = polygon[n - 1];
   let x0 = p[0];

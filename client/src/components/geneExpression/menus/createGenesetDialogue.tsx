@@ -7,15 +7,18 @@ import { Tooltip2 } from "@blueprintjs/popover2";
 import LabelInput from "../../labelInput";
 import actions from "../../../actions";
 
+type State = any;
+
+// @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
-  annotations: state.annotations,
-  schema: state.annoMatrix?.schema,
-  obsCrossfilter: state.obsCrossfilter,
-  genesets: state.genesets.genesets,
-  genesetsUI: state.genesetsUI,
+  annotations: (state as any).annotations,
+  schema: (state as any).annoMatrix?.schema,
+  obsCrossfilter: (state as any).obsCrossfilter,
+  genesets: (state as any).genesets.genesets,
+  genesetsUI: (state as any).genesetsUI,
 }))
-class CreateGenesetDialogue extends React.PureComponent {
-  constructor(props) {
+class CreateGenesetDialogue extends React.PureComponent<{}, State> {
+  constructor(props: {}) {
     super(props);
     this.state = {
       genesetName: "",
@@ -24,7 +27,8 @@ class CreateGenesetDialogue extends React.PureComponent {
     };
   }
 
-  disableCreateGenesetMode = (e) => {
+  disableCreateGenesetMode = (e: any) => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
     this.setState({
       genesetName: "",
@@ -38,33 +42,30 @@ class CreateGenesetDialogue extends React.PureComponent {
     if (e) e.preventDefault();
   };
 
-  createGeneset = (e) => {
+  createGeneset = (e: any) => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
     const {
       genesetName,
       genesToPopulateGeneset,
       genesetDescription,
     } = this.state;
-
     dispatch({
       type: "geneset: create",
       genesetName: genesetName.trim(),
       genesetDescription,
     });
     if (genesToPopulateGeneset) {
-      const genesTmpHardcodedFormat = [];
-
+      const genesTmpHardcodedFormat: any = [];
       const genesArrayFromString = pull(
         uniq(genesToPopulateGeneset.split(/[ ,]+/)),
         ""
       );
-
       genesArrayFromString.forEach((_gene) => {
         genesTmpHardcodedFormat.push({
           geneSymbol: _gene,
         });
       });
-
       dispatch(actions.genesetAddGenes(genesetName, genesTmpHardcodedFormat));
     }
     dispatch({
@@ -81,34 +82,34 @@ class CreateGenesetDialogue extends React.PureComponent {
     return false;
   };
 
-  handleChange = (e) => {
+  handleChange = (e: any) => {
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'genesets' does not exist on type 'Readon... Remove this comment to see the full error message
     const { genesets } = this.props;
     this.setState({ genesetName: e });
     this.validate(e, genesets);
   };
 
-  handleGenesetInputChange = (e) => {
+  handleGenesetInputChange = (e: any) => {
     this.setState({ genesToPopulateGeneset: e });
   };
 
-  handleDescriptionInputChange = (e) => {
+  handleDescriptionInputChange = (e: any) => {
     this.setState({ genesetDescription: e });
   };
 
-  instruction = (genesetName, genesets) => {
+  instruction = (genesetName: any, genesets: any) => {
     return genesets.has(genesetName)
       ? "Gene set name must be unique."
       : "New, unique gene set name";
   };
 
-  validate = (genesetName, genesets) => {
+  validate = (genesetName: any, genesets: any) => {
     if (genesets.has(genesetName)) {
       this.setState({
         nameErrorMessage: "There is already a geneset with that name",
       });
       return false;
     }
-
     if (
       genesetName.length > 1 &&
       // eslint-disable-next-line no-control-regex -- unicode 0-31 127-65535
@@ -128,8 +129,8 @@ class CreateGenesetDialogue extends React.PureComponent {
 
   render() {
     const { genesetName, nameErrorMessage } = this.state;
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'genesetsUI' does not exist on type 'Read... Remove this comment to see the full error message
     const { genesetsUI, genesets } = this.props;
-
     return (
       <>
         <Dialog
@@ -147,6 +148,7 @@ class CreateGenesetDialogue extends React.PureComponent {
               <div style={{ marginBottom: 20 }}>
                 <p>{this.instruction(genesetName, genesets)}</p>
                 <LabelInput
+                  // @ts-expect-error ts-migrate(2322) FIXME: Type '{ onChange: (e: any) => void; inputProps: { ... Remove this comment to see the full error message
                   onChange={this.handleChange}
                   inputProps={{
                     "data-testid": "create-geneset-input",
@@ -171,6 +173,7 @@ class CreateGenesetDialogue extends React.PureComponent {
                   gene set
                 </p>
                 <LabelInput
+                  // @ts-expect-error ts-migrate(2322) FIXME: Type '{ onChange: (e: any) => void; inputProps: { ... Remove this comment to see the full error message
                   onChange={this.handleDescriptionInputChange}
                   inputProps={{
                     "data-testid": "add-geneset-description",
@@ -186,6 +189,7 @@ class CreateGenesetDialogue extends React.PureComponent {
                   gene set
                 </p>
                 <LabelInput
+                  // @ts-expect-error ts-migrate(2322) FIXME: Type '{ onChange: (e: any) => void; inputProps: { ... Remove this comment to see the full error message
                   onChange={this.handleGenesetInputChange}
                   inputProps={{
                     "data-testid": "add-genes",

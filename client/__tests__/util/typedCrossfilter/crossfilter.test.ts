@@ -126,7 +126,7 @@ const someData = [
   },
 ];
 
-let payments = null;
+let payments: any = null;
 beforeEach(() => {
   payments = new Crossfilter(someData);
 });
@@ -138,7 +138,12 @@ describe("ImmutableTypedCrossfilter", () => {
     expect(payments.all()).toEqual(someData);
 
     const p = payments
-      .addDimension("quantity", "scalar", (i, d) => d[i].quantity, Int32Array)
+      .addDimension(
+        "quantity",
+        "scalar",
+        (i: any, d: any) => d[i].quantity,
+        Int32Array
+      )
       .select("quantity", { mode: "all" });
     expect(p).toBeDefined();
     expect(p.all()).toEqual(someData);
@@ -158,7 +163,7 @@ describe("ImmutableTypedCrossfilter", () => {
     const p2 = payments.addDimension(
       "quantity",
       "scalar",
-      (i, data) => data[i].quantity,
+      (i: any, data: any) => data[i].quantity,
       Int32Array
     );
 
@@ -175,10 +180,20 @@ describe("ImmutableTypedCrossfilter", () => {
 
   test("select all and none", () => {
     let p = payments
-      .addDimension("quantity", "scalar", (i, d) => d[i].quantity, Int32Array)
-      .addDimension("tip", "scalar", (i, d) => d[i].tip, Float32Array)
-      .addDimension("total", "scalar", (i, d) => d[i].total, Float32Array)
-      .addDimension("type", "enum", (i, d) => d[i].type);
+      .addDimension(
+        "quantity",
+        "scalar",
+        (i: any, d: any) => d[i].quantity,
+        Int32Array
+      )
+      .addDimension("tip", "scalar", (i: any, d: any) => d[i].tip, Float32Array)
+      .addDimension(
+        "total",
+        "scalar",
+        (i: any, d: any) => d[i].total,
+        Float32Array
+      )
+      .addDimension("type", "enum", (i: any, d: any) => d[i].type);
     expect(p).toBeDefined();
 
     /* expect all records to be selected - default init state */
@@ -230,11 +245,21 @@ describe("ImmutableTypedCrossfilter", () => {
   });
 
   describe("scalar dimension", () => {
-    let p;
+    let p: any;
     beforeEach(() => {
       p = payments
-        .addDimension("quantity", "scalar", (i, d) => d[i].quantity, Int32Array)
-        .addDimension("tip", "scalar", (i, d) => d[i].tip, Float32Array)
+        .addDimension(
+          "quantity",
+          "scalar",
+          (i: any, d: any) => d[i].quantity,
+          Int32Array
+        )
+        .addDimension(
+          "tip",
+          "scalar",
+          (i: any, d: any) => d[i].tip,
+          Float32Array
+        )
         .select("tip", { mode: "all" });
     });
 
@@ -277,9 +302,9 @@ describe("ImmutableTypedCrossfilter", () => {
   });
 
   describe("enum dimension", () => {
-    let p;
+    let p: any;
     beforeEach(() => {
-      p = payments.addDimension("type", "enum", (i, d) => d[i].type);
+      p = payments.addDimension("type", "enum", (i: any, d: any) => d[i].type);
     });
 
     test("all", () => {
@@ -317,7 +342,7 @@ describe("ImmutableTypedCrossfilter", () => {
   });
 
   describe("spatial dimension", () => {
-    let p;
+    let p: any;
     beforeEach(() => {
       const X = someData.map((r) => r.coords[0]);
       const Y = someData.map((r) => r.coords[1]);
@@ -406,14 +431,19 @@ describe("ImmutableTypedCrossfilter", () => {
   });
 
   describe("non-finite scalars", () => {
-    let p;
+    let p: any;
     beforeEach(() => {
       p = payments
-        .addDimension("quantity", "scalar", (i, d) => d[i].quantity, Int32Array)
+        .addDimension(
+          "quantity",
+          "scalar",
+          (i: any, d: any) => d[i].quantity,
+          Int32Array
+        )
         .addDimension(
           "nonFinite",
           "scalar",
-          (i, d) => d[i].nonFinite,
+          (i: any, d: any) => d[i].nonFinite,
           Float32Array
         )
         .select("quantity", { mode: "all" });
