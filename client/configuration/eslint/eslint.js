@@ -1,8 +1,9 @@
 module.exports = {
   root: true,
-  parser: "babel-eslint",
+  parser: "@typescript-eslint/parser",
+  plugins: ["@typescript-eslint"],
   extends: [
-    "airbnb",
+    "airbnb-typescript",
     "plugin:eslint-comments/recommended",
     "plugin:@blueprintjs/recommended",
     "plugin:compat/recommended",
@@ -32,6 +33,7 @@ module.exports = {
       jsx: true,
       generators: true,
     },
+    project: "./tsconfig.json",
   },
   rules: {
     "react/jsx-no-target-blank": "off",
@@ -69,9 +71,9 @@ module.exports = {
   },
   overrides: [
     {
-      files: ["**/*.test.js"],
+      files: ["**/*.test.(ts|js)"],
       env: {
-        jest: true, // now **/*.test.js files' env has both es6 *and* jest
+        jest: true, // now **/*.test.(ts|js) files' env has both es6 *and* jest
       },
       // Can't extend in overrides: https://github.com/eslint/eslint/issues/8813
       // "extends": ["plugin:jest/recommended"]
