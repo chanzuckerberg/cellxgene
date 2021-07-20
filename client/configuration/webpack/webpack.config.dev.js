@@ -23,7 +23,7 @@ const devConfig = {
   module: {
     rules: [
       {
-        test: /\.jsx?$/,
+        test: /\.(ts|js)x?$/,
         loader: "babel-loader",
         options: babelOptions,
       },

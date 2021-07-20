@@ -6,7 +6,6 @@ import { categoryLabelDisplayStringLongLength } from "../../../globals";
 import calcCentroid from "../../../util/centroid";
 import { createColorQuery } from "../../../util/stateManager/colorHelpers";
 
-export default
 @connect((state) => ({
   annoMatrix: state.annoMatrix,
   colors: state.colors,
@@ -16,7 +15,7 @@ export default
   showLabels: state.centroidLabels?.showLabels,
   genesets: state.genesets.genesets,
 }))
-class CentroidLabels extends PureComponent {
+export default class CentroidLabels extends PureComponent {
   static watchAsync(props, prevProps) {
     return !shallowEqual(props.watchProps, prevProps.watchProps);
   }
