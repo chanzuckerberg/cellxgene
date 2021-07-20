@@ -63,6 +63,7 @@ export default class MiniStackedBar extends React.PureComponent {
           width,
           height,
         }}
+        className="mini-stacked-bar-canvas"
         width={width}
         height={height}
         ref={this.canvasRef}

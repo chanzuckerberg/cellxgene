@@ -502,6 +502,7 @@ class Scatterplot extends React.PureComponent {
             width={width}
             height={height}
             data-testid="scatterplot"
+            className="scatterplot-canvas"
             style={{
               marginLeft: margin.left,
               marginTop: margin.top,

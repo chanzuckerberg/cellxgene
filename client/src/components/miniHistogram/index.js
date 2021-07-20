@@ -78,6 +78,7 @@ export default class MiniHistogram extends React.PureComponent {
             height,
             borderBottom: "solid rgb(230, 230, 230) 0.25px",
           }}
+          className="mini-histo"
           width={width}
           height={height}
           ref={this.canvasRef}
