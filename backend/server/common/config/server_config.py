@@ -28,6 +28,7 @@ class ServerConfig(BaseConfig):
             self.app__force_https = default_config["app"]["force_https"]
             self.app__flask_secret_key = default_config["app"]["flask_secret_key"]
             self.app__generate_cache_control_headers = default_config["app"]["generate_cache_control_headers"]
+            self.app__url_prefix = default_config["app"]["url_prefix"]
 
             self.authentication__type = default_config["authentication"]["type"]
             self.authentication__insecure_test_environment = default_config["authentication"][
@@ -75,6 +76,7 @@ class ServerConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute("app__force_https", bool)
         self.validate_correct_type_of_configuration_attribute("app__flask_secret_key", str)
         self.validate_correct_type_of_configuration_attribute("app__generate_cache_control_headers", bool)
+        self.validate_correct_type_of_configuration_attribute("app__url_prefix", (type(None), str))
 
         if self.app__port:
             try:

@@ -11,6 +11,7 @@ server:
     force_https: false
     flask_secret_key: null
     generate_cache_control_headers: false
+    url_prefix: null
 
   authentication:
     # The authentication types may be "none" or "session"
