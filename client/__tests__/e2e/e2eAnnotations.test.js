@@ -194,6 +194,10 @@ describe.each([
 
     await editGenesetName(editableGenesetName, editText);
     await assertGenesetExists(newGenesetName);
+    await clickOn("undo");
+    await assertGenesetExists(editableGenesetName);
+    await clickOn("redo");
+    await assertGenesetExists(newGenesetName);
   });
   test("delete a geneset", async () => {
     if (config.withSubset) return;
