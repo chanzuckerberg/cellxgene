@@ -174,7 +174,7 @@ describe.each([
 
     expect(genesHTML).toMatchSnapshot();
   });
-  test("create a new geneset", async () => {
+  test("create a new geneset and undo/redo", async () => {
     if (config.withSubset) return;
 
     await setup(config);
@@ -183,6 +183,10 @@ describe.each([
     await assertGenesetDoesNotExist(genesetName);
     await createGeneset(genesetName);
     /* note: as of June 2021, the aria label is in the truncate component which clones the element */
+    await assertGenesetExists(genesetName);
+    await clickOn("undo");
+    await assertGenesetDoesNotExist(genesetName);
+    await clickOn("redo");
     await assertGenesetExists(genesetName);
   });
   test("edit geneset name", async () => {
