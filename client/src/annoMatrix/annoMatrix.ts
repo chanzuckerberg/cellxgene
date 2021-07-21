@@ -281,7 +281,7 @@ export default class AnnoMatrix {
    **/
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
-  // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars -- make sure subclass implements
   addObsAnnoCategory(col, category) {
     /*
     Add a new category value (aka "label") to a writable obs column, and return the new AnnoMatrix.
@@ -299,7 +299,7 @@ export default class AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
-  // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars -- make sure subclass implements
   async removeObsAnnoCategory(col, category, unassignedCategory) {
     /*
     Remove a category value from an obs column, reassign any obs having that value
@@ -321,7 +321,7 @@ export default class AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
-  // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars -- make sure subclass implements
   dropObsColumn(col) {
     /*
     Drop an entire writable column, eg a user-created obs annotation.  Typical use
@@ -338,7 +338,7 @@ export default class AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'colSchema' is declared but its value is never rea... Remove this comment to see the full error message
-  // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars -- make sure subclass implements
   addObsColumn(colSchema, Ctor, value) {
     /*
     Add a new writable OBS annotation column, with the caller-specified schema, initial value
@@ -368,7 +368,7 @@ export default class AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'oldCol' is declared but its value is never read.
-  // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars -- make sure subclass implements
   renameObsColumn(oldCol, newCol) {
     /*
     Rename the obs column 'oldCol' to have name 'newCol' and returns new AnnoMatrix.
@@ -384,7 +384,7 @@ export default class AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
-  // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars -- make sure subclass implements
   async setObsColumnValues(col, obsLabels, value) {
     /*
     Set all obs with label in array 'obsLabels' to have 'value'.  Typical use would be
@@ -403,7 +403,7 @@ export default class AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
-  // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars -- make sure subclass implements
   async resetObsColumnValues(col, oldValue, newValue) {
     /*
     Set by value - all elements in the column with value 'oldValue' are set to 'newValue'.
@@ -421,7 +421,7 @@ export default class AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'colSchema' is declared but its value is never rea... Remove this comment to see the full error message
-  // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars -- make sure subclass implements
   addEmbedding(colSchema) {
     /*
     Add a new obs embedding to the AnnoMatrix, with provided schema.

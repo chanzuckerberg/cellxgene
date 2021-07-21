@@ -1,14 +1,12 @@
 module.exports = {
   root: true,
   parser: "@typescript-eslint/parser",
-  plugins: ["@typescript-eslint"],
   extends: [
     "airbnb-typescript",
     "plugin:eslint-comments/recommended",
     "plugin:@blueprintjs/recommended",
     "plugin:compat/recommended",
     "plugin:prettier/recommended",
-    "prettier",
   ],
   settings: {
     // AbortController is not supported in iOS Safari 10.3, Chrome 61
@@ -39,13 +37,41 @@ module.exports = {
     "react/jsx-no-target-blank": "off",
     "eslint-comments/require-description": ["error"],
     "no-magic-numbers": "off",
+    "@typescript-eslint/no-magic-numbers": "off",
     "no-nested-ternary": "off",
     "func-style": "off",
     "arrow-parens": "off",
     "no-use-before-define": "off",
+    "@typescript-eslint/no-use-before-define": "off",
     "react/jsx-filename-extension": "off",
     "comma-dangle": "off",
+    "@typescript-eslint/comma-dangle": "off",
     "no-underscore-dangle": "off",
+    // Override airbnb config to allow leading underscore
+    // https://github.com/iamturns/eslint-config-airbnb-typescript/blob/master/lib/shared.js#L35
+    "@typescript-eslint/naming-convention": [
+      "error",
+      {
+        selector: "class",
+        format: ["PascalCase"],
+        leadingUnderscore: "allow",
+      },
+      {
+        selector: "function",
+        format: ["camelCase", "PascalCase"],
+        leadingUnderscore: "allowSingleOrDouble",
+      },
+      {
+        selector: "typeLike",
+        format: ["PascalCase"],
+      },
+      {
+        selector: "variable",
+        format: ["camelCase", "PascalCase", "UPPER_CASE"],
+        leadingUnderscore: "allowSingleOrDouble",
+        trailingUnderscore: "allowDouble",
+      },
+    ],
     "implicit-arrow-linebreak": "off",
     "no-console": "off",
     "spaced-comment": ["error", "always", { exceptions: ["*"] }],
@@ -53,6 +79,7 @@ module.exports = {
     "object-curly-newline": ["error", { consistent: true }],
     "react/prop-types": [0],
     "space-before-function-paren": "off",
+    "@typescript-eslint/space-before-function-paren": "off",
     "function-paren-newline": "off",
     "prefer-destructuring": ["error", { object: true, array: false }],
     "import/prefer-default-export": "off",
