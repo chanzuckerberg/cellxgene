@@ -11,7 +11,7 @@ import backend.common.compute.estimate_distribution as estimate_distribution
 from backend.common.colors import convert_anndata_category_colors_to_cxg_category_colors
 from backend.common.constants import Axis, MAX_LAYOUTS, XApproxDistribution
 from backend.server.common.corpora import corpora_get_props_from_anndata
-from backend.common.errors import PrepareError, DatasetAccessError, ConfigurationError
+from backend.common.errors import PrepareError, DatasetAccessError
 from backend.common.utils.type_conversion_utils import get_schema_type_hint_of_array
 from backend.server.data_common.data_adaptor import DataAdaptor
 from backend.common.fbs.matrix import encode_matrix_fbs
