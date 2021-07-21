@@ -25,6 +25,7 @@ from backend.common.utils.data_locator import DataLocator
 from backend.common.errors import DatasetAccessError, RequestException
 from backend.czi_hosted.common.health import health_check
 from backend.common.utils.utils import path_join, Float32JSONEncoder
+from backend.czi_hosted.data_common.dataset_metadata import get_dataset_metadata
 from backend.czi_hosted.data_common.matrix_loader import MatrixDataLoader
 
 webbp = Blueprint("webapp", "backend.czi_hosted.common.web", template_folder="templates")
@@ -111,33 +112,45 @@ def handle_request_exception(error):
 
 
 def get_data_adaptor(url_dataroot=None, dataset=None):
-    config = current_app.app_config
-    server_config = config.server_config
-    dataset_key = None
-    if dataset is None:
-        datapath = server_config.single_dataset__datapath
-    else:
-        dataroot = None
-        for key, dataroot_dict in server_config.multi_dataset__dataroot.items():
-            if dataroot_dict["base_url"] == url_dataroot:
-                dataroot = dataroot_dict["dataroot"]
-                dataset_key = key
-                break
+    app_config = current_app.app_config
+    dataset_metadata_manager = current_app.dataset_metadata_cache_manager
+    dataset_location = dataset_metadata_manager.data_adaptor(
+        cache_key=f"{url_dataroot}/{dataset}",
+        create_data_lambda=get_dataset_metadata,
+        create_data_args={"app_config": app_config}
+    )
 
-        if dataroot is None:
-            raise DatasetAccessError(f"Invalid dataset {url_dataroot}/{dataset}")
-        datapath = path_join(dataroot, dataset)
-        # path_join returns a normalized path.  Therefore it is
-        # sufficient to check that the datapath starts with the
-        # dataroot to determine that the datapath is under the dataroot.
-        if not datapath.startswith(dataroot):
-            raise DatasetAccessError(f"Invalid dataset {url_dataroot}/{dataset}")
+    matrix_cache_manager = current_app.matrix_data_cache_manager
+    return matrix_cache_manager.data_adaptor(
+        cache_key=dataset_location,
+        create_data_lambda=MatrixDataLoader(dataset_location, app_config=app_config).validate_and_open,
+        create_data_args={}
+    )
 
-    if datapath is None:
-        return common_rest.abort_and_log(HTTPStatus.BAD_REQUEST, "Invalid dataset NONE", loglevel=logging.INFO)
 
-    cache_manager = current_app.matrix_data_cache_manager
-    return cache_manager.data_adaptor(dataset_key, datapath, config, dataset)
+""""
+That still doesn't address the issue of how complex this particular function is and 
+the number of independent routes through it (based on config changes). 
+It also spreads the logic of detering the S3 path across two separate modules 
+(get_data_adaptor() uses dataset to make a physical path, and now data_adaptor() does the same thing with 
+indirection via the poral). Super likely this will be a source of future bugs IMHO.
+
+Here is an alternative approach that (I think) solves both:
+key value lru , getter, setter, both update timestamp associated with key. with a garbage collector 
+do caching based on the dataset value
+add a new function which, given a dataset, returns two values: 
+the explorer path (ie, join(dataroot, datapath), 
+and the S3 dataset location. 
+
+Something like: getDatasetLocation(dataset:str) -> (explorer_path: str, S3_path: str)
+All of the config-driven logic and communication with Portal are in that single function. 
+
+This function could even have its own cache to make things simpler (ie, don't rely on the adaptor cache)
+This new function could be called by either get_data_adaptor or the matrix loader (assuming it has its own cache). It makes the code in matrix_loader.py::data_adaptor() more transparent, ie, you could define it as:
+
+def data_adaptor(self, base_url, explorer_dataset_url, S3_dataset_url)
+
+And all of the config-related branching in data_adaptor() gets removed...."""
 
 
 def requires_authentication(func):
@@ -167,7 +180,7 @@ def rest_get_data_adaptor(func):
     return wrapped_function
 
 
-def  dataroot_test_index():
+def dataroot_test_index():
     # the following index page is meant for testing/debugging purposes
     data = '<!doctype html><html lang="en">'
     data += "<head><title>Hosted Cellxgene</title></head>"

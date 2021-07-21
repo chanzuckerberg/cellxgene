@@ -6,7 +6,7 @@ import unittest
 
 from backend.czi_hosted.common.config.app_config import AppConfig
 from backend.common.errors import DatasetAccessError
-from backend.czi_hosted.data_common.matrix_loader import MatrixDataCacheManager
+from backend.czi_hosted.data_common.cache import CacheManager
 from backend.test import FIXTURES_ROOT
 
 
@@ -30,11 +30,11 @@ class MatrixCacheTest(unittest.TestCase):
             with matrix_cache.data_adaptor(None, os.path.join(dirname, str(dataset_index) + ".cxg"), app_config):
                 raise DatasetAccessError("something bad happened")
         except DatasetAccessError:
-            # the MatrixDataCacheManager rethrows the exception, so catch and ignore
+            # the CacheManager rethrows the exception, so catch and ignore
             pass
 
     def get_datasets(self, matrix_cache, dirname):
-        datasets = matrix_cache.datasets
+        datasets = matrix_cache.data
         result = {}
         for k, v in datasets.items():
             # filter out the dirname and the .cxg from the name
@@ -52,7 +52,7 @@ class MatrixCacheTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as dirname:
             self.make_temporay_datasets(dirname, 5)
             app_config = AppConfig()
-            m = MatrixDataCacheManager(max_cached=3, timelimit_s=None)
+            m = CacheManager(max_cached=3, timelimit_s=None)
 
             # should have only dataset 0
             self.use_dataset(m, dirname, app_config, 0)
@@ -92,7 +92,7 @@ class MatrixCacheTest(unittest.TestCase):
             self.make_temporay_datasets(dirname, 2)
 
             app_config = AppConfig()
-            m = MatrixDataCacheManager(max_cached=3, timelimit_s=1)
+            m = CacheManager(max_cached=3, timelimit_s=1)
 
             adaptor = self.use_dataset(m, dirname, app_config, 0)
             adaptor1 = self.use_dataset(m, dirname, app_config, 0)
@@ -114,7 +114,7 @@ class MatrixCacheTest(unittest.TestCase):
             self.make_temporay_datasets(dirname, 1)
 
             app_config = AppConfig()
-            m = MatrixDataCacheManager(max_cached=3, timelimit_s=1)
+            m = CacheManager(max_cached=3, timelimit_s=1)
 
             # use the 0 datasets
             self.use_dataset(m, dirname, app_config, 0)

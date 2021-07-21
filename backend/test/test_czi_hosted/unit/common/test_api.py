@@ -527,7 +527,7 @@ class TestDataLocatorMockApi(BaseTest):
             data_locator__s3__region_name="us-east-1"
         )
         super().setUpClass(cls.config)
-        cls.TEST_DATASET_URL_BASE = "/e/pbmc3k.cxg"
+        cls.TEST_DATASET_URL_BASE = "/e/pbmc3k_v1.cxg"
         cls.TEST_URL_BASE = f"{cls.TEST_DATASET_URL_BASE}/api/v0.2/"
         cls.config.complete_config()
         cls.response_body = json.dumps({
@@ -643,7 +643,7 @@ class TestDataLocatorMockApi(BaseTest):
 
     @patch('backend.czi_hosted.data_common.matrix_loader.requests.get')
     def test_data_locator_defaults_to_name_based_lookup_if_metadata_api_throws_error(self, mock_get):
-        self.TEST_DATASET_URL_BASE = "/e/pbmc3k_v1.cxg"
+        self.TEST_DATASET_URL_BASE = "/e/pbmc3k.cxg"
         self.TEST_URL_BASE = f"{self.TEST_DATASET_URL_BASE}/api/v0.2/"
         response_body = json.dumps({
             "collection_id": "4f098ff4-4a12-446b-a841-91ba3d8e3fa6",
@@ -660,13 +660,13 @@ class TestDataLocatorMockApi(BaseTest):
 
         # check that the metadata api was correctly called for the new (uncached) dataset
         self.assertEqual(mock_get.call_count, 1)
-        self.assertEqual(mock_get._mock_call_args[1]['url'], 'http://api.cellxgene.staging.single-cell.czi.technology/dp/v1/datasets/meta?url=http://localhost:5005/e/pbmc3k_v1.cxg')
+        self.assertEqual(mock_get._mock_call_args[1]['url'], 'http://api.cellxgene.staging.single-cell.czi.technology/dp/v1/datasets/meta?url=http://localhost:5005/e/pbmc3k.cxg')
 
 
         # check schema loads correctly even with metadata api exception
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
-        expected_response_body = {'schema': {'annotations': {'obs': {'columns': [{'name': 'name_0', 'type': 'string', 'writable': False}, {'name': 'n_genes', 'type': 'int32', 'writable': False}, {'name': 'percent_mito', 'type': 'float32', 'writable': False}, {'name': 'n_counts', 'type': 'float32', 'writable': False}, {'name': 'louvain', 'type': 'string', 'writable': False}], 'index': 'name_0'}, 'var': {'columns': [{'name': 'name_0', 'type': 'string', 'writable': False}, {'name': 'n_cells', 'type': 'int32', 'writable': False}], 'index': 'name_0'}}, 'dataframe': {'nObs': 2638, 'nVar': 1838, 'type': 'float32'}, 'layout': {'obs': [{'dims': ['draw_graph_fr_0', 'draw_graph_fr_1'], 'name': 'draw_graph_fr', 'type': 'float32'}, {'dims': ['pca_0', 'pca_1'], 'name': 'pca', 'type': 'float32'}, {'dims': ['tsne_0', 'tsne_1'], 'name': 'tsne', 'type': 'float32'}, {'dims': ['umap_0', 'umap_1'], 'name': 'umap', 'type': 'float32'}]}}}
+        expected_response_body = {'schema': {'annotations': {'obs': {'columns': [{'name': 'name_0', 'type': 'string', 'writable': False}, {'name': 'n_genes', 'type': 'int32', 'writable': False}, {'name': 'percent_mito', 'type': 'float32', 'writable': False}, {'name': 'n_counts', 'type': 'float32', 'writable': False}, {'categories': ['CD4 T cells', 'CD14+ Monocytes', 'B cells', 'CD8 T cells', 'NK cells', 'FCGR3A+ Monocytes', 'Dendritic cells', 'Megakaryocytes'], 'name': 'louvain', 'type': 'categorical', 'writable': False}], 'index': 'name_0'}, 'var': {'columns': [{'name': 'name_0', 'type': 'string', 'writable': False}, {'name': 'n_cells', 'type': 'int32', 'writable': False}], 'index': 'name_0'}}, 'dataframe': {'nObs': 2638, 'nVar': 1838, 'type': 'float32'}, 'layout': {'obs': [{'dims': ['draw_graph_fr_0', 'draw_graph_fr_1'], 'name': 'draw_graph_fr', 'type': 'float32'}, {'dims': ['pca_0', 'pca_1'], 'name': 'pca', 'type': 'float32'}, {'dims': ['tsne_0', 'tsne_1'], 'name': 'tsne', 'type': 'float32'}, {'dims': ['umap_0', 'umap_1'], 'name': 'umap', 'type': 'float32'}]}}}
         self.assertEqual(json.loads(result.data), expected_response_body)
 
 

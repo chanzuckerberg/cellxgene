@@ -11,7 +11,8 @@ from backend.common.utils.data_locator import discover_s3_region_name
 from backend.common.errors import ConfigurationError, DatasetAccessError
 from backend.common.utils.utils import is_port_available, find_available_port, custom_format_warning
 from backend.czi_hosted.compute import diffexp_cxg as diffexp_tiledb
-from backend.czi_hosted.data_common.matrix_loader import MatrixDataCacheManager, MatrixDataLoader, MatrixDataType
+from backend.czi_hosted.data_common.cache import CacheManager
+from backend.czi_hosted.data_common.matrix_loader import MatrixDataLoader
 
 
 class ServerConfig(BaseConfig):
@@ -93,6 +94,9 @@ class ServerConfig(BaseConfig):
 
         # The matrix data cache manager is created during the complete_config and stored here.
         self.matrix_data_cache_manager = None
+
+        # The dataset location cache manager is created during the complete_config and stored here.
+        self.dataset_metadata_cache_manager = None
 
         # The authentication object
         self.auth = None
@@ -244,10 +248,15 @@ class ServerConfig(BaseConfig):
 
         # create the matrix data cache manager:
         if self.matrix_data_cache_manager is None:
-            self.matrix_data_cache_manager = MatrixDataCacheManager(max_cached=1, timelimit_s=None)
+            self.matrix_data_cache_manager = CacheManager(max_cached=1, timelimit_s=None)
+
+        # DatasetLocation cache is not necessary with a single dataset but using for code consistency
+        if self.dataset_metadata_cache_manager is None:
+            self.dataset_metadata_cache_manager = CacheManager(max_cached=1, timelimit_s=None)
 
         # preload this data set
         matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath, app_config=self.app_config)
+
         try:
             matrix_data_loader.pre_load_validation()
         except DatasetAccessError as e:
@@ -330,9 +339,15 @@ class ServerConfig(BaseConfig):
 
         # create the matrix data cache manager:
         if self.matrix_data_cache_manager is None:
-            self.matrix_data_cache_manager = MatrixDataCacheManager(
+            self.matrix_data_cache_manager = CacheManager(
                 max_cached=self.multi_dataset__matrix_cache__max_datasets,
                 timelimit_s=self.multi_dataset__matrix_cache__timelimit_s,
+            )
+        # create the dataset location data cache manager:
+        if self.dataset_metadata_cache_manager is None:
+            self.dataset_metadata_cache_manager = CacheManager(
+                max_cached=400,
+                timelimit_s=600,
             )
 
     def handle_diffexp(self):
