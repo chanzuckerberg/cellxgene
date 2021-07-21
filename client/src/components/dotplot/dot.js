@@ -10,7 +10,8 @@ const Dot = (props) => {
     _geneSymbol,
     _geneIndex,
     rowColumnSize,
-    // dotColorScale,
+    columnColorScale,
+    meanGeneExpression,
   } = props;
 
   const bins = histogramMap.has(categoryValue)
@@ -34,6 +35,7 @@ const Dot = (props) => {
 
   /* TODO(colinmegill) #632 scale between correct dimensions */
   const paddingEquivalentToRowColumnIndexOffset = 8;
+  /* domain is some fraction of the cells expressing, percent as decimal */
   const dotscale = d3
     .scaleLinear()
     .domain([0, 1])
@@ -62,7 +64,7 @@ const Dot = (props) => {
         cx="11"
         cy="-3.5"
         style={{
-          fill: interpolateCool(Math.random()),
+          fill: interpolateCool(columnColorScale(meanGeneExpression)),
           fillOpacity: 1,
           stroke: "none",
         }}

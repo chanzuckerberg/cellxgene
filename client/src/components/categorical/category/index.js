@@ -36,6 +36,7 @@ const LABEL_WIDTH_ANNO = LABEL_WIDTH - ANNO_BUTTON_WIDTH;
   const { metadataField } = ownProps;
   const isUserAnno = schema?.annotations?.obsByName[metadataField]?.writable;
   const categoricalSelection = state.categoricalSelection?.[metadataField];
+  const isDotplotRows = metadataField === state.dotplot.row;
   return {
     colors: state.colors,
     categoricalSelection,
@@ -45,7 +46,8 @@ const LABEL_WIDTH_ANNO = LABEL_WIDTH - ANNO_BUTTON_WIDTH;
     crossfilter: state.obsCrossfilter,
     isUserAnno,
     genesets: state.genesets.genesets,
-    dotplot: state.layoutChoice.dotplot,
+    layoutChoiceIsDotplot: state.layoutChoice.dotplot,
+    isDotplotRows,
   };
 })
 class Category extends React.PureComponent {
@@ -84,9 +86,9 @@ class Category extends React.PureComponent {
   }
 
   handleColorChange = () => {
-    const { dispatch, metadataField, dotplot } = this.props;
+    const { dispatch, metadataField, layoutChoiceIsDotplot } = this.props;
 
-    if (dotplot) {
+    if (layoutChoiceIsDotplot) {
       dispatch({
         type: "set dotplot row",
         data: metadataField,
@@ -229,7 +231,8 @@ class Category extends React.PureComponent {
       colors,
       annoMatrix,
       isUserAnno,
-      dotplot,
+      layoutChoiceIsDotplot,
+      isDotplotRows,
     } = this.props;
 
     const checkboxID = `category-select-${metadataField}`;
@@ -288,7 +291,8 @@ class Category extends React.PureComponent {
                   onCategoryToggleAllClick={handleCategoryToggleAllClick}
                   onCategoryMenuClick={this.handleCategoryClick}
                   onCategoryMenuKeyPress={this.handleCategoryKeyPress}
-                  dotplot={dotplot}
+                  layoutChoiceIsDotplot={layoutChoiceIsDotplot}
+                  isDotplotRows={isDotplotRows}
                 />
               );
             }}
@@ -383,7 +387,8 @@ const CategoryHeader = React.memo(
     onCategoryMenuClick,
     onCategoryMenuKeyPress,
     onCategoryToggleAllClick,
-    dotplot,
+    layoutChoiceIsDotplot,
+    isDotplotRows,
   }) => {
     /*
     Render category name and controls (eg, color-by button).
@@ -482,10 +487,10 @@ const CategoryHeader = React.memo(
               data-testclass="colorby"
               data-testid={`colorby-${metadataField}`}
               onClick={onColorChangeClick}
-              active={isColorAccessor}
-              intent={isColorAccessor ? "primary" : "none"}
+              active={isColorAccessor || isDotplotRows}
+              intent={isColorAccessor || isDotplotRows ? "primary" : "none"}
               disabled={isTruncated}
-              icon={dotplot ? "layout-grid" : "tint"}
+              icon={layoutChoiceIsDotplot ? "layout-grid" : "tint"}
             />
           </Tooltip>
         </div>
@@ -512,7 +517,8 @@ const CategoryRender = React.memo(
     onCategoryMenuClick,
     onCategoryMenuKeyPress,
     onCategoryToggleAllClick,
-    dotplot,
+    layoutChoiceIsDotplot,
+    isDotplotRows,
   }) => {
     /*
     Render the core of the category, including checkboxes, controls, etc.
@@ -557,7 +563,8 @@ const CategoryRender = React.memo(
             onCategoryToggleAllClick={onCategoryToggleAllClick}
             onCategoryMenuClick={onCategoryMenuClick}
             onCategoryMenuKeyPress={onCategoryMenuKeyPress}
-            dotplot={dotplot}
+            layoutChoiceIsDotplot={layoutChoiceIsDotplot}
+            isDotplotRows={isDotplotRows}
           />
         </div>
         <div style={{ marginLeft: 26 }}>

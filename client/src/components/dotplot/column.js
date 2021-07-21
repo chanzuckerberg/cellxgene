@@ -1,7 +1,7 @@
 import React from "react";
 import { connect, shallowEqual } from "react-redux";
 
-// import * as d3 from "d3";
+import * as d3 from "d3";
 
 import memoize from "memoize-one";
 
@@ -140,18 +140,34 @@ class Column extends React.Component {
               const col = colorData.icol(0);
               const range = col.summarize();
 
-              console.log(_geneSymbol, metadataField, categoryData);
-
               const histogramMap = col.histogram(
                 100,
                 [range.min, range.max],
                 groupBy
               );
 
-              // const dotColorScale = d3
-              //   .scaleLinear()
-              //   .domain([range.min, range.max])
-              //   .range([0, 1]);
+              const categories =
+                annoMatrix?.schema?.annotations?.obsByName[metadataField]
+                  ?.categories;
+              const cellCategories = groupBy.asArray();
+              const geneExpressions = col.asArray();
+              let mean;
+              const meanGeneExpressions = {};
+              for (const c of categories) {
+                const arr = [];
+                for (let i = 0; i < geneExpressions.length; i += 1) {
+                  if (cellCategories[i] === c) {
+                    arr.push(geneExpressions[i]);
+                  }
+                }
+                mean = arr.reduce((a, b) => a + b) / arr.length;
+                meanGeneExpressions[c] = mean;
+              }
+
+              const columnColorScale = d3
+                .scaleLinear()
+                .domain(d3.extent(Object.values(meanGeneExpressions)))
+                .range([0, 1]);
 
               return categorySummary.categoryValues.map(
                 (val, _categoryValueIndex) => {
@@ -165,6 +181,8 @@ class Column extends React.Component {
                       _geneIndex={_geneIndex}
                       colorData={colorData}
                       rowColumnSize={rowColumnSize}
+                      columnColorScale={columnColorScale}
+                      meanGeneExpression={meanGeneExpressions[val]}
                     />
                   );
                 }

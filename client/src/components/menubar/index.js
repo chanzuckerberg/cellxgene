@@ -276,7 +276,7 @@ class MenuBar extends React.PureComponent {
             icon="layout-grid"
             onClick={this.handleDotplotToggle}
             active={dotplotEnabled}
-            intent={dotplotEnabled ? "primary" : "none"}
+            intent={dotplotEnabled ? "success" : "none"}
           />
         </Tooltip>
         <Tooltip
