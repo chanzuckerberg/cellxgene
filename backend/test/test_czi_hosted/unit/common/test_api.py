@@ -118,8 +118,8 @@ class EndPoints(BaseTest):
         result = self.client.get(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
 
-# TEMP: Testing count 15 to match hardcoded values for diffexp
-# TODO(#1281): Switch back to dynamic values
+    # TEMP: Testing count 15 to match hardcoded values for diffexp
+    # TODO(#1281): Switch back to dynamic values
     def test_diff_exp(self):
         endpoint = "diffexp/obs"
         url = f"{self.TEST_URL_BASE}{endpoint}"
@@ -133,8 +133,8 @@ class EndPoints(BaseTest):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = json.loads(result.data)
-        self.assertEqual(len(result_data['positive']), 15)
-        self.assertEqual(len(result_data['negative']), 15)
+        self.assertEqual(len(result_data["positive"]), 15)
+        self.assertEqual(len(result_data["negative"]), 15)
 
     def test_diff_exp_indices(self):
         endpoint = "diffexp/obs"
@@ -149,8 +149,8 @@ class EndPoints(BaseTest):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = json.loads(result.data)
-        self.assertEqual(len(result_data['positive']), 15)
-        self.assertEqual(len(result_data['negative']), 15)
+        self.assertEqual(len(result_data["positive"]), 15)
+        self.assertEqual(len(result_data["negative"]), 15)
 
     def test_get_annotations_var_fbs(self):
         endpoint = "annotations/var"
