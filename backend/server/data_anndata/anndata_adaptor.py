@@ -7,10 +7,11 @@ from pandas.core.dtypes.dtypes import CategoricalDtype
 from scipy import sparse
 
 import backend.common.compute.diffexp_generic as diffexp_generic
+import backend.common.compute.estimate_distribution as estimate_distribution
 from backend.common.colors import convert_anndata_category_colors_to_cxg_category_colors
-from backend.common.constants import Axis, MAX_LAYOUTS
+from backend.common.constants import Axis, MAX_LAYOUTS, XApproxDistribution
 from backend.server.common.corpora import corpora_get_props_from_anndata
-from backend.common.errors import PrepareError, DatasetAccessError
+from backend.common.errors import PrepareError, DatasetAccessError, ConfigurationError
 from backend.common.utils.type_conversion_utils import get_schema_type_hint_of_array
 from backend.server.data_common.data_adaptor import DataAdaptor
 from backend.common.fbs.matrix import encode_matrix_fbs
@@ -28,6 +29,7 @@ class AnndataAdaptor(DataAdaptor):
     def __init__(self, data_locator, app_config=None, dataset_config=None):
         super().__init__(data_locator, app_config, dataset_config)
         self.data = None
+        self.X_approx_distribution = None
         self._load_data(data_locator)
         self._validate_and_initialize()
 
@@ -190,6 +192,13 @@ class AnndataAdaptor(DataAdaptor):
         self.gene_count = self.data.shape[1]
         self._create_schema()
 
+        if self.dataset_config.X_approx_distribution == "auto":
+            """Lazy evaluate the heuristic if we are backed."""
+            if not self.data.isbacked:
+                self.X_approx_distribution = estimate_distribution.estimate_approximate_distribution(self.data.X)
+        else:
+            self.X_approx_distribution = self.dataset_config.X_approx_distribution
+
         # heuristic
         n_values = self.data.shape[0] * self.data.shape[1]
         if (n_values > 1e8 and self.server_config.adaptor__anndata_adaptor__backed is True) or (n_values > 5e8):
@@ -309,12 +318,28 @@ class AnndataAdaptor(DataAdaptor):
         return convert_anndata_category_colors_to_cxg_category_colors(self.data)
 
     def get_X_array(self, obs_mask=None, var_mask=None):
+        # H5Py does not support boolean indexing (masks), so convert to integer indexing
+        # when backed (ie, when AnnData is using H5Py indexing)
         if obs_mask is None:
             obs_mask = slice(None)
+        elif self.data.isbacked and obs_mask.dtype == bool:
+            obs_mask = obs_mask.nonzero()[0]
         if var_mask is None:
             var_mask = slice(None)
+        elif self.data.isbacked and var_mask.dtype == bool:
+            var_mask = var_mask.nonzero()[0]
         X = self.data.X[obs_mask, var_mask]
         return X
+
+    def get_X_approx_distribution(self) -> XApproxDistribution:
+        """return the approximate distribution of the X matrix."""
+        if self.X_approx_distribution is None:
+            """Not yet evaluated."""
+            assert(self.dataset_config.X_approx_distribution == "auto")
+            self.data = self.data.to_memory()  # loads data
+            self.X_approx_distribution = estimate_distribution.estimate_approximate_distribution(self.data.X)
+
+        return self.X_approx_distribution
 
     def get_shape(self):
         return self.data.shape
