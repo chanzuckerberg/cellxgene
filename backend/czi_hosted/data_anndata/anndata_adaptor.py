@@ -7,7 +7,6 @@ from pandas.core.dtypes.dtypes import CategoricalDtype
 from scipy import sparse
 
 import backend.common.compute.diffexp_generic as diffexp_generic
-import backend.common.compute.estimate_distribution as estimate_distribution
 from backend.common.colors import convert_anndata_category_colors_to_cxg_category_colors
 from backend.common.constants import Axis, MAX_LAYOUTS, XApproxDistribution
 from backend.czi_hosted.common.corpora import corpora_get_props_from_anndata
