@@ -267,20 +267,23 @@ class Server:
         secret_key = server_config.app__flask_secret_key
         self.app.config.update(SECRET_KEY=secret_key)
 
+        url_prefix = server_config.app__url_prefix or ""
+
+        webbp.url_prefix = url_prefix
         self.app.register_blueprint(webbp)
 
         api_version = "/api/v0.2"
         api_path = "/"
 
-        bp_base = Blueprint("bp_base", __name__, url_prefix=api_path)
+        bp_base = Blueprint("bp_base", __name__, url_prefix=f"{url_prefix}{api_path}")
         base_resources = get_api_base_resources(bp_base)
         self.app.register_blueprint(base_resources.blueprint)
 
-        bp_api = Blueprint("api", __name__, url_prefix=f"{api_path}{api_version}")
+        bp_api = Blueprint("api", __name__, url_prefix=f"{url_prefix}{api_path}{api_version}")
         resources = get_api_dataroot_resources(bp_api)
         self.app.register_blueprint(resources.blueprint)
         self.app.add_url_rule(
-            "/static/<path:filename>",
+            f"{url_prefix}/static/<path:filename>",
             "static_assets",
             view_func=lambda filename: send_from_directory("../common/web/static", filename),
             methods=["GET"],
