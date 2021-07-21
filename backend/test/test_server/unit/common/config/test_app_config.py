@@ -131,7 +131,8 @@ class AppConfigTest(ConfigTests):
 
         # test simple value in default dataset
         config.update_single_config_from_path_and_value(
-            ["dataset", "user_annotations"], "dummy_location",
+            ["dataset", "user_annotations"],
+            "dummy_location",
         )
 
         # error checking

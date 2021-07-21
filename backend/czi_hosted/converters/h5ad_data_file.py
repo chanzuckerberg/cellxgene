@@ -20,8 +20,8 @@ from backend.czi_hosted.common.utils.matrix_utils import is_matrix_sparse, get_c
 
 
 class H5ADDataFile:
-    """ Class encapsulating required information about an H5AD datafile that ultimately will be transformed into
-    another format (currently just CXG is supported). """
+    """Class encapsulating required information about an H5AD datafile that ultimately will be transformed into
+    another format (currently just CXG is supported)."""
 
     def __init__(
         self,

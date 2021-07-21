@@ -168,7 +168,7 @@ def rest_get_data_adaptor(func):
     return wrapped_function
 
 
-def  dataroot_test_index():
+def dataroot_test_index():
     # the following index page is meant for testing/debugging purposes
     data = '<!doctype html><html lang="en">'
     data += "<head><title>Hosted Cellxgene</title></head>"

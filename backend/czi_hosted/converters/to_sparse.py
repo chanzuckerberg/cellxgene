@@ -9,8 +9,10 @@ import sys
 
 import tiledb
 
-from backend.czi_hosted.common.utils.cxg_generation_utils import convert_ndarray_to_cxg_dense_array, \
-    convert_matrix_to_cxg_array
+from backend.czi_hosted.common.utils.cxg_generation_utils import (
+    convert_ndarray_to_cxg_dense_array,
+    convert_matrix_to_cxg_array,
+)
 from backend.czi_hosted.common.utils.matrix_utils import is_matrix_sparse, get_column_shift_encode_for_matrix
 
 

@@ -75,7 +75,7 @@ def read_gene_sets_tidycsv(gs_locator, context=None):
                 # if this is the first non-comment row, assume it is a header and validate
                 # column names.  OK if the user has extra columns after our initial set.
                 if not haveReadHeader:
-                    if row[0:len(GENESETS_TIDYCSV_HEADER)] != GENESETS_TIDYCSV_HEADER:
+                    if row[0 : len(GENESETS_TIDYCSV_HEADER)] != GENESETS_TIDYCSV_HEADER:
                         raise AnnotationsError("Gene set CSV file missing the required column header.")
                     haveReadHeader = True
                     continue

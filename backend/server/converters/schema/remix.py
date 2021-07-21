@@ -20,9 +20,11 @@ ONTOLOGY_SUFFIX = "_ontology_term_id"
 
 def is_curie(value):
     """Return True iff the value is an OBO-id CURIE like EFO:000001"""
-    return (value.count(":")
-            and all(len(part) > 0 for part in value.split(":"))
-            and all(c in string.digits for c in value.split(":")[1]))
+    return (
+        value.count(":")
+        and all(len(part) > 0 for part in value.split(":"))
+        and all(c in string.digits for c in value.split(":")[1])
+    )
 
 
 def is_ontology_field(field_name):
@@ -41,7 +43,7 @@ def split_suffix(maybe_curie):
     suffixes = [" (cell culture)", " (organoid)"]
     for suffix in suffixes:
         if maybe_curie.endswith(suffix):
-            return maybe_curie[:-len(suffix)], suffix
+            return maybe_curie[: -len(suffix)], suffix
     return maybe_curie, ""
 
 
@@ -57,11 +59,7 @@ def get_curie_and_label(maybe_curie):
 def safe_add_field(adata_attr, field_name, field_value):
     """Add a field and value to an AnnData, but don't clobber an exising value."""
 
-    if (
-        isinstance(field_value, list)
-        and field_value
-        and isinstance(field_value[0], dict)
-    ):
+    if isinstance(field_value, list) and field_value and isinstance(field_value[0], dict):
         field_value = json.dumps(field_value)
     if field_name in adata_attr:
         adata_attr[field_name + REPLACE_SUFFIX] = adata_attr[field_name]
@@ -115,21 +113,13 @@ def remix_obs(adata, obs_config):
                     ontology_label_map[original_value] = label
                     logging.info(f"Mapping {original_value} -> {curie} -> {label}")
 
-                ontology_column = adata.obs[source_column].replace(
-                    ontology_term_map, inplace=False
-                )
-                label_column = adata.obs[source_column].replace(
-                    ontology_label_map, inplace=False
-                )
+                ontology_column = adata.obs[source_column].replace(ontology_term_map, inplace=False)
+                label_column = adata.obs[source_column].replace(ontology_label_map, inplace=False)
 
                 safe_add_field(adata.obs, field_name, ontology_column)
-                safe_add_field(
-                    adata.obs, get_label_field_name(field_name), label_column
-                )
+                safe_add_field(adata.obs, get_label_field_name(field_name), label_column)
             else:
-                label_column = adata.obs[source_column].replace(
-                    column_map, inplace=False
-                )
+                label_column = adata.obs[source_column].replace(column_map, inplace=False)
                 safe_add_field(adata.obs, field_name, label_column)
 
         else:
@@ -159,20 +149,14 @@ def merge_df(df, domain, index, columns):
     else:
         to_merge = df
     if domain == "raw":
-        merged_df = pd.DataFrame(to_merge, index=index, columns=columns).sum(
-            axis=1, level=0, skipna=False
-        )
+        merged_df = pd.DataFrame(to_merge, index=index, columns=columns).sum(axis=1, level=0, skipna=False)
     elif domain == "log1p":
-        merged_df = (
-            pd.DataFrame(np.expm1(to_merge, dtype=np.float128), index=index, columns=columns)
-            .sum(axis=1, level=0, skipna=False)
+        merged_df = pd.DataFrame(np.expm1(to_merge, dtype=np.float128), index=index, columns=columns).sum(
+            axis=1, level=0, skipna=False
         )
         merged_df = pd.DataFrame(np.log1p(merged_df.to_numpy()), index=merged_df.index, columns=merged_df.columns)
     elif domain == "sqrt":
-        merged_df = (
-            pd.DataFrame(np.square(to_merge), index=index, columns=columns)
-            .sum(axis=1, level=0, skipna=False)
-        )
+        merged_df = pd.DataFrame(np.square(to_merge), index=index, columns=columns).sum(axis=1, level=0, skipna=False)
         merged_df = pd.DataFrame(np.sqrt(merged_df.to_numpy()), index=merged_df.index, columns=merged_df.columns)
 
     return merged_df
@@ -216,11 +200,13 @@ def fixup_gene_symbols(adata, fixup_config):
 
     return fixup_adata
 
+
 def _strip_version(adata):
     """Remove version information from the AnnData object."""
 
     if "version" in adata.uns_keys():
         del adata.uns["version"]
+
 
 def apply_schema(source_h5ad, remix_config, output_filename):
 
@@ -236,20 +222,25 @@ def apply_schema(source_h5ad, remix_config, output_filename):
     if config.get("fixup_gene_symbols"):
         adata = fixup_gene_symbols(adata, config["fixup_gene_symbols"])
 
-    if ("version" in adata.uns_keys()
-            and isinstance(adata.uns["version"], collections.Mapping)
-            and "corpora_schema_version" in adata.uns["version"]):
+    if (
+        "version" in adata.uns_keys()
+        and isinstance(adata.uns["version"], collections.Mapping)
+        and "corpora_schema_version" in adata.uns["version"]
+    ):
         schema_version = adata.uns["version"]["corpora_schema_version"]
         try:
             validate.get_schema_definition(schema_version)
         except ValueError:
-            logging.warning(f"Stripping version information out of AnnData because schema "
-                            f"version {schema_version} is unknown.")
+            logging.warning(
+                f"Stripping version information out of AnnData because schema " f"version {schema_version} is unknown."
+            )
             _strip_version(adata)
 
         if not validate.validate_adata(adata, shallow=False):
-            logging.warning(f"Stripping version information out of AnnData because it does not "
-                            f"follow schema version {schema_version} .")
+            logging.warning(
+                f"Stripping version information out of AnnData because it does not "
+                f"follow schema version {schema_version} ."
+            )
             _strip_version(adata)
 
     adata.write_h5ad(output_filename, compression="gzip")

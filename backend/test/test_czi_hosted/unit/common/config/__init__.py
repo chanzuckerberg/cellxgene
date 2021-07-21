@@ -7,7 +7,6 @@ from backend.test import FIXTURES_ROOT
 from backend.test.test_czi_hosted.unit import BaseTest
 
 
-
 class ConfigTests(BaseTest):
     tmp_fixtures_directory = os.path.join(FIXTURES_ROOT, "tmp_dir")
 

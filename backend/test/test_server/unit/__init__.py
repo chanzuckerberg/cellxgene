@@ -37,7 +37,9 @@ def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
         single_dataset__datapath=data_locator.path,
     )
     config.update_dataset_config(
-        embeddings__names=["umap"], presentation__max_categories=100, diffexp__lfc_cutoff=0.01,
+        embeddings__names=["umap"],
+        presentation__max_categories=100,
+        diffexp__lfc_cutoff=0.01,
     )
 
     config.complete_config()

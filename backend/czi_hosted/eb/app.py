@@ -84,7 +84,10 @@ class WSGIServer(Server):
             CORS(app, supports_credentials=True, origins=allowed_origin)
 
         Talisman(
-            app, force_https=server_config.app__force_https, frame_options="DENY", content_security_policy=csp,
+            app,
+            force_https=server_config.app__force_https,
+            frame_options="DENY",
+            content_security_policy=csp,
         )
 
     @staticmethod
@@ -164,7 +167,9 @@ try:
         app_config.update_server_config(multi_dataset__dataroot=dataroot)
 
     # overwrite configuration for the eb app
-    app_config.update_server_config(multi_dataset__allowed_matrix_types=["cxg"],)
+    app_config.update_server_config(
+        multi_dataset__allowed_matrix_types=["cxg"],
+    )
 
     # complete config
     app_config.complete_config(logging.info)

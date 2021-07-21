@@ -24,7 +24,11 @@ from backend.common.utils.utils import sort_options
     show_default=True,
 )
 @click.option(
-    "--recipe", "-r", default="none", type=click.Choice(["none", "seurat", "zheng17"]), show_default=True,
+    "--recipe",
+    "-r",
+    default="none",
+    type=click.Choice(["none", "seurat", "zheng17"]),
+    show_default=True,
 )
 @click.option("--output", "-o", default="", help="Save a new file to filename.", metavar="<filename>")
 @click.option("--plotting", "-p", default=False, is_flag=True, help="Generate plots.", show_default=True)

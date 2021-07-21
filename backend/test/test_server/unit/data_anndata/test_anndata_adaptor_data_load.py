@@ -31,11 +31,11 @@ class DataLoadAdaptorTest(unittest.TestCase):
         f1 = {"filter": {"obs": {"index": [[0, 500]]}}}
         f2 = {"filter": {"obs": {"index": [[500, 1000]]}}}
         result = json.loads(self.data.diffexp_topN(f1["filter"], f2["filter"]))
-        self.assertEqual(len(result['positive']), 10)
-        self.assertEqual(len(result['negative']), 10)
+        self.assertEqual(len(result["positive"]), 10)
+        self.assertEqual(len(result["negative"]), 10)
         result = json.loads(self.data.diffexp_topN(f1["filter"], f2["filter"], 20))
-        self.assertEqual(len(result['positive']), 20)
-        self.assertEqual(len(result['negative']), 20)
+        self.assertEqual(len(result["positive"]), 20)
+        self.assertEqual(len(result["negative"]), 20)
 
 
 class DataLocatorAdaptorTest(unittest.TestCase):
@@ -46,11 +46,14 @@ class DataLocatorAdaptorTest(unittest.TestCase):
     def get_basic_config(self):
         config = AppConfig()
         config.update_server_config(
-            single_dataset__obs_names=None, single_dataset__var_names=None,
+            single_dataset__obs_names=None,
+            single_dataset__var_names=None,
         )
         config.update_server_config(app__flask_secret_key="secret")
         config.update_dataset_config(
-            embeddings__names=["umap"], presentation__max_categories=100, diffexp__lfc_cutoff=0.01,
+            embeddings__names=["umap"],
+            presentation__max_categories=100,
+            diffexp__lfc_cutoff=0.01,
         )
         return config
 

@@ -385,8 +385,8 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
-        self.assertEqual(len(result_data['positive']), 7)
-        self.assertEqual(len(result_data['negative']), 7)
+        self.assertEqual(len(result_data["positive"]), 7)
+        self.assertEqual(len(result_data["negative"]), 7)
 
     def test_diff_exp_indices(self):
         endpoint = "diffexp/obs"
@@ -401,8 +401,8 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
-        self.assertEqual(len(result_data['positive']), 10)
-        self.assertEqual(len(result_data['negative']), 10)
+        self.assertEqual(len(result_data["positive"]), 10)
+        self.assertEqual(len(result_data["negative"]), 10)
 
     def test_get_summaryvar(self):
         index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
@@ -561,23 +561,23 @@ class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
                         "geneset_description": "",
                         "geneset_name": "summary test",
                     },
-                    {'genes': [], 'geneset_description': '', 'geneset_name': 'geneset_to_delete'},
-                    {'genes': [], 'geneset_description': '', 'geneset_name': 'geneset_to_edit'},
+                    {"genes": [], "geneset_description": "", "geneset_name": "geneset_to_delete"},
+                    {"genes": [], "geneset_description": "", "geneset_name": "geneset_to_edit"},
                     {
-                        'genes': [{'gene_description': '', 'gene_symbol': 'RER1'}],
-                        'geneset_description': '',
-                        'geneset_name': 'fill_this_geneset'
+                        "genes": [{"gene_description": "", "gene_symbol": "RER1"}],
+                        "geneset_description": "",
+                        "geneset_name": "fill_this_geneset",
                     },
                     {
-                        'genes': [{'gene_description': '', 'gene_symbol': 'SIK1'}],
-                        'geneset_description': '',
-                        'geneset_name': 'empty_this_geneset'
+                        "genes": [{"gene_description": "", "gene_symbol": "SIK1"}],
+                        "geneset_description": "",
+                        "geneset_name": "empty_this_geneset",
                     },
                     {
-                        'genes': [{'gene_description': '', 'gene_symbol': 'SIK1'}],
-                        'geneset_description': '',
-                        'geneset_name': 'brush_this_gene'
-                    }
+                        "genes": [{"gene_description": "", "gene_symbol": "SIK1"}],
+                        "geneset_description": "",
+                        "geneset_name": "brush_this_gene",
+                    },
                 ],
                 "tid": 0,
             },

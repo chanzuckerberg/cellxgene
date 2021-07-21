@@ -13,7 +13,6 @@ from backend.test import PROJECT_ROOT
 
 
 class TestApplySchema(unittest.TestCase):
-
     def setUp(self):
         self.source_h5ad_path = f"{PROJECT_ROOT}/backend/test/fixtures/pbmc3k-CSC-gz.h5ad"
         self.output_h5ad_path = f"{PROJECT_ROOT}/backend/test/fixtures/test_remix.h5ad"
@@ -36,7 +35,7 @@ class TestApplySchema(unittest.TestCase):
         self.assertListEqual(["test label"], new_adata.obs["cell_type"].unique().tolist())
         self.assertListEqual(
             ["CL:00001", "CL:00002", "CL:00003", "CL:00004", "CL:00005", "CL:00006", "CL:00007", "CL:00008"],
-            sorted(new_adata.obs["cell_type_ontology_term_id"].unique().tolist())
+            sorted(new_adata.obs["cell_type_ontology_term_id"].unique().tolist()),
         )
 
         self.assertIn("version", new_adata.uns_keys())
@@ -50,8 +49,8 @@ class TestApplySchema(unittest.TestCase):
         # Should refuse to write the version
         self.assertNotIn("version", new_adata.uns_keys())
 
-class TestFieldParsing(unittest.TestCase):
 
+class TestFieldParsing(unittest.TestCase):
     def test_is_curie(self):
         self.assertTrue(remix.is_curie("EFO:00001"))
         self.assertTrue(remix.is_curie("UBERON:123456"))
@@ -79,22 +78,15 @@ class TestFieldParsing(unittest.TestCase):
     @unittest.mock.patch("backend.server.converters.schema.ontology.get_ontology_label")
     def test_get_curie_and_label(self, mock_get_ontology_label):
         mock_get_ontology_label.return_value = "test label"
-        self.assertEqual(
-            remix.get_curie_and_label("UBERON:1234"),
-            ("UBERON:1234", "test label")
-        )
+        self.assertEqual(remix.get_curie_and_label("UBERON:1234"), ("UBERON:1234", "test label"))
         self.assertEqual(
             remix.get_curie_and_label("UBERON:1234 (cell culture)"),
-            ("UBERON:1234 (cell culture)", "test label (cell culture)")
+            ("UBERON:1234 (cell culture)", "test label (cell culture)"),
         )
-        self.assertEqual(
-            remix.get_curie_and_label("whatever"),
-            ("", "whatever")
-        )
+        self.assertEqual(remix.get_curie_and_label("whatever"), ("", "whatever"))
 
 
 class TestManipulateAnndata(unittest.TestCase):
-
     def setUp(self):
 
         self.cell_count = 20
@@ -104,7 +96,7 @@ class TestManipulateAnndata(unittest.TestCase):
         obs = pd.DataFrame(
             index=[f"Cell{d}" for d in range(self.cell_count)],
             columns=["tissue", "CellType"],
-            data=[["lung", "epithelial"]] * (self.cell_count // 2) + [["lung", "endothelial"]] * (self.cell_count // 2)
+            data=[["lung", "epithelial"]] * (self.cell_count // 2) + [["lung", "endothelial"]] * (self.cell_count // 2),
         )
         var = pd.DataFrame(index=[f"SEPT{d}" for d in range(self.gene_count)])
 
@@ -118,75 +110,62 @@ class TestManipulateAnndata(unittest.TestCase):
 
         remix.safe_add_field(self.adata.uns, "contributors", [{"name": "contributor1"}, {"name": "contributor2"}])
         self.assertEqual(
-            self.adata.uns["contributors"],
-            json.dumps([{"name": "contributor1"}, {"name": "contributor2"}])
+            self.adata.uns["contributors"], json.dumps([{"name": "contributor1"}, {"name": "contributor2"}])
         )
 
     @unittest.mock.patch("backend.server.converters.schema.ontology.get_ontology_label")
     def test_remix_uns(self, mock_get_ontology_label):
         mock_get_ontology_label.return_value = "Pan troglodytes"
         uns_config = {
-            "version": {
-                "corpora_schema_version": "1.0.0",
-                "corpora_encoding_version": "0.1.0"
-            },
+            "version": {"corpora_schema_version": "1.0.0", "corpora_encoding_version": "0.1.0"},
             "organism_ontology_term_id": "NCBITaxon:9598",
-            "contributors": [
-                {
-                    "name": "scientist",
-                    "email": "scientist@science.com"
-                }
-            ]
+            "contributors": [{"name": "scientist", "email": "scientist@science.com"}],
         }
 
         remix.remix_uns(self.adata, uns_config)
 
         self.assertEqual(
             sorted(self.adata.uns_keys()),
-            sorted(["organism_original", "organism", "organism_ontology_term_id",
-                    "contributors", "version", "experiment"])
+            sorted(
+                ["organism_original", "organism", "organism_ontology_term_id", "contributors", "version", "experiment"]
+            ),
         )
 
-        self.assertEqual(self.adata.uns['organism'], "Pan troglodytes")
-        self.assertEqual(self.adata.uns['organism_original'], "monkey")
-        self.assertEqual(self.adata.uns['organism_ontology_term_id'], "NCBITaxon:9598")
-        self.assertEqual(self.adata.uns['contributors'],
-                         json.dumps([{"name": "scientist", "email": "scientist@science.com"}]))
+        self.assertEqual(self.adata.uns["organism"], "Pan troglodytes")
+        self.assertEqual(self.adata.uns["organism_original"], "monkey")
+        self.assertEqual(self.adata.uns["organism_ontology_term_id"], "NCBITaxon:9598")
+        self.assertEqual(
+            self.adata.uns["contributors"], json.dumps([{"name": "scientist", "email": "scientist@science.com"}])
+        )
 
     @unittest.mock.patch("backend.server.converters.schema.ontology.get_ontology_label")
     def test_remix_obs(self, mock_get_ontology_label):
         mock_get_ontology_label.return_value = "lung (in a monkey)"
         obs_config = {
-            "tissue_ontology_term_id": {
-                "tissue": {
-                    "lung": "UBERON:00000"
-                }
-            },
-            "cell_color": {
-                "CellType": {
-                    "epithelial": "fuschia",
-                    "endothelial": "khaki"
-                }
-            },
-            "sex": "male"
+            "tissue_ontology_term_id": {"tissue": {"lung": "UBERON:00000"}},
+            "cell_color": {"CellType": {"epithelial": "fuschia", "endothelial": "khaki"}},
+            "sex": "male",
         }
 
         remix.remix_obs(self.adata, obs_config)
         self.assertEqual(
             sorted(self.adata.obs_keys()),
-            sorted(["tissue", "tissue_ontology_term_id", "tissue_original", "CellType", "cell_color", "sex"])
+            sorted(["tissue", "tissue_ontology_term_id", "tissue_original", "CellType", "cell_color", "sex"]),
         )
 
         self.assertTrue(all(v == "lung" for v in self.adata.obs.tissue_original))
         self.assertTrue(all(v == "UBERON:00000" for v in self.adata.obs.tissue_ontology_term_id))
         self.assertTrue(all(v == "lung (in a monkey)" for v in self.adata.obs.tissue))
         self.assertTrue(all(v == "male" for v in self.adata.obs.sex))
-        self.assertTrue(all(v in (("epithelial", "fuschia"), ("endothelial", "khaki"))
-                            for v in zip(self.adata.obs.CellType, self.adata.obs.cell_color)))
+        self.assertTrue(
+            all(
+                v in (("epithelial", "fuschia"), ("endothelial", "khaki"))
+                for v in zip(self.adata.obs.CellType, self.adata.obs.cell_color)
+            )
+        )
 
 
 class TestFixupGeneSymbols(unittest.TestCase):
-
     def setUp(self):
         self.seurat_path = f"{PROJECT_ROOT}/server/test/fixtures/schema_test_data/seurat_tutorial.h5ad"
         self.seurat_merged_path = f"{PROJECT_ROOT}/server/test/fixtures/schema_test_data/seurat_tutorial_merged.h5ad"
@@ -214,16 +193,16 @@ class TestFixupGeneSymbols(unittest.TestCase):
 
         self.assertEqual(
             merged_adata.layers["counts"][:, merged_adata.var.index == self.stable_gene].sum(),
-            fixed_adata.raw.X[:, fixed_adata.var.index == self.stable_gene].sum()
+            fixed_adata.raw.X[:, fixed_adata.var.index == self.stable_gene].sum(),
         )
         self.assertAlmostEqual(
             merged_adata.X[:, merged_adata.var.index == self.stable_gene].sum(),
-            fixed_adata.X[:, fixed_adata.var.index == self.stable_gene].sum()
+            fixed_adata.X[:, fixed_adata.var.index == self.stable_gene].sum(),
         )
 
         self.assertAlmostEqual(
             merged_adata.layers["scale.data"][:, merged_adata.var.index == self.stable_gene].sum(),
-            fixed_adata.layers["scale.data"][:, fixed_adata.var.index == self.stable_gene].sum()
+            fixed_adata.layers["scale.data"][:, fixed_adata.var.index == self.stable_gene].sum(),
         )
 
     def test_fixup_gene_symbols_sctransform(self):
@@ -247,10 +226,10 @@ class TestFixupGeneSymbols(unittest.TestCase):
         # close.
         merged_raw_stable = merged_adata.layers["counts"][:, merged_adata.var.index == self.stable_gene].sum()
         fixed_raw_stable = fixed_adata.raw.X[:, fixed_adata.var.index == self.stable_gene].sum()
-        self.assertLess(abs(merged_raw_stable - fixed_raw_stable), .001 * merged_raw_stable)
+        self.assertLess(abs(merged_raw_stable - fixed_raw_stable), 0.001 * merged_raw_stable)
 
         self.assertAlmostEqual(
             merged_adata.X[:, merged_adata.var.index == self.stable_gene].sum(),
             fixed_adata.X[:, fixed_adata.var.index == self.stable_gene].sum(),
-            0
+            0,
         )

@@ -21,7 +21,10 @@ from .. import __version__
     help="Show the software version and exit.",
 )
 @click.option(
-    "--upgrade-check/--no-upgrade-check", default=True, show_default=True, help="Check for release upgrades on start.",
+    "--upgrade-check/--no-upgrade-check",
+    default=True,
+    show_default=True,
+    help="Check for release upgrades on start.",
 )
 def cli(upgrade_check):
     if upgrade_check:

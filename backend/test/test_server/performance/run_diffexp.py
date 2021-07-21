@@ -18,9 +18,7 @@ def main():
     parser.add_argument("-va", "--varA", help="obs variable:value to use for group A")
     parser.add_argument("-vb", "--varB", help="obs variable:value to use for group B")
     parser.add_argument("-t", "--trials", default=1, type=int, help="number of trials")
-    parser.add_argument(
-        "-a", "--alg", choices=("default", "generic"), default="default", help="algorithm to use"
-    )
+    parser.add_argument("-a", "--alg", choices=("default", "generic"), default="default", help="algorithm to use")
     parser.add_argument("-s", "--show", default=False, action="store_true", help="show the results")
     parser.add_argument(
         "-n", "--new-selection", default=False, action="store_true", help="change the selection between each trial"

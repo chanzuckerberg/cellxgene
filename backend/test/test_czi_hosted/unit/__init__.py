@@ -168,7 +168,7 @@ class BaseTest(unittest.TestCase):
                 app__debug=True,
                 multi_dataset__dataroot=f"{FIXTURES_ROOT}",
                 multi_dataset__index=True,
-                multi_dataset__allowed_matrix_types=["cxg"]
+                multi_dataset__allowed_matrix_types=["cxg"],
             )
         app_config.complete_config(logging.info)
 

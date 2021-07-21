@@ -14,6 +14,7 @@ from backend.test.test_czi_hosted.unit import BaseTest, skip_if
 
 BAD_FILTER = {"filter": {"obs": {"annotation_value": [{"name": "xyz"}]}}}
 
+
 class EndPoints(BaseTest):
     @classmethod
     def setUpClass(cls, app_config=None):
@@ -37,9 +38,7 @@ class EndPoints(BaseTest):
         result_data = json.loads(result.data)
         self.assertEqual(result_data["schema"]["dataframe"]["nObs"], 2638)
         self.assertEqual(len(result_data["schema"]["annotations"]["obs"]), 2)
-        self.assertEqual(
-            len(result_data["schema"]["annotations"]["obs"]["columns"]), 5
-        )
+        self.assertEqual(len(result_data["schema"]["annotations"]["obs"]["columns"]), 5)
 
     def test_config(self):
         endpoint = "config"
@@ -388,9 +387,9 @@ class EndPoints(BaseTest):
         self.assertAlmostEqual(df["columns"][0][0], -0.16628358)
 
 
-
 class EndPointsCxg(EndPoints):
     """Test Case for endpoints"""
+
     @classmethod
     def setUpClass(cls):
         app_config = AppConfig()
@@ -441,23 +440,23 @@ class EndPointsCxg(EndPoints):
                         "geneset_description": "",
                         "geneset_name": "summary test",
                     },
-                    {'genes': [], 'geneset_description': '', 'geneset_name': 'geneset_to_delete'},
-                    {'genes': [], 'geneset_description': '', 'geneset_name': 'geneset_to_edit'},
+                    {"genes": [], "geneset_description": "", "geneset_name": "geneset_to_delete"},
+                    {"genes": [], "geneset_description": "", "geneset_name": "geneset_to_edit"},
                     {
-                        'genes': [{'gene_description': '', 'gene_symbol': 'RER1'}],
-                        'geneset_description': '',
-                        'geneset_name': 'fill_this_geneset'
+                        "genes": [{"gene_description": "", "gene_symbol": "RER1"}],
+                        "geneset_description": "",
+                        "geneset_name": "fill_this_geneset",
                     },
                     {
-                        'genes': [{'gene_description': '', 'gene_symbol': 'SIK1'}],
-                        'geneset_description': '',
-                        'geneset_name': 'empty_this_geneset'
+                        "genes": [{"gene_description": "", "gene_symbol": "SIK1"}],
+                        "geneset_description": "",
+                        "geneset_name": "empty_this_geneset",
                     },
                     {
-                        'genes': [{'gene_description': '', 'gene_symbol': 'SIK1'}],
-                        'geneset_description': '',
-                        'geneset_name': 'brush_this_gene'
-                    }
+                        "genes": [{"gene_description": "", "gene_symbol": "SIK1"}],
+                        "geneset_description": "",
+                        "geneset_name": "brush_this_gene",
+                    },
                 ],
                 "tid": 0,
             },
@@ -502,4 +501,3 @@ brush_this_gene,,SIK1,\r
         result = self.client.put(url, json=test1)
 
         self.assertEqual(result.status_code, HTTPStatus.METHOD_NOT_ALLOWED)
-

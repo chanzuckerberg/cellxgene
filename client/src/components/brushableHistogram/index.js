@@ -306,13 +306,7 @@ class HistogramBrush extends React.PureComponent {
   }
 
   createQuery() {
-    const {
-      isObs,
-      isGeneSetSummary,
-      field,
-      setGenes,
-      annoMatrix,
-    } = this.props;
+    const { isObs, isGeneSetSummary, field, setGenes, annoMatrix } = this.props;
     const { schema } = annoMatrix;
     if (isObs) {
       return ["obs", field];

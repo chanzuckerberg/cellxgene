@@ -205,7 +205,8 @@ class CxgAdaptor(DataAdaptor):
         if lfc_cutoff is None:
             lfc_cutoff = self.dataset_config.diffexp__lfc_cutoff
         return diffexp_cxg.diffexp_ttest(
-            adaptor=self, maskA=maskA, maskB=maskB, top_n=top_n, diffexp_lfc_cutoff=lfc_cutoff)
+            adaptor=self, maskA=maskA, maskB=maskB, top_n=top_n, diffexp_lfc_cutoff=lfc_cutoff
+        )
 
     def get_colors(self):
         if self.cxg_version == "0.0":
