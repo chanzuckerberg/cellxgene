@@ -62,12 +62,6 @@ type State = any;
   };
 })
 class Scatterplot extends React.PureComponent<{}, State> {
-  axes: any;
-
-  reglCanvas: any;
-
-  renderCache: any;
-
   static createReglState(canvas: any) {
     /*
     Must be created for each canvas
@@ -101,6 +95,12 @@ class Scatterplot extends React.PureComponent<{}, State> {
   static watchAsync(props: any, prevProps: any) {
     return !shallowEqual(props.watchProps, prevProps.watchProps);
   }
+
+  axes: any;
+
+  reglCanvas: any;
+
+  renderCache: any;
 
   computePointPositions = memoize((X, Y, xScale, yScale) => {
     const positions = new Float32Array(2 * X.length);

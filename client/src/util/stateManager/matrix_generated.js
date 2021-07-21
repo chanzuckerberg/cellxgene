@@ -4,7 +4,6 @@
  * @const
  * @namespace
  */
-// @ts-expect-error ts-migrate(7022) FIXME: 'NetEncoding' implicitly has type 'any' because it... Remove this comment to see the full error message
 var NetEncoding = NetEncoding || {};
 
 /**
@@ -45,7 +44,7 @@ NetEncoding.Float32Array = function () {
  * @param {flatbuffers.ByteBuffer} bb
  * @returns {NetEncoding.Float32Array}
  */
-NetEncoding.Float32Array.prototype.__init = function (i: any, bb: any) {
+NetEncoding.Float32Array.prototype.__init = function (i, bb) {
   this.bb_pos = i;
   this.bb = bb;
   return this;
@@ -56,7 +55,7 @@ NetEncoding.Float32Array.prototype.__init = function (i: any, bb: any) {
  * @param {NetEncoding.Float32Array=} obj
  * @returns {NetEncoding.Float32Array}
  */
-NetEncoding.Float32Array.getRootAsFloat32Array = function (bb: any, obj: any) {
+NetEncoding.Float32Array.getRootAsFloat32Array = function (bb, obj) {
   return (obj || new NetEncoding.Float32Array()).__init(
     bb.readInt32(bb.position()) + bb.position(),
     bb
@@ -67,8 +66,8 @@ NetEncoding.Float32Array.getRootAsFloat32Array = function (bb: any, obj: any) {
  * @param {number} index
  * @returns {number}
  */
-NetEncoding.Float32Array.prototype.data = function (index: any) {
-  const offset = this.bb.__offset(this.bb_pos, 4);
+NetEncoding.Float32Array.prototype.data = function (index) {
+  var offset = this.bb.__offset(this.bb_pos, 4);
   return offset
     ? this.bb.readFloat32(this.bb.__vector(this.bb_pos + offset) + index * 4)
     : 0;
@@ -78,7 +77,7 @@ NetEncoding.Float32Array.prototype.data = function (index: any) {
  * @returns {number}
  */
 NetEncoding.Float32Array.prototype.dataLength = function () {
-  const offset = this.bb.__offset(this.bb_pos, 4);
+  var offset = this.bb.__offset(this.bb_pos, 4);
   return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
 };
 
@@ -86,7 +85,7 @@ NetEncoding.Float32Array.prototype.dataLength = function () {
  * @returns {Float32Array}
  */
 NetEncoding.Float32Array.prototype.dataArray = function () {
-  const offset = this.bb.__offset(this.bb_pos, 4);
+  var offset = this.bb.__offset(this.bb_pos, 4);
   return offset
     ? new Float32Array(
         this.bb.bytes().buffer,
@@ -99,7 +98,7 @@ NetEncoding.Float32Array.prototype.dataArray = function () {
 /**
  * @param {flatbuffers.Builder} builder
  */
-NetEncoding.Float32Array.startFloat32Array = function (builder: any) {
+NetEncoding.Float32Array.startFloat32Array = function (builder) {
   builder.startObject(1);
 };
 
@@ -107,7 +106,7 @@ NetEncoding.Float32Array.startFloat32Array = function (builder: any) {
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} dataOffset
  */
-NetEncoding.Float32Array.addData = function (builder: any, dataOffset: any) {
+NetEncoding.Float32Array.addData = function (builder, dataOffset) {
   builder.addFieldOffset(0, dataOffset, 0);
 };
 
@@ -116,9 +115,9 @@ NetEncoding.Float32Array.addData = function (builder: any, dataOffset: any) {
  * @param {Array.<number>} data
  * @returns {flatbuffers.Offset}
  */
-NetEncoding.Float32Array.createDataVector = function (builder: any, data: any) {
+NetEncoding.Float32Array.createDataVector = function (builder, data) {
   builder.startVector(4, data.length, 4);
-  for (let i = data.length - 1; i >= 0; i--) {
+  for (var i = data.length - 1; i >= 0; i--) {
     builder.addFloat32(data[i]);
   }
   return builder.endVector();
@@ -128,10 +127,7 @@ NetEncoding.Float32Array.createDataVector = function (builder: any, data: any) {
  * @param {flatbuffers.Builder} builder
  * @param {number} numElems
  */
-NetEncoding.Float32Array.startDataVector = function (
-  builder: any,
-  numElems: any
-) {
+NetEncoding.Float32Array.startDataVector = function (builder, numElems) {
   builder.startVector(4, numElems, 4);
 };
 
@@ -139,8 +135,8 @@ NetEncoding.Float32Array.startDataVector = function (
  * @param {flatbuffers.Builder} builder
  * @returns {flatbuffers.Offset}
  */
-NetEncoding.Float32Array.endFloat32Array = function (builder: any) {
-  const offset = builder.endObject();
+NetEncoding.Float32Array.endFloat32Array = function (builder) {
+  var offset = builder.endObject();
   return offset;
 };
 
@@ -164,7 +160,7 @@ NetEncoding.Uint32Array = function () {
  * @param {flatbuffers.ByteBuffer} bb
  * @returns {NetEncoding.Uint32Array}
  */
-NetEncoding.Uint32Array.prototype.__init = function (i: any, bb: any) {
+NetEncoding.Uint32Array.prototype.__init = function (i, bb) {
   this.bb_pos = i;
   this.bb = bb;
   return this;
@@ -175,7 +171,7 @@ NetEncoding.Uint32Array.prototype.__init = function (i: any, bb: any) {
  * @param {NetEncoding.Uint32Array=} obj
  * @returns {NetEncoding.Uint32Array}
  */
-NetEncoding.Uint32Array.getRootAsUint32Array = function (bb: any, obj: any) {
+NetEncoding.Uint32Array.getRootAsUint32Array = function (bb, obj) {
   return (obj || new NetEncoding.Uint32Array()).__init(
     bb.readInt32(bb.position()) + bb.position(),
     bb
@@ -186,8 +182,8 @@ NetEncoding.Uint32Array.getRootAsUint32Array = function (bb: any, obj: any) {
  * @param {number} index
  * @returns {number}
  */
-NetEncoding.Uint32Array.prototype.data = function (index: any) {
-  const offset = this.bb.__offset(this.bb_pos, 4);
+NetEncoding.Uint32Array.prototype.data = function (index) {
+  var offset = this.bb.__offset(this.bb_pos, 4);
   return offset
     ? this.bb.readUint32(this.bb.__vector(this.bb_pos + offset) + index * 4)
     : 0;
@@ -197,7 +193,7 @@ NetEncoding.Uint32Array.prototype.data = function (index: any) {
  * @returns {number}
  */
 NetEncoding.Uint32Array.prototype.dataLength = function () {
-  const offset = this.bb.__offset(this.bb_pos, 4);
+  var offset = this.bb.__offset(this.bb_pos, 4);
   return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
 };
 
@@ -205,7 +201,7 @@ NetEncoding.Uint32Array.prototype.dataLength = function () {
  * @returns {Uint32Array}
  */
 NetEncoding.Uint32Array.prototype.dataArray = function () {
-  const offset = this.bb.__offset(this.bb_pos, 4);
+  var offset = this.bb.__offset(this.bb_pos, 4);
   return offset
     ? new Uint32Array(
         this.bb.bytes().buffer,
@@ -218,7 +214,7 @@ NetEncoding.Uint32Array.prototype.dataArray = function () {
 /**
  * @param {flatbuffers.Builder} builder
  */
-NetEncoding.Uint32Array.startUint32Array = function (builder: any) {
+NetEncoding.Uint32Array.startUint32Array = function (builder) {
   builder.startObject(1);
 };
 
@@ -226,7 +222,7 @@ NetEncoding.Uint32Array.startUint32Array = function (builder: any) {
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} dataOffset
  */
-NetEncoding.Uint32Array.addData = function (builder: any, dataOffset: any) {
+NetEncoding.Uint32Array.addData = function (builder, dataOffset) {
   builder.addFieldOffset(0, dataOffset, 0);
 };
 
@@ -235,9 +231,9 @@ NetEncoding.Uint32Array.addData = function (builder: any, dataOffset: any) {
  * @param {Array.<number>} data
  * @returns {flatbuffers.Offset}
  */
-NetEncoding.Uint32Array.createDataVector = function (builder: any, data: any) {
+NetEncoding.Uint32Array.createDataVector = function (builder, data) {
   builder.startVector(4, data.length, 4);
-  for (let i = data.length - 1; i >= 0; i--) {
+  for (var i = data.length - 1; i >= 0; i--) {
     builder.addInt32(data[i]);
   }
   return builder.endVector();
@@ -247,10 +243,7 @@ NetEncoding.Uint32Array.createDataVector = function (builder: any, data: any) {
  * @param {flatbuffers.Builder} builder
  * @param {number} numElems
  */
-NetEncoding.Uint32Array.startDataVector = function (
-  builder: any,
-  numElems: any
-) {
+NetEncoding.Uint32Array.startDataVector = function (builder, numElems) {
   builder.startVector(4, numElems, 4);
 };
 
@@ -258,8 +251,8 @@ NetEncoding.Uint32Array.startDataVector = function (
  * @param {flatbuffers.Builder} builder
  * @returns {flatbuffers.Offset}
  */
-NetEncoding.Uint32Array.endUint32Array = function (builder: any) {
-  const offset = builder.endObject();
+NetEncoding.Uint32Array.endUint32Array = function (builder) {
+  var offset = builder.endObject();
   return offset;
 };
 
@@ -283,7 +276,7 @@ NetEncoding.Int32Array = function () {
  * @param {flatbuffers.ByteBuffer} bb
  * @returns {NetEncoding.Int32Array}
  */
-NetEncoding.Int32Array.prototype.__init = function (i: any, bb: any) {
+NetEncoding.Int32Array.prototype.__init = function (i, bb) {
   this.bb_pos = i;
   this.bb = bb;
   return this;
@@ -294,7 +287,7 @@ NetEncoding.Int32Array.prototype.__init = function (i: any, bb: any) {
  * @param {NetEncoding.Int32Array=} obj
  * @returns {NetEncoding.Int32Array}
  */
-NetEncoding.Int32Array.getRootAsInt32Array = function (bb: any, obj: any) {
+NetEncoding.Int32Array.getRootAsInt32Array = function (bb, obj) {
   return (obj || new NetEncoding.Int32Array()).__init(
     bb.readInt32(bb.position()) + bb.position(),
     bb
@@ -305,8 +298,8 @@ NetEncoding.Int32Array.getRootAsInt32Array = function (bb: any, obj: any) {
  * @param {number} index
  * @returns {number}
  */
-NetEncoding.Int32Array.prototype.data = function (index: any) {
-  const offset = this.bb.__offset(this.bb_pos, 4);
+NetEncoding.Int32Array.prototype.data = function (index) {
+  var offset = this.bb.__offset(this.bb_pos, 4);
   return offset
     ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4)
     : 0;
@@ -316,7 +309,7 @@ NetEncoding.Int32Array.prototype.data = function (index: any) {
  * @returns {number}
  */
 NetEncoding.Int32Array.prototype.dataLength = function () {
-  const offset = this.bb.__offset(this.bb_pos, 4);
+  var offset = this.bb.__offset(this.bb_pos, 4);
   return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
 };
 
@@ -324,7 +317,7 @@ NetEncoding.Int32Array.prototype.dataLength = function () {
  * @returns {Int32Array}
  */
 NetEncoding.Int32Array.prototype.dataArray = function () {
-  const offset = this.bb.__offset(this.bb_pos, 4);
+  var offset = this.bb.__offset(this.bb_pos, 4);
   return offset
     ? new Int32Array(
         this.bb.bytes().buffer,
@@ -337,7 +330,7 @@ NetEncoding.Int32Array.prototype.dataArray = function () {
 /**
  * @param {flatbuffers.Builder} builder
  */
-NetEncoding.Int32Array.startInt32Array = function (builder: any) {
+NetEncoding.Int32Array.startInt32Array = function (builder) {
   builder.startObject(1);
 };
 
@@ -345,7 +338,7 @@ NetEncoding.Int32Array.startInt32Array = function (builder: any) {
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} dataOffset
  */
-NetEncoding.Int32Array.addData = function (builder: any, dataOffset: any) {
+NetEncoding.Int32Array.addData = function (builder, dataOffset) {
   builder.addFieldOffset(0, dataOffset, 0);
 };
 
@@ -354,9 +347,9 @@ NetEncoding.Int32Array.addData = function (builder: any, dataOffset: any) {
  * @param {Array.<number>} data
  * @returns {flatbuffers.Offset}
  */
-NetEncoding.Int32Array.createDataVector = function (builder: any, data: any) {
+NetEncoding.Int32Array.createDataVector = function (builder, data) {
   builder.startVector(4, data.length, 4);
-  for (let i = data.length - 1; i >= 0; i--) {
+  for (var i = data.length - 1; i >= 0; i--) {
     builder.addInt32(data[i]);
   }
   return builder.endVector();
@@ -366,10 +359,7 @@ NetEncoding.Int32Array.createDataVector = function (builder: any, data: any) {
  * @param {flatbuffers.Builder} builder
  * @param {number} numElems
  */
-NetEncoding.Int32Array.startDataVector = function (
-  builder: any,
-  numElems: any
-) {
+NetEncoding.Int32Array.startDataVector = function (builder, numElems) {
   builder.startVector(4, numElems, 4);
 };
 
@@ -377,8 +367,8 @@ NetEncoding.Int32Array.startDataVector = function (
  * @param {flatbuffers.Builder} builder
  * @returns {flatbuffers.Offset}
  */
-NetEncoding.Int32Array.endInt32Array = function (builder: any) {
-  const offset = builder.endObject();
+NetEncoding.Int32Array.endInt32Array = function (builder) {
+  var offset = builder.endObject();
   return offset;
 };
 
@@ -402,7 +392,7 @@ NetEncoding.Float64Array = function () {
  * @param {flatbuffers.ByteBuffer} bb
  * @returns {NetEncoding.Float64Array}
  */
-NetEncoding.Float64Array.prototype.__init = function (i: any, bb: any) {
+NetEncoding.Float64Array.prototype.__init = function (i, bb) {
   this.bb_pos = i;
   this.bb = bb;
   return this;
@@ -413,7 +403,7 @@ NetEncoding.Float64Array.prototype.__init = function (i: any, bb: any) {
  * @param {NetEncoding.Float64Array=} obj
  * @returns {NetEncoding.Float64Array}
  */
-NetEncoding.Float64Array.getRootAsFloat64Array = function (bb: any, obj: any) {
+NetEncoding.Float64Array.getRootAsFloat64Array = function (bb, obj) {
   return (obj || new NetEncoding.Float64Array()).__init(
     bb.readInt32(bb.position()) + bb.position(),
     bb
@@ -424,8 +414,8 @@ NetEncoding.Float64Array.getRootAsFloat64Array = function (bb: any, obj: any) {
  * @param {number} index
  * @returns {number}
  */
-NetEncoding.Float64Array.prototype.data = function (index: any) {
-  const offset = this.bb.__offset(this.bb_pos, 4);
+NetEncoding.Float64Array.prototype.data = function (index) {
+  var offset = this.bb.__offset(this.bb_pos, 4);
   return offset
     ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8)
     : 0;
@@ -435,7 +425,7 @@ NetEncoding.Float64Array.prototype.data = function (index: any) {
  * @returns {number}
  */
 NetEncoding.Float64Array.prototype.dataLength = function () {
-  const offset = this.bb.__offset(this.bb_pos, 4);
+  var offset = this.bb.__offset(this.bb_pos, 4);
   return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
 };
 
@@ -443,7 +433,7 @@ NetEncoding.Float64Array.prototype.dataLength = function () {
  * @returns {Float64Array}
  */
 NetEncoding.Float64Array.prototype.dataArray = function () {
-  const offset = this.bb.__offset(this.bb_pos, 4);
+  var offset = this.bb.__offset(this.bb_pos, 4);
   return offset
     ? new Float64Array(
         this.bb.bytes().buffer,
@@ -456,7 +446,7 @@ NetEncoding.Float64Array.prototype.dataArray = function () {
 /**
  * @param {flatbuffers.Builder} builder
  */
-NetEncoding.Float64Array.startFloat64Array = function (builder: any) {
+NetEncoding.Float64Array.startFloat64Array = function (builder) {
   builder.startObject(1);
 };
 
@@ -464,7 +454,7 @@ NetEncoding.Float64Array.startFloat64Array = function (builder: any) {
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} dataOffset
  */
-NetEncoding.Float64Array.addData = function (builder: any, dataOffset: any) {
+NetEncoding.Float64Array.addData = function (builder, dataOffset) {
   builder.addFieldOffset(0, dataOffset, 0);
 };
 
@@ -473,9 +463,9 @@ NetEncoding.Float64Array.addData = function (builder: any, dataOffset: any) {
  * @param {Array.<number>} data
  * @returns {flatbuffers.Offset}
  */
-NetEncoding.Float64Array.createDataVector = function (builder: any, data: any) {
+NetEncoding.Float64Array.createDataVector = function (builder, data) {
   builder.startVector(8, data.length, 8);
-  for (let i = data.length - 1; i >= 0; i--) {
+  for (var i = data.length - 1; i >= 0; i--) {
     builder.addFloat64(data[i]);
   }
   return builder.endVector();
@@ -485,10 +475,7 @@ NetEncoding.Float64Array.createDataVector = function (builder: any, data: any) {
  * @param {flatbuffers.Builder} builder
  * @param {number} numElems
  */
-NetEncoding.Float64Array.startDataVector = function (
-  builder: any,
-  numElems: any
-) {
+NetEncoding.Float64Array.startDataVector = function (builder, numElems) {
   builder.startVector(8, numElems, 8);
 };
 
@@ -496,8 +483,8 @@ NetEncoding.Float64Array.startDataVector = function (
  * @param {flatbuffers.Builder} builder
  * @returns {flatbuffers.Offset}
  */
-NetEncoding.Float64Array.endFloat64Array = function (builder: any) {
-  const offset = builder.endObject();
+NetEncoding.Float64Array.endFloat64Array = function (builder) {
+  var offset = builder.endObject();
   return offset;
 };
 
@@ -521,7 +508,7 @@ NetEncoding.JSONEncodedArray = function () {
  * @param {flatbuffers.ByteBuffer} bb
  * @returns {NetEncoding.JSONEncodedArray}
  */
-NetEncoding.JSONEncodedArray.prototype.__init = function (i: any, bb: any) {
+NetEncoding.JSONEncodedArray.prototype.__init = function (i, bb) {
   this.bb_pos = i;
   this.bb = bb;
   return this;
@@ -532,10 +519,7 @@ NetEncoding.JSONEncodedArray.prototype.__init = function (i: any, bb: any) {
  * @param {NetEncoding.JSONEncodedArray=} obj
  * @returns {NetEncoding.JSONEncodedArray}
  */
-NetEncoding.JSONEncodedArray.getRootAsJSONEncodedArray = function (
-  bb: any,
-  obj: any
-) {
+NetEncoding.JSONEncodedArray.getRootAsJSONEncodedArray = function (bb, obj) {
   return (obj || new NetEncoding.JSONEncodedArray()).__init(
     bb.readInt32(bb.position()) + bb.position(),
     bb
@@ -546,8 +530,8 @@ NetEncoding.JSONEncodedArray.getRootAsJSONEncodedArray = function (
  * @param {number} index
  * @returns {number}
  */
-NetEncoding.JSONEncodedArray.prototype.data = function (index: any) {
-  const offset = this.bb.__offset(this.bb_pos, 4);
+NetEncoding.JSONEncodedArray.prototype.data = function (index) {
+  var offset = this.bb.__offset(this.bb_pos, 4);
   return offset
     ? this.bb.readUint8(this.bb.__vector(this.bb_pos + offset) + index)
     : 0;
@@ -557,7 +541,7 @@ NetEncoding.JSONEncodedArray.prototype.data = function (index: any) {
  * @returns {number}
  */
 NetEncoding.JSONEncodedArray.prototype.dataLength = function () {
-  const offset = this.bb.__offset(this.bb_pos, 4);
+  var offset = this.bb.__offset(this.bb_pos, 4);
   return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
 };
 
@@ -565,7 +549,7 @@ NetEncoding.JSONEncodedArray.prototype.dataLength = function () {
  * @returns {Uint8Array}
  */
 NetEncoding.JSONEncodedArray.prototype.dataArray = function () {
-  const offset = this.bb.__offset(this.bb_pos, 4);
+  var offset = this.bb.__offset(this.bb_pos, 4);
   return offset
     ? new Uint8Array(
         this.bb.bytes().buffer,
@@ -578,7 +562,7 @@ NetEncoding.JSONEncodedArray.prototype.dataArray = function () {
 /**
  * @param {flatbuffers.Builder} builder
  */
-NetEncoding.JSONEncodedArray.startJSONEncodedArray = function (builder: any) {
+NetEncoding.JSONEncodedArray.startJSONEncodedArray = function (builder) {
   builder.startObject(1);
 };
 
@@ -586,10 +570,7 @@ NetEncoding.JSONEncodedArray.startJSONEncodedArray = function (builder: any) {
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} dataOffset
  */
-NetEncoding.JSONEncodedArray.addData = function (
-  builder: any,
-  dataOffset: any
-) {
+NetEncoding.JSONEncodedArray.addData = function (builder, dataOffset) {
   builder.addFieldOffset(0, dataOffset, 0);
 };
 
@@ -598,12 +579,9 @@ NetEncoding.JSONEncodedArray.addData = function (
  * @param {Array.<number>} data
  * @returns {flatbuffers.Offset}
  */
-NetEncoding.JSONEncodedArray.createDataVector = function (
-  builder: any,
-  data: any
-) {
+NetEncoding.JSONEncodedArray.createDataVector = function (builder, data) {
   builder.startVector(1, data.length, 1);
-  for (let i = data.length - 1; i >= 0; i--) {
+  for (var i = data.length - 1; i >= 0; i--) {
     builder.addInt8(data[i]);
   }
   return builder.endVector();
@@ -613,10 +591,7 @@ NetEncoding.JSONEncodedArray.createDataVector = function (
  * @param {flatbuffers.Builder} builder
  * @param {number} numElems
  */
-NetEncoding.JSONEncodedArray.startDataVector = function (
-  builder: any,
-  numElems: any
-) {
+NetEncoding.JSONEncodedArray.startDataVector = function (builder, numElems) {
   builder.startVector(1, numElems, 1);
 };
 
@@ -624,8 +599,8 @@ NetEncoding.JSONEncodedArray.startDataVector = function (
  * @param {flatbuffers.Builder} builder
  * @returns {flatbuffers.Offset}
  */
-NetEncoding.JSONEncodedArray.endJSONEncodedArray = function (builder: any) {
-  const offset = builder.endObject();
+NetEncoding.JSONEncodedArray.endJSONEncodedArray = function (builder) {
+  var offset = builder.endObject();
   return offset;
 };
 
@@ -649,7 +624,7 @@ NetEncoding.Column = function () {
  * @param {flatbuffers.ByteBuffer} bb
  * @returns {NetEncoding.Column}
  */
-NetEncoding.Column.prototype.__init = function (i: any, bb: any) {
+NetEncoding.Column.prototype.__init = function (i, bb) {
   this.bb_pos = i;
   this.bb = bb;
   return this;
@@ -660,7 +635,7 @@ NetEncoding.Column.prototype.__init = function (i: any, bb: any) {
  * @param {NetEncoding.Column=} obj
  * @returns {NetEncoding.Column}
  */
-NetEncoding.Column.getRootAsColumn = function (bb: any, obj: any) {
+NetEncoding.Column.getRootAsColumn = function (bb, obj) {
   return (obj || new NetEncoding.Column()).__init(
     bb.readInt32(bb.position()) + bb.position(),
     bb
@@ -671,11 +646,11 @@ NetEncoding.Column.getRootAsColumn = function (bb: any, obj: any) {
  * @returns {NetEncoding.TypedArray}
  */
 NetEncoding.Column.prototype.uType = function () {
-  const offset = this.bb.__offset(this.bb_pos, 4);
+  var offset = this.bb.__offset(this.bb_pos, 4);
   return offset
-    ? /** @type {NetEncoding.TypedArray} */ this.bb.readUint8(
+    ? /** @type {NetEncoding.TypedArray} */ (this.bb.readUint8(
         this.bb_pos + offset
-      )
+      ))
     : NetEncoding.TypedArray.NONE;
 };
 
@@ -683,15 +658,15 @@ NetEncoding.Column.prototype.uType = function () {
  * @param {flatbuffers.Table} obj
  * @returns {?flatbuffers.Table}
  */
-NetEncoding.Column.prototype.u = function (obj: any) {
-  const offset = this.bb.__offset(this.bb_pos, 6);
+NetEncoding.Column.prototype.u = function (obj) {
+  var offset = this.bb.__offset(this.bb_pos, 6);
   return offset ? this.bb.__union(obj, this.bb_pos + offset) : null;
 };
 
 /**
  * @param {flatbuffers.Builder} builder
  */
-NetEncoding.Column.startColumn = function (builder: any) {
+NetEncoding.Column.startColumn = function (builder) {
   builder.startObject(2);
 };
 
@@ -699,7 +674,7 @@ NetEncoding.Column.startColumn = function (builder: any) {
  * @param {flatbuffers.Builder} builder
  * @param {NetEncoding.TypedArray} uType
  */
-NetEncoding.Column.addUType = function (builder: any, uType: any) {
+NetEncoding.Column.addUType = function (builder, uType) {
   builder.addFieldInt8(0, uType, NetEncoding.TypedArray.NONE);
 };
 
@@ -707,7 +682,7 @@ NetEncoding.Column.addUType = function (builder: any, uType: any) {
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} uOffset
  */
-NetEncoding.Column.addU = function (builder: any, uOffset: any) {
+NetEncoding.Column.addU = function (builder, uOffset) {
   builder.addFieldOffset(1, uOffset, 0);
 };
 
@@ -715,8 +690,8 @@ NetEncoding.Column.addU = function (builder: any, uOffset: any) {
  * @param {flatbuffers.Builder} builder
  * @returns {flatbuffers.Offset}
  */
-NetEncoding.Column.endColumn = function (builder: any) {
-  const offset = builder.endObject();
+NetEncoding.Column.endColumn = function (builder) {
+  var offset = builder.endObject();
   return offset;
 };
 
@@ -740,7 +715,7 @@ NetEncoding.Matrix = function () {
  * @param {flatbuffers.ByteBuffer} bb
  * @returns {NetEncoding.Matrix}
  */
-NetEncoding.Matrix.prototype.__init = function (i: any, bb: any) {
+NetEncoding.Matrix.prototype.__init = function (i, bb) {
   this.bb_pos = i;
   this.bb = bb;
   return this;
@@ -751,7 +726,7 @@ NetEncoding.Matrix.prototype.__init = function (i: any, bb: any) {
  * @param {NetEncoding.Matrix=} obj
  * @returns {NetEncoding.Matrix}
  */
-NetEncoding.Matrix.getRootAsMatrix = function (bb: any, obj: any) {
+NetEncoding.Matrix.getRootAsMatrix = function (bb, obj) {
   return (obj || new NetEncoding.Matrix()).__init(
     bb.readInt32(bb.position()) + bb.position(),
     bb
@@ -762,7 +737,7 @@ NetEncoding.Matrix.getRootAsMatrix = function (bb: any, obj: any) {
  * @returns {number}
  */
 NetEncoding.Matrix.prototype.nRows = function () {
-  const offset = this.bb.__offset(this.bb_pos, 4);
+  var offset = this.bb.__offset(this.bb_pos, 4);
   return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
 };
 
@@ -770,7 +745,7 @@ NetEncoding.Matrix.prototype.nRows = function () {
  * @returns {number}
  */
 NetEncoding.Matrix.prototype.nCols = function () {
-  const offset = this.bb.__offset(this.bb_pos, 6);
+  var offset = this.bb.__offset(this.bb_pos, 6);
   return offset ? this.bb.readUint32(this.bb_pos + offset) : 0;
 };
 
@@ -779,8 +754,8 @@ NetEncoding.Matrix.prototype.nCols = function () {
  * @param {NetEncoding.Column=} obj
  * @returns {NetEncoding.Column}
  */
-NetEncoding.Matrix.prototype.columns = function (index: any, obj: any) {
-  const offset = this.bb.__offset(this.bb_pos, 8);
+NetEncoding.Matrix.prototype.columns = function (index, obj) {
+  var offset = this.bb.__offset(this.bb_pos, 8);
   return offset
     ? (obj || new NetEncoding.Column()).__init(
         this.bb.__indirect(this.bb.__vector(this.bb_pos + offset) + index * 4),
@@ -793,7 +768,7 @@ NetEncoding.Matrix.prototype.columns = function (index: any, obj: any) {
  * @returns {number}
  */
 NetEncoding.Matrix.prototype.columnsLength = function () {
-  const offset = this.bb.__offset(this.bb_pos, 8);
+  var offset = this.bb.__offset(this.bb_pos, 8);
   return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
 };
 
@@ -801,11 +776,11 @@ NetEncoding.Matrix.prototype.columnsLength = function () {
  * @returns {NetEncoding.TypedArray}
  */
 NetEncoding.Matrix.prototype.colIndexType = function () {
-  const offset = this.bb.__offset(this.bb_pos, 10);
+  var offset = this.bb.__offset(this.bb_pos, 10);
   return offset
-    ? /** @type {NetEncoding.TypedArray} */ this.bb.readUint8(
+    ? /** @type {NetEncoding.TypedArray} */ (this.bb.readUint8(
         this.bb_pos + offset
-      )
+      ))
     : NetEncoding.TypedArray.NONE;
 };
 
@@ -813,8 +788,8 @@ NetEncoding.Matrix.prototype.colIndexType = function () {
  * @param {flatbuffers.Table} obj
  * @returns {?flatbuffers.Table}
  */
-NetEncoding.Matrix.prototype.colIndex = function (obj: any) {
-  const offset = this.bb.__offset(this.bb_pos, 12);
+NetEncoding.Matrix.prototype.colIndex = function (obj) {
+  var offset = this.bb.__offset(this.bb_pos, 12);
   return offset ? this.bb.__union(obj, this.bb_pos + offset) : null;
 };
 
@@ -822,11 +797,11 @@ NetEncoding.Matrix.prototype.colIndex = function (obj: any) {
  * @returns {NetEncoding.TypedArray}
  */
 NetEncoding.Matrix.prototype.rowIndexType = function () {
-  const offset = this.bb.__offset(this.bb_pos, 14);
+  var offset = this.bb.__offset(this.bb_pos, 14);
   return offset
-    ? /** @type {NetEncoding.TypedArray} */ this.bb.readUint8(
+    ? /** @type {NetEncoding.TypedArray} */ (this.bb.readUint8(
         this.bb_pos + offset
-      )
+      ))
     : NetEncoding.TypedArray.NONE;
 };
 
@@ -834,15 +809,15 @@ NetEncoding.Matrix.prototype.rowIndexType = function () {
  * @param {flatbuffers.Table} obj
  * @returns {?flatbuffers.Table}
  */
-NetEncoding.Matrix.prototype.rowIndex = function (obj: any) {
-  const offset = this.bb.__offset(this.bb_pos, 16);
+NetEncoding.Matrix.prototype.rowIndex = function (obj) {
+  var offset = this.bb.__offset(this.bb_pos, 16);
   return offset ? this.bb.__union(obj, this.bb_pos + offset) : null;
 };
 
 /**
  * @param {flatbuffers.Builder} builder
  */
-NetEncoding.Matrix.startMatrix = function (builder: any) {
+NetEncoding.Matrix.startMatrix = function (builder) {
   builder.startObject(7);
 };
 
@@ -850,7 +825,7 @@ NetEncoding.Matrix.startMatrix = function (builder: any) {
  * @param {flatbuffers.Builder} builder
  * @param {number} nRows
  */
-NetEncoding.Matrix.addNRows = function (builder: any, nRows: any) {
+NetEncoding.Matrix.addNRows = function (builder, nRows) {
   builder.addFieldInt32(0, nRows, 0);
 };
 
@@ -858,7 +833,7 @@ NetEncoding.Matrix.addNRows = function (builder: any, nRows: any) {
  * @param {flatbuffers.Builder} builder
  * @param {number} nCols
  */
-NetEncoding.Matrix.addNCols = function (builder: any, nCols: any) {
+NetEncoding.Matrix.addNCols = function (builder, nCols) {
   builder.addFieldInt32(1, nCols, 0);
 };
 
@@ -866,7 +841,7 @@ NetEncoding.Matrix.addNCols = function (builder: any, nCols: any) {
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} columnsOffset
  */
-NetEncoding.Matrix.addColumns = function (builder: any, columnsOffset: any) {
+NetEncoding.Matrix.addColumns = function (builder, columnsOffset) {
   builder.addFieldOffset(2, columnsOffset, 0);
 };
 
@@ -875,9 +850,9 @@ NetEncoding.Matrix.addColumns = function (builder: any, columnsOffset: any) {
  * @param {Array.<flatbuffers.Offset>} data
  * @returns {flatbuffers.Offset}
  */
-NetEncoding.Matrix.createColumnsVector = function (builder: any, data: any) {
+NetEncoding.Matrix.createColumnsVector = function (builder, data) {
   builder.startVector(4, data.length, 4);
-  for (let i = data.length - 1; i >= 0; i--) {
+  for (var i = data.length - 1; i >= 0; i--) {
     builder.addOffset(data[i]);
   }
   return builder.endVector();
@@ -887,7 +862,7 @@ NetEncoding.Matrix.createColumnsVector = function (builder: any, data: any) {
  * @param {flatbuffers.Builder} builder
  * @param {number} numElems
  */
-NetEncoding.Matrix.startColumnsVector = function (builder: any, numElems: any) {
+NetEncoding.Matrix.startColumnsVector = function (builder, numElems) {
   builder.startVector(4, numElems, 4);
 };
 
@@ -895,10 +870,7 @@ NetEncoding.Matrix.startColumnsVector = function (builder: any, numElems: any) {
  * @param {flatbuffers.Builder} builder
  * @param {NetEncoding.TypedArray} colIndexType
  */
-NetEncoding.Matrix.addColIndexType = function (
-  builder: any,
-  colIndexType: any
-) {
+NetEncoding.Matrix.addColIndexType = function (builder, colIndexType) {
   builder.addFieldInt8(3, colIndexType, NetEncoding.TypedArray.NONE);
 };
 
@@ -906,7 +878,7 @@ NetEncoding.Matrix.addColIndexType = function (
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} colIndexOffset
  */
-NetEncoding.Matrix.addColIndex = function (builder: any, colIndexOffset: any) {
+NetEncoding.Matrix.addColIndex = function (builder, colIndexOffset) {
   builder.addFieldOffset(4, colIndexOffset, 0);
 };
 
@@ -914,10 +886,7 @@ NetEncoding.Matrix.addColIndex = function (builder: any, colIndexOffset: any) {
  * @param {flatbuffers.Builder} builder
  * @param {NetEncoding.TypedArray} rowIndexType
  */
-NetEncoding.Matrix.addRowIndexType = function (
-  builder: any,
-  rowIndexType: any
-) {
+NetEncoding.Matrix.addRowIndexType = function (builder, rowIndexType) {
   builder.addFieldInt8(5, rowIndexType, NetEncoding.TypedArray.NONE);
 };
 
@@ -925,7 +894,7 @@ NetEncoding.Matrix.addRowIndexType = function (
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} rowIndexOffset
  */
-NetEncoding.Matrix.addRowIndex = function (builder: any, rowIndexOffset: any) {
+NetEncoding.Matrix.addRowIndex = function (builder, rowIndexOffset) {
   builder.addFieldOffset(6, rowIndexOffset, 0);
 };
 
@@ -933,8 +902,8 @@ NetEncoding.Matrix.addRowIndex = function (builder: any, rowIndexOffset: any) {
  * @param {flatbuffers.Builder} builder
  * @returns {flatbuffers.Offset}
  */
-NetEncoding.Matrix.endMatrix = function (builder: any) {
-  const offset = builder.endObject();
+NetEncoding.Matrix.endMatrix = function (builder) {
+  var offset = builder.endObject();
   return offset;
 };
 
@@ -942,7 +911,7 @@ NetEncoding.Matrix.endMatrix = function (builder: any) {
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} offset
  */
-NetEncoding.Matrix.finishMatrixBuffer = function (builder: any, offset: any) {
+NetEncoding.Matrix.finishMatrixBuffer = function (builder, offset) {
   builder.finish(offset);
 };
 
