@@ -191,6 +191,11 @@ def server_args(func):
         show_default=False,
         help="Host IP address. By default cellxgene will use localhost (e.g. 127.0.0.1).",
     )
+    @click.option("--url-prefix",
+        default=DEFAULT_CONFIG.server_config.app__url_prefix,
+        show_default=True,
+        help="The base path for the URL at which the app will be served (e.g. `/my/cellxgene/app`)."
+    )
     @click.option(
         "--scripts",
         "-s",
@@ -300,6 +305,7 @@ def launch(
     open_browser,
     port,
     host,
+    url_prefix,
     embedding,
     obs_names,
     var_names,
@@ -356,6 +362,7 @@ def launch(
             app__debug=debug,
             app__host=host,
             app__port=port,
+            app__url_prefix=url_prefix,
             app__open_browser=open_browser,
             single_dataset__datapath=datapath,
             single_dataset__title=title,
@@ -411,7 +418,7 @@ def launch(
         log = logging.getLogger("werkzeug")
         log.setLevel(logging.ERROR)
 
-    cellxgene_url = f"http://{app_config.server_config.app__host}:{app_config.server_config.app__port}"
+    cellxgene_url = f"http://{app_config.server_config.app__host}:{app_config.server_config.app__port}{app_config.server_config.app__url_prefix or ''}"
     if server_config.app__open_browser:
         click.echo(f"[cellxgene] Launching! Opening your browser to {cellxgene_url} now.")
         webbrowser.open(cellxgene_url)
