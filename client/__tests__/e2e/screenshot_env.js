@@ -6,7 +6,7 @@ const ENV_DEFAULT = require("../../../environment.default.json");
 const takeScreenshot = require("./takeScreenshot");
 
 class ScreenshotEnvironment extends PuppeteerEnvironment {
-  async handleTestEvent(event: any, state: any) {
+  async handleTestEvent(event, state) {
     if (["test_start", "test_done"].includes(event.name)) {
       console.log("------------------event name:\n", event.name);
       console.log("~~~~ Current test errors\n", new Date(), event.test.errors);

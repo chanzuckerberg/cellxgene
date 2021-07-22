@@ -98,9 +98,9 @@ module.exports = {
   },
   overrides: [
     {
-      files: ["**/*.test.(ts|js)"],
+      files: ["**/*.test.ts"],
       env: {
-        jest: true, // now **/*.test.(ts|js) files' env has both es6 *and* jest
+        jest: true, // now **/*.test.ts files' env has both es6 *and* jest
       },
       // Can't extend in overrides: https://github.com/eslint/eslint/issues/8813
       // "extends": ["plugin:jest/recommended"]

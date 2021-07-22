@@ -496,8 +496,6 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
 }
 
 class ImmutableEnumDimension extends ImmutableScalarDimension {
-  enumIndex: any;
-
   constructor(name: any, data: any, value: any) {
     super(name, data, value, Uint32Array);
   }
@@ -513,6 +511,7 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
       s.add(mapf(i, data));
     }
     const enumIndex = sortArray(Array.from(s));
+    // @ts-expect-error FIXME Adding enumIndex as member variable results in "undefined" enumIndex value
     this.enumIndex = enumIndex;
 
     // create dimension value array
@@ -526,6 +525,7 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
   }
 
   selectExact(spec: any) {
+    // @ts-expect-error FIXME Adding enumIndex as member variable results in "undefined" enumIndex value
     const { enumIndex } = this;
     let { values } = spec;
     if (!Array.isArray(values)) {
