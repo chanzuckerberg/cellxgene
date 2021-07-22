@@ -26,7 +26,7 @@ def min_max(arr):
         x = arr[n]
         min_val = min(x, min_val)
         max_val = max(x, max_val)
-    return max_val, min_val
+    return min_val, max_val
 
 
 def estimate_approximate_distribution(X) -> XApproxDistribution:
