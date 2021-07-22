@@ -30,6 +30,7 @@ Test the anndata adaptor using the pbmc3k data set.
         (f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad", True),
         (f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad", True),
         (f"{FIXTURES_ROOT}/pbmc3k-CSR-gz.h5ad", True),
+        (f"{FIXTURES_ROOT}/pbmc3k_64.h5ad", False),  # 64 bit conversion tests
     ],
 )
 class AdaptorTest(unittest.TestCase):
@@ -90,7 +91,8 @@ class AdaptorTest(unittest.TestCase):
 
     def test_schema_produces_error(self):
         self.data.data.obs["time"] = pd.Series(
-            list([time.time() for i in range(self.data.cell_count)]), dtype="datetime64[ns]",
+            list([time.time() for i in range(self.data.cell_count)]),
+            dtype="datetime64[ns]",
         )
         with pytest.raises(TypeError):
             self.data._create_schema()
@@ -107,7 +109,7 @@ class AdaptorTest(unittest.TestCase):
         self.assertTrue((Y >= 0).all() and (Y <= 1).all())
 
     def test_layout_fields(self):
-        """ X_pca, X_tsne, X_umap are available """
+        """X_pca, X_tsne, X_umap are available"""
         fbs = self.data.layout_to_fbs_matrix(["pca"])
         layout = decode_fbs.decode_matrix_FBS(fbs)
         self.assertEqual(layout["n_cols"], 2)
@@ -127,7 +129,8 @@ class AdaptorTest(unittest.TestCase):
         self.assertEqual(annotations["n_cols"], 5)
         obs_index_col_name = self.data.get_schema()["annotations"]["obs"]["index"]
         self.assertEqual(
-            annotations["col_idx"], [obs_index_col_name, "n_genes", "percent_mito", "n_counts", "louvain"],
+            annotations["col_idx"],
+            [obs_index_col_name, "n_genes", "percent_mito", "n_counts", "louvain"],
         )
 
         fbs = self.data.annotation_to_fbs_matrix("var")
@@ -153,12 +156,12 @@ class AdaptorTest(unittest.TestCase):
         f1 = {"filter": {"obs": {"index": [[0, 500]]}}}
         f2 = {"filter": {"obs": {"index": [[500, 1000]]}}}
         result = json.loads(self.data.diffexp_topN(f1["filter"], f2["filter"]))
-        self.assertEqual(len(result['positive']), 10)
-        self.assertEqual(len(result['negative']), 10)
+        self.assertEqual(len(result["positive"]), 10)
+        self.assertEqual(len(result["negative"]), 10)
 
         result = json.loads(self.data.diffexp_topN(f1["filter"], f2["filter"], 20))
-        self.assertEqual(len(result['positive']), 20)
-        self.assertEqual(len(result['negative']), 20)
+        self.assertEqual(len(result["positive"]), 20)
+        self.assertEqual(len(result["negative"]), 20)
 
     def test_data_frame(self):
         f1 = {"var": {"index": [[0, 10]]}}
