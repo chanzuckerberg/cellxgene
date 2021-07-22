@@ -23,5 +23,10 @@
     "include": [
         "src/**/*",
         "__tests__/**/*"
+    ],
+    "exclude": [
+        "__tests__/e2e/__snapshots__/**/*",
+        "__tests__/e2e/screenshot_env.js",
+        "__tests__/e2e/takeScreenshot.js"
     ]
 }

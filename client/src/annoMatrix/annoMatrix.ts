@@ -17,19 +17,27 @@ import { _queryValidate, _queryCacheKey } from "./query";
 const _dataframeCache = dataframeMemo(128);
 
 export default class AnnoMatrix {
-  isView: any;
+  public isView: any;
 
-  nObs: any;
+  public nObs: any;
 
-  nVar: any;
+  public nVar: any;
 
-  rowIndex: any;
+  public rowIndex: any;
 
-  schema: any;
+  public schema: any;
 
-  userFlags: any;
+  public userFlags: any;
 
-  viewOf: any;
+  public viewOf: any;
+
+  protected _cache: any;
+
+  private _pendingLoad: any;
+
+  private _whereCache: any;
+
+  private _gcInfo: any;
 
   /*
   Abstract base class for all AnnoMatrix objects.  This class provides a proxy
@@ -104,20 +112,20 @@ export default class AnnoMatrix {
 
     Do NOT use directly - instead, use the fetch() and preload() API.
     */
-    (this as any)._cache = {
+    this._cache = {
       obs: Dataframe.empty(this.rowIndex),
       var: Dataframe.empty(this.rowIndex),
       emb: Dataframe.empty(this.rowIndex),
       X: Dataframe.empty(this.rowIndex),
     };
-    (this as any)._pendingLoad = {
+    this._pendingLoad = {
       obs: {},
       var: {},
       emb: {},
       X: {},
     };
-    (this as any)._whereCache = {};
-    (this as any)._gcInfo = new Map();
+    this._whereCache = {};
+    this._gcInfo = new Map();
   }
 
   /**
@@ -440,7 +448,7 @@ export default class AnnoMatrix {
 Return cache keys for columns associated with this query.  May return
 [unknown] if no keys are known (ie, nothing is or was cached).
 */
-    return _whereCacheGet((this as any)._whereCache, this.schema, field, query);
+    return _whereCacheGet(this._whereCache, this.schema, field, query);
   }
 
   /**
@@ -452,16 +460,10 @@ Return cache keys for columns associated with this query.  May return
       queries
         // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'query' implicitly has an 'any' type.
         .map((query) =>
-          _whereCacheGet(
-            (this as any)._whereCache,
-            this.schema,
-            field,
-            query
-          ).filter(
+          _whereCacheGet(this._whereCache, this.schema, field, query).filter(
             // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'cacheKey' implicitly has an 'any' type.
             (cacheKey) =>
-              cacheKey !== undefined &&
-              (this as any)._cache[field].hasCol(cacheKey)
+              cacheKey !== undefined && this._cache[field].hasCol(cacheKey)
           )
         )
         .flat()
@@ -480,11 +482,10 @@ Return cache keys for columns associated with this query.  May return
 
     /* find any query not already cached */
     const uncachedQueries = queries.filter((query) =>
-      _whereCacheGet((this as any)._whereCache, this.schema, field, query).some(
+      _whereCacheGet(this._whereCache, this.schema, field, query).some(
         // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'cacheKey' implicitly has an 'any' type.
         (cacheKey) =>
-          cacheKey === undefined ||
-          !(this as any)._cache[field].hasCol(cacheKey)
+          cacheKey === undefined || !this._cache[field].hasCol(cacheKey)
       )
     );
 
@@ -497,11 +498,9 @@ Return cache keys for columns associated with this query.  May return
             /* fetch, then index.  _doLoad is subclass interface */
             // @ts-expect-error ts-migrate(2488) FIXME: Type 'void' must have a '[Symbol.iterator]()' meth... Remove this comment to see the full error message
             const [whereCacheUpdate, df] = await this._doLoad(_field, _query);
-            (this as any)._cache[_field] = (this as any)._cache[
-              _field
-            ].withColsFrom(df);
-            (this as any)._whereCache = _whereCacheMerge(
-              (this as any)._whereCache,
+            this._cache[_field] = this._cache[_field].withColsFrom(df);
+            this._whereCache = _whereCacheMerge(
+              this._whereCache,
               whereCacheUpdate
             );
           })
@@ -512,7 +511,7 @@ Return cache keys for columns associated with this query.  May return
     /* everything we need is in the cache, so just cherry-pick requested columns */
     const requestedCacheKeys = this._resolveCachedQueries(field, queries);
     const response = _dataframeCache(
-      (this as any)._cache[field].subset(null, requestedCacheKeys)
+      this._cache[field].subset(null, requestedCacheKeys)
     );
     this._gcUpdateStats(field, response);
     return response;
@@ -529,15 +528,15 @@ Return cache keys for columns associated with this query.  May return
     fetch promise.
     */
     const key = _queryCacheKey(field, query);
-    if (!(this as any)._pendingLoad[field][key]) {
-      (this as any)._pendingLoad[field][key] = fetchFn(field, query);
+    if (!this._pendingLoad[field][key]) {
+      this._pendingLoad[field][key] = fetchFn(field, query);
       try {
-        await (this as any)._pendingLoad[field][key];
+        await this._pendingLoad[field][key];
       } finally {
-        delete (this as any)._pendingLoad[field][key];
+        delete this._pendingLoad[field][key];
       }
     }
-    return (this as any)._pendingLoad[field][key];
+    return this._pendingLoad[field][key];
   }
 
   // eslint-disable-next-line class-methods-use-this -- make sure subclass implements
@@ -577,7 +576,7 @@ Return cache keys for columns associated with this query.  May return
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   _gcField(field, isHot, pinnedColumns) {
     const maxColumns = isHot ? 256 : 10;
-    const cache = (this as any)._cache[field];
+    const cache = this._cache[field];
     if (cache.colIndex.size() < maxColumns) return; // trivial rejection
 
     const candidates = cache.colIndex
@@ -587,7 +586,6 @@ Return cache keys for columns associated with this query.  May return
 
     const excessCount = candidates.length + pinnedColumns.length - maxColumns;
     if (excessCount > 0) {
-      // @ts-expect-error ts-migrate(2339) FIXME: Property '_gcInfo' does not exist on type 'AnnoMat... Remove this comment to see the full error message
       const { _gcInfo } = this;
       // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
       candidates.sort((a, b) => {
@@ -607,10 +605,10 @@ Return cache keys for columns associated with this query.  May return
       //     ", "
       //   )}]`
       // );
-      (this as any)._cache[field] = toDrop.reduce(
+      this._cache[field] = toDrop.reduce(
         // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'df' implicitly has an 'any' type.
         (df, col) => df.dropCol(col),
-        (this as any)._cache[field]
+        this._cache[field]
       );
       // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'col' implicitly has an 'any' type.
       toDrop.forEach((col) => _gcInfo.delete(_columnCacheKey(field, col)));
@@ -653,7 +651,6 @@ Return cache keys for columns associated with this query.  May return
     in a Map.
     */
     const cols = dataframe.colIndex.labels();
-    // @ts-expect-error ts-migrate(2339) FIXME: Property '_gcInfo' does not exist on type 'AnnoMat... Remove this comment to see the full error message
     const { _gcInfo } = this;
     const now = Date.now();
     // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
@@ -676,7 +673,7 @@ Return cache keys for columns associated with this query.  May return
   **/
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'clone' implicitly has an 'any' type.
   _cloneDeeper(clone) {
-    clone._cache = _shallowClone((this as any)._cache);
+    clone._cache = _shallowClone(this._cache);
     clone._gcInfo = new Map();
     clone._pendingLoad = {
       obs: {},

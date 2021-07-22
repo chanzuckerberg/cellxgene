@@ -1,10 +1,10 @@
 {
   "testRunner": "jest-circus/runner",
   "preset": "jest-puppeteer",
-  "testMatch": ["**/__tests__/**/?(*.)(spec|test).js?(x)"],
-  "setupFiles": ["../setupMissingGlobals.js"],
-  "setupFilesAfterEnv": ["expect-puppeteer", "./puppeteer.setup.js"],
-  "globalSetup": "../globalSetup.js",
+  "testMatch": ["**/__tests__/**/?(*.)(spec|test).ts?(x)"],
+  "setupFiles": ["../setupMissingGlobals.ts"],
+  "setupFilesAfterEnv": ["expect-puppeteer", "./puppeteer.setup.ts"],
+  "globalSetup": "../globalSetup.ts",
   "globalTeardown": "jest-environment-puppeteer/teardown",
   "testEnvironment": "./screenshot_env.js"
 }

@@ -9,8 +9,6 @@ import { _whereCacheCreate } from "./whereCache";
 import { _isContinuousType, _getColumnSchema } from "./schema";
 
 class AnnoMatrixView extends AnnoMatrix {
-  _cache: any;
-
   constructor(viewOf: any, rowIndex = null) {
     // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
     const nObs = rowIndex ? rowIndex.size() : viewOf.nObs;
