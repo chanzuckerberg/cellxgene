@@ -17,13 +17,11 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
-          # NOTE(el): There is a bug in GitHub <-> ghcr.io that prevents reading "internal" images using secrets.GITHUB_TOKEN
-          #           for now, use a scoped PAT
-          username: cziprodsec
-          password: ${{ secrets.SASTISFACTION_DOCKER_READ_KEY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Docker pull
         run: docker pull ghcr.io/chanzuckerberg/sastisfaction:main
       - name: Run SASTisfaction
         uses: ./.github/actions/sastisfaction
         with:
-          snowflake_private_key: ${{ secrets.SASTISFACTION_READ_KEY }}
+          snowflake_private_key: ${{ secrets.SASTISFACTION_RSA_KEY }}
