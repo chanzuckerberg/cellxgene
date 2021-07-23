@@ -189,7 +189,7 @@ describe.each([
     await clickOn("redo");
     await assertGenesetExists(genesetName);
   });
-  test("edit geneset name", async () => {
+  test("edit geneset name and undo/redo", async () => {
     await setup(config);
 
     await editGenesetName(editableGenesetName, editText);
@@ -199,12 +199,16 @@ describe.each([
     await clickOn("redo");
     await assertGenesetExists(newGenesetName);
   });
-  test("delete a geneset", async () => {
+  test("delete a geneset and undo/redo", async () => {
     if (config.withSubset) return;
 
     await setup(config);
 
     await deleteGeneset(genesetToDeleteName);
+    await clickOn("undo");
+    await assertGenesetExists(genesetToDeleteName);
+    await clickOn("redo");
+    await assertGenesetDoesNotExist(genesetToDeleteName);
   });
 });
 
@@ -217,6 +221,10 @@ describe.each([
 
     await addGeneToSet(setToAddGeneTo, geneToAddToSet);
     await expandGeneset(setToAddGeneTo);
+    await assertGeneExistsInGeneset(geneToAddToSet);
+    await clickOn("undo");
+    await assertGeneDoesNotExist(geneToAddToSet);
+    await clickOn("redo");
     await assertGeneExistsInGeneset(geneToAddToSet);
   });
   test("expand gene and brush", async () => {
@@ -256,6 +264,10 @@ describe.each([
 
     await expandGeneset(setToRemoveFrom);
     await removeGene(geneToRemove);
+    await assertGeneDoesNotExist(geneToRemove);
+    await clickOn("undo");
+    await assertGeneExistsInGeneset(geneToRemove);
+    await clickOn("redo");
     await assertGeneDoesNotExist(geneToRemove);
   });
 });
