@@ -70,21 +70,21 @@ class TestTypeConversionUtils(unittest.TestCase):
         self.assertFalse(can_cast)
 
     def test__can_cast_to_int32__int64_is_true(self):
-        array_to_convert = Series(data=["1", "2", "3"], dtype=np.dtype(np.int64))
+        array_to_convert = Series(data=[1, 2, 3], dtype=np.dtype(np.int64))
 
         can_cast = can_cast_to_int32(array_to_convert.dtype, array_to_convert)
 
         self.assertTrue(can_cast)
 
     def test__can_cast_to_int32__int16_is_true(self):
-        array_to_convert = Series(data=["1", "2", "3"], dtype=np.dtype(np.int16))
+        array_to_convert = Series(data=[1, 2, 3], dtype=np.dtype(np.int16))
 
         can_cast = can_cast_to_int32(array_to_convert.dtype, array_to_convert)
 
         self.assertTrue(can_cast)
 
     def test__can_cast_to_int32__int64_with_large_value_is_false(self):
-        array_to_convert = Series(data=["3000000000", "2", "3"], dtype=np.dtype(np.int64))
+        array_to_convert = Series(data=[3000000000, 2, 3], dtype=np.dtype(np.int64))
 
         can_cast = can_cast_to_int32(array_to_convert.dtype, array_to_convert)
 

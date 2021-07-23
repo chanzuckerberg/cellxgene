@@ -203,6 +203,8 @@ dataset:
     lfc_cutoff: 0.01
     top_n: 10
 
+  X_approx_distribution: normal # currently fixed config
+
 external:
   # You can retrieve configuration parameters from this config file, the environment,
   # the AWS secrets manager, or from the "cellxgene launch" command line arguments.

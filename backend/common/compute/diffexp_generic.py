@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import sparse, stats
+from backend.common.constants import XApproxDistribution
 
 
 def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
@@ -7,7 +8,7 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     Return differential expression statistics for top N variables.
 
     Algorithm:
-    - compute log fold change (log2(meanA/meanB))
+    - compute fold change
     - compute Welch's t-test statistic and pvalue (w/ Bonferroni correction)
     - return top N abs(logfoldchange) where lfc > diffexp_lfc_cutoff
 
@@ -26,21 +27,24 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     :param top_n: number of variables to return stats for
     :param diffexp_lfc_cutoff: minimum
     absolute value returning [ varindex, logfoldchange, pval, pval_adj ] for top N genes
-    :return:  for top N genes, {"positive": for top N genes, [ varindex, logfoldchange, pval, pval_adj ], "negative": for top N genes, [ varindex, logfoldchange, pval, pval_adj ]}
+    :return:  for top N genes, {"positive": for top N genes, [ varindex, foldchange, pval, pval_adj ], "negative": for top N genes, [ varindex, foldchange, pval, pval_adj ]}
     """
 
+    X_approx_distribution = adaptor.get_X_approx_distribution()
     dataA = adaptor.get_X_array(maskA, None)
     dataB = adaptor.get_X_array(maskB, None)
 
     # mean, variance, N - calculate for both selections
-    meanA, vA, nA = mean_var_n(dataA)
-    meanB, vB, nB = mean_var_n(dataB)
+    meanA, vA, nA = mean_var_n(dataA, X_approx_distribution)
+    meanB, vB, nB = mean_var_n(dataB, X_approx_distribution)
     res = diffexp_ttest_from_mean_var(meanA, vA, nA, meanB, vB, nB, top_n, diffexp_lfc_cutoff)
 
     return res
 
 
 def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp_lfc_cutoff):
+    # IMPORTANT NOTE: this code assumes the data is normally distributed and/or already logged.
+
     n_var = meanA.shape[0]
     top_n = min(top_n, n_var)
 
@@ -64,15 +68,15 @@ def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp
     pvals_adj = pvals * n_var
     pvals_adj[pvals_adj > 1] = 1  # cap adjusted p-value at 1
 
-    # logfoldchanges: log2(meanA / meanB)
-    logfoldchanges = np.log2(np.abs((meanA + 1e-9) / (meanB + 1e-9)))
+    # log fold change. The data is normally distributed/logged, so just subtract the means.
+    logfoldchanges = meanA - meanB
 
     stats_to_sort = tscores
     # find all with lfc > cutoff
     lfc_above_cutoff_idx = np.nonzero(np.abs(logfoldchanges) > diffexp_lfc_cutoff)[0]
 
     # derive sort order
-    if lfc_above_cutoff_idx.shape[0] > top_n*2:
+    if lfc_above_cutoff_idx.shape[0] > top_n * 2:
         # partition top N
         rel_t_partition = np.argpartition(stats_to_sort[lfc_above_cutoff_idx], (top_n, -top_n))
         rel_t_partition_top_n = np.concatenate((rel_t_partition[-top_n:], rel_t_partition[:top_n]))
@@ -95,16 +99,21 @@ def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp
     pvals_adj_top_n = pvals_adj[sort_order]
 
     # varIndex, logfoldchange, pval, pval_adj
-    result = {"positive": [[sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]] for i in
-                           range(top_n)],
-              "negative": [[sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]] for i in
-                           range(-1, -1 - top_n, -1)], }
+    result = {
+        "positive": [
+            [sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]] for i in range(top_n)
+        ],
+        "negative": [
+            [sort_order[i], logfoldchanges_top_n[i], pvals_top_n[i], pvals_adj_top_n[i]]
+            for i in range(-1, -1 - top_n, -1)
+        ],
+    }
 
     return result
 
 
 # Convenience function which handles sparse data
-def mean_var_n(X):
+def mean_var_n(X, X_approx_distribution=XApproxDistribution.NORMAL):
     """
     Two-pass variance calculation.  Numerically (more) stable
     than naive methods (and same method used by numpy.var())
@@ -122,15 +131,26 @@ def mean_var_n(X):
     with np.errstate(divide="call", invalid="call", call=fp_err_set):
         n = X.shape[0]
         if sparse.issparse(X):
+            if X_approx_distribution == XApproxDistribution.COUNT:
+                X = X.log1p()
             mean = X.mean(axis=0).A1
             dfm = X - mean
             sumsq = np.sum(np.multiply(dfm, dfm), axis=0).A1
             v = sumsq / (n - 1)
         else:
+            if X_approx_distribution == XApproxDistribution.COUNT:
+                X = np.log1p(X)
             mean = X.mean(axis=0)
             dfm = X - mean
             sumsq = np.sum(np.multiply(dfm, dfm), axis=0)
             v = sumsq / (n - 1)
+
+    # AnnData does not guarantee that operations on a view of X will
+    # return an ndarray, so force the cast if it wasn't done for us.
+    if type(mean) is not np.ndarray:
+        mean = mean.toarray()
+    if type(v) is not np.ndarray:
+        v = v.toarray()
 
     if fp_err_occurred:
         mean[np.isfinite(mean) == False] = 0  # noqa: E712
