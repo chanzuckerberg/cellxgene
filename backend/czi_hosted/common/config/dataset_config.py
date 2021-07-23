@@ -205,7 +205,7 @@ class DatasetConfig(BaseConfig):
 
     def handle_X_approx_distribution(self):
         self.validate_correct_type_of_configuration_attribute("X_approx_distribution", str)
-        if self.X_approx_distribution not in ["normal", "exponential"]:
+        if self.X_approx_distribution not in ["normal", "count"]:
             raise ConfigurationError(
-                "X_approx_distribution has unknown value -- must be 'normal' or 'exponential'."
+                "X_approx_distribution has unknown value -- must be 'normal' or 'count'."
             )

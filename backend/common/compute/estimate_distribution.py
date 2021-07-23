@@ -31,11 +31,12 @@ def min_max(arr):
 
 def estimate_approximate_distribution(X) -> XApproxDistribution:
     """
-    Estimate the distribution (normal, exponential) of the X matrix.
+    Estimate the distribution (normal, count) of the X matrix.
 
     Currently this is based upon the assumption that scRNA-seq data is
     exponentially distributed in its raw (count) form, and when logged,
-    any (max-min) range in excess of 24 is extremely unlikely.
+    any (max-min) range in excess of 24 is implies tens of millions of
+    observations of a single feature and so is extremely unlikely.
     """
     if sparse.isspmatrix_csc(X) or sparse.isspmatrix_csr(X):
         Xdata = X.data
@@ -58,4 +59,4 @@ def estimate_approximate_distribution(X) -> XApproxDistribution:
         min_val, max_val = min_max(Xdata)
 
     excess_range = (max_val - min_val) > 24
-    return XApproxDistribution.EXPONENTIAL if excess_range else XApproxDistribution.NORMAL
+    return XApproxDistribution.COUNT if excess_range else XApproxDistribution.NORMAL

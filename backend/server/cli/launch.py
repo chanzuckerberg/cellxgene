@@ -154,7 +154,7 @@ def dataset_args(func):
         "--X-approx-distribution",
         default=DEFAULT_CONFIG.dataset_config.X_approx_distribution,
         show_default=True,
-        type=click.Choice(["auto", "normal", "exponential"], case_sensitive=False),
+        type=click.Choice(["auto", "normal", "count"], case_sensitive=False),
         help="Specify the approximate distribution of X matrix values. 'auto' will use a heuristic "
         "to determine the approximate distribution.  Mode 'auto' is incompatible with --backed.",
     )

@@ -131,14 +131,14 @@ def mean_var_n(X, X_approx_distribution=XApproxDistribution.NORMAL):
     with np.errstate(divide="call", invalid="call", call=fp_err_set):
         n = X.shape[0]
         if sparse.issparse(X):
-            if X_approx_distribution == XApproxDistribution.EXPONENTIAL:
+            if X_approx_distribution == XApproxDistribution.COUNT:
                 X = X.log1p()
             mean = X.mean(axis=0).A1
             dfm = X - mean
             sumsq = np.sum(np.multiply(dfm, dfm), axis=0).A1
             v = sumsq / (n - 1)
         else:
-            if X_approx_distribution == XApproxDistribution.EXPONENTIAL:
+            if X_approx_distribution == XApproxDistribution.COUNT:
                 X = np.log1p(X)
             mean = X.mean(axis=0)
             dfm = X - mean

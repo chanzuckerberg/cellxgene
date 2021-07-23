@@ -26,16 +26,16 @@ class EstDistTest(unittest.TestCase):
         raw = np.random.exponential(scale=1000, size=(100, 40))
 
         # ndarray
-        self.assertEqual(estimate_approximate_distribution(raw), XApproxDistribution.EXPONENTIAL)
+        self.assertEqual(estimate_approximate_distribution(raw), XApproxDistribution.COUNT)
         self.assertEqual(estimate_approximate_distribution(np.log1p(raw)), XApproxDistribution.NORMAL)
 
         # csr_matrix
-        self.assertEqual(estimate_approximate_distribution(sparse.csr_matrix(raw)), XApproxDistribution.EXPONENTIAL)
+        self.assertEqual(estimate_approximate_distribution(sparse.csr_matrix(raw)), XApproxDistribution.COUNT)
         self.assertEqual(
             estimate_approximate_distribution(sparse.csr_matrix(np.log1p(raw))), XApproxDistribution.NORMAL
         )
 
         # BIG (ie, trigger MT)
         big = np.random.exponential(scale=100, size=(1_000_000, 100))
-        self.assertEqual(estimate_approximate_distribution(big), XApproxDistribution.EXPONENTIAL)
+        self.assertEqual(estimate_approximate_distribution(big), XApproxDistribution.COUNT)
         self.assertEqual(estimate_approximate_distribution(np.log1p(big)), XApproxDistribution.NORMAL)

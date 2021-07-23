@@ -26,7 +26,7 @@ class DiffExpMode(AugmentedEnum):
 
 class XApproxDistribution(AugmentedEnum):
     NORMAL = "normal"
-    EXPONENTIAL = "exponential"
+    COUNT = "count"
 
 
 JSON_NaN_to_num_warning_msg = "JSON encoding failure - please verify all data are finite values (no NaN or Infinities)"
