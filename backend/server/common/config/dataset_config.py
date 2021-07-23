@@ -3,8 +3,7 @@ from os.path import splitext, isdir
 
 from backend.server.common.annotations.local_file_csv import AnnotationsLocalFile
 from backend.server.common.config.base_config import BaseConfig
-from backend.common.errors import ConfigurationError, OntologyLoadFailure, AnnotationsError
-from backend.server.compute.scanpy import get_scanpy_module
+from backend.common.errors import ConfigurationError, AnnotationsError
 from backend.server.data_common.matrix_loader import MatrixDataLoader
 
 
@@ -28,21 +27,18 @@ class DatasetConfig(BaseConfig):
                 "directory"
             ]
             self.user_annotations__local_file_csv__file = default_config["user_annotations"]["local_file_csv"]["file"]
-            self.user_annotations__ontology__enable = default_config["user_annotations"]["ontology"]["enable"]
-            self.user_annotations__ontology__obo_location = default_config["user_annotations"]["ontology"][
-                "obo_location"
-            ]
             self.user_annotations__gene_sets__readonly = default_config["user_annotations"]["gene_sets"]["readonly"]
             self.user_annotations__local_file_csv__gene_sets_file = default_config["user_annotations"][
                 "local_file_csv"
             ]["gene_sets_file"]
 
             self.embeddings__names = default_config["embeddings"]["names"]
-            self.embeddings__enable_reembedding = default_config["embeddings"]["enable_reembedding"]
 
             self.diffexp__enable = default_config["diffexp"]["enable"]
             self.diffexp__lfc_cutoff = default_config["diffexp"]["lfc_cutoff"]
             self.diffexp__top_n = default_config["diffexp"]["top_n"]
+
+            self.X_approx_distribution = default_config["X_approx_distribution"]
 
         except KeyError as e:
             raise ConfigurationError(f"Unexpected config: {str(e)}")
@@ -56,6 +52,7 @@ class DatasetConfig(BaseConfig):
         self.handle_user_annotations(context)
         self.handle_embeddings()
         self.handle_diffexp(context)
+        self.handle_X_approx_distribution()
 
     def get_data_adaptor(self):
         server_config = self.app_config.server_config
@@ -101,10 +98,6 @@ class DatasetConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__local_file_csv__gene_sets_file", (type(None), str)
         )
-        self.validate_correct_type_of_configuration_attribute("user_annotations__ontology__enable", bool)
-        self.validate_correct_type_of_configuration_attribute(
-            "user_annotations__ontology__obo_location", (type(None), str)
-        )
         self.validate_correct_type_of_configuration_attribute("user_annotations__gene_sets__readonly", bool)
 
         if self.user_annotations__enable or not self.user_annotations__gene_sets__readonly:
@@ -121,13 +114,6 @@ class DatasetConfig(BaseConfig):
             self.handle_local_file_csv_annotations(context)
         else:
             raise ConfigurationError('The only annotation type support is "local_file_csv"')
-
-        if self.user_annotations__enable:
-            if self.user_annotations__ontology__enable or self.user_annotations__ontology__obo_location:
-                try:
-                    self.user_annotations.load_ontology(self.user_annotations__ontology__obo_location)
-                except OntologyLoadFailure as e:
-                    raise ConfigurationError("Unable to load ontology terms\n" + str(e))
 
         self.check_annotation_config_vars_not_set(context)
 
@@ -183,32 +169,11 @@ class DatasetConfig(BaseConfig):
             if not self.user_annotations__enable:
                 if filename is not None:
                     context["messagefn"]("Warning: --annotations-file ignored as annotations are disabled.")
-                if self.user_annotations__ontology__enable:
-                    context["messagefn"](
-                        "Warning: --experimental-annotations-ontology ignored as annotations are disabled."
-                    )
-                if self.user_annotations__ontology__obo_location is not None:
-                    context["messagefn"](
-                        "Warning: --experimental-annotations-ontology-obo ignored as annotations are disabled."
-                    )
                 if dirname is not None:
                     context["messagefn"]("Warning: --user-generated-data-dir ignored as annotations are disabled.")
 
     def handle_embeddings(self):
         self.validate_correct_type_of_configuration_attribute("embeddings__names", list)
-        self.validate_correct_type_of_configuration_attribute("embeddings__enable_reembedding", bool)
-
-        server_config = self.app_config.server_config
-        if self.embeddings__enable_reembedding:
-            if server_config.single_dataset__datapath:
-                if server_config.adaptor__anndata_adaptor__backed:
-                    raise ConfigurationError("enable-reembedding is not supported when run in --backed mode.")
-
-            try:
-                get_scanpy_module()
-            except NotImplementedError:
-                # Todo add scanpy to requirements.txt and remove this check once re-embeddings is fully supported
-                raise ConfigurationError("Please install scanpy to enable UMAP re-embedding")
 
     def handle_diffexp(self, context):
         self.validate_correct_type_of_configuration_attribute("diffexp__enable", bool)
@@ -219,4 +184,11 @@ class DatasetConfig(BaseConfig):
         if self.diffexp__enable and data_adaptor.parameters.get("diffexp_may_be_slow", False):
             context["messagefn"](
                 "CAUTION: due to the size of your dataset, " "running differential expression may take longer or fail."
+            )
+
+    def handle_X_approx_distribution(self):
+        self.validate_correct_type_of_configuration_attribute("X_approx_distribution", str)
+        if self.X_approx_distribution not in ["auto", "normal", "count"]:
+            raise ConfigurationError(
+                "X_approx_distribution has unknown value -- must be 'auto', 'normal' or 'count'."
             )

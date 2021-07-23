@@ -5,9 +5,7 @@ from backend.czi_hosted.common.annotations.annotations import Annotations
 from backend.czi_hosted.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
 from backend.czi_hosted.common.annotations.local_file_csv import AnnotationsLocalFile
 from backend.czi_hosted.common.config.base_config import BaseConfig
-from backend.common.errors import ConfigurationError, OntologyLoadFailure
-from backend.czi_hosted.compute.scanpy import get_scanpy_module
-from backend.czi_hosted.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
+from backend.common.errors import ConfigurationError
 from backend.czi_hosted.db.db_utils import DbUtils
 
 
@@ -33,10 +31,6 @@ class DatasetConfig(BaseConfig):
                 "directory"
             ]
             self.user_annotations__local_file_csv__file = default_config["user_annotations"]["local_file_csv"]["file"]
-            self.user_annotations__ontology__enable = default_config["user_annotations"]["ontology"]["enable"]
-            self.user_annotations__ontology__obo_location = default_config["user_annotations"]["ontology"][
-                "obo_location"
-            ]
             self.user_annotations__hosted_tiledb_array__db_uri = default_config["user_annotations"][
                 "hosted_tiledb_array"
             ]["db_uri"]
@@ -45,17 +39,18 @@ class DatasetConfig(BaseConfig):
             ]["hosted_file_directory"]
 
             self.embeddings__names = default_config["embeddings"]["names"]
-            self.embeddings__enable_reembedding = default_config["embeddings"]["enable_reembedding"]
 
             self.diffexp__enable = default_config["diffexp"]["enable"]
             self.diffexp__lfc_cutoff = default_config["diffexp"]["lfc_cutoff"]
             self.diffexp__top_n = default_config["diffexp"]["top_n"]
 
+            self.X_approx_distribution = default_config["X_approx_distribution"]
+
         except KeyError as e:
             raise ConfigurationError(f"Unexpected config: {str(e)}")
 
         # Create the default annotation, which supports gene set reading without
-        # further configuration. Depending on configuration options, `complete_config` 
+        # further configuration. Depending on configuration options, `complete_config`
         # may create a more specialized annotation object and replace this default.
         self.user_annotations = Annotations()
 
@@ -65,6 +60,7 @@ class DatasetConfig(BaseConfig):
         self.handle_user_annotations(context)
         self.handle_embeddings()
         self.handle_diffexp(context)
+        self.handle_X_approx_distribution()
 
     def handle_app(self):
         self.validate_correct_type_of_configuration_attribute("app__scripts", list)
@@ -101,10 +97,6 @@ class DatasetConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__local_file_csv__file", (type(None), str)
         )
-        self.validate_correct_type_of_configuration_attribute("user_annotations__ontology__enable", bool)
-        self.validate_correct_type_of_configuration_attribute(
-            "user_annotations__ontology__obo_location", (type(None), str)
-        )
         self.validate_correct_type_of_configuration_attribute(
             "user_annotations__hosted_tiledb_array__db_uri", (type(None), str)
         )
@@ -125,11 +117,6 @@ class DatasetConfig(BaseConfig):
                 self.handle_hosted_tiledb_annotations()
             else:
                 raise ConfigurationError('The only annotation type support is "local_file_csv" or "hosted_tiledb_array')
-            if self.user_annotations__ontology__enable or self.user_annotations__ontology__obo_location:
-                try:
-                    self.user_annotations.load_ontology(self.user_annotations__ontology__obo_location)
-                except OntologyLoadFailure as e:
-                    raise ConfigurationError("Unable to load ontology terms\n" + str(e))
         else:
             self.check_annotation_config_vars_not_set(context)
 
@@ -197,33 +184,8 @@ class DatasetConfig(BaseConfig):
                     "Warning: hosted_file_directory for hosted_tiledb_array ignored as annotations are disabled."
                 )
 
-        if self.user_annotations__ontology__enable:
-            context["messagefn"]("Warning: --experimental-annotations-ontology ignored as annotations are disabled.")
-        if self.user_annotations__ontology__obo_location is not None:
-            context["messagefn"](
-                "Warning: --experimental-annotations-ontology-obo ignored as annotations are disabled."
-            )
-
     def handle_embeddings(self):
         self.validate_correct_type_of_configuration_attribute("embeddings__names", list)
-        self.validate_correct_type_of_configuration_attribute("embeddings__enable_reembedding", bool)
-
-        server_config = self.app_config.server_config
-        if self.embeddings__enable_reembedding:
-            if server_config.single_dataset__datapath:
-                matrix_data_loader = MatrixDataLoader(
-                    server_config.single_dataset__datapath, app_config=self.app_config
-                )
-                if matrix_data_loader.matrix_data_type != MatrixDataType.H5AD:
-                    raise ConfigurationError("enable-reembedding is only supported with H5AD files.")
-                if server_config.adaptor__anndata_adaptor__backed:
-                    raise ConfigurationError("enable-reembedding is not supported when run in --backed mode.")
-
-            try:
-                get_scanpy_module()
-            except NotImplementedError:
-                # Todo add scanpy to requirements.txt and remove this check once re-embeddings is fully supported
-                raise ConfigurationError("Please install scanpy to enable UMAP re-embedding")
 
     def handle_diffexp(self, context):
         self.validate_correct_type_of_configuration_attribute("diffexp__enable", bool)
@@ -240,3 +202,10 @@ class DatasetConfig(BaseConfig):
                         "CAUTION: due to the size of your dataset, "
                         "running differential expression may take longer or fail."
                     )
+
+    def handle_X_approx_distribution(self):
+        self.validate_correct_type_of_configuration_attribute("X_approx_distribution", str)
+        if self.X_approx_distribution not in ["normal", "count"]:
+            raise ConfigurationError(
+                "X_approx_distribution has unknown value -- must be 'normal' or 'count'."
+            )

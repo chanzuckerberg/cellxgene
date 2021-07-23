@@ -193,14 +193,14 @@ class AnnotationsLocalFile(Annotations):
         return os.getcwd()
 
     def _get_celllabels_filename(self, data_adaptor):
-        """ return the current annotation file name """
+        """return the current annotation file name"""
         if self.label_output_file:
             return self.label_output_file
 
         return self._get_filename(data_adaptor, "cell-labels")
 
     def _get_genesets_filename(self, data_adaptor):
-        """ return the current gene sets file name """
+        """return the current gene sets file name"""
         if self.gene_sets_output_file:
             return self.gene_sets_output_file
 
@@ -262,12 +262,6 @@ class AnnotationsLocalFile(Annotations):
         params["annotations_genesets_readonly"] = not self.gene_sets_save_enabled()
         params["annotations_genesets_name_is_read_only"] = self.gene_sets_output_file is not None
         params["user_annotation_collection_name_enabled"] = True
-
-        if self.ontology_data:
-            params["annotations_cell_ontology_enabled"] = True
-            params["annotations_cell_ontology_terms"] = self.ontology_data
-        else:
-            params["annotations_cell_ontology_enabled"] = False
 
         if self.label_output_file is not None:
             # user has hard-wired the name of the annotation cell label data collection

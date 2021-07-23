@@ -6,7 +6,7 @@ from scipy import sparse
 from server_timing import Timing as ServerTiming
 
 from backend.server.common.config.app_config import AppConfig
-from backend.common.constants import Axis
+from backend.common.constants import Axis, XApproxDistribution
 from backend.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError, UnsupportedSummaryMethod
 from backend.common.utils.utils import jsonify_numpy
 from backend.common.fbs.matrix import encode_matrix_fbs
@@ -67,15 +67,14 @@ class DataAdaptor(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def compute_embedding(self, method, filter):
-        """compute a new embedding on the specified obs subset, and return the embedding schema."""
-        pass
-
-    @abstractmethod
     def get_X_array(self, obs_mask=None, var_mask=None):
         """return the X array, possibly filtered by obs_mask or var_mask.
         the return type is either ndarray or scipy.sparse.spmatrix."""
         pass
+
+    def get_X_approx_distribution(self) -> XApproxDistribution:
+        """return the approximate distribution of the X matrix."""
+        return XApproxDistribution.NORMAL
 
     @abstractmethod
     def get_shape(self):

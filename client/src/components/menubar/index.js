@@ -11,7 +11,6 @@ import AuthButtons from "./authButtons";
 import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
 import DiffexpButtons from "./diffexpButtons";
-import Reembedding from "./reembedding";
 import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
 
 @connect((state) => {
@@ -49,8 +48,6 @@ import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
     tosURL: state.config?.parameters?.about_legal_tos,
     privacyURL: state.config?.parameters?.about_legal_privacy,
     categoricalSelection: state.categoricalSelection,
-    enableReembedding:
-      state.config?.parameters?.["enable-reembedding"] ?? false,
   };
 })
 class MenuBar extends React.PureComponent {
@@ -212,7 +209,6 @@ class MenuBar extends React.PureComponent {
       colorAccessor,
       subsetPossible,
       subsetResetPossible,
-      enableReembedding,
       userInfo,
       auth,
     } = this.props;
@@ -262,7 +258,6 @@ class MenuBar extends React.PureComponent {
             this.handleClipPercentileMinValueChange
           }
         />
-        {enableReembedding ? <Reembedding /> : null}
         <Tooltip
           content="When a category is colored by, show labels on the graph"
           position="bottom"

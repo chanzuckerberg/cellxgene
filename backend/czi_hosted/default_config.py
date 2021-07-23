@@ -194,18 +194,16 @@ dataset:
     local_file_csv:
       directory: null
       file: null
-    ontology:
-      enable: false
-      obo_location: null
 
   embeddings:
     names : []
-    enable_reembedding: false
 
   diffexp:
     enable: true
     lfc_cutoff: 0.01
     top_n: 10
+
+  X_approx_distribution: normal # currently fixed config
 
 external:
   # You can retrieve configuration parameters from this config file, the environment,

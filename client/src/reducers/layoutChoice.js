@@ -47,19 +47,6 @@ const LayoutChoice = (
       return { ...state, current, currentDimNames };
     }
 
-    case "reembed: add reembedding": {
-      const { schema } = nextSharedState.annoMatrix;
-      const { name } = action.schema;
-      const available = Array.from(new Set(state.available).add(name));
-      const currentDimNames = schema.layout.obsByName[name].dims;
-      return {
-        ...state,
-        available,
-        current: name,
-        currentDimNames,
-      };
-    }
-
     default: {
       return state;
     }

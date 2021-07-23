@@ -17,18 +17,16 @@ dataset:
       directory: {local_file_csv_directory}
       file: {local_file_csv_file}
       gene_sets_file: {local_file_csv_gene_sets_file}
-    ontology:
-      enable: {ontology_enabled}
-      obo_location: {obo_location}
     gene_sets:
       readonly: {gene_sets_readonly}
 
   embeddings:
     names: {embedding_names}
-    enable_reembedding: {enable_reembedding}
 
   diffexp:
     enable: {enable_difexp}
     lfc_cutoff: {lfc_cutoff}
     top_n: {top_n}
+
+  X_approx_distribution: {X_approx_distribution}
 """

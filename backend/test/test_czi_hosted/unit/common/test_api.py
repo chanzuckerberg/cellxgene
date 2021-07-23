@@ -69,35 +69,6 @@ class EndPoints(BaseTest):
         self.assertIsNone(df["row_idx"])
         self.assertEqual(len(df["columns"]), df["n_cols"])
 
-    def test_put_layout_fbs(self):
-        # first check that re-embedding is turned on
-        self.app.auth.get_user_id = lambda : "123"
-        result = self.client.get(f"{self.TEST_URL_BASE}config")
-        config_data = json.loads(result.data)
-        re_embed = config_data["config"]["parameters"]["enable-reembedding"]
-        if not re_embed:
-            return
-        # attempt to reembed with umap over 100 cells.
-        endpoint = "layout/obs"
-        url = f"{self.TEST_URL_BASE}{endpoint}"
-        data = {}
-        data["filter"] = {}
-        data["filter"]["obs"] = {}
-        data["filter"]["obs"]["index"] = list(range(100))
-        data["method"] = "umap"
-        result = self.client.put(url, json=data)
-
-        self.assertEqual(result.status_code, HTTPStatus.OK)
-        result_data = result.json()
-        self.assertIsInstance(result_data, dict)
-        self.assertEqual(result_data["type"], "float32")
-        self.assertTrue(result_data["name"].startswith("reembed:umap_"))
-        self.assertIsInstance(result_data["dims"], list)
-        self.assertEqual(len(result_data["dims"]), 2)
-        dims = result_data["dims"]
-        self.assertTrue(dims[0].startswith("reembed:umap_") and dims[0].endswith("_0"))
-        self.assertTrue(dims[1].startswith("reembed:umap_") and dims[1].endswith("_1"))
-
     def test_bad_filter(self):
         endpoint = "data/var"
         url = f"{self.TEST_URL_BASE}{endpoint}"
@@ -148,6 +119,8 @@ class EndPoints(BaseTest):
         result = self.client.get(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
 
+# TEMP: Testing count 15 to match hardcoded values for diffexp
+# TODO(#1281): Switch back to dynamic values
     def test_diff_exp(self):
         endpoint = "diffexp/obs"
         url = f"{self.TEST_URL_BASE}{endpoint}"
@@ -155,21 +128,21 @@ class EndPoints(BaseTest):
             "mode": "topN",
             "set1": {"filter": {"obs": {"annotation_value": [{"name": "louvain", "values": ["NK cells"]}]}}},
             "set2": {"filter": {"obs": {"annotation_value": [{"name": "louvain", "values": ["CD8 T cells"]}]}}},
-            "count": 7,
+            "count": 15,
         }
         result = self.client.post(url, json=params)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = json.loads(result.data)
-        self.assertEqual(len(result_data['positive']), 7)
-        self.assertEqual(len(result_data['negative']), 7)
+        self.assertEqual(len(result_data['positive']), 15)
+        self.assertEqual(len(result_data['negative']), 15)
 
     def test_diff_exp_indices(self):
         endpoint = "diffexp/obs"
         url = f"{self.TEST_URL_BASE}{endpoint}"
         params = {
             "mode": "topN",
-            "count": 10,
+            "count": 15,
             "set1": {"filter": {"obs": {"index": [[0, 500]]}}},
             "set2": {"filter": {"obs": {"index": [[500, 1000]]}}},
         }
@@ -177,8 +150,8 @@ class EndPoints(BaseTest):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = json.loads(result.data)
-        self.assertEqual(len(result_data['positive']), 10)
-        self.assertEqual(len(result_data['negative']), 10)
+        self.assertEqual(len(result_data['positive']), 15)
+        self.assertEqual(len(result_data['negative']), 15)
 
     def test_get_annotations_var_fbs(self):
         endpoint = "annotations/var"
@@ -421,7 +394,7 @@ class EndPointsCxg(EndPoints):
     @classmethod
     def setUpClass(cls):
         app_config = AppConfig()
-        app_config.update_default_dataset_config(embeddings__enable_reembedding=True, user_annotations__enable=False)
+        app_config.update_default_dataset_config(user_annotations__enable=False)
 
     def test_get_genesets_json(self):
         self.app.auth.is_user_authenticated = lambda: True

@@ -11,7 +11,7 @@ export async function _switchEmbedding(
   newEmbeddingName
 ) {
   /*
-  DRY helper used by this and reembedding action creators
+  DRY helper used by embedding action creators
   */
   const base = prevAnnoMatrix.base();
   const embeddingDf = await base.fetch("emb", newEmbeddingName);

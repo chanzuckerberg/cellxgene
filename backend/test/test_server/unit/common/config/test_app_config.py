@@ -131,9 +131,8 @@ class AppConfigTest(ConfigTests):
 
         # test simple value in default dataset
         config.update_single_config_from_path_and_value(
-            ["dataset", "user_annotations", "ontology", "obo_location"], "dummy_location",
+            ["dataset", "user_annotations"], "dummy_location",
         )
-        self.assertEqual(config.dataset_config.user_annotations__ontology__obo_location, "dummy_location")
 
         # error checking
         bad_paths = [
