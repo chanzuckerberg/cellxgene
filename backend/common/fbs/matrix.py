@@ -5,6 +5,8 @@ import pandas as pd
 from flatbuffers import Builder
 from scipy import sparse
 
+from backend.common.utils.type_conversion_utils import get_encoding_dtype_of_array
+
 import backend.common.fbs.NetEncoding.Column as Column
 import backend.common.fbs.NetEncoding.Float32Array as Float32Array
 import backend.common.fbs.NetEncoding.Float64Array as Float64Array
@@ -13,6 +15,7 @@ import backend.common.fbs.NetEncoding.JSONEncodedArray as JSONEncodedArray
 import backend.common.fbs.NetEncoding.Matrix as Matrix
 import backend.common.fbs.NetEncoding.TypedArray as TypedArray
 import backend.common.fbs.NetEncoding.Uint32Array as Uint32Array
+
 
 # Serialization helper
 def serialize_column(builder, typed_arr):
@@ -84,7 +87,7 @@ def serialize_typed_array(builder, source_array, encoding_info):
 def column_encoding(arr):
     column_encoding_type_map = {
         # array protocol string:  ( array_type, as_type )
-        np.dtype(np.float64).str: (TypedArray.TypedArray.Float64Array, np.float64),
+        np.dtype(np.float64).str: (TypedArray.TypedArray.Float32Array, np.float32),
         np.dtype(np.float32).str: (TypedArray.TypedArray.Float32Array, np.float32),
         np.dtype(np.float16).str: (TypedArray.TypedArray.Float32Array, np.float32),
         np.dtype(np.int8).str: (TypedArray.TypedArray.Int32Array, np.int32),
@@ -98,7 +101,8 @@ def column_encoding(arr):
     }
     column_encoding_default = (TypedArray.TypedArray.JSONEncodedArray, "json")
 
-    return column_encoding_type_map.get(arr.dtype.str, column_encoding_default)
+    encoding_dtype = np.dtype(get_encoding_dtype_of_array(arr))
+    return column_encoding_type_map.get(encoding_dtype.str, column_encoding_default)
 
 
 def index_encoding(arr):

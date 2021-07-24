@@ -10,7 +10,7 @@ from flask import current_app
 from backend.czi_hosted.common.annotations.annotations import Annotations
 from backend.common.errors import AnnotationCategoryNameError
 from backend.czi_hosted.common.utils.sanitization_utils import sanitize_values_in_list
-from backend.common.utils.type_conversion_utils import get_dtypes_and_schemas_of_dataframe, get_dtype_of_array
+from backend.common.utils.type_conversion_utils import get_dtypes_and_schemas_of_dataframe, get_encoding_dtype_of_array
 from backend.czi_hosted.db.cellxgene_orm import Annotation
 
 
@@ -143,7 +143,7 @@ class AnnotationsHostedTileDB(Annotations):
             # convert to tiledb datatypes
 
             for col in df:
-                df[col] = df[col].astype(get_dtype_of_array(df[col]))
+                df[col] = df[col].astype(get_encoding_dtype_of_array(df[col]))
             tiledb.from_pandas(uri, df, sparse=True)
         else:
             uri = ""

@@ -66,11 +66,11 @@ class AnndataAdaptor(DataAdaptor):
 
     @staticmethod
     def _create_unique_column_name(df, col_name_prefix):
-        """ given the columns of a dataframe, and a name prefix, return a column name which
-            does not exist in the dataframe, AND which is prefixed by `prefix`
+        """given the columns of a dataframe, and a name prefix, return a column name which
+        does not exist in the dataframe, AND which is prefixed by `prefix`
 
-            The approach is to append a numeric suffix, starting at zero and increasing by
-            one, until an unused name is found (eg, prefix_0, prefix_1, ...).
+        The approach is to append a numeric suffix, starting at zero and increasing by
+        one, until an unused name is found (eg, prefix_0, prefix_1, ...).
         """
         suffix = 0
         while f"{col_name_prefix}{suffix}" in df:
@@ -124,7 +124,11 @@ class AnndataAdaptor(DataAdaptor):
 
     def _create_schema(self):
         self.schema = {
-            "dataframe": {"nObs": self.cell_count, "nVar": self.gene_count, "type": str(self.data.X.dtype)},
+            "dataframe": {
+                "nObs": self.cell_count,
+                "nVar": self.gene_count,
+                **get_schema_type_hint_of_array(self.data.X),
+            },
             "annotations": {
                 "obs": {"index": self.parameters.get("obs_names"), "columns": []},
                 "var": {"index": self.parameters.get("var_names"), "columns": []},
@@ -201,10 +205,10 @@ class AnndataAdaptor(DataAdaptor):
             self.parameters.update({"diffexp_may_be_slow": True})
 
     def _is_valid_layout(self, arr):
-        """ return True if this layout data is a valid array for front-end presentation:
-            * ndarray, dtype float/int/uint
-            * with shape (n_obs, >= 2)
-            * with all values finite or NaN (no +Inf or -Inf)
+        """return True if this layout data is a valid array for front-end presentation:
+        * ndarray, dtype float/int/uint
+        * with shape (n_obs, >= 2)
+        * with all values finite or NaN (no +Inf or -Inf)
         """
         is_valid = type(arr) == np.ndarray and arr.dtype.kind in "fiu"
         is_valid = is_valid and arr.shape[0] == self.data.n_obs and arr.shape[1] >= 2

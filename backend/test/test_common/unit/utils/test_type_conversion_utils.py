@@ -7,8 +7,8 @@ from pandas import Series, DataFrame
 
 from backend.common.utils.type_conversion_utils import (
     can_cast_to_float32,
-    can_cast_to_int32,
-    get_dtype_of_array,
+    can_cast_to_int,
+    get_encoding_dtype_of_array,
     get_schema_type_hint_of_array,
     get_dtypes_and_schemas_of_dataframe,
     convert_pandas_series_to_numpy,
@@ -19,7 +19,7 @@ class TestTypeConversionUtils(unittest.TestCase):
     def test__can_cast_to_float32__string_is_false(self):
         array_to_convert = Series(data=["1", "2", "3"], dtype=str)
 
-        can_cast = can_cast_to_float32(array_to_convert.dtype, array_to_convert)
+        can_cast = can_cast_to_float32(array_to_convert)
 
         self.assertFalse(can_cast)
 
@@ -27,7 +27,7 @@ class TestTypeConversionUtils(unittest.TestCase):
         array_to_convert = Series(data=[1, 2, 3], dtype=np.dtype(np.float64))
 
         with self.assertLogs(level="WARN") as logger:
-            can_cast = can_cast_to_float32(array_to_convert.dtype, array_to_convert)
+            can_cast = can_cast_to_float32(array_to_convert)
             self.assertIn("may lose precision", logger.output[0])
 
         self.assertTrue(can_cast)
@@ -36,7 +36,7 @@ class TestTypeConversionUtils(unittest.TestCase):
     def test__can_cast_to_float32__float32_is_false(self, mock_log_warning):
         array_to_convert = Series(data=[1, 2, 3], dtype=np.dtype(np.float32))
 
-        can_cast = can_cast_to_float32(array_to_convert.dtype, array_to_convert)
+        can_cast = can_cast_to_float32(array_to_convert)
 
         self.assertTrue(can_cast)
         assert not mock_log_warning.called
@@ -44,102 +44,101 @@ class TestTypeConversionUtils(unittest.TestCase):
     def test__can_cast_to_float32__categorical_float64_is_false(self):
         array_to_convert = Series(data=[1.1, 2.2, 3.3], dtype="category")
 
-        can_cast = can_cast_to_float32(array_to_convert.dtype, array_to_convert)
+        can_cast = can_cast_to_float32(array_to_convert)
 
         self.assertFalse(can_cast)
 
     def test__can_cast_to_float32__categorical_int64_with_nans_is_true(self):
         array_to_convert = Series(data=[1, 2, np.NaN], dtype="category")
-
-        can_cast = can_cast_to_float32(array_to_convert.dtype, array_to_convert)
-
-        self.assertTrue(can_cast)
+        self.assertFalse(can_cast_to_float32(array_to_convert))
+        self.assertTrue(can_cast_to_float32(array_to_convert.to_numpy()))
 
     def test__can_cast_to_float_32__float_32_with_nans_is_true(self):
         array_to_convert = Series(data=[1, 2, np.NaN], dtype=np.dtype(np.float32))
 
-        can_cast = can_cast_to_float32(array_to_convert.dtype, array_to_convert)
+        can_cast = can_cast_to_float32(array_to_convert)
 
         self.assertTrue(can_cast)
 
     def test__can_cast_to_int32__string_is_false(self):
         array_to_convert = Series(data=["1", "2", "3"], dtype=str)
 
-        can_cast = can_cast_to_int32(array_to_convert.dtype, array_to_convert)
+        can_cast = can_cast_to_int(array_to_convert, np.int32)
 
         self.assertFalse(can_cast)
 
     def test__can_cast_to_int32__int64_is_true(self):
         array_to_convert = Series(data=[1, 2, 3], dtype=np.dtype(np.int64))
 
-        can_cast = can_cast_to_int32(array_to_convert.dtype, array_to_convert)
+        can_cast = can_cast_to_int(array_to_convert, np.int32)
 
         self.assertTrue(can_cast)
 
     def test__can_cast_to_int32__int16_is_true(self):
         array_to_convert = Series(data=[1, 2, 3], dtype=np.dtype(np.int16))
 
-        can_cast = can_cast_to_int32(array_to_convert.dtype, array_to_convert)
+        can_cast = can_cast_to_int(array_to_convert, np.int32)
 
         self.assertTrue(can_cast)
 
     def test__can_cast_to_int32__int64_with_large_value_is_false(self):
         array_to_convert = Series(data=[3000000000, 2, 3], dtype=np.dtype(np.int64))
 
-        can_cast = can_cast_to_int32(array_to_convert.dtype, array_to_convert)
+        can_cast = can_cast_to_int(array_to_convert, np.int32)
 
         self.assertFalse(can_cast)
 
     def test__can_cast_to_int32__int64_with_nans_is_false(self):
         array_to_convert = Series(data=[np.NaN, "2", "3"], dtype="category")
 
-        can_cast = can_cast_to_int32(array_to_convert.dtype, array_to_convert)
+        can_cast = can_cast_to_int(array_to_convert, np.int32)
 
         self.assertFalse(can_cast)
 
-    def test__get_dtype_of_array__supported_dtypes_return_as_expected(self):
+    def test__get_encoding_dtype_of_array__supported_dtypes_return_as_expected(self):
         types = [np.float32, np.int32, np.bool_, str]
         expected_dtypes = [np.float32, np.int32, np.uint8, str]
 
         for test_type_index in range(len(types)):
             with self.subTest(
-                f"Testing get_dtype_of_array with type {types[test_type_index].__name__}", i=test_type_index
+                f"Testing get_encoding_dtype_of_array with type {types[test_type_index].__name__}", i=test_type_index
             ):
                 array = Series(data=[], dtype=types[test_type_index])
-                self.assertEqual(get_dtype_of_array(array), expected_dtypes[test_type_index])
+                self.assertEqual(get_encoding_dtype_of_array(array), expected_dtypes[test_type_index])
 
-    def test__get_dtype_of_array__categories_return_as_expected(self):
+    def test__get_encoding_dtype_of_array__categories_return_as_expected(self):
         array = Series(data=["a", "b", "c"], dtype="category")
         expected_dtype = str
 
-        actual_dtype = get_dtype_of_array(array)
+        actual_dtype = get_encoding_dtype_of_array(array)
 
         self.assertEqual(expected_dtype, actual_dtype)
 
-    def test__get_dtype_of_array__unordered_integer_categories_return_as_expected(self):
+    def test__get_encoding_dtype_of_array__unordered_integer_categories_return_as_expected(self):
         array = Series(data=[2, 3, 1, 3, 1, 2], dtype="category")
         expected_dtype = np.int32
 
-        actual_dtype = get_dtype_of_array(array)
+        actual_dtype = get_encoding_dtype_of_array(array)
 
         self.assertEqual(expected_dtype, actual_dtype)
 
-    def test__get_dtype_of_array__castable_dtypes_return_as_expected(self):
+    def test__get_encoding_dtype_of_array__castable_dtypes_return_as_expected(self):
         types = [np.float64, np.int64]
         expected_dtypes = [np.float32, np.int32]
 
         for test_type_index in range(len(types)):
             with self.subTest(
-                f"Testing get_dtype_of_array with castable type {types[test_type_index].__name__}", i=test_type_index
+                f"Testing get_encoding_dtype_of_array with castable type {types[test_type_index].__name__}",
+                i=test_type_index,
             ):
                 array = Series(data=[], dtype=types[test_type_index])
-                self.assertEqual(get_dtype_of_array(array), expected_dtypes[test_type_index])
+                self.assertEqual(get_encoding_dtype_of_array(array), expected_dtypes[test_type_index])
 
-    def test__get_dtype_of_array__unsupported_type_raises_exception(self):
+    def test__get_encoding_dtype_of_array__unsupported_type_raises_exception(self):
         unsupported_array = Series(list([time() for _ in range(2)]), dtype="datetime64[ns]")
 
         with self.assertRaises(TypeError) as exception_context:
-            get_dtype_of_array(unsupported_array)
+            get_encoding_dtype_of_array(unsupported_array)
 
         self.assertIn("unsupported", str(exception_context.exception))
 
@@ -213,5 +212,5 @@ class TestTypeConversionUtils(unittest.TestCase):
             convert_pandas_series_to_numpy(int_series, np.int32)
 
             self.assertIn(
-                "Cannot convert a pandas Series object to an integer dtype if it contains NaNs", logger.output[0]
+                "Cannot convert a pandas Series object to an integer dtype if it contains NA values.", logger.output[0]
             )

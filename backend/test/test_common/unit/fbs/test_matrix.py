@@ -46,7 +46,7 @@ class FbsTests(unittest.TestCase):
                 "d": pd.Series(["x", "y", "z", "x", "y", "z", "a", "x", "y", "z"], dtype="category"),
             }
         )
-        expected_types = ((np.ndarray, np.float32), (np.ndarray, np.int32), (np.ndarray, np.uint32), (list, None))
+        expected_types = ((np.ndarray, np.float32), (np.ndarray, np.int32), (np.ndarray, np.int32), (list, None))
         fbs = encode_matrix_fbs(matrix=df, row_idx=None, col_idx=df.columns)
         self.fbs_checks(fbs, (10, 4), expected_types, ["a", "b", "c", "d"])
 

@@ -125,7 +125,11 @@ class AnndataAdaptor(DataAdaptor):
 
     def _create_schema(self):
         self.schema = {
-            "dataframe": {"nObs": self.cell_count, "nVar": self.gene_count, "type": str(self.data.X.dtype)},
+            "dataframe": {
+                "nObs": self.cell_count,
+                "nVar": self.gene_count,
+                **get_schema_type_hint_of_array(self.data.X),
+            },
             "annotations": {
                 "obs": {"index": self.parameters.get("obs_names"), "columns": []},
                 "var": {"index": self.parameters.get("var_names"), "columns": []},
@@ -335,7 +339,7 @@ class AnndataAdaptor(DataAdaptor):
         """return the approximate distribution of the X matrix."""
         if self.X_approx_distribution is None:
             """Not yet evaluated."""
-            assert(self.dataset_config.X_approx_distribution == "auto")
+            assert self.dataset_config.X_approx_distribution == "auto"
             self.data = self.data.to_memory()  # loads data
             self.X_approx_distribution = estimate_distribution.estimate_approximate_distribution(self.data.X)
 
