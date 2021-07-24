@@ -4,6 +4,40 @@ import logging
 import numpy as np
 import pandas as pd
 
+"""
+
+These routines drive all type inference for the schema generation and the 
+FBS (REST OTA) encoding. They are also used for CXG generation.
+
+
+H5AD Type                       REST              REST
+(ndarray, Series, Index)        FBS encoding      schema type       ERROR/exceptions
+----------------------------    --------------    ---------------   ----------------------
+bool_/bool                      JSON/bool         boolean
+(u)int8, (u)int16, int32        int32             int32
+uint32, (u)it64                 int32             int32             CHECKS value bounds
+float16, float32, float64       float32           float32[0]
+
+categorical[T is numeric[4]]:
+    hasna = False               T                 categorical[1]
+    hasna = True                float32           categorical[1]    CHECKS value bounds
+
+categorical[T not numeric]      JSON/str          categorical[1,2]
+
+(other object)                  JSON/str          string
+
+(all other)                                                         Always an ERROR[3]
+
+
+Notes:
+[0] IEEE format, includes non-finite numbers (NaN, Inf, ...)
+[1] with NO categories enumerated (client side does it to handle rounding)
+[2] NA (undefined) categories are assigned a JSON null value
+[3] Includes all other numpy types:  datetime, complex, etc.
+[4] means float, int, uint (dtype.kind in ['i','u','f'])
+
+"""
+
 
 def get_dtypes_and_schemas_of_dataframe(dataframe: pd.DataFrame):
     dtypes_by_column_name = {}
@@ -52,20 +86,28 @@ def _get_type_info(array: Union[np.ndarray, pd.Series]) -> Tuple[np.dtype, dict]
     CategoricalDType are special, in that the schema hint wants to know about the
     category and categories, and we want to encode numeric categoricals
     """
+    if (
+        not isinstance(array, np.ndarray)
+        and not isinstance(array, pd.Series)
+        and not isinstance(array, pd.Index)
+        and not hasattr(array, "dtype")
+    ):
+        raise TypeError("Unsupported data type.")
+
     dtype = array.dtype
 
     if dtype.kind == "b" or dtype.name == "bool":
-        return (np.uint8, {"type": "boolean"})
+        return (np.bool_, {"type": "boolean"})
 
     if dtype.kind == "U":
         return (np.dtype(str), {"type": "string"})
 
     if dtype.kind == "O":
         if dtype.name == "category":
-            assert isinstance(array, pd.Series)
             # Sometimes CategoricalDType can be encoded as int or float without further fuss.
             # Do not specify the categories in the schema - let the client-side figure it out
-            # on its own.  Utilize Series.to_numpy() to
+            # on its own.  Utilize Series.to_numpy() to do casting that handles categorical
+            # NA/NaN (missing or undefined) categories.
             if dtype.categories.dtype.kind in ["f", "i", "u"]:
                 return (
                     _get_type_info(array.to_numpy())[0],
