@@ -1,4 +1,4 @@
-anndata>=0.7.0
+anndata>=0.7.6 # we use to_memory(), added in 0.7.6
 boto3>=1.12.18
 click>=7.1.2
 Flask>=1.0.2,<2.0.0 # Flask 2.0 is not compatible with the latest version of Flask-RESTful (0.3.8)
@@ -11,7 +11,7 @@ flatbuffers>=1.11.0,<2.0.0 # cellxgene is not compatible with 2.0.0. Requires mi
 flatten-dict>=0.2.0
 fsspec>=0.4.4,<0.8.0
 gunicorn>=20.0.4
-h5py<3.0.0 # h5py>=3.0.0 had a breaking change; there is a fix in anndata>=0.7.5
+h5py>=3.0.0
 numba>=0.49.1,<0.53.0
 numpy>=1.15.0
 packaging>=20.0

@@ -22,20 +22,27 @@ Test the anndata adaptor using the pbmc3k data set.
 
 
 @parameterized_class(
-    ("data_locator", "backed"),
+    ("data_locator", "backed", "X_approx_distribution"),
     [
-        (f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad", False),
-        (f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad", False),
-        (f"{FIXTURES_ROOT}/pbmc3k-CSR-gz.h5ad", False),
-        (f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad", True),
-        (f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad", True),
-        (f"{FIXTURES_ROOT}/pbmc3k-CSR-gz.h5ad", True),
-        (f"{FIXTURES_ROOT}/pbmc3k_64.h5ad", False),  # 64 bit conversion tests
+        (f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad", False, "auto"),
+        (f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad", False, "auto"),
+        (f"{FIXTURES_ROOT}/pbmc3k-CSR-gz.h5ad", False, "auto"),
+        (f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad", True, "auto"),
+        (f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad", True, "auto"),
+        (f"{FIXTURES_ROOT}/pbmc3k-CSR-gz.h5ad", True, "auto"),
+        (f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad", False, "normal"),
+        (f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad", False, "normal"),
+        (f"{FIXTURES_ROOT}/pbmc3k-CSR-gz.h5ad", False, "normal"),
+        (f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad", True, "normal"),
+        (f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad", True, "normal"),
+        (f"{FIXTURES_ROOT}/pbmc3k-CSR-gz.h5ad", True, "normal"),
     ],
 )
 class AdaptorTest(unittest.TestCase):
     def setUp(self):
-        config = app_config(self.data_locator, self.backed)
+        config = app_config(
+            self.data_locator, self.backed, extra_dataset_config=dict(X_approx_distribution=self.X_approx_distribution)
+        )
         self.data = AnndataAdaptor(DataLocator(self.data_locator), config)
 
     def test_init(self):
