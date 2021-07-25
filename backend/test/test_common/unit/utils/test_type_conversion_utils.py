@@ -102,7 +102,7 @@ class TestTypeConversionUtils(unittest.TestCase):
 
     def test__get_encoding_dtype_of_array__supported_dtypes_return_as_expected(self):
         types = [np.float32, np.int32, np.bool_, str]
-        expected_dtypes = [np.float32, np.int32, np.bool_, str]
+        expected_dtypes = [np.float32, np.int32, np.uint8, str]
 
         for test_type_index in range(len(types)):
             with self.subTest(
@@ -262,13 +262,13 @@ This probes all edge cases. Each case is a dict containing keys:
     - throws - if not None, the expected Error (eg, TypeError)
     - expected_encoding_dtype - upon success
     - expected_schema_hint - upon success
-    - logs - optional, if not None, specify expected log output
+    - logs - if not None, specify expected log output
 """
 
 bool_OK_cases = [
     {
         "data": data,
-        "expected_encoding_dtype": np.bool_,
+        "expected_encoding_dtype": np.uint8,
         "expected_schema_hint": {"type": "boolean"},
     }
     for data in [

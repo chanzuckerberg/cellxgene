@@ -13,7 +13,7 @@ FBS (REST OTA) encoding. They are also used for CXG generation.
 H5AD Type                       REST              REST
 (ndarray, Series, Index)        FBS encoding      schema type       ERROR/exceptions
 ----------------------------    --------------    ---------------   ----------------------
-bool_/bool                      JSON/bool         boolean
+bool_/bool                      uint8             boolean
 (u)int8, (u)int16, int32        int32             int32
 uint32, (u)it64                 int32             int32             CHECKS value bounds
 float16, float32, float64       float32           float32[0]
@@ -65,26 +65,41 @@ def get_dtype_and_schema_of_array(array: Union[np.ndarray, pd.Series]) -> Tuple[
     return _get_type_info(array)
 
 
+def get_schema_type_hint_from_dtype(dtype) -> dict:
+    res = _get_type_info_from_dtype(dtype)
+    if res is None:
+        raise TypeError(f"Annotations of type {dtype} are unsupported.")
+    else:
+        return res[1]
+
+
+def _get_type_info_from_dtype(dtype) -> Union[Tuple[np.dtype, dict], None]:
+    """
+    Best-effort to determine encoding type and schema hint from a dtype.
+    If this is not possible, or the type is unsupported, return None.
+    """
+    if dtype.kind == "b":
+        return (np.uint8, {"type": "boolean"})
+
+    if dtype.kind == "U":
+        return (np.dtype(str), {"type": "string"})
+
+    if dtype.kind in ["i", "u"]:
+        if np.can_cast(dtype, np.int32):
+            return (np.int32, {"type": "int32"})
+
+    if dtype.kind == "f":
+        if np.can_cast(dtype, np.float32):
+            return (np.float32, {"type": "float32"})
+
+    return None
+
+
 def _get_type_info(array: Union[np.ndarray, pd.Series]) -> Tuple[np.dtype, dict]:
     """
-    Given a data type, return the type information used to:
-        * FBS encoding dtype: encode Matrix FBS format using this primitive type.
-        * Client schema info: which will be passed to the client
-    Only return information for those types that we have full support for in
-    both the backend AND front-end.
-
-    Note: in the front-end:
-    * the front-end only supports int32 and float32 numerics
-
-    In our FBS encoding:
-    * pandas.Series are cast to arrays using Series.to_numpy(), with DEFAULT
-      pandas type conversion rules (this handles, for example, categoricals
-      with missing values)
-    * only unicode strings are supported (no bytes or bytearray)
-    * no arbitrary object support
-
-    CategoricalDType are special, in that the schema hint wants to know about the
-    category and categories, and we want to encode numeric categoricals
+    Determine encoding type and schema hint from an array.  This allows more
+    flexible casting than may be possible by using just the dtype, as it can
+    account for category types and array values.
     """
     if (
         not isinstance(array, np.ndarray)
@@ -96,11 +111,9 @@ def _get_type_info(array: Union[np.ndarray, pd.Series]) -> Tuple[np.dtype, dict]
 
     dtype = array.dtype
 
-    if dtype.kind == "b" or dtype.name == "bool":
-        return (np.bool_, {"type": "boolean"})
-
-    if dtype.kind == "U":
-        return (np.dtype(str), {"type": "string"})
+    res = _get_type_info_from_dtype(dtype)
+    if res is not None:
+        return res
 
     if dtype.kind == "O":
         if dtype.name == "category":
@@ -122,7 +135,7 @@ def _get_type_info(array: Union[np.ndarray, pd.Series]) -> Tuple[np.dtype, dict]
     if dtype.kind in ["i", "u"] and can_cast_to_int(array, np.int32):
         return (np.int32, {"type": "int32"})
 
-    if can_cast_to_float32(array):
+    if dtype.kind == "f" and can_cast_to_float32(array):
         return (np.float32, {"type": "float32"})
 
     raise TypeError(f"Annotations of type {dtype} are unsupported.")
