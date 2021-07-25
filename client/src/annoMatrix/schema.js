@@ -65,6 +65,14 @@ export function _isContinuousType(schema) {
 }
 
 export function _normalizeCategoricalSchema(colSchema, col) {
+  /*
+  Ensure all enum schema types have a categories array, that
+  the categories array contains all unique values in the data
+  array, AND that the array is sorted.
+
+  Note that the back-end will not always set this hint, so we
+  must assume it may be incorrect and/or missing.
+  */
   const { type, writable } = colSchema;
   if (
     type === "string" ||
