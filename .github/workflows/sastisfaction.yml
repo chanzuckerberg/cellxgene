@@ -1,0 +1,27 @@
+name: Run SASTisfaction
+on:
+  - pull_request
+
+jobs:
+  sastisfaction:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        with:
+          repository: chanzuckerberg/sastisfaction
+          ref: main
+          path: .github/actions/sastisfaction
+          ssh-key: ${{ secrets.SASTISFACTION_READ_KEY }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Docker pull
+        run: docker pull ghcr.io/chanzuckerberg/sastisfaction:main
+      - name: Run SASTisfaction
+        uses: ./.github/actions/sastisfaction
+        with:
+          snowflake_private_key: ${{ secrets.SASTISFACTION_RSA_KEY }}

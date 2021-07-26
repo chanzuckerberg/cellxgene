@@ -38,6 +38,8 @@ class DatasetConfig(BaseConfig):
             self.diffexp__lfc_cutoff = default_config["diffexp"]["lfc_cutoff"]
             self.diffexp__top_n = default_config["diffexp"]["top_n"]
 
+            self.X_approx_distribution = default_config["X_approx_distribution"]
+
         except KeyError as e:
             raise ConfigurationError(f"Unexpected config: {str(e)}")
 
@@ -50,6 +52,7 @@ class DatasetConfig(BaseConfig):
         self.handle_user_annotations(context)
         self.handle_embeddings()
         self.handle_diffexp(context)
+        self.handle_X_approx_distribution()
 
     def get_data_adaptor(self):
         server_config = self.app_config.server_config
@@ -181,4 +184,11 @@ class DatasetConfig(BaseConfig):
         if self.diffexp__enable and data_adaptor.parameters.get("diffexp_may_be_slow", False):
             context["messagefn"](
                 "CAUTION: due to the size of your dataset, " "running differential expression may take longer or fail."
+            )
+
+    def handle_X_approx_distribution(self):
+        self.validate_correct_type_of_configuration_attribute("X_approx_distribution", str)
+        if self.X_approx_distribution not in ["auto", "normal", "count"]:
+            raise ConfigurationError(
+                "X_approx_distribution has unknown value -- must be 'auto', 'normal' or 'count'."
             )
