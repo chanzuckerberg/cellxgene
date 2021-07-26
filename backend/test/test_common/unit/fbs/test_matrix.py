@@ -141,7 +141,14 @@ cat_test_cases = [
         "dataframe": pd.DataFrame({"a": pd.Series(["a", "b", "c", "a", "b", "c"], dtype="category")}),
         "expected_fbs_types": {"a": fbs.NetEncoding.TypedArray.TypedArray.JSONEncodedArray},
         "expected_schema_hints": {"a": {"type": "categorical", "categories": ["a", "b", "c"]}},
-    }
+    },
+    {
+        "dataframe": pd.DataFrame(
+            {"a": pd.Series(["a", "b", "c", "a", "b", "c"], dtype="category").cat.remove_categories("b")}
+        ),
+        "expected_fbs_types": {"a": fbs.NetEncoding.TypedArray.TypedArray.JSONEncodedArray},
+        "expected_schema_hints": {"a": {"type": "categorical", "categories": ["a", "c"]}},
+    },
 ]
 
 
