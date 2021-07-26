@@ -7,9 +7,10 @@ on:
   push:
     branches:
       - main
+      - bkmartinjr/compat-workflows
   # temp change for testing
   pull_request:
-    branches: "bkmartinjr/compat-workflows"
+    branches: bkmartinjr/compat-workflows
 
 env:
   JEST_ENV: prod
