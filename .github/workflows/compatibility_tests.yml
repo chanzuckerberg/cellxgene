@@ -1,11 +1,13 @@
 name: Compatibility Tests
 
 on:
-  schedule:
-    - cron: '0 8 7 * 2'
+  # temp change for testing
+  # schedule:
+  #   - cron: '0 8 7 * 2'
   push:
     branches:
       - main
+  # temp change for testing
   pull_request:
     branches: "bkmartinjr/compat-workflows"
 
