@@ -2,7 +2,7 @@ import numba
 import concurrent.futures
 import numpy as np
 from scipy import sparse
-from backend.common.constants import XApproxDistribution
+from backend.common.constants import XApproximateDistribution
 
 
 @numba.njit(fastmath=True, error_model="numpy", nogil=True)
@@ -29,7 +29,7 @@ def min_max(arr):
     return min_val, max_val
 
 
-def estimate_approximate_distribution(X) -> XApproxDistribution:
+def estimate_approximate_distribution(X) -> XApproximateDistribution:
     """
     Estimate the distribution (normal, count) of the X matrix.
 
@@ -59,4 +59,4 @@ def estimate_approximate_distribution(X) -> XApproxDistribution:
         min_val, max_val = min_max(Xdata)
 
     excess_range = (max_val - min_val) > 24
-    return XApproxDistribution.COUNT if excess_range else XApproxDistribution.NORMAL
+    return XApproximateDistribution.COUNT if excess_range else XApproximateDistribution.NORMAL

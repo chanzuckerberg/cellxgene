@@ -44,7 +44,7 @@ class DatasetConfig(BaseConfig):
             self.diffexp__lfc_cutoff = default_config["diffexp"]["lfc_cutoff"]
             self.diffexp__top_n = default_config["diffexp"]["top_n"]
 
-            self.X_approx_distribution = default_config["X_approx_distribution"]
+            self.X_approximate_distribution = default_config["X_approximate_distribution"]
 
         except KeyError as e:
             raise ConfigurationError(f"Unexpected config: {str(e)}")
@@ -60,7 +60,7 @@ class DatasetConfig(BaseConfig):
         self.handle_user_annotations(context)
         self.handle_embeddings()
         self.handle_diffexp(context)
-        self.handle_X_approx_distribution()
+        self.handle_X_approximate_distribution()
 
     def handle_app(self):
         self.validate_correct_type_of_configuration_attribute("app__scripts", list)
@@ -203,9 +203,9 @@ class DatasetConfig(BaseConfig):
                         "running differential expression may take longer or fail."
                     )
 
-    def handle_X_approx_distribution(self):
-        self.validate_correct_type_of_configuration_attribute("X_approx_distribution", str)
-        if self.X_approx_distribution not in ["normal", "count"]:
+    def handle_X_approximate_distribution(self):
+        self.validate_correct_type_of_configuration_attribute("X_approximate_distribution", str)
+        if self.X_approximate_distribution not in ["normal", "count"]:
             raise ConfigurationError(
-                "X_approx_distribution has unknown value -- must be 'normal' or 'count'."
+                "X_approximate_distribution has unknown value -- must be 'normal' or 'count'."
             )
