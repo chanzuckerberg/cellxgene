@@ -14,7 +14,7 @@ H5AD Type                       REST              REST
 ----------------------------    --------------    ---------------   ----------------------
 bool_/bool                      uint8             boolean
 (u)int8, (u)int16, int32        int32             int32
-uint32, (u)it64                 int32             int32             CHECKS value bounds
+uint32, (u)int64                int32             int32             CHECKS value bounds
 float16, float32, float64       float32           float32[0]
 
 categorical[T is numeric[4]]:
