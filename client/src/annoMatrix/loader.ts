@@ -287,6 +287,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
   }
 }
 
+// @ts-expect-error ts-migrate(7006)
 function _responseTypeNormalization(field, query, schema, response) {
   /*
   Schema-driven type normalization - there are a number of assumptions the front-end
@@ -314,12 +315,14 @@ function _responseTypeNormalization(field, query, schema, response) {
   return response;
 }
 
+// @ts-expect-error ts-migrate(7006)
 function _booleanCast(field, query, schema, response) {
   /*
   Boolean columns may be transmitted as an int [0/1] or bool [true/false].
   Force to JS Array of bool.
   */
   if (field === "obs" || field === "var") {
+    // @ts-expect-error ts-migrate(7006)
     response = response.mapColumns((colData, colIdx) => {
       const colLabel = response.colIndex.getLabel(colIdx);
       const colSchema = _getColumnSchema(schema, field, colLabel);
