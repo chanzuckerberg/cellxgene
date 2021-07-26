@@ -149,6 +149,30 @@ cat_test_cases = [
         "expected_fbs_types": {"a": fbs.NetEncoding.TypedArray.TypedArray.JSONEncodedArray},
         "expected_schema_hints": {"a": {"type": "categorical", "categories": ["a", "c"]}},
     },
+    {
+        "dataframe": pd.DataFrame({"a": pd.Series(np.arange(0, 10, dtype=np.int64), dtype="category")}),
+        "expected_fbs_types": {"a": fbs.NetEncoding.TypedArray.TypedArray.Int32Array},
+        "expected_schema_hints": {"a": {"type": "categorical"}},
+    },
+    {
+        "dataframe": pd.DataFrame(
+            {"a": pd.Series(np.arange(0, 10, dtype=np.int64), dtype="category").cat.remove_categories(2)}
+        ),
+        "expected_fbs_types": {"a": fbs.NetEncoding.TypedArray.TypedArray.Float32Array},
+        "expected_schema_hints": {"a": {"type": "categorical"}},
+    },
+    {
+        "dataframe": pd.DataFrame({"a": pd.Series(np.arange(0, 10, dtype=np.float64), dtype="category")}),
+        "expected_fbs_types": {"a": fbs.NetEncoding.TypedArray.TypedArray.Float32Array},
+        "expected_schema_hints": {"a": {"type": "categorical"}},
+    },
+    {
+        "dataframe": pd.DataFrame(
+            {"a": pd.Series(np.arange(0, 10, dtype=np.float64), dtype="category").cat.remove_categories(2)}
+        ),
+        "expected_fbs_types": {"a": fbs.NetEncoding.TypedArray.TypedArray.Float32Array},
+        "expected_schema_hints": {"a": {"type": "categorical"}},
+    },
 ]
 
 
