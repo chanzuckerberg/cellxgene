@@ -24,7 +24,7 @@ function setToDefaultLayout(schema) {
 const LayoutChoice = (
   state = {
     available: [], // all available choices
-    dotplot: true, // is the dotplot toggled on, or not
+    dotplot: false, // is the dotplot toggled on, or not
     current: undefined, // name of the current layout, eg, 'umap'
     currentDimNames: [], // dimension name
   },
@@ -42,7 +42,6 @@ const LayoutChoice = (
     }
 
     case "toggle dotplot": {
-      console.log("toggle: state, newstate", state.dotplot, !state.dotplot);
       return {
         ...state,
         dotplot: !state.dotplot,

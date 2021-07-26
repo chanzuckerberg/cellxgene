@@ -20,6 +20,7 @@ import { getDiscreteCellEmbeddingRowIndex } from "../../util/stateManager/viewSt
     layoutChoice: state.layoutChoice, // TODO: really should clean up naming, s/layout/embedding/g
     schema: state.annoMatrix?.schema,
     crossfilter: state.obsCrossfilter,
+    dotplot: state.layoutChoice.dotplot,
   };
 })
 class Embedding extends React.PureComponent {
@@ -34,16 +35,16 @@ class Embedding extends React.PureComponent {
   };
 
   render() {
-    const { layoutChoice, schema, crossfilter } = this.props;
+    const { layoutChoice, schema, crossfilter, dotplot } = this.props;
     const { annoMatrix } = crossfilter;
     return (
       <ButtonGroup
         style={{
           position: "absolute",
-          display: "inherit",
           left: 8,
           bottom: 8,
           zIndex: 9999,
+          display: dotplot ? "none" : "inherit",
         }}
       >
         <Popover

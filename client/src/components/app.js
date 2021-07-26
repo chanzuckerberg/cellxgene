@@ -79,11 +79,12 @@ class App extends React.Component {
                 <Autosave />
                 <TermsOfServicePrompt />
                 <Legend viewportRef={viewportRef} />
-                {layoutChoice.dotplot ? (
-                  <Dotplot viewportRef={viewportRef} />
-                ) : (
-                  <Graph key={graphRenderCounter} viewportRef={viewportRef} />
-                )}
+                {layoutChoice.dotplot && <Dotplot viewportRef={viewportRef} />}
+                <Graph
+                  key={graphRenderCounter}
+                  dotplotMode={layoutChoice.dotplot}
+                  viewportRef={viewportRef}
+                />
               </>
             )}
             <RightSideBar />

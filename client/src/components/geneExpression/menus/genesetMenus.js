@@ -22,6 +22,7 @@ import AddGeneToGenesetDialogue from "./addGeneToGenesetDialogue";
     genesetsUI: state.genesetsUI,
     colorAccessor: state.colors.colorAccessor,
     dotplot: state.layoutChoice.dotplot,
+    dotplotColumns: state.dotplot.column,
   };
 })
 class GenesetMenus extends React.PureComponent {
@@ -75,9 +76,11 @@ class GenesetMenus extends React.PureComponent {
       createText,
       colorAccessor,
       dotplot,
+      dotplotColumns,
     } = this.props;
 
     const isColorBy = geneset === colorAccessor;
+    const isDotplotColumns = geneset === dotplotColumns;
 
     return (
       <>
@@ -138,8 +141,8 @@ class GenesetMenus extends React.PureComponent {
               hoverOpenDelay={globals.tooltipHoverOpenDelay}
             >
               <AnchorButton
-                active={isColorBy}
-                intent={isColorBy ? "primary" : "none"}
+                active={isColorBy || isDotplotColumns}
+                intent={isColorBy || isDotplotColumns ? "primary" : "none"}
                 style={{ marginLeft: 0 }}
                 onClick={this.handleColorByEntireGeneset}
                 data-testclass="colorby-entire-geneset"

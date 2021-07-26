@@ -16,6 +16,12 @@ const Dotplot = (
         ...state,
         column: action.data,
       };
+    case "toggle dotplot":
+      return {
+        ...state,
+        row: null,
+        column: null,
+      };
     default:
       return state;
   }

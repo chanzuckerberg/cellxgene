@@ -833,6 +833,7 @@ class Graph extends React.Component {
       layoutChoice,
       pointDilation,
       crossfilter,
+      dotplotMode,
     } = this.props;
     const { modelTF, projectionTF, camera, viewport, regl } = this.state;
     const cameraTF = camera?.view()?.slice();
@@ -844,6 +845,7 @@ class Graph extends React.Component {
           position: "relative",
           top: 0,
           left: 0,
+          display: dotplotMode ? "none" : "inherit",
         }}
       >
         <GraphOverlayLayer

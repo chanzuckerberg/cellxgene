@@ -15,6 +15,7 @@ class Dotplot extends React.Component {
     this.dotplotTopPadding = 120;
     this.dotplotLeftPadding = 170;
     this.rowColumnSize = 15;
+    this.dotplotBrowserScalingFactor = 0.65;
 
     this.state = {
       viewport,
@@ -23,10 +24,13 @@ class Dotplot extends React.Component {
 
   componentDidMount() {
     window.addEventListener("resize", this.handleResize);
+    /* chrome only, which is support matrix as of 2021 */
+    document.body.style.zoom = `${this.dotplotBrowserScalingFactor * 100}%`;
   }
 
   componentWillUnmount() {
     window.removeEventListener("resize", this.handleResize);
+    document.body.style.zoom = "100%";
   }
 
   getViewportDimensions = () => {
@@ -56,6 +60,7 @@ class Dotplot extends React.Component {
           position: "relative",
           top: 0,
           left: 0,
+          zIndex: -9999,
         }}
       >
         <svg
@@ -66,8 +71,8 @@ class Dotplot extends React.Component {
             left: 0,
             zIndex: 1,
           }}
-          width={viewport.width}
-          height={viewport.height}
+          width={viewport.width * (1 + this.dotplotBrowserScalingFactor)}
+          height={viewport.height * (1 + this.dotplotBrowserScalingFactor)}
         >
           <g
             id="dotplot_help_text"
