@@ -1,7 +1,6 @@
 name: Compatibility Tests
 
 on:
-  temp change for testing
   schedule:
     - cron: '0 8 7 * 2'
   push:
