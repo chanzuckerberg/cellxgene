@@ -202,7 +202,7 @@ def deserialize_typed_array(tarr):
     arr.Init(u.Bytes, u.Pos)
     narr = arr.DataAsNumpy()
     if u_type == TypedArray.TypedArray.JSONEncodedArray:
-        narr = json.loads(narr.tostring().decode("utf-8"))
+        narr = json.loads(narr.tobytes().decode("utf-8"))
     return narr
 
 

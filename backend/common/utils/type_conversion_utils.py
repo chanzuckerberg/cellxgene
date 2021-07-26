@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 
 """
-
 These routines drive all type inference for the schema generation and the 
 FBS (REST OTA) encoding. They are also used for CXG generation.
 
