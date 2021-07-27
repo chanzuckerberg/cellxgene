@@ -12,6 +12,7 @@ import {
   getTestId,
   getTestClass,
   getAllByClass,
+  clickOnUntil,
   getOneElementInnerHTML,
 } from "./puppeteerUtils";
 
@@ -75,6 +76,11 @@ const geneToBrushAndColorBy = "SIK1";
 const brushThisGeneGeneset = "brush_this_gene";
 const geneBrushedCellCount = "109";
 const subsetGeneBrushedCellCount = "96";
+
+const genesetDescriptionID =
+  "geneset-description-tooltip-fourth_gene_set: fourth description";
+const genesetDescriptionString = "fourth_gene_set: fourth description";
+const genesetToCheckForDescription = "fourth_gene_set";
 
 async function setup(config) {
   await goToPage(appUrlBase);
@@ -209,6 +215,20 @@ describe.each([
     await assertGenesetExists(genesetToDeleteName);
     await clickOn("redo");
     await assertGenesetDoesNotExist(genesetToDeleteName);
+  });
+  test("geneset description", async () => {
+    if (config.withSubset) return;
+
+    await setup(config);
+
+    await clickOnUntil(
+      `${genesetToCheckForDescription}:geneset-expand`,
+      async () => {
+        expect(page).toMatchElement(getTestId(genesetDescriptionID), {
+          text: genesetDescriptionString,
+        });
+      }
+    );
   });
 });
 
