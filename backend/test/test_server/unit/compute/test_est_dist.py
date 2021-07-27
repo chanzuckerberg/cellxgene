@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 from scipy import sparse
 from backend.common.compute.estimate_distribution import estimate_approximate_distribution
-from backend.common.constants import XApproxDistribution
+from backend.common.constants import XApproximateDistribution
 from backend.server.data_common.matrix_loader import MatrixDataLoader
 from backend.test.test_server.unit import app_config
 from backend.test import PROJECT_ROOT
@@ -20,22 +20,22 @@ class EstDistTest(unittest.TestCase):
 
     def test_adaptestimate_approximate_distribution(self):
         adaptor = self.load_dataset(f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad")
-        self.assertEqual(adaptor.get_X_approx_distribution(), XApproxDistribution.NORMAL)
+        self.assertEqual(adaptor.get_X_approximate_distribution(), XApproximateDistribution.NORMAL)
 
     def test_estimate_approximate_distribution(self):
         raw = np.random.exponential(scale=1000, size=(100, 40))
 
         # ndarray
-        self.assertEqual(estimate_approximate_distribution(raw), XApproxDistribution.COUNT)
-        self.assertEqual(estimate_approximate_distribution(np.log1p(raw)), XApproxDistribution.NORMAL)
+        self.assertEqual(estimate_approximate_distribution(raw), XApproximateDistribution.COUNT)
+        self.assertEqual(estimate_approximate_distribution(np.log1p(raw)), XApproximateDistribution.NORMAL)
 
         # csr_matrix
-        self.assertEqual(estimate_approximate_distribution(sparse.csr_matrix(raw)), XApproxDistribution.COUNT)
+        self.assertEqual(estimate_approximate_distribution(sparse.csr_matrix(raw)), XApproximateDistribution.COUNT)
         self.assertEqual(
-            estimate_approximate_distribution(sparse.csr_matrix(np.log1p(raw))), XApproxDistribution.NORMAL
+            estimate_approximate_distribution(sparse.csr_matrix(np.log1p(raw))), XApproximateDistribution.NORMAL
         )
 
         # BIG (ie, trigger MT)
         big = np.random.exponential(scale=100, size=(1_000_000, 100))
-        self.assertEqual(estimate_approximate_distribution(big), XApproxDistribution.COUNT)
-        self.assertEqual(estimate_approximate_distribution(np.log1p(big)), XApproxDistribution.NORMAL)
+        self.assertEqual(estimate_approximate_distribution(big), XApproximateDistribution.COUNT)
+        self.assertEqual(estimate_approximate_distribution(np.log1p(big)), XApproximateDistribution.NORMAL)
