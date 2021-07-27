@@ -8,7 +8,7 @@ from scipy import sparse
 
 import backend.common.compute.diffexp_generic as diffexp_generic
 from backend.common.colors import convert_anndata_category_colors_to_cxg_category_colors
-from backend.common.constants import Axis, MAX_LAYOUTS, XApproxDistribution
+from backend.common.constants import Axis, MAX_LAYOUTS, XApproximateDistribution
 from backend.czi_hosted.common.corpora import corpora_get_props_from_anndata
 from backend.common.errors import PrepareError, DatasetAccessError, ConfigurationError
 from backend.common.utils.type_conversion_utils import get_schema_type_hint_of_array
@@ -28,7 +28,7 @@ class AnndataAdaptor(DataAdaptor):
     def __init__(self, data_locator, app_config=None, dataset_config=None):
         super().__init__(data_locator, app_config, dataset_config)
         self.data = None
-        self.X_approx_distribution = None
+        self.X_approximate_distribution = None
         self._load_data(data_locator)
         self._validate_and_initialize()
 
@@ -195,9 +195,9 @@ class AnndataAdaptor(DataAdaptor):
         self.gene_count = self.data.shape[1]
         self._create_schema()
 
-        if self.dataset_config.X_approx_distribution == "auto":
-            raise ConfigurationError("X-approx-distribution 'auto' mode unsupported.")
-        self.X_approx_distribution = self.dataset_config.X_approx_distribution
+        if self.dataset_config.X_approximate_distribution == "auto":
+            raise ConfigurationError("X-approximate-distribution 'auto' mode unsupported.")
+        self.X_approximate_distribution = self.dataset_config.X_approximate_distribution
 
         # heuristic
         n_values = self.data.shape[0] * self.data.shape[1]
@@ -331,8 +331,8 @@ class AnndataAdaptor(DataAdaptor):
         X = self.data.X[obs_mask, var_mask]
         return X
 
-    def get_X_approx_distribution(self) -> XApproxDistribution:
-        return self.X_approx_distribution
+    def get_X_approximate_distribution(self) -> XApproximateDistribution:
+        return self.X_approximate_distribution
 
     def get_shape(self):
         return self.data.shape

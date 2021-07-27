@@ -103,7 +103,7 @@ class ConfigTests(unittest.TestCase):
         environment=None,
         aws_secrets_manager_region=None,
         aws_secrets_manager_secrets=[],
-        X_approx_distribution="auto",
+        X_approximate_distribution="auto",
         config_file_name="app_config.yml",
     ):
         random_num = random.randrange(999999)
@@ -151,7 +151,7 @@ class ConfigTests(unittest.TestCase):
             enable_difexp=enable_difexp,
             lfc_cutoff=lfc_cutoff,
             top_n=top_n,
-            X_approx_distribution=X_approx_distribution,
+            X_approximate_distribution=X_approximate_distribution,
             config_file_name=f"temp_dataset_config_{random_num}.yml",
         )
         external_config = self.custom_external_config(
@@ -187,7 +187,7 @@ class ConfigTests(unittest.TestCase):
         enable_difexp="true",
         lfc_cutoff=0.01,
         top_n=10,
-        X_approx_distribution="auto",
+        X_approximate_distribution="auto",
         config_file_name="dataset_config.yml",
     ):
         configfile = os.path.join(self.tmp_fixtures_directory, config_file_name)
