@@ -12,42 +12,42 @@ class EstDistTest(unittest.TestCase):
     """Tests the diffexp returns the expected results for one test case, using the h5ad
     adaptor types and different algorithms."""
 
-    # def load_dataset(self, path, extra_server_config={}, extra_dataset_config={}):
-    #     config = app_config(path, extra_server_config=extra_server_config, extra_dataset_config=extra_dataset_config)
-    #     loader = MatrixDataLoader(path)
-    #     adaptor = loader.open(config)
-    #     return adaptor
+    def load_dataset(self, path, extra_server_config={}, extra_dataset_config={}):
+        config = app_config(path, extra_server_config=extra_server_config, extra_dataset_config=extra_dataset_config)
+        loader = MatrixDataLoader(path)
+        adaptor = loader.open(config)
+        return adaptor
 
-    # def test_adaptestimate_approximate_distribution(self):
-    #     adaptor = self.load_dataset(f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad")
-    #     self.assertEqual(adaptor.get_X_approximate_distribution(), XApproximateDistribution.NORMAL)
+    def test_adaptestimate_approximate_distribution(self):
+        adaptor = self.load_dataset(f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad")
+        self.assertEqual(adaptor.get_X_approximate_distribution(), XApproximateDistribution.NORMAL)
 
-    # def test_estimate_approximate_distribution(self):
-    #     raw = np.random.exponential(scale=1000, size=(100, 40))
+    def test_estimate_approximate_distribution(self):
+        raw = np.random.exponential(scale=1000, size=(100, 40))
 
-    #     # empty
-    #     self.assertEqual(estimate_approximate_distribution(np.zeros((0,))), XApproximateDistribution.NORMAL)
+        # empty
+        self.assertEqual(estimate_approximate_distribution(np.zeros((0,))), XApproximateDistribution.NORMAL)
 
-    #     # ndarray
-    #     self.assertEqual(estimate_approximate_distribution(raw), XApproximateDistribution.COUNT)
-    #     self.assertEqual(estimate_approximate_distribution(np.log1p(raw)), XApproximateDistribution.NORMAL)
+        # ndarray
+        self.assertEqual(estimate_approximate_distribution(raw), XApproximateDistribution.COUNT)
+        self.assertEqual(estimate_approximate_distribution(np.log1p(raw)), XApproximateDistribution.NORMAL)
 
-    #     # csr_matrix
-    #     self.assertEqual(estimate_approximate_distribution(sparse.csr_matrix(raw)), XApproximateDistribution.COUNT)
-    #     self.assertEqual(
-    #         estimate_approximate_distribution(sparse.csr_matrix(np.log1p(raw))), XApproximateDistribution.NORMAL
-    #     )
+        # csr_matrix
+        self.assertEqual(estimate_approximate_distribution(sparse.csr_matrix(raw)), XApproximateDistribution.COUNT)
+        self.assertEqual(
+            estimate_approximate_distribution(sparse.csr_matrix(np.log1p(raw))), XApproximateDistribution.NORMAL
+        )
 
-    #     # csc_matrix
-    #     self.assertEqual(estimate_approximate_distribution(sparse.csc_matrix(raw)), XApproximateDistribution.COUNT)
-    #     self.assertEqual(
-    #         estimate_approximate_distribution(sparse.csc_matrix(np.log1p(raw))), XApproximateDistribution.NORMAL
-    #     )
+        # csc_matrix
+        self.assertEqual(estimate_approximate_distribution(sparse.csc_matrix(raw)), XApproximateDistribution.COUNT)
+        self.assertEqual(
+            estimate_approximate_distribution(sparse.csc_matrix(np.log1p(raw))), XApproximateDistribution.NORMAL
+        )
 
-    #     # BIG (ie, trigger MT)
-    #     big = np.random.exponential(scale=100, size=(1_000_000, 100))
-    #     self.assertEqual(estimate_approximate_distribution(big), XApproximateDistribution.COUNT)
-    #     self.assertEqual(estimate_approximate_distribution(np.log1p(big)), XApproximateDistribution.NORMAL)
+        # BIG (ie, trigger MT)
+        big = np.random.exponential(scale=100, size=(1_000_000, 100))
+        self.assertEqual(estimate_approximate_distribution(big), XApproximateDistribution.COUNT)
+        self.assertEqual(estimate_approximate_distribution(np.log1p(big)), XApproximateDistribution.NORMAL)
 
     def test_unsupported_throws(self):
         # dtypes and matrix formats we do not support
