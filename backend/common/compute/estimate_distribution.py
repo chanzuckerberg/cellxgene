@@ -2,30 +2,25 @@ import numba
 import concurrent.futures
 import numpy as np
 from scipy import sparse
-from backend.common.constants import XApproxDistribution
+from backend.common.constants import XApproximateDistribution
 
 
-def dtype_limits(arr: np.ndarray):
-    if arr.dtype.kind == "f":
-        finf = np.finfo(arr.dtype)
-        return (finf.min, finf.max)
-    if arr.dtype.kind in ["u", "i"]:
-        iinf = np.iinfo(arr.dtype)
-        return (iinf.min, iinf.max)
-    # error - should never occur
-    raise TypeError(f"Unsupported matrix dtype: {arr.dtype.name}")
-
-
-@numba.njit(fastmath=True, error_model="numpy", nogil=True)
-def min_max(arr: np.ndarray, min_limit, max_limit):
+@numba.njit(error_model="numpy", nogil=True)
+def min_max(arr: np.ndarray):
     """Return (min, max) values for the ndarray."""
     n = arr.size
     odd = n % 2
     if odd:
         n -= 1
 
-    max_val, min_val = min_limit, max_limit
+    # initialize to first finite value in array.  Normally,
+    # this will exit on the first value.
+    for i in range(arr.size):
+        min_val = max_val = arr[i]
+        if np.isfinite(min_val):
+            break
 
+    # now find min/max, unrolled by two
     i = 0
     while i < n:
         x = arr[i]
@@ -53,7 +48,7 @@ def min_max(arr: np.ndarray, min_limit, max_limit):
     return min_val, max_val
 
 
-def estimate_approximate_distribution(X) -> XApproxDistribution:
+def estimate_approximate_distribution(X) -> XApproximateDistribution:
     """
     Estimate the distribution (normal, count) of the X matrix.
 
@@ -62,12 +57,12 @@ def estimate_approximate_distribution(X) -> XApproxDistribution:
     any (max-min) range in excess of 24 is implies tens of millions of
     observations of a single feature and so is extremely unlikely.
     """
-    if X.dtype not in ["i", "u", "f"]:
+    if X.dtype.kind not in ["i", "u", "f"]:
         raise TypeError(f"Unsupported matrix dtype: {X.dtype.name}")
 
     if X.size == 0:
-        # default - empty array
-        return XApproxDistribution.NORMAL
+        # default for empty array
+        return XApproximateDistribution.NORMAL
 
     if sparse.isspmatrix_csc(X) or sparse.isspmatrix_csr(X):
         Xdata = X.data
@@ -78,21 +73,16 @@ def estimate_approximate_distribution(X) -> XApproxDistribution:
     else:
         raise TypeError(f"Unsupported matrix format: {str(type(X))}")
 
-    min_limit, max_limit = dtype_limits(Xdata)
-
     CHUNKSIZE = 1 << 24
     if Xdata.size > CHUNKSIZE:
         min_val = max_val = Xdata[0]
         with concurrent.futures.ThreadPoolExecutor() as tp:
-            for (_min, _max) in tp.map(
-                lambda p: min_max(*p),
-                [[Xdata[i : i + CHUNKSIZE], min_limit, max_limit] for i in range(0, Xdata.size, CHUNKSIZE)],
-            ):
+            for (_min, _max) in tp.map(min_max, [Xdata[i : i + CHUNKSIZE] for i in range(0, Xdata.size, CHUNKSIZE)]):
                 min_val = min(_min, min_val)
                 max_val = max(_max, max_val)
 
     else:
-        min_val, max_val = min_max(Xdata, min_limit, max_limit)
+        min_val, max_val = min_max(Xdata)
 
     excess_range = (max_val - min_val) > 24
-    return XApproxDistribution.COUNT if excess_range else XApproxDistribution.NORMAL
+    return XApproximateDistribution.COUNT if excess_range else XApproximateDistribution.NORMAL
