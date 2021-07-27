@@ -1,3 +1,4 @@
+/* eslint-disable @blueprintjs/classes-constants -- we don't import blueprint here  */
 module.exports = {
   root: true,
   parser: "@typescript-eslint/parser",
@@ -95,8 +96,6 @@ module.exports = {
         devDependencies: true,
       },
     ],
-    // Temporarily disabled due to "Parsing error: Property assignment expected" error introduced by rule on --fix
-    "@blueprintjs/classes-constants": "off",
   },
   overrides: [
     {
@@ -117,3 +116,4 @@ module.exports = {
     },
   ],
 };
+/* eslint-enable @blueprintjs/classes-constants -- we don't import blueprint here  */
