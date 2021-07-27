@@ -1,3 +1,4 @@
+/* eslint-disable @blueprintjs/classes-constants -- we don't import blueprint here  */
 const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
@@ -83,3 +84,4 @@ const devConfig = {
 };
 
 module.exports = merge(sharedConfig, devConfig);
+/* eslint-enable @blueprintjs/classes-constants -- we don't import blueprint here  */
