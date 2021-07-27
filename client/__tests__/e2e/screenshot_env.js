@@ -2,6 +2,7 @@ const PuppeteerEnvironment = require("jest-environment-puppeteer");
 require("jest-circus");
 const ENV_DEFAULT = require("../../../environment.default.json");
 
+// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'takeScreen... Remove this comment to see the full error message
 const takeScreenshot = require("./takeScreenshot");
 
 class ScreenshotEnvironment extends PuppeteerEnvironment {
