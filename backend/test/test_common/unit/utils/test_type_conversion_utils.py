@@ -1,7 +1,5 @@
 import unittest
 import logging
-from time import time
-from unittest.mock import patch
 from parameterized import parameterized_class
 
 import numpy as np
