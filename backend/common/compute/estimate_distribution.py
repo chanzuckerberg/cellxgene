@@ -12,8 +12,8 @@ def dtype_limits(arr: np.ndarray):
     if arr.dtype.kind in ["u", "i"]:
         iinf = np.iinfo(arr.dtype)
         return (iinf.min, iinf.max)
-    # error
-    return (0, 0)
+    # error - should never occur
+    raise TypeError(f"Unsupported matrix dtype: {arr.dtype.name}")
 
 
 @numba.njit(fastmath=True, error_model="numpy", nogil=True)
@@ -62,8 +62,11 @@ def estimate_approximate_distribution(X) -> XApproxDistribution:
     any (max-min) range in excess of 24 is implies tens of millions of
     observations of a single feature and so is extremely unlikely.
     """
+    if X.dtype not in ["i", "u", "f"]:
+        raise TypeError(f"Unsupported matrix dtype: {X.dtype.name}")
+
     if X.size == 0:
-        # default
+        # default - empty array
         return XApproxDistribution.NORMAL
 
     if sparse.isspmatrix_csc(X) or sparse.isspmatrix_csr(X):
@@ -73,7 +76,7 @@ def estimate_approximate_distribution(X) -> XApproxDistribution:
             X.size,
         )
     else:
-        raise TypeError(f"Unsupported matrix type: {str(type(X))}")
+        raise TypeError(f"Unsupported matrix format: {str(type(X))}")
 
     min_limit, max_limit = dtype_limits(Xdata)
 
