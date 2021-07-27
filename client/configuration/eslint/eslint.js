@@ -95,6 +95,8 @@ module.exports = {
         devDependencies: true,
       },
     ],
+    // Temporarily disabled due to "Parsing error: Property assignment expected" error introduced by rule on --fix
+    "@blueprintjs/classes-constants": "off",
   },
   overrides: [
     {
