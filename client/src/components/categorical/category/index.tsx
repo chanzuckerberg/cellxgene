@@ -286,7 +286,6 @@ class Category extends React.PureComponent {
                 // @ts-expect-error ts-migrate(2339) FIXME: Property 'handleCategoryToggleAllClick' does not e... Remove this comment to see the full error message
                 handleCategoryToggleAllClick,
               } = asyncProps;
-              const isTruncated = !!categorySummary?.isTruncated;
               const selectionState = this.getSelectionState(categorySummary);
               return (
                 <CategoryRender
@@ -294,7 +293,6 @@ class Category extends React.PureComponent {
                   metadataField={metadataField}
                   checkboxID={checkboxID}
                   isUserAnno={isUserAnno}
-                  isTruncated={isTruncated}
                   isExpanded={isExpanded}
                   isColorAccessor={isColorAccessor}
                   selectionState={selectionState}
@@ -396,8 +394,6 @@ const CategoryHeader = React.memo(
     checkboxID,
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'isUserAnno' does not exist on type '{ ch... Remove this comment to see the full error message
     isUserAnno,
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'isTruncated' does not exist on type '{ c... Remove this comment to see the full error message
-    isTruncated,
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'isColorAccessor' does not exist on type ... Remove this comment to see the full error message
     isColorAccessor,
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'isExpanded' does not exist on type '{ ch... Remove this comment to see the full error message
@@ -499,11 +495,7 @@ const CategoryHeader = React.memo(
           />
 
           <Tooltip
-            content={
-              isTruncated
-                ? `Coloring by ${metadataField} is disabled, as it exceeds the limit of ${globals.maxCategoricalOptionsToDisplay} labels`
-                : "Use as color scale"
-            }
+            content="Use as color scale"
             position={Position.LEFT}
             usePortal
             hoverOpenDelay={globals.tooltipHoverOpenDelay}
@@ -518,7 +510,6 @@ const CategoryHeader = React.memo(
               onClick={onColorChangeClick}
               active={isColorAccessor}
               intent={isColorAccessor ? "primary" : "none"}
-              disabled={isTruncated}
               icon="tint"
             />
           </Tooltip>
@@ -536,8 +527,6 @@ const CategoryRender = React.memo(
     checkboxID,
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'isUserAnno' does not exist on type '{ ch... Remove this comment to see the full error message
     isUserAnno,
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'isTruncated' does not exist on type '{ c... Remove this comment to see the full error message
-    isTruncated,
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'isColorAccessor' does not exist on type ... Remove this comment to see the full error message
     isColorAccessor,
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'isExpanded' does not exist on type '{ ch... Remove this comment to see the full error message
@@ -599,7 +588,6 @@ const CategoryRender = React.memo(
             metadataField={metadataField}
             checkboxID={checkboxID}
             isUserAnno={isUserAnno}
-            isTruncated={isTruncated}
             isExpanded={isExpanded}
             isColorAccessor={isColorAccessor}
             selectionState={selectionState}
@@ -625,11 +613,6 @@ const CategoryRender = React.memo(
               />
             ) : null
           }
-        </div>
-        <div>
-          {isExpanded && isTruncated ? (
-            <p style={{ paddingLeft: 15 }}>... truncated list ...</p>
-          ) : null}
         </div>
       </div>
     );
