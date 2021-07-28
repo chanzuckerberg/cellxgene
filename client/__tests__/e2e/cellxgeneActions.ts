@@ -134,8 +134,14 @@ export async function resetCategory(category: any) {
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-async function calcCoordinate(testId: any, xAsPercent: any, yAsPercent: any) {
+export async function calcCoordinate(
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  testId: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  xAsPercent: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  yAsPercent: any
+) {
   const el = await waitByID(testId);
   // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
   const size = await el.boxModel();
@@ -148,8 +154,12 @@ async function calcCoordinate(testId: any, xAsPercent: any, yAsPercent: any) {
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-async function calcDragCoordinates(testId: any, coordinateAsPercent: any) {
+export async function calcDragCoordinates(
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  testId: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  coordinateAsPercent: any
+) {
   return {
     start: await calcCoordinate(
       testId,
@@ -383,8 +393,12 @@ export async function duplicateCategory(categoryName: any) {
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-async function renameCategory(oldCategoryName: any, newCategoryName: any) {
+export async function renameCategory(
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  oldCategoryName: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  newCategoryName: any
+) {
   await clickOn(`${oldCategoryName}:see-actions`);
   await clickOn(`${oldCategoryName}:edit-category-mode`);
   await clearInputAndTypeInto(
