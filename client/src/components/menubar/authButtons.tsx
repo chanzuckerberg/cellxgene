@@ -37,6 +37,7 @@ const Auth = React.memo((props) => {
 
   const isAuthenticated = userInfo && userInfo.is_authenticated;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   (window as any).userInfo = userInfo;
 
   const randomInt = Math.random() * 15;
@@ -131,6 +132,7 @@ const Auth = React.memo((props) => {
   }
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function PromptContent({ setIsPromptOpen }: any) {
   const [isChecked, setIsChecked] = useState(false);
 

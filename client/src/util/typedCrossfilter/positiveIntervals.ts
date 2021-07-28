@@ -16,9 +16,11 @@ class PositiveIntervals {
   //  1. no overlapping intervals
   //  2. sorted in order of interval min.
   //
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   static canonicalize(A: any) {
     if (A.length <= 1) return A;
     const copy = A.slice();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     copy.sort((a: any, b: any) => a[0] - b[0]);
     const res = [];
     res.push(copy[0]);
@@ -38,10 +40,12 @@ class PositiveIntervals {
   // Return interval with values belonging to both A and B. Essentially
   // a set union operation.
   //
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   static union(A: any, B: any) {
     return PositiveIntervals.canonicalize([...A, ...B]);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   static _flatten(A: any, B: any) {
     const points = []; /* point, A, start */
     for (let a = 0; a < A.length; a += 1) {
@@ -60,6 +64,7 @@ class PositiveIntervals {
   // A - B, ie, the interval with all values in A that are not in B.  Essentially
   // a set difference operation.
   //
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   static difference(A: any, B: any) {
     // Corner cases
     if (A.length === 0 || B.length === 0) {
@@ -96,6 +101,7 @@ class PositiveIntervals {
   // Return interval with values belonging to A or B.  Essentially a set
   // intersection.
   //
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   static intersection(A: any, B: any) {
     if (A.length === 0 || B.length === 0) {
       return [];

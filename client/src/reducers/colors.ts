@@ -2,11 +2,13 @@
 Color By UI state
 */
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 const ColorsReducer = (
   state = {
     colorMode: null /* by continuous, by expression */,
     colorAccessor: null /* tissue, Apod */,
   },
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   action: any
 ) => {
   switch (action.type) {

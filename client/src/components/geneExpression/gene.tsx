@@ -9,6 +9,7 @@ import actions from "../../actions";
 
 const MINI_HISTOGRAM_WIDTH = 110;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 type State = any;
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
@@ -17,14 +18,19 @@ type State = any;
   const { gene } = ownProps;
 
   return {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     isColorAccessor: (state as any).colors.colorAccessor === gene,
     isScatterplotXXaccessor:
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (state as any).controls.scatterplotXXaccessor === gene,
     isScatterplotYYaccessor:
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (state as any).controls.scatterplotYYaccessor === gene,
   };
 })
+// eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
 class Gene extends React.Component<{}, State> {
+  // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
   constructor(props: {}) {
     super(props);
     this.state = {
@@ -32,17 +38,20 @@ class Gene extends React.Component<{}, State> {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   onColorChangeClick = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, gene } = this.props;
     dispatch(actions.requestSingleGeneExpressionCountsForColoringPOST(gene));
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleGeneExpandClick = () => {
     const { geneIsExpanded } = this.state;
     this.setState({ geneIsExpanded: !geneIsExpanded });
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleSetGeneAsScatterplotX = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, gene } = this.props;
@@ -52,6 +61,7 @@ class Gene extends React.Component<{}, State> {
     });
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleSetGeneAsScatterplotY = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, gene } = this.props;
@@ -61,12 +71,14 @@ class Gene extends React.Component<{}, State> {
     });
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleDeleteGeneFromSet = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, gene, geneset } = this.props;
     dispatch(actions.genesetDeleteGenes(geneset, [gene]));
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     const {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'gene' does not exist on type 'Readonly<{... Remove this comment to see the full error message

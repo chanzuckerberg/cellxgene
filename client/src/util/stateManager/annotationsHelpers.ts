@@ -18,6 +18,7 @@ categorical annotations to be writable.
 */
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function isCategoricalAnnotation(schema, name) {
   /* 
   we treat any string, categorical or boolean as a categorical.
@@ -30,6 +31,7 @@ export function isCategoricalAnnotation(schema, name) {
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function isContinuousAnnotation(schema, name) {
   /*
   Return true/false/undefined
@@ -46,11 +48,13 @@ function _isUserAnnotation(schema, name) {
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function isUserAnnotation(annoMatrix, name) {
   return _isUserAnnotation(annoMatrix.schema, name);
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'df' implicitly has an 'any' type.
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function allHaveLabelByMask(df, colName, label, mask) {
   // return true if all rows as indicated by mask have the colname set to label.
   // False if not.
@@ -69,6 +73,7 @@ export function allHaveLabelByMask(df, colName, label, mask) {
 
 const legalCharacters = /^(\w|[ .()-])+$/;
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function annotationNameIsErroneous(name) {
   /*
 	Validate the name - return:

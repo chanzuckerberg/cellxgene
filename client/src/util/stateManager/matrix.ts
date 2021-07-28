@@ -17,12 +17,14 @@ Matrix flatbuffer decoding support.   See fbs/matrix.fbs
 /*
 Decode NetEncoding.TypedArray
 */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function decodeTypedArray(uType: any, uValF: any, inplace = false) {
   if (uType === NetEncoding.TypedArray.NONE) {
     return null;
   }
 
   // Convert to a JS class that supports this type
+  // @ts-expect-error --- FIXME: Element implicitly has an 'any' type.
   const TypeClass = NetEncoding[NetEncoding.TypedArray[uType]];
   // Create a TypedArray that references the underlying buffer
   let arr = uValF(new TypeClass()).dataArray();
@@ -48,6 +50,7 @@ Returns: object containing decoded Matrix:
   colIdx: []|null
 }
 */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function decodeMatrixFBS(arrayBuffer: any, inplace = false) {
   const bb = new flatbuffers.ByteBuffer(new Uint8Array(arrayBuffer));
   const matrix = NetEncoding.Matrix.getRootAsMatrix(bb);
@@ -79,8 +82,11 @@ export function decodeMatrixFBS(arrayBuffer: any, inplace = false) {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function encodeTypedArray(builder: any, uType: any, uData: any) {
+  // @ts-expect-error --- FIXME: Element implicitly has an 'any' type.
   const uTypeName = NetEncoding.TypedArray[uType];
+  // @ts-expect-error --- FIXME: Element implicitly has an 'any' type.
   const ArrayType = NetEncoding[uTypeName];
   const dv = ArrayType.createDataVector(builder, uData);
   builder.startObject(1);
@@ -88,6 +94,7 @@ function encodeTypedArray(builder: any, uType: any, uData: any) {
   return builder.endObject();
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function encodeMatrixFBS(df: any) {
   /*
   encode the dataframe as an FBS Matrix
@@ -108,12 +115,15 @@ export function encodeMatrixFBS(df: any) {
   let encColumns;
 
   if (shape[0] > 0 && shape[1] > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const columns = df.columns().map((col: any) => col.asArray());
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const cols = columns.map((carr: any) => {
       let uType;
       let tarr;
       if (isTypedArray(carr)) {
+        // @ts-expect-error --- FIXME: Element implicitly has an 'any' type.
         uType = NetEncoding.TypedArray[carr.constructor.name];
         tarr = encodeTypedArray(builder, uType, carr);
       } else {
@@ -169,6 +179,7 @@ export function encodeMatrixFBS(df: any) {
   return builder.asUint8Array();
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function promoteTypedArray(o: any) {
   /*
   Decide what internal data type to use for the data returned from
@@ -201,6 +212,7 @@ function promoteTypedArray(o: any) {
   return new TypedArrayCtor(o);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function matrixFBSToDataframe(arrayBuffers: any) {
   /*
   Convert array of Matrix FBS to a Dataframe.
@@ -217,18 +229,22 @@ export function matrixFBSToDataframe(arrayBuffers: any) {
     arrayBuffers = [arrayBuffers];
   }
   if (arrayBuffers.length === 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     return (Dataframe as any).Dataframe.empty();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const fbs = arrayBuffers.map((ab: any) => decodeMatrixFBS(ab, true)); // leave in place
   /* check that all FBS have same row dimensionality */
   const { nRows } = fbs[0];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   fbs.forEach((b: any) => {
     if (b.nRows !== nRows)
       throw new Error("FBS with inconsistent dimensionality");
   });
-  const columns = fbs
+  const columns = fbs // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     .map((fb: any) =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       fb.columns.map((c: any) => {
         if (isFpTypedArray(c) || Array.isArray(c)) return c;
         return promoteTypedArray(c);
@@ -236,7 +252,7 @@ export function matrixFBSToDataframe(arrayBuffers: any) {
     )
     .flat();
   // colIdx may be TypedArray or Array
-  const colIdx = fbs
+  const colIdx = fbs // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     .map((b: any) =>
       Array.isArray(b.colIdx) ? b.colIdx : Array.from(b.colIdx)
     )

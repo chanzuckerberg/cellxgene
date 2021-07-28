@@ -11,6 +11,7 @@ import {
 import { makeSortIndex } from "./util";
 
 class NotImplementedError extends Error {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   constructor(...params: any[]) {
     super(...params);
 
@@ -22,12 +23,16 @@ class NotImplementedError extends Error {
 }
 
 export default class ImmutableTypedCrossfilter {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   data: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   dimensions: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   selectionCache: any;
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   constructor(data: any, dimensions = {}, selectionCache = {}) {
     /*
     Typically, parameter 'data' is one of:
@@ -57,14 +62,17 @@ export default class ImmutableTypedCrossfilter {
     Object.preventExtensions(this);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   size() {
     return this.data.length;
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   all() {
     return this.data;
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   setData(data: any) {
     if (this.data === data) return this;
     // please leave, WIP
@@ -72,15 +80,18 @@ export default class ImmutableTypedCrossfilter {
     return new ImmutableTypedCrossfilter(data, this.dimensions);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   dimensionNames() {
     /* return array of all dimensions (by name) */
     return Object.keys(this.dimensions);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   hasDimension(name: any) {
     return !!this.dimensions[name];
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   addDimension(name: any, type: any, ...rest: any[]) {
     /*
     Add a new dimension to this crossfilter, of type DimensionType.
@@ -119,6 +130,7 @@ export default class ImmutableTypedCrossfilter {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   delDimension(name: any) {
     const { data } = this;
     const { bitArray } = this.selectionCache;
@@ -139,6 +151,7 @@ export default class ImmutableTypedCrossfilter {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   renameDimension(oldName: any, newName: any) {
     const { [oldName]: dim, ...dimensions } = this.dimensions;
     const { data, selectionCache } = this;
@@ -153,6 +166,7 @@ export default class ImmutableTypedCrossfilter {
     return new ImmutableTypedCrossfilter(data, newDimensions, selectionCache);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   select(name: any, spec: any) {
     /*
     select on named dimension, as indicated by `spec`.   Spec is an object
@@ -181,10 +195,15 @@ export default class ImmutableTypedCrossfilter {
     return new ImmutableTypedCrossfilter(data, dimensions, newSelectionCache);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   static _dimSelnHasUpdated(
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     selectionCache: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     id: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     newSeln: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     oldSeln: any
   ) {
     /*
@@ -220,24 +239,29 @@ export default class ImmutableTypedCrossfilter {
       If sort index exists in the dimension, assume sort ordered ranges.
       */
     if (oldSeln.index) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       dels.forEach((interval: any) =>
         bitArray.deselectIndirectFromRange(id, oldSeln.index, interval)
       );
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       dels.forEach((interval: any) => bitArray.deselectFromRange(id, interval));
     }
 
     if (newSeln.index) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       adds.forEach((interval: any) =>
         bitArray.selectIndirectFromRange(id, newSeln.index, interval)
       );
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       adds.forEach((interval: any) => bitArray.selectFromRange(id, interval));
     }
 
     return { bitArray };
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   _getSelectionCache() {
     if (!this.selectionCache) this.selectionCache = {};
 
@@ -249,6 +273,7 @@ export default class ImmutableTypedCrossfilter {
         const id = bitArray.allocDimension();
         this.dimensions[name].id = id;
         const { ranges, index } = selection;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
         ranges.forEach((range: any) => {
           if (index) {
             bitArray.selectIndirectFromRange(id, index, range);
@@ -262,16 +287,19 @@ export default class ImmutableTypedCrossfilter {
     return this.selectionCache;
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   _clearSelectionCache() {
     this.selectionCache = {};
     return this.selectionCache;
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   _setSelectionCache(vals = {}) {
     Object.assign(this.selectionCache, vals);
     return this.selectionCache;
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   allSelected() {
     /*
     return array of all records currently selected by all dimensions
@@ -292,6 +320,7 @@ export default class ImmutableTypedCrossfilter {
     return data.isubsetMask(this.allSelectedMask());
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   allSelectedMask() {
     /*
     return Uint8Array containing selection state (truthy/falsey) for each record.
@@ -310,6 +339,7 @@ export default class ImmutableTypedCrossfilter {
     return allSelectedMask;
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   countSelected() {
     /*
     return number of records selected on all dimensions
@@ -324,6 +354,7 @@ export default class ImmutableTypedCrossfilter {
     return countSelected;
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   isElementSelected(i: any) {
     /*
     return truthy/falsey if this record is selected on all dimensions
@@ -332,6 +363,7 @@ export default class ImmutableTypedCrossfilter {
     return selectionCache.bitArray.isSelected(i);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   fillByIsSelected(array: any, selectedValue: any, deselectedValue: any) {
     /*
     fill array with one of two values, based upon selection state.
@@ -357,8 +389,10 @@ for a dimension:
   - name - the dimension name/label.
 */
 class _ImmutableBaseDimension {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   name: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   constructor(name: any) {
     this.name = name;
   }
@@ -367,12 +401,14 @@ class _ImmutableBaseDimension {
     return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   rename(name: any) {
     const d = this.clone();
     d.name = name;
     return d;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   select(spec: any) {
     const { mode } = spec;
     if (mode === undefined) {
@@ -385,10 +421,13 @@ class _ImmutableBaseDimension {
 }
 
 class ImmutableScalarDimension extends _ImmutableBaseDimension {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   index: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   value: any;
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   constructor(name: any, data: any, value: any, ValueArrayType: any) {
     super(name);
 
@@ -416,6 +455,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
       // only by enumerated dimensions
       array = this._createValueArray(
         data,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
         (i: any) => value[i],
         new ValueArrayType(data.length)
       );
@@ -430,7 +470,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
     this.index = makeSortIndex(array);
   }
 
-  // eslint-disable-next-line class-methods-use-this -- needed for polymorphism
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- needed for polymorphism
   _createValueArray(data: any, mapf: any, array: any) {
     // create dimension value array
     const len = data.length;
@@ -441,6 +481,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
     return larray;
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   select(spec: any) {
     const { mode } = spec;
     const { index } = this;
@@ -458,6 +499,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   selectExact(spec: any) {
     const { value, index } = this;
     let { values } = spec;
@@ -477,6 +519,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
     return { ranges, index };
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   selectRange(spec: any) {
     const { value, index } = this;
     /* 
@@ -496,10 +539,12 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
 }
 
 class ImmutableEnumDimension extends ImmutableScalarDimension {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   constructor(name: any, data: any, value: any) {
     super(name, data, value, Uint32Array);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   _createValueArray(data: any, mapf: any, array: any) {
     const len = data.length;
     const larray = array;
@@ -524,6 +569,7 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
     return larray;
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   selectExact(spec: any) {
     // @ts-expect-error FIXME Adding enumIndex as member variable results in "undefined" enumIndex value
     const { enumIndex } = this;
@@ -533,6 +579,7 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
     }
     return super.selectExact({
       mode: spec.mode,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       values: values.map((v: any) =>
         binarySearch(enumIndex, v, 0, enumIndex.length)
       ),
@@ -540,21 +587,26 @@ class ImmutableEnumDimension extends ImmutableScalarDimension {
   }
 
   // @ts-expect-error ts-migrate(2416) FIXME: Property 'selectRange' in type 'ImmutableEnumDimen... Remove this comment to see the full error message
-  // eslint-disable-next-line class-methods-use-this -- enables polymorphism
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/explicit-module-boundary-types -- enables polymorphism
   selectRange() {
     throw new Error("range selection unsupported on Enumerated dimension");
   }
 }
 
 class ImmutableSpatialDimension extends _ImmutableBaseDimension {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   X: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   Xindex: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   Y: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   Yindex: any;
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   constructor(name: any, data: any, X: any, Y: any) {
     super(name);
 
@@ -570,6 +622,7 @@ class ImmutableSpatialDimension extends _ImmutableBaseDimension {
     this.Yindex = makeSortIndex(Y);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   select(spec: any) {
     const { mode } = spec;
     switch (mode) {
@@ -586,6 +639,7 @@ class ImmutableSpatialDimension extends _ImmutableBaseDimension {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   selectWithinRect(spec: any) {
     /*
       { mode: "within-rect", minX: 1, minY: 0, maxX: 3, maxY: 9 }
@@ -619,6 +673,7 @@ class ImmutableSpatialDimension extends _ImmutableBaseDimension {
     * then the polygon test is applied
   */
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   selectWithinPolygon(spec: any) {
     /*
       { mode: "within-polygon", polygon: [ [x0, y0], ... ] }
@@ -674,6 +729,7 @@ export const DimTypes = {
   spatial: ImmutableSpatialDimension,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function isArrayOrTypedArray(x: any) {
   return (
     Array.isArray(x) ||
@@ -683,6 +739,7 @@ function isArrayOrTypedArray(x: any) {
 }
 
 /* return bounding box of the polygon */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function polygonBoundingBox(polygon: any) {
   let minX = Number.MAX_VALUE;
   let minY = Number.MAX_VALUE;
@@ -707,6 +764,7 @@ function polygonBoundingBox(polygon: any) {
  *  @param {float} y - point y coordinate
  *  @type {boolean}
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function withinPolygon(polygon: any, x: any, y: any) {
   const n = polygon.length;
   let p = polygon[n - 1];

@@ -5,6 +5,7 @@ instances of AnnoMatrix, implementing common UI functions.
 
 import { AnnoMatrixRowSubsetView, AnnoMatrixClipView } from "./views";
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function isubsetMask(annoMatrix: any, obsMask: any) {
   /*
 		Subset annomatrix to contain the rows which have truish value in the mask.
@@ -14,6 +15,7 @@ export function isubsetMask(annoMatrix: any, obsMask: any) {
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function isubset(annoMatrix, obsOffsets) {
   /*
 		Subset annomatrix to contain the positions contained in the obsOffsets array
@@ -27,6 +29,7 @@ export function isubset(annoMatrix, obsOffsets) {
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function subset(annoMatrix, obsLabels) {
   /*
 		subset based on labels
@@ -36,6 +39,7 @@ export function subset(annoMatrix, obsLabels) {
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function subsetByIndex(annoMatrix, obsIndex) {
   /*
   subset based upon the new obs index.
@@ -44,6 +48,7 @@ export function subsetByIndex(annoMatrix, obsIndex) {
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function clip(annoMatrix, qmin, qmax) {
   /*
 		Create a view that clips all continuous data to the [min, max] range.

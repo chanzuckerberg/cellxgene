@@ -9,12 +9,16 @@ import CellSetButton from "./cellSetButtons";
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   differential: (state as any).differential,
   diffexpMayBeSlow:
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (state as any).config?.parameters?.["diffexp-may-be-slow"] ?? false,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   diffexpCellcountMax: (state as any).config?.limits?.diffexp_cellcount_max,
 }))
 class DiffexpButtons extends React.PureComponent {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   computeDiffExp = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, differential } = this.props;
@@ -28,6 +32,7 @@ class DiffexpButtons extends React.PureComponent {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     /* diffexp-related buttons may be disabled */
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'differential' does not exist on type 'Re... Remove this comment to see the full error message

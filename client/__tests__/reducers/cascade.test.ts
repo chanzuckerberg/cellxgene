@@ -21,9 +21,13 @@ describe("cascade", () => {
       [
         "foo",
         (
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           currentState: any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           action: any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           nextSharedState: any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           prevSharedState: any
         ) => {
           expect(currentState).toBeUndefined();
@@ -36,9 +40,13 @@ describe("cascade", () => {
       [
         "bar",
         (
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           currentState: any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           action: any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           nextSharedState: any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           prevSharedState: any
         ) => {
           expect(currentState).toBeUndefined();

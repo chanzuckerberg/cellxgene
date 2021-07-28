@@ -10,6 +10,7 @@ module.exports = {
       },
     ],
     "@babel/preset-react",
+    // eslint-disable-next-line prettier/prettier --- FIXME: disabled temporarily on migrate to TS.
     "@babel/preset-typescript"
   ],
   plugins: [

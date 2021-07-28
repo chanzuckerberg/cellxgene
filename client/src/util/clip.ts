@@ -10,6 +10,7 @@ If `setTo` is not undefined, values outside the [lower, upper] range will be set
 `setTo`.
 
 */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export default function clip(arr: any, lower: any, upper: any, setTo: any) {
   const lowerSet = setTo === undefined ? lower : setTo;
   const upperSet = setTo === undefined ? upper : setTo;

@@ -10,15 +10,18 @@ import {
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   schema: (state as any).annoMatrix?.schema,
 }))
 class Occupancy extends React.PureComponent {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   canvas: any;
 
   _WIDTH = 100;
 
   _HEIGHT = 11;
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   createHistogram = () => {
     /*
           Knowing that colorScale is based off continous data,
@@ -68,6 +71,7 @@ class Occupancy extends React.PureComponent {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   createOccupancyStack = () => {
     /*
           Knowing that the color scale is based off of catagorical data,
@@ -126,6 +130,7 @@ class Occupancy extends React.PureComponent {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorAccessor' does not exist on type 'R... Remove this comment to see the full error message
     const { colorAccessor, categoryValue, colorByIsCategorical } = this.props;

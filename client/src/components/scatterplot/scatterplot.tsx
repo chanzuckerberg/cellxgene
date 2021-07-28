@@ -23,6 +23,7 @@ import {
   flagHighlight,
 } from "../../util/glHelpers";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function createProjectionTF(viewportWidth: any, viewportHeight: any) {
   /*
   the projection transform accounts for the screen size & other layout
@@ -31,6 +32,7 @@ function createProjectionTF(viewportWidth: any, viewportHeight: any) {
   return mat3.projection(m, viewportWidth, viewportHeight);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function getScale(col: any, rangeMin: any, rangeMax: any) {
   if (!col) return null;
   const { min, max } = col.summarize();
@@ -39,6 +41,7 @@ function getScale(col: any, rangeMin: any, rangeMax: any) {
 const getXScale = memoize(getScale);
 const getYScale = memoize(getScale);
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 type State = any;
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
@@ -48,20 +51,27 @@ type State = any;
   const {
     scatterplotXXaccessor,
     scatterplotYYaccessor,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   } = (state as any).controls;
 
   return {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     annoMatrix: (state as any).annoMatrix,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     colors: (state as any).colors,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     pointDilation: (state as any).pointDilation,
     // Accessors are var/gene names (strings)
     scatterplotXXaccessor,
     scatterplotYYaccessor,
     crossfilter,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     genesets: (state as any).genesets.genesets,
   };
 })
+// eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
 class Scatterplot extends React.PureComponent<{}, State> {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   static createReglState(canvas: any) {
     /*
     Must be created for each canvas
@@ -92,14 +102,18 @@ class Scatterplot extends React.PureComponent<{}, State> {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   static watchAsync(props: any, prevProps: any) {
     return !shallowEqual(props.watchProps, prevProps.watchProps);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   axes: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   reglCanvas: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   renderCache: any;
 
   computePointPositions = memoize((X, Y, xScale, yScale) => {
@@ -198,6 +212,7 @@ class Scatterplot extends React.PureComponent<{}, State> {
     }
   );
 
+  // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
   constructor(props: {}) {
     super(props);
     const viewport = this.getViewportDimensions();
@@ -213,15 +228,18 @@ class Scatterplot extends React.PureComponent<{}, State> {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   componentDidMount() {
     // this affect point render size for the scatterplot
     window.addEventListener("resize", this.handleResize);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   componentWillUnmount() {
     window.removeEventListener("resize", this.handleResize);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   setReglCanvas = (canvas: any) => {
     this.reglCanvas = canvas;
     if (canvas) {
@@ -232,6 +250,7 @@ class Scatterplot extends React.PureComponent<{}, State> {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   getViewportDimensions = () => {
     return {
       height: window.innerHeight,
@@ -239,6 +258,7 @@ class Scatterplot extends React.PureComponent<{}, State> {
     };
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleResize = () => {
     const { state } = this.state;
     const viewport = this.getViewportDimensions();
@@ -248,6 +268,7 @@ class Scatterplot extends React.PureComponent<{}, State> {
     });
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   fetchAsyncProps = async (props: any) => {
     const {
       scatterplotXXaccessor,
@@ -310,6 +331,7 @@ class Scatterplot extends React.PureComponent<{}, State> {
     };
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   createXQuery(geneName: any) {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
     const { annoMatrix } = this.props;
@@ -328,6 +350,7 @@ class Scatterplot extends React.PureComponent<{}, State> {
     ];
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   createColorByQuery(colors: any) {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
     const { annoMatrix, genesets } = this.props;
@@ -336,6 +359,7 @@ class Scatterplot extends React.PureComponent<{}, State> {
     return createColorQuery(colorMode, colorAccessor, schema, genesets);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   updateColorTable(colors: any, colorDf: any) {
     /* update color table state */
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
@@ -351,10 +375,15 @@ class Scatterplot extends React.PureComponent<{}, State> {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   async fetchData(
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     scatterplotXXaccessor: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     scatterplotYYaccessor: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     colors: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     pointDilation: any
   ) {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
@@ -408,6 +437,7 @@ class Scatterplot extends React.PureComponent<{}, State> {
     );
   });
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   updateReglAndRender(newRenderCache: any) {
     const { positions, colors, flags } = newRenderCache;
     this.renderCache = newRenderCache;
@@ -418,12 +448,19 @@ class Scatterplot extends React.PureComponent<{}, State> {
     this.renderCanvas();
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   renderPoints(
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     regl: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     drawPoints: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     flagBuffer: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     colorBuffer: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     pointBuffer: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     projectionTF: any
   ) {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
@@ -452,6 +489,7 @@ class Scatterplot extends React.PureComponent<{}, State> {
     regl._gl.flush();
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     const {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
@@ -564,7 +602,9 @@ class Scatterplot extends React.PureComponent<{}, State> {
                     minimized={minimized}
                     scatterplotYYaccessor={scatterplotYYaccessor}
                     scatterplotXXaccessor={scatterplotXXaccessor}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
                     xScale={(asyncProps as any).xScale}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
                     yScale={(asyncProps as any).yScale}
                   />
                 );

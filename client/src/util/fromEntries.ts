@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export default function fromEntries(arr: any) {
   /*
 	Similar to Object.fromEntries, but only handles array.

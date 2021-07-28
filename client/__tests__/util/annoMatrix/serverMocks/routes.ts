@@ -14,6 +14,7 @@ const indexedSchema = {
   ),
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function makeMockColumn(s: any, length: any) {
   const { type } = s;
   switch (type) {
@@ -37,8 +38,10 @@ function makeMockColumn(s: any, length: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function getEncodedDataframe(colNames: any, length: any, colSchemas: any) {
   const colIndex = new KeyIndex(colNames);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const columns = colSchemas.map((s: any) => makeMockColumn(s, length));
   // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
   const df = new Dataframe([length, colNames.length], columns, null, colIndex);
@@ -46,6 +49,7 @@ function getEncodedDataframe(colNames: any, length: any, colSchemas: any) {
   return body;
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function dataframeResponse(colNames: any, columns: any) {
   const colIndex = new KeyIndex(colNames);
   const df = new Dataframe(
@@ -62,8 +66,10 @@ export function dataframeResponse(colNames: any, columns: any) {
   return () => Promise.resolve({ body, init: { status: 200, headers } });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function annotationObsResponse(request: any) {
   const url = new URL(request.url);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const params = Array.from((url.searchParams as any).entries());
   const names = params
     // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
@@ -91,8 +97,10 @@ function annotationObsResponse(request: any) {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function annotationVarResponse(request: any) {
   const url = new URL(request.url);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const params = Array.from((url.searchParams as any).entries());
   const names = params
     // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
@@ -120,8 +128,10 @@ function annotationVarResponse(request: any) {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function layoutObsResponse(request: any) {
   const url = new URL(request.url);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const params = Array.from((url.searchParams as any).entries());
   // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
   const names = params.filter(([k]) => k === "layout-name").map(([, v]) => v);
@@ -150,10 +160,13 @@ function layoutObsResponse(request: any) {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function dataVarResponse(request: any) {
   const url = new URL(request.url);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const params = Array.from((url.searchParams as any).entries());
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const colNames = params.map((v) => `${(v as any)[0]}/${(v as any)[1]}`);
   const colSchemas = colNames.map(() => schema.schema.dataframe);
   const body = getEncodedDataframe(
@@ -171,6 +184,7 @@ function dataVarResponse(request: any) {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function responder(request: any) {
   const url = new URL(request.url);
   const { pathname } = url;
@@ -189,29 +203,34 @@ export function responder(request: any) {
   return Promise.reject(new Error("bad URL"));
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function withExpected(expectedURL: any, expectedParams: any) {
   /*
   Do some additional error checking
   */
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   return (request: any) => {
     // if URL is bogus, reject the promise
     const url = new URL(request.url);
     if (!url.pathname.endsWith(expectedURL)) {
       return Promise.reject(new Error("Unexpected URL!"));
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const params = Array.from((url.searchParams as any).entries()).sort(
       // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '(a: unknown, b: unknown) => bool... Remove this comment to see the full error message
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (a, b) => (a as any)[0] < (b as any)[0]
     );
     expectedParams = expectedParams
-      .slice()
+      .slice() // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       .sort((a: any, b: any) => a[0] < b[0]);
 
     if (
       params.length !== expectedParams.length ||
       !params.every(
         (p, i) =>
-          (p as any)[0] === expectedParams[i][0] &&
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+          (p as any)[0] === expectedParams[i][0] && // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           (p as any)[1] === expectedParams[i][1]
       )
     ) {
@@ -222,9 +241,11 @@ export function withExpected(expectedURL: any, expectedParams: any) {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function annotationsObs(names: any) {
   return withExpected(
     "/annotations/obs",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     names.map((name: any) => ["annotation-name", name])
   );
 }

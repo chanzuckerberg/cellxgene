@@ -91,7 +91,9 @@ const CXG_SERVER_PORT =
 
 let _API;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 if ((window as any).CELLXGENE && (window as any).CELLXGENE.API) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   _API = (window as any).CELLXGENE.API;
 } else {
   if (CXG_SERVER_PORT === undefined) {

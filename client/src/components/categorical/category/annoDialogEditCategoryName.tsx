@@ -7,14 +7,19 @@ import { labelPrompt } from "../labelUtil";
 import { AnnotationsHelpers } from "../../../util/stateManager";
 import actions from "../../../actions";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 type State = any;
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   annotations: (state as any).annotations,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   schema: (state as any).annoMatrix?.schema,
 }))
+// eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
 class AnnoDialogEditCategoryName extends React.PureComponent<{}, State> {
+  // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
   constructor(props: {}) {
     super(props);
     this.state = {
@@ -23,12 +28,14 @@ class AnnoDialogEditCategoryName extends React.PureComponent<{}, State> {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleChangeOrSelect = (name: any) => {
     this.setState({
       newCategoryText: name,
     });
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   disableEditCategoryMode = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField } = this.props;
@@ -38,6 +45,7 @@ class AnnoDialogEditCategoryName extends React.PureComponent<{}, State> {
     this.setState({ newCategoryText: metadataField });
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleEditCategory = (e: any) => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField } = this.props;
@@ -49,6 +57,7 @@ class AnnoDialogEditCategoryName extends React.PureComponent<{}, State> {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'schema' does not exist on type 'Readonly... Remove this comment to see the full error message
     const { schema } = this.props;
     const allCategoryNames = schema.annotations.obs.columns.map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (c: any) => c.name
     );
     if (
@@ -66,6 +75,7 @@ class AnnoDialogEditCategoryName extends React.PureComponent<{}, State> {
     e.preventDefault();
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   editedCategoryNameError = (name: any) => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type 'R... Remove this comment to see the full error message
     const { metadataField } = this.props;
@@ -82,6 +92,7 @@ class AnnoDialogEditCategoryName extends React.PureComponent<{}, State> {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'schema' does not exist on type 'Readonly... Remove this comment to see the full error message
     const { schema } = this.props;
     const allCategoryNames = schema.annotations.obs.columns.map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (c: any) => c.name
     );
     const categoryNameAlreadyExists = allCategoryNames.indexOf(name) > -1;
@@ -93,6 +104,7 @@ class AnnoDialogEditCategoryName extends React.PureComponent<{}, State> {
     return false;
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   instruction = (name: any) => {
     return labelPrompt(
       this.editedCategoryNameError(name),
@@ -101,12 +113,15 @@ class AnnoDialogEditCategoryName extends React.PureComponent<{}, State> {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   allCategoryNames() {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'schema' does not exist on type 'Readonly... Remove this comment to see the full error message
     const { schema } = this.props;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     return schema.annotations.obs.columns.map((c: any) => c.name);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     const { newCategoryText } = this.state;
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type 'R... Remove this comment to see the full error message
