@@ -1,5 +1,6 @@
 import * as Dataframe from "../../../src/util/dataframe";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function float32Conversion(f: any) {
   return new Float32Array([f])[0];
 }

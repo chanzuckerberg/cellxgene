@@ -126,6 +126,7 @@ const someData = [
   },
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 let payments: any = null;
 beforeEach(() => {
   payments = new Crossfilter(someData);
@@ -141,6 +142,7 @@ describe("ImmutableTypedCrossfilter", () => {
       .addDimension(
         "quantity",
         "scalar",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
         (i: any, d: any) => d[i].quantity,
         Int32Array
       )
@@ -163,6 +165,7 @@ describe("ImmutableTypedCrossfilter", () => {
     const p2 = payments.addDimension(
       "quantity",
       "scalar",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (i: any, data: any) => data[i].quantity,
       Int32Array
     );
@@ -183,16 +186,18 @@ describe("ImmutableTypedCrossfilter", () => {
       .addDimension(
         "quantity",
         "scalar",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
         (i: any, d: any) => d[i].quantity,
         Int32Array
-      )
+      ) // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       .addDimension("tip", "scalar", (i: any, d: any) => d[i].tip, Float32Array)
       .addDimension(
         "total",
         "scalar",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
         (i: any, d: any) => d[i].total,
         Float32Array
-      )
+      ) // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       .addDimension("type", "enum", (i: any, d: any) => d[i].type);
     expect(p).toBeDefined();
 
@@ -245,18 +250,21 @@ describe("ImmutableTypedCrossfilter", () => {
   });
 
   describe("scalar dimension", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     let p: any;
     beforeEach(() => {
       p = payments
         .addDimension(
           "quantity",
           "scalar",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           (i: any, d: any) => d[i].quantity,
           Int32Array
         )
         .addDimension(
           "tip",
           "scalar",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           (i: any, d: any) => d[i].tip,
           Float32Array
         )
@@ -302,8 +310,10 @@ describe("ImmutableTypedCrossfilter", () => {
   });
 
   describe("enum dimension", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     let p: any;
     beforeEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       p = payments.addDimension("type", "enum", (i: any, d: any) => d[i].type);
     });
 
@@ -342,6 +352,7 @@ describe("ImmutableTypedCrossfilter", () => {
   });
 
   describe("spatial dimension", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     let p: any;
     beforeEach(() => {
       const X = someData.map((r) => r.coords[0]);
@@ -431,18 +442,21 @@ describe("ImmutableTypedCrossfilter", () => {
   });
 
   describe("non-finite scalars", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     let p: any;
     beforeEach(() => {
       p = payments
         .addDimension(
           "quantity",
           "scalar",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           (i: any, d: any) => d[i].quantity,
           Int32Array
         )
         .addDimension(
           "nonFinite",
           "scalar",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           (i: any, d: any) => d[i].nonFinite,
           Float32Array
         )

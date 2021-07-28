@@ -18,6 +18,7 @@ import {
 
 import { appUrlBase, TEST_EMAIL, TEST_PASSWORD } from "./config";
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function drag(testId: any, start: any, end: any, lasso = false) {
   const layout = await waitByID(testId);
   // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
@@ -43,6 +44,7 @@ export async function drag(testId: any, start: any, end: any, lasso = false) {
   await page.mouse.up();
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function clickOnCoordinate(testId: any, coord: any) {
   const layout = await expect(page).toMatchElement(getTestId(testId));
   const elBox = await layout.boxModel();
@@ -56,7 +58,9 @@ export async function clickOnCoordinate(testId: any, coord: any) {
   await page.mouse.click(x, y);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function getAllHistograms(testclass: any, testIds: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const histTestIds = testIds.map((tid: any) => `histogram-${tid}`);
 
   // these load asynchronously, so we need to wait for each histogram individually,
@@ -77,6 +81,7 @@ export async function getAllHistograms(testclass: any, testIds: any) {
   return testIDs.map((id) => id.replace(/^histogram-/, ""));
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function getAllCategoriesAndCounts(category: any) {
   // these load asynchronously, so we have to wait for the specific category.
   await waitByID(`category-${category}`);
@@ -93,6 +98,7 @@ export async function getAllCategoriesAndCounts(category: any) {
 
           const count = (row.querySelector(
             "[data-testclass='categorical-value-count']"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           ) as any).innerText;
 
           return [cat, count];
@@ -101,11 +107,13 @@ export async function getAllCategoriesAndCounts(category: any) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function getCellSetCount(num: any) {
   await clickOn(`cellset-button-${num}`);
   return getOneElementInnerText(`[data-testid='cellset-count-${num}']`);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function resetCategory(category: any) {
   const checkboxId = `${category}:category-select`;
   await waitByID(checkboxId);
@@ -125,11 +133,9 @@ export async function resetCategory(category: any) {
   if (isExpanded) await clickOn(`${category}:category-expand`);
 }
 
-export async function calcCoordinate(
-  testId: any,
-  xAsPercent: any,
-  yAsPercent: any
-) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
+export // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+async function calcCoordinate(testId: any, xAsPercent: any, yAsPercent: any) {
   const el = await waitByID(testId);
   // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
   const size = await el.boxModel();
@@ -141,10 +147,9 @@ export async function calcCoordinate(
   };
 }
 
-export async function calcDragCoordinates(
-  testId: any,
-  coordinateAsPercent: any
-) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
+export // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+async function calcDragCoordinates(testId: any, coordinateAsPercent: any) {
   return {
     start: await calcCoordinate(
       testId,
@@ -159,6 +164,7 @@ export async function calcDragCoordinates(
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function selectCategory(category: any, values: any, reset = true) {
   if (reset) await resetCategory(category);
 
@@ -170,6 +176,7 @@ export async function selectCategory(category: any, values: any, reset = true) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function expandCategory(category: any) {
   const expand = await waitByID(`${category}:category-expand`);
   // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
@@ -179,6 +186,7 @@ export async function expandCategory(category: any) {
   if (notExpanded) await clickOn(`${category}:category-expand`);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export async function clip(min = 0, max = 100) {
   await clickOn("visualization-settings");
   await clearInputAndTypeInto("clip-min-input", min);
@@ -186,6 +194,7 @@ export async function clip(min = 0, max = 100) {
   await clickOn("clip-commit");
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function createCategory(categoryName: any) {
   await clickOnUntil("open-annotation-dialog", async () => {
     await expect(page).toMatchElement(getTestId("new-category-name"));
@@ -201,14 +210,17 @@ export async function createCategory(categoryName: any) {
 
 */
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function colorByGeneset(genesetName: any) {
   await clickOn(`${genesetName}:colorby-entire-geneset`);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function colorByGene(gene: any) {
   await clickOn(`colorby-${gene}`);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function assertColorLegendLabel(label: any) {
   const handle = await waitByID("continuous_legend_color_by_label");
 
@@ -220,6 +232,7 @@ export async function assertColorLegendLabel(label: any) {
   return expect(result).toBe(label);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function expandGeneset(genesetName: any) {
   const expand = await waitByID(`${genesetName}:geneset-expand`);
   // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
@@ -229,6 +242,7 @@ export async function expandGeneset(genesetName: any) {
   if (notExpanded) await clickOn(`${genesetName}:geneset-expand`);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function createGeneset(genesetName: any) {
   await clickOnUntil("open-create-geneset-dialog", async () => {
     await expect(page).toMatchElement(getTestId("create-geneset-input"));
@@ -239,6 +253,7 @@ export async function createGeneset(genesetName: any) {
   await waitByClass("autosave-complete");
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function editGenesetName(genesetName: any, editText: any) {
   const editButton = `${genesetName}:edit-genesetName-mode`;
   const submitButton = `${genesetName}:submit-geneset`;
@@ -250,6 +265,7 @@ export async function editGenesetName(genesetName: any, editText: any) {
   await clickOn(submitButton);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function deleteGeneset(genesetName: any) {
   const targetId = `${genesetName}:delete-geneset`;
 
@@ -263,6 +279,7 @@ export async function deleteGeneset(genesetName: any) {
   await waitByClass("autosave-complete");
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function assertGenesetDoesNotExist(genesetName: any) {
   // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
   const result = await isElementPresent(
@@ -271,6 +288,7 @@ export async function assertGenesetDoesNotExist(genesetName: any) {
   await expect(result).toBe(false);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function assertGenesetExists(genesetName: any) {
   const handle = await waitByID(`${genesetName}:geneset-name`);
 
@@ -288,6 +306,7 @@ export async function assertGenesetExists(genesetName: any) {
 
 */
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function addGeneToSet(genesetName: any, geneToAddToSet: any) {
   const submitButton = `${genesetName}:submit-gene`;
 
@@ -296,6 +315,7 @@ export async function addGeneToSet(genesetName: any, geneToAddToSet: any) {
   await clickOn(submitButton);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function removeGene(geneSymbol: any) {
   const targetId = `delete-from-geneset:${geneSymbol}`;
 
@@ -304,6 +324,7 @@ export async function removeGene(geneSymbol: any) {
   await waitByClass("autosave-complete");
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function assertGeneExistsInGeneset(geneSymbol: any) {
   const handle = await waitByID(`${geneSymbol}:gene-label`);
 
@@ -315,6 +336,7 @@ export async function assertGeneExistsInGeneset(geneSymbol: any) {
   return expect(result).toBe(geneSymbol);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function assertGeneDoesNotExist(geneSymbol: any) {
   // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
   const result = await isElementPresent(getTestId(`${geneSymbol}:gene-label`));
@@ -322,6 +344,7 @@ export async function assertGeneDoesNotExist(geneSymbol: any) {
   await expect(result).toBe(false);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function expandGene(geneSymbol: any) {
   await clickOn(`maximize-${geneSymbol}`);
 }
@@ -332,6 +355,7 @@ export async function expandGene(geneSymbol: any) {
 
 */
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function duplicateCategory(categoryName: any) {
   await clickOn("open-annotation-dialog");
 
@@ -358,10 +382,9 @@ export async function duplicateCategory(categoryName: any) {
   await waitByClass("autosave-complete");
 }
 
-export async function renameCategory(
-  oldCategoryName: any,
-  newCategoryName: any
-) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
+export // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+async function renameCategory(oldCategoryName: any, newCategoryName: any) {
   await clickOn(`${oldCategoryName}:see-actions`);
   await clickOn(`${oldCategoryName}:edit-category-mode`);
   await clearInputAndTypeInto(
@@ -371,6 +394,7 @@ export async function renameCategory(
   await clickOn(`${oldCategoryName}:submit-category-edit`);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function deleteCategory(categoryName: any) {
   const targetId = `${categoryName}:delete-category`;
 
@@ -384,6 +408,7 @@ export async function deleteCategory(categoryName: any) {
   await assertCategoryDoesNotExist();
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function createLabel(categoryName: any, labelName: any) {
   /**
    * (thuang): This explicit wait is needed, since currently showing
@@ -409,15 +434,20 @@ export async function createLabel(categoryName: any, labelName: any) {
   await clickOn(`${categoryName}:submit-label`);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function deleteLabel(categoryName: any, labelName: any) {
   await expandCategory(categoryName);
   await clickOn(`${categoryName}:${labelName}:see-actions`);
   await clickOn(`${categoryName}:${labelName}:delete-label`);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export async function renameLabel(
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   categoryName: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   oldLabelName: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   newLabelName: any
 ) {
   await expandCategory(categoryName);
@@ -430,12 +460,14 @@ export async function renameLabel(
   await clickOn(`${categoryName}:${oldLabelName}:submit-label-edit`);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function addGeneToSearch(geneName: any) {
   await typeInto("gene-search", geneName);
   await page.keyboard.press("Enter");
   await page.waitForSelector(`[data-testid='histogram-${geneName}']`);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function subset(coordinatesAsPercent: any) {
   // In order to deselect the selection after the subset, make sure we have some clear part
   // of the scatterplot we can click on
@@ -450,7 +482,9 @@ export async function subset(coordinatesAsPercent: any) {
   await clickOnCoordinate("layout-graph", clearCoordinate);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function setSellSet(cellSet: any, cellSetNum: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const selections = cellSet.filter((sel: any) => sel.kind === "categorical");
 
   for (const selection of selections) {
@@ -460,18 +494,21 @@ export async function setSellSet(cellSet: any, cellSetNum: any) {
   await getCellSetCount(cellSetNum);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function runDiffExp(cellSet1: any, cellSet2: any) {
   await setSellSet(cellSet1, 1);
   await setSellSet(cellSet2, 2);
   await clickOn("diffexp-button");
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function bulkAddGenes(geneNames: any) {
   await clickOn("section-bulk-add");
   await typeInto("input-bulk-add", geneNames.join(","));
   await page.keyboard.press("Enter");
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function assertCategoryDoesNotExist(categoryName: any) {
   // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
   const result = await isElementPresent(
@@ -481,6 +518,7 @@ export async function assertCategoryDoesNotExist(categoryName: any) {
   await expect(result).toBe(false);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export async function login() {
   await goToPage(appUrlBase);
 
@@ -502,6 +540,7 @@ export async function login() {
   expect(page.url()).toContain(appUrlBase);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export async function logout() {
   await clickOnUntil("user-info", async () => {
     await waitByID("log-out");
@@ -514,6 +553,7 @@ export async function logout() {
   await waitByID("log-in");
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 async function waitUntilFormFieldStable(selector: any) {
   const MAX_RETRY = 10;
   const WAIT_FOR_MS = 200;

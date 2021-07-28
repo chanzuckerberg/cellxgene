@@ -14,9 +14,11 @@ import { Dataframe } from "../../../src/util/dataframe";
 enableFetchMocks();
 
 describe("AnnoMatrix", () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   let annoMatrix: any;
 
   beforeEach(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (fetch as any).resetMocks(); // reset all fetch mocking state
     // reset all fetch mocking state
     annoMatrix = new AnnoMatrixLoader(
@@ -37,6 +39,7 @@ describe("AnnoMatrix", () => {
     });
 
     test("simple single column fetch", async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).once(serverMocks.annotationsObs(["name_0"]));
 
       const df = await annoMatrix.fetch("obs", "name_0");
@@ -46,6 +49,7 @@ describe("AnnoMatrix", () => {
     });
 
     test("simple multi column fetch", async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any)
         .once(serverMocks.annotationsObs(["name_0"]))
         .once(serverMocks.annotationsObs(["n_genes"]));
@@ -56,8 +60,10 @@ describe("AnnoMatrix", () => {
     });
 
     describe("fetch from field", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       const getLastTwo = async (field: any) => {
         const columnNames = annoMatrix.getMatrixColumns(field).slice(-2);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
         (fetch as any).mockResponses(
           ...columnNames.map(() => serverMocks.responder)
         );
@@ -73,18 +79,21 @@ describe("AnnoMatrix", () => {
 
     test("fetch - test all query forms", async () => {
       // single string is a column name
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).once(serverMocks.annotationsObs(["n_genes"]));
       await expect(annoMatrix.fetch("obs", "n_genes")).resolves.toBeInstanceOf(
         Dataframe
       );
 
       // array of column names, expecting n_genes to be cached.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).once(serverMocks.annotationsObs(["percent_mito"]));
       await expect(
         annoMatrix.fetch("obs", ["n_genes", "percent_mito"])
       ).resolves.toBeInstanceOf(Dataframe);
 
       // more complex value filter query, enumerated
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).once(serverMocks.responder);
       await expect(
         annoMatrix.fetch("X", {
@@ -98,6 +107,7 @@ describe("AnnoMatrix", () => {
 
       // more complex value filter query, range
       const varIndex = annoMatrix.schema.annotations.var.index;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any)
         .once(
           serverMocks.withExpected("/data/var", [[`var:${varIndex}`, "SUMO3"]])
@@ -174,6 +184,7 @@ describe("AnnoMatrix", () => {
       expect(am1.nObs).toEqual(am2.nObs);
       expect(am1.nVar).toEqual(am2.nVar);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any)
         .once(serverMocks.annotationsObs(["n_genes"]))
         .once(serverMocks.annotationsObs(["n_genes"]));
@@ -191,6 +202,7 @@ describe("AnnoMatrix", () => {
     // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'base' implicitly has an 'any' type.
     async function addDrop(base) {
       expect(base.getMatrixColumns("obs")).not.toContain("foo");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockRejectOnce(new Error("unknown column name"));
       await expect(base.fetch("obs", "foo")).rejects.toThrow(
         "unknown column name"
@@ -216,6 +228,7 @@ describe("AnnoMatrix", () => {
       const am2 = am1.dropObsColumn("foo");
       expect(base.getMatrixColumns("obs")).not.toContain("foo");
       expect(am2.getMatrixColumns("obs")).not.toContain("foo");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockRejectOnce(new Error("unknown column name"));
       await expect(am2.fetch("obs", "foo")).rejects.toThrow(
         "unknown column name"
@@ -239,6 +252,7 @@ describe("AnnoMatrix", () => {
       const am4 = clip(am3, 0, 1);
       await addDrop(am4);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockResponse(serverMocks.responder);
 
       await am1.fetch("obs", am1.getMatrixColumns("obs"));
@@ -246,6 +260,7 @@ describe("AnnoMatrix", () => {
       await am3.fetch("obs", am3.getMatrixColumns("obs"));
       await am4.fetch("obs", am4.getMatrixColumns("obs"));
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).resetMocks();
 
       await addDrop(am1);
@@ -292,6 +307,7 @@ describe("AnnoMatrix", () => {
       );
 
       /* drop column */
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockRejectOnce(new Error("unknown column name"));
       am = am1.dropObsColumn("test");
       await expect(am.fetch("obs", "test")).rejects.toThrow(
@@ -313,6 +329,7 @@ describe("AnnoMatrix", () => {
       const am3 = isubset(annoMatrix, [10, 1, 0, 30, 2]);
       await addSetDrop(am3);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockResponse(serverMocks.responder);
 
       await am1.fetch("obs", am1.getMatrixColumns("obs"));

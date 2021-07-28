@@ -107,6 +107,7 @@ const anAnnotationsVarJSONResponse = {
     .value(),
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function encodeTypedArray(builder: any, uType: any, uData: any) {
   const uTypeName = NetEncoding.TypedArray[uType];
   const ArrayType = NetEncoding[uTypeName];
@@ -116,6 +117,7 @@ function encodeTypedArray(builder: any, uType: any, uData: any) {
   return builder.endObject();
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function encodeMatrix(columns: any, colIndex = undefined) {
   /*
   IMPORTANT: this is not a general purpose encoder.  in particular,

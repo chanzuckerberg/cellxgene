@@ -1,9 +1,10 @@
-// @ts-ignore FIXME revisit from ts-migrate
 const {
   SecretsManagerClient,
   GetSecretValueCommand,
+  // eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 } = require("@aws-sdk/client-secrets-manager");
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const { setup } = require("jest-environment-puppeteer");
 
 const client = new SecretsManagerClient({ region: "us-west-2" });

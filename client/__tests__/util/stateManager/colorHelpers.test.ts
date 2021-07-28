@@ -125,6 +125,7 @@ describe("categorical color helpers", () => {
       Array.from(schema.annotations.obsByName.categoricalColumn.categories)
     );
     const userDefinedColorTable = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       categoricalColumn: shuffleCats.reduce((acc: any, label: any) => {
         acc[label] = randRGBColor();
         return acc;
@@ -159,23 +160,29 @@ TODO:
 2. user defined colors
 */
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function indexSchema(schema: any) {
   schema.annotations.obsByName = Object.fromEntries(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     schema.annotations?.obs?.columns?.map((v: any) => [v.name, v]) ?? []
   );
   schema.annotations.varByName = Object.fromEntries(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     schema.annotations?.var?.columns?.map((v: any) => [v.name, v]) ?? []
   );
   schema.layout.obsByName = Object.fromEntries(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     schema.layout?.obs?.map((v: any) => [v.name, v]) ?? []
   );
   schema.layout.varByName = Object.fromEntries(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     schema.layout?.var?.map((v: any) => [v.name, v]) ?? []
   );
 
   return schema;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function makeScale(rgb: any) {
   // make a scale string from a rgb float triple
   return `rgb(${(rgb[0] * 255) >>> 0}, ${(rgb[1] * 255) >>> 0}, ${
@@ -183,6 +190,7 @@ function makeScale(rgb: any) {
   })`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function shuffle(array: any) {
   for (let i = array.length - 1; i > 0; i -= 1) {
     const j = (Math.random() * (i + 1)) >>> 0;
