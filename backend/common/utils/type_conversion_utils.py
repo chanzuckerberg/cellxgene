@@ -170,8 +170,8 @@ def _can_cast_array_values_to_int32(array: Union[np.ndarray, pd.Series, pd.Index
     if array.size == 0:
         return True
 
-    ii = np.iinfo(np.int32)
-    if array.min() >= ii.min and array.max() <= ii.max:
+    int32_machine_limits = np.iinfo(np.int32)
+    if array.min() >= int32_machine_limits.min and array.max() <= int32_machine_limits.max:
         return True
 
     return False

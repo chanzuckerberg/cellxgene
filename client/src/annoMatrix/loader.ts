@@ -302,10 +302,9 @@ function _responseTypeNormalization(field, query, schema, response) {
   }
   if (field === "obs") {
     /* 
-    Cough, cough - see comment on the function called.
-
-    Note: this must be performed after any possible changes
-    to string, boolean or categorical columns.
+    Note: this must be performed after any possible changes to string, boolean or categorical 
+    columns. This routine relies on having access to any casts or other data transformations
+    made in this routine, above, in order to correctly determine schema updates.
     */
     _normalizeCategoricalSchema(
       schema.annotations.obsByName[query],
