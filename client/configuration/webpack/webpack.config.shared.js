@@ -1,8 +1,13 @@
 /* eslint-disable @blueprintjs/classes-constants -- we don't import blueprint here  */
+// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const path = require("path");
+// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const fs = require("fs");
+// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const ObsoleteWebpackPlugin = require("obsolete-webpack-plugin");
+// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const ScriptExtHtmlWebpackPlugin = require("script-ext-html-webpack-plugin");
 
 const src = path.resolve("src");
