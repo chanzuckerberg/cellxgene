@@ -8,10 +8,6 @@ from backend.common.constants import XApproximateDistribution
 @numba.njit(error_model="numpy", nogil=True)
 def min_max(arr: np.ndarray):
     """Return (min, max) values for the ndarray."""
-    n = arr.size
-    odd = n % 2
-    if odd:
-        n -= 1
 
     # initialize to first finite value in array.  Normally,
     # this will exit on the first value.
@@ -21,8 +17,10 @@ def min_max(arr: np.ndarray):
             break
 
     # now find min/max, unrolled by two
+    odd = arr.size % 2
+    unrolled_loop_limit = arr.size - 1 if odd else arr.size
     i = 0
-    while i < n:
+    while i < unrolled_loop_limit:
         x = arr[i]
         y = arr[i + 1]
 
@@ -36,8 +34,9 @@ def min_max(arr: np.ndarray):
         max_val = max(y, max_val)
         i += 2
 
+    # handle the tail if any
     if odd:
-        x = arr[n]
+        x = arr[arr.size - 1]
 
         # ignore non-finites
         x = x if np.isfinite(x) else min_val
