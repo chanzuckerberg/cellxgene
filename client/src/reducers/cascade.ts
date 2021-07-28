@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export default function cascadeReducers(arg: any) {
   /*
   Combine a set of cascading reducers into a single reducer.  Cascading
@@ -23,6 +24,7 @@ export default function cascadeReducers(arg: any) {
   */
   const reducers = arg instanceof Map ? arg : new Map(arg);
   const reducerKeys = [...reducers.keys()];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   return (prevState: any, action: any) => {
     const nextState = {};
     let stateChange = false;

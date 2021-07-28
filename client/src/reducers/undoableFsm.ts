@@ -18,13 +18,20 @@ b) compound actions that should be collapsed into a single history change.
 
 */
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 const createFsmTransitions = (
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   stashPending: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   cancelPending: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   applyPending: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   skip: any,
   // @ts-expect-error ts-migrate(6133) FIXME: 'clear' is declared but its value is never read.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   clear: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   save: any
 ) => {
   return [
@@ -47,6 +54,7 @@ const createFsmTransitions = (
       to: "done",
       /* if current selection is all, cancelPending.  Else, applyPending */
       // @ts-expect-error ts-migrate(6133) FIXME: 'fsm' is declared but its value is never read.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       action: (fsm: any, transition: any, data: any) =>
         data.state.graphSelection.selection.mode === "all"
           ? cancelPending()
@@ -78,6 +86,7 @@ const createFsmTransitions = (
       to: "done",
       /* if current selection is all, cancelPending.  Else, applyPending */
       // @ts-expect-error ts-migrate(6133) FIXME: 'fsm' is declared but its value is never read.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       action: (fsm: any, transition: any, data: any) =>
         data.state.graphSelection.selection.mode === "all"
           ? cancelPending()

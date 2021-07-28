@@ -5,9 +5,13 @@ action creators related to embeddings choice
 import { AnnoMatrixObsCrossfilter } from "../annoMatrix";
 import { _setEmbeddingSubset } from "../util/stateManager/viewStackHelpers";
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export async function _switchEmbedding(
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   prevAnnoMatrix: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   prevCrossfilter: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   newEmbeddingName: any
 ) {
   /*
@@ -25,8 +29,11 @@ export async function _switchEmbedding(
   return [annoMatrix, obsCrossfilter];
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export const layoutChoiceAction = (newLayoutChoice: any) => async (
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   dispatch: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   getState: any
 ) => {
   /*

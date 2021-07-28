@@ -11,6 +11,7 @@ const ToastTopCenter = Toaster.create({
 /*
 A "user" error - eg, bad input
 */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export const postUserErrorToast = (message: any) =>
   ToastTopCenter.show({ message, intent: Intent.WARNING });
 
@@ -18,12 +19,14 @@ export const postUserErrorToast = (message: any) =>
 A toast the user must dismiss manually, because they need to act on its information,
 ie., 8 bulk add genes out of 40 were bad. Manually see which ones and fix.
 */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export const keepAroundErrorToast = (message: any) =>
   ToastTopCenter.show({ message, timeout: 0, intent: Intent.WARNING });
 
 /*
 a hard network error
 */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export const postNetworkErrorToast = (message: any, key = undefined) =>
   ToastTopCenter.show(
     {
@@ -37,6 +40,7 @@ export const postNetworkErrorToast = (message: any, key = undefined) =>
 /*
 Async message to user
 */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export const postAsyncSuccessToast = (message: any) =>
   ToastTopCenter.show({
     message,
@@ -44,6 +48,7 @@ export const postAsyncSuccessToast = (message: any) =>
     intent: Intent.SUCCESS,
   });
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export const postAsyncFailureToast = (message: any) =>
   ToastTopCenter.show({
     message,

@@ -17,26 +17,37 @@ import { _queryValidate, _queryCacheKey } from "./query";
 const _dataframeCache = dataframeMemo(128);
 
 export default class AnnoMatrix {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   public isView: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   public nObs: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   public nVar: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   public rowIndex: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   public schema: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   public userFlags: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   public viewOf: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   protected _cache: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   private _pendingLoad: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   private _whereCache: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   private _gcInfo: any;
 
   /*
@@ -69,6 +80,7 @@ export default class AnnoMatrix {
       subset(annoMatrix, rowLabels) -> annoMatrix
   etc.
   */
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   static fields() {
     /*
     return the fields present in the AnnoMatrix instance.
@@ -76,6 +88,7 @@ export default class AnnoMatrix {
     return ["obs", "var", "emb", "X"];
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   constructor(schema: any, nObs: any, nVar: any, rowIndex = null) {
     /*
     Private constructor - this is an abstract base class.  Do not use.
@@ -132,6 +145,7 @@ export default class AnnoMatrix {
    ** Schema helper/accessors
    **/
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   getMatrixColumns(field) {
     /*
     Return array of column names in the field.  ONLY supported on the
@@ -144,7 +158,7 @@ export default class AnnoMatrix {
     return _schemaColumns(this.schema, field);
   }
 
-  // eslint-disable-next-line class-methods-use-this -- need to be able to call this on instances
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/explicit-module-boundary-types -- need to be able to call this on instances
   getMatrixFields() {
     /*
     Return array of fields in this annoMatrix.  Currently hard-wired to
@@ -156,6 +170,7 @@ export default class AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   getColumnSchema(field, col) {
     /*
     Return the schema for the field & column ,eg,
@@ -169,6 +184,7 @@ export default class AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   getColumnDimensions(field, col) {
     /*
     Return the dimensions on this field / column.  For most fields, which are 1D,
@@ -187,10 +203,12 @@ export default class AnnoMatrix {
   /**
    ** General utility methods
    **/
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   base() {
     /*
     return the base of view, or `this` if not a view.
     */
+    // eslint-disable-next-line @typescript-eslint/no-this-alias --- FIXME: disabled temporarily on migrate to TS.
     let annoMatrix = this;
     while (annoMatrix.isView) annoMatrix = annoMatrix.viewOf;
     return annoMatrix;
@@ -200,6 +218,7 @@ export default class AnnoMatrix {
    ** Load / read interfaces
    **/
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   fetch(field, q) {
     /*
 		Return the given query on a single matrix field as a single dataframe.
@@ -258,6 +277,7 @@ export default class AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   prefetch(field, q) {
     /*
 		Start a data fetch & cache fill.  Identical to fetch() except it does
@@ -289,7 +309,7 @@ export default class AnnoMatrix {
    **/
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars -- make sure subclass implements
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-module-boundary-types -- make sure subclass implements
   addObsAnnoCategory(col, category) {
     /*
     Add a new category value (aka "label") to a writable obs column, and return the new AnnoMatrix.
@@ -307,7 +327,7 @@ export default class AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars -- make sure subclass implements
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-module-boundary-types -- make sure subclass implements
   async removeObsAnnoCategory(col, category, unassignedCategory) {
     /*
     Remove a category value from an obs column, reassign any obs having that value
@@ -329,7 +349,7 @@ export default class AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars -- make sure subclass implements
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-module-boundary-types -- make sure subclass implements
   dropObsColumn(col) {
     /*
     Drop an entire writable column, eg a user-created obs annotation.  Typical use
@@ -346,7 +366,7 @@ export default class AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'colSchema' is declared but its value is never rea... Remove this comment to see the full error message
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars -- make sure subclass implements
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-module-boundary-types -- make sure subclass implements
   addObsColumn(colSchema, Ctor, value) {
     /*
     Add a new writable OBS annotation column, with the caller-specified schema, initial value
@@ -376,7 +396,7 @@ export default class AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'oldCol' is declared but its value is never read.
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars -- make sure subclass implements
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-module-boundary-types -- make sure subclass implements
   renameObsColumn(oldCol, newCol) {
     /*
     Rename the obs column 'oldCol' to have name 'newCol' and returns new AnnoMatrix.
@@ -392,7 +412,7 @@ export default class AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars -- make sure subclass implements
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-module-boundary-types -- make sure subclass implements
   async setObsColumnValues(col, obsLabels, value) {
     /*
     Set all obs with label in array 'obsLabels' to have 'value'.  Typical use would be
@@ -411,7 +431,7 @@ export default class AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars -- make sure subclass implements
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-module-boundary-types -- make sure subclass implements
   async resetObsColumnValues(col, oldValue, newValue) {
     /*
     Set by value - all elements in the column with value 'oldValue' are set to 'newValue'.
@@ -429,7 +449,7 @@ export default class AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'colSchema' is declared but its value is never rea... Remove this comment to see the full error message
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars -- make sure subclass implements
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-module-boundary-types -- make sure subclass implements
   addEmbedding(colSchema) {
     /*
     Add a new obs embedding to the AnnoMatrix, with provided schema.
@@ -443,6 +463,7 @@ export default class AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   getCacheKeys(field, query) {
     /*
 Return cache keys for columns associated with this query.  May return
@@ -455,6 +476,7 @@ Return cache keys for columns associated with this query.  May return
    ** Private interfaces below.
    **/
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   _resolveCachedQueries(field, queries) {
     return (
       queries
@@ -471,6 +493,7 @@ Return cache keys for columns associated with this query.  May return
   }
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   async _fetch(field, q) {
     if (!AnnoMatrix.fields().includes(field)) return undefined;
     const queries = Array.isArray(q) ? q : [q];
@@ -518,6 +541,7 @@ Return cache keys for columns associated with this query.  May return
   }
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   async _getPendingLoad(field, query, fetchFn) {
     /*
     Given a query on a field, ensure that we only have a single outstanding
@@ -539,7 +563,7 @@ Return cache keys for columns associated with this query.  May return
     return this._pendingLoad[field][key];
   }
 
-  // eslint-disable-next-line class-methods-use-this -- make sure subclass implements
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/explicit-module-boundary-types -- make sure subclass implements
   async _doLoad() {
     _subclassResponsibility();
   }
@@ -574,6 +598,7 @@ Return cache keys for columns associated with this query.  May return
   as much of the cache is pinned by that data structure.
   */
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   _gcField(field, isHot, pinnedColumns) {
     const maxColumns = isHot ? 256 : 10;
     const cache = this._cache[field];
@@ -616,6 +641,7 @@ Return cache keys for columns associated with this query.  May return
   }
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   _gcFetchCleanup(field, pinnedColumns) {
     /*
     Called during data load/fetch.  By definition, this is 'hot', so we
@@ -631,6 +657,7 @@ Return cache keys for columns associated with this query.  May return
   }
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'hints' implicitly has an 'any' type.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   _gc(hints) {
     /*
     Called from middleware, or elsewhere.  isHot is true if we are in the active store, 
@@ -644,6 +671,7 @@ Return cache keys for columns associated with this query.  May return
   }
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   _gcUpdateStats(field, dataframe) {
     /*
     called each time a query is performed, allowing the gc to update any bookkeeping
@@ -672,6 +700,7 @@ Return cache keys for columns associated with this query.  May return
   Do not override _clone();
   **/
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'clone' implicitly has an 'any' type.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   _cloneDeeper(clone) {
     clone._cache = _shallowClone(this._cache);
     clone._gcInfo = new Map();
@@ -684,6 +713,7 @@ Return cache keys for columns associated with this query.  May return
     return clone;
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   _clone() {
     const clone = _shallowClone(this);
     this._cloneDeeper(clone);

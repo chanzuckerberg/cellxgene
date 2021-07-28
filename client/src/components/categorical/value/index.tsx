@@ -30,6 +30,7 @@ const STACKED_BAR_HEIGHT = 11;
 const STACKED_BAR_WIDTH = 100;
 
 /* this is defined outside of the class so we can use it in connect() */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function _currentLabelAsString(ownProps: any) {
   const { label } = ownProps;
   // when called as a function, the String() constructor performs type conversion,
@@ -37,6 +38,7 @@ function _currentLabelAsString(ownProps: any) {
   return String(label);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 type State = any;
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
@@ -54,14 +56,18 @@ type State = any;
   const isSelected = category.get(label) ?? true;
 
   return {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     annotations: (state as any).annotations,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     schema: (state as any).annoMatrix?.schema,
     isDilated,
     isSelected,
     label,
   };
 })
+// eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
 class CategoryValue extends React.Component<{}, State> {
+  // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
   constructor(props: {}) {
     super(props);
     this.state = {
@@ -69,12 +75,15 @@ class CategoryValue extends React.Component<{}, State> {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
   componentDidUpdate(prevProps: {}) {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type 'R... Remove this comment to see the full error message
     const { metadataField, categoryIndex, categorySummary } = this.props;
     if (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (prevProps as any).metadataField !== metadataField ||
-      (prevProps as any).categoryIndex !== categoryIndex ||
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+      (prevProps as any).categoryIndex !== categoryIndex || // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (prevProps as any).categorySummary !== categorySummary
     ) {
       // eslint-disable-next-line react/no-did-update-set-state --- adequately checked to prevent looping
@@ -85,6 +94,7 @@ class CategoryValue extends React.Component<{}, State> {
   }
 
   // If coloring by and this isn't the colorAccessor and it isn't being edited
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   get shouldRenderStackedBarOrHistogram() {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorAccessor' does not exist on type 'R... Remove this comment to see the full error message
     const { colorAccessor, isColorBy, annotations } = this.props;
@@ -92,18 +102,21 @@ class CategoryValue extends React.Component<{}, State> {
     return !!colorAccessor && !isColorBy && !annotations.isEditingLabelName;
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleDeleteValue = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField, label } = this.props;
     dispatch(actions.annotationDeleteLabelFromCategory(metadataField, label));
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleAddCurrentSelectionToThisLabel = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField, label } = this.props;
     dispatch(actions.annotationLabelCurrentSelection(metadataField, label));
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleEditValue = (e: any) => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField, label } = this.props;
@@ -119,6 +132,7 @@ class CategoryValue extends React.Component<{}, State> {
     e.preventDefault();
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleCreateArbitraryLabel = (txt: any) => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField, label } = this.props;
@@ -128,6 +142,7 @@ class CategoryValue extends React.Component<{}, State> {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   labelNameError = (name: any) => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type 'R... Remove this comment to see the full error message
     const { metadataField, schema } = this.props;
@@ -135,10 +150,12 @@ class CategoryValue extends React.Component<{}, State> {
     return isLabelErroneous(name, metadataField, schema);
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   instruction = (label: any) => {
     return labelPrompt(this.labelNameError(label), "New, unique label", ":");
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   activateEditLabelMode = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField, categoryIndex, label } = this.props;
@@ -150,6 +167,7 @@ class CategoryValue extends React.Component<{}, State> {
     });
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   cancelEditMode = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField, categoryIndex, label } = this.props;
@@ -164,6 +182,7 @@ class CategoryValue extends React.Component<{}, State> {
     });
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   toggleOff = () => {
     const {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
@@ -187,6 +206,7 @@ class CategoryValue extends React.Component<{}, State> {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   shouldComponentUpdate = (nextProps: any, nextState: any) => {
     /*
     Checks to see if at least one of the following changed:
@@ -212,10 +232,13 @@ class CategoryValue extends React.Component<{}, State> {
     const valueSelectionChange = isSelected !== newIsSelected;
 
     const colorAccessorChange =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (props as any).colorAccessor !== nextProps.colorAccessor;
     const annotationsChange =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (props as any).annotations !== nextProps.annotations;
     const editingLabel = state.editedLabelText !== nextState.editedLabelText;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const dilationChange = (props as any).isDilated !== nextProps.isDilated;
 
     const count = categorySummary.categoryValueCounts[categoryIndex];
@@ -227,6 +250,7 @@ class CategoryValue extends React.Component<{}, State> {
     // if any one changes, but only for the currently colored-by category.
     const colorMightHaveChanged =
       nextProps.colorAccessor === nextProps.metadataField &&
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (props as any).categorySummary !== nextProps.categorySummary;
 
     return (
@@ -241,6 +265,7 @@ class CategoryValue extends React.Component<{}, State> {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   toggleOn = () => {
     const {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
@@ -264,6 +289,7 @@ class CategoryValue extends React.Component<{}, State> {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleMouseEnter = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField, categoryIndex, label } = this.props;
@@ -275,6 +301,7 @@ class CategoryValue extends React.Component<{}, State> {
     });
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleMouseExit = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField, categoryIndex, label } = this.props;
@@ -286,23 +313,33 @@ class CategoryValue extends React.Component<{}, State> {
     });
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleTextChange = (text: any) => {
     this.setState({ editedLabelText: text });
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleChoice = (e: any) => {
     /* Blueprint Suggest format */
     this.setState({ editedLabelText: e.target });
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   createHistogramBins = (
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     metadataField: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     categoryData: any,
     // @ts-expect-error ts-migrate(6133) FIXME: 'colorAccessor' is declared but its value is never... Remove this comment to see the full error message
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     colorAccessor: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     colorData: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     categoryValue: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     width: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     height: any
   ) => {
     /*
@@ -337,15 +374,24 @@ class CategoryValue extends React.Component<{}, State> {
     };
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   createStackedGraphBins = (
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     metadataField: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     categoryData: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     colorAccessor: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     colorData: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     categoryValue: any,
     // @ts-expect-error ts-migrate(6133) FIXME: 'colorTable' is declared but its value is never re... Remove this comment to see the full error message
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     colorTable: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     schema: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     width: any
   ) => {
     /*
@@ -383,10 +429,12 @@ class CategoryValue extends React.Component<{}, State> {
     return null;
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   currentLabelAsString() {
     return _currentLabelAsString(this.props);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   isAddCurrentSelectionDisabled(crossfilter: any, category: any, value: any) {
     /*
     disable "add current selection to label", if one of the following is true:
@@ -411,6 +459,7 @@ class CategoryValue extends React.Component<{}, State> {
     return false;
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   renderMiniStackedBar = () => {
     const {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorAccessor' does not exist on type 'R... Remove this comment to see the full error message
@@ -470,6 +519,7 @@ class CategoryValue extends React.Component<{}, State> {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   renderMiniHistogram = () => {
     const {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorAccessor' does not exist on type 'R... Remove this comment to see the full error message
@@ -528,6 +578,7 @@ class CategoryValue extends React.Component<{}, State> {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     const {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type 'R... Remove this comment to see the full error message

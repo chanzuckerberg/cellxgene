@@ -1,6 +1,7 @@
 import uniq from "lodash.uniq";
 import filter from "lodash.filter";
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 const Controls = (
   state = {
     // data loading flag
@@ -20,6 +21,7 @@ const Controls = (
 
     datasetDrawer: false,
   },
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   action: any
 ) => {
   /*

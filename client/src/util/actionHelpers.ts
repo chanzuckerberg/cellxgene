@@ -6,7 +6,9 @@ import { postNetworkErrorToast } from "../components/framework/toasters";
 dispatch an action error to the user.   Currently we use
 async toasts.
 */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 let networkErrorToastKey: any = null;
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export const dispatchNetworkErrorMessageToUser = (message: any) => {
   if (!networkErrorToastKey) {
     networkErrorToastKey = postNetworkErrorToast(message);
@@ -18,8 +20,11 @@ export const dispatchNetworkErrorMessageToUser = (message: any) => {
 /*
 Catch unexpected errors and make sure we don't lose them!
 */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function catchErrorsWrap(fn: any, dispatchToUser = false) {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   return (dispatch: any, getState: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     fn(dispatch, getState).catch((error: any) => {
       console.error(error);
       if (dispatchToUser) {
@@ -34,6 +39,7 @@ export function catchErrorsWrap(fn: any, dispatchToUser = false) {
  * Wrapper to perform async fetch with some modest error handling
  * and decoding.  Arguments are identical to standard fetch.
  */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export const doFetch = async (url: any, init = {}) => {
   try {
     // add defaults to the fetch init param.
@@ -42,6 +48,7 @@ export const doFetch = async (url: any, init = {}) => {
       credentials: "include",
       ...init,
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const acceptType = (init as any).headers?.get("Accept");
     const res = await fetch(url, init);
     if (
@@ -67,6 +74,7 @@ export const doFetch = async (url: any, init = {}) => {
 /*
 Wrapper to perform an async fetch and JSON decode response.
 */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export const doJsonRequest = async (url: any, init = {}) => {
   const res = await doFetch(url, {
     ...init,
@@ -78,6 +86,7 @@ export const doJsonRequest = async (url: any, init = {}) => {
 /*
 Wrapper to perform an async fetch for binary data.
 */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export const doBinaryRequest = async (url: any, init = {}) => {
   const res = await doFetch(url, {
     ...init,
@@ -101,7 +110,9 @@ Parameters:
 
 So [1, 2, 3, 4, 10, 11, 14] -> [ [1, 4], [10, 11], 14]
 */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export const rangeEncodeIndices = (
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   indices: any,
   minRangeLength = 3,
   sorted = false

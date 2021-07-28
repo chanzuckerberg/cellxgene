@@ -1,6 +1,7 @@
 import { H3, H1, UL, HTMLTable, Classes } from "@blueprintjs/core";
 import React from "react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const renderContributors = (contributors: any, affiliations: any) => {
   // eslint-disable-next-line no-constant-condition --  Temp removed contributor section to avoid publishing PII
   if (!contributors || contributors.length === 0 || true) return null;
@@ -8,6 +9,7 @@ const renderContributors = (contributors: any, affiliations: any) => {
     <>
       <H3>Contributors</H3>
       <p>
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS. */}
         {contributors.map((contributor: any) => {
           const { email, name, institution } = contributor;
 
@@ -27,6 +29,7 @@ const renderContributors = (contributors: any, affiliations: any) => {
 
 // generates a list of unique institutions by order of appearance in contributors
 const buildAffiliations = (contributors = []) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const affiliations: any = [];
   contributors.forEach((contributor) => {
     const { institution } = contributor;
@@ -37,12 +40,14 @@ const buildAffiliations = (contributors = []) => {
   return affiliations;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const renderAffiliations = (affiliations: any) => {
   if (affiliations.length === 0) return null;
   return (
     <>
       <H3>Affiliations</H3>
       <UL>
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS. */}
         {affiliations.map((item: any, index: any) => (
           <div key={item}>
             <sup>{index + 1}</sup>
@@ -55,6 +60,7 @@ const renderAffiliations = (affiliations: any) => {
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const renderDOILink = (type: any, doi: any) => {
   if (!doi) return null;
   return (
@@ -72,7 +78,9 @@ const renderDOILink = (type: any, doi: any) => {
 const ONTOLOGY_KEY = "ontology_term_id";
 // Render list of metadata attributes found in categorical field
 const renderDatasetMetadata = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   singleValueCategories: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   corporaMetadata: any
 ) => {
   if (singleValueCategories.size === 0) return null;
@@ -110,15 +118,18 @@ const renderDatasetMetadata = (
 
             // If this category is a ontology term, let's add its value to the previous node
             if (String(category).includes(ONTOLOGY_KEY)) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
               const prevElem = (elems as any).pop();
               const newChildren = [...prevElem.props.children];
               newChildren.splice(2, 1, [<td key="ontology">{value}</td>]);
               // Props aren't extensible so we must clone and alter the component to append the new child
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
               (elems as any).push(
                 React.cloneElement(prevElem, prevElem.props, newChildren)
               );
             } else {
               // Create the list item
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
               (elems as any).push(
                 <tr key={category}>
                   <td>{`${category}:`}</td>
@@ -137,6 +148,7 @@ const renderDatasetMetadata = (
 
 // Renders any links found in the config where link_type is not "SUMMARY"
 // If there are no links in the config, render the aboutURL
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const renderLinks = (projectLinks: any, aboutURL: any) => {
   if (!projectLinks && !aboutURL) return null;
   if (projectLinks)
@@ -144,6 +156,7 @@ const renderLinks = (projectLinks: any, aboutURL: any) => {
       <>
         <H3>Project Links</H3>
         <UL>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS. */}
           {projectLinks.map((link: any) => {
             if (link.link_type === "SUMMARY") return null;
             return (

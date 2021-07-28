@@ -35,10 +35,12 @@ Remember that option values can be ANY js type, except undefined/null.
     }
   }
 */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function topNCategories(colSchema: any, summary: any, N: any) {
   /* return top N categories by occurrences in the data */
   const { categories: allCategories } = colSchema;
   const counts = allCategories.map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (cat: any) => summary.categoryCounts.get(cat) ?? 0
   );
 
@@ -47,6 +49,7 @@ function topNCategories(colSchema: any, summary: any, N: any) {
   }
 
   const sortIndex = fillRange(new Array(allCategories.length)).sort(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (a: any, b: any) => counts[b] - counts[a]
   );
   const topNindices = new Set(sortIndex.slice(0, N));
@@ -62,6 +65,7 @@ function topNCategories(colSchema: any, summary: any, N: any) {
   return [allCategories, _topNCategories, topNCounts];
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function isSelectableCategoryName(schema: any, name: any) {
   const { index } = schema.annotations.obs;
   const colSchema = schema.annotations.obsByName[name];
@@ -72,6 +76,7 @@ export function isSelectableCategoryName(schema: any, name: any) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function selectableCategoryNames(schema: any, names: any) {
   /*
   return all obs annotation names that are categorical AND have a
@@ -80,10 +85,13 @@ export function selectableCategoryNames(schema: any, names: any) {
   If the initial name list not provided, use everything in the schema.
   */
   if (!schema) return [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   if (!names) names = schema.annotations.obs.columns.map((c: any) => c.name);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   return names.filter((name: any) => isSelectableCategoryName(schema, name));
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function createCategorySummaryFromDfCol(dfCol: any, colSchema: any) {
   const N = globals.maxCategoricalOptionsToDisplay;
   const { writable: isUserAnno } = colSchema;
@@ -100,6 +108,7 @@ export function createCategorySummaryFromDfCol(dfCol: any, colSchema: any) {
     categoryValueCounts,
   ] = topNCategories(colSchema, summary, N);
   const categoryValueIndices = new Map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     categoryValues.map((v: any, i: any) => [v, i])
   );
   const numCategoryValues = categoryValueIndices.size;
@@ -116,10 +125,13 @@ export function createCategorySummaryFromDfCol(dfCol: any, colSchema: any) {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function createCategoricalSelection(names: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   return fromEntries(names.map((name: any) => [name, new Map()]));
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function pruneVarDataCache(varData: any, needed: any) {
   /*
   Remove any unneeded columns from the varData dataframe.  Will only

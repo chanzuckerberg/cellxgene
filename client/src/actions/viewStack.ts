@@ -18,8 +18,11 @@ import {
   _userResetSubsetAnnoMatrix,
 } from "../util/stateManager/viewStackHelpers";
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export const clipAction = (min: any, max: any) => (
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   dispatch: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   getState: any
 ) => {
   /*
@@ -37,6 +40,7 @@ export const clipAction = (min: any, max: any) => (
   });
 };
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export const subsetAction = () => (dispatch: any, getState: any) => {
   /*
   Subset the annoMatrix to the current crossfilter selection by pushing a 
@@ -61,6 +65,7 @@ export const subsetAction = () => (dispatch: any, getState: any) => {
   });
 };
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export const resetSubsetAction = () => (dispatch: any, getState: any) => {
   /*
   Reset the annoMatrix to all data.  Because we may have multiple views

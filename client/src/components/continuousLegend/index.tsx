@@ -9,6 +9,7 @@ import {
 } from "../../util/stateManager/colorHelpers";
 
 // create continuous color legend
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const continuous = (selectorId: any, colorScale: any, colorAccessor: any) => {
   const legendHeight = 200;
   const legendWidth = 80;
@@ -110,11 +111,15 @@ const continuous = (selectorId: any, colorScale: any, colorAccessor: any) => {
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   annoMatrix: (state as any).annoMatrix,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   colors: (state as any).colors,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   genesets: (state as any).genesets.genesets,
 }))
 class ContinuousLegend extends React.Component {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   async componentDidUpdate(prevProps: any) {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
     const { annoMatrix, colors, genesets } = this.props;
@@ -157,6 +162,7 @@ class ContinuousLegend extends React.Component {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     return (
       <div

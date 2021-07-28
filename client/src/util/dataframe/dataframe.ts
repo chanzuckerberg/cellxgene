@@ -73,25 +73,34 @@ Dataframe
 **/
 
 class Dataframe {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   __columns: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   __columnsAccessor: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   __id: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   colIndex: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   dims: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   length: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   rowIndex: any;
   /**
   Constructors & factories
   **/
 
   constructor(
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     dims: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     columnarData: any,
     rowIndex = null,
     colIndex = null,
@@ -137,10 +146,15 @@ class Dataframe {
     Object.freeze(this);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   static __errorChecks(
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     dims: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     columnarData: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     rowIndex: any,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     colIndex: any
   ) {
     const [nRows, nCols] = dims;
@@ -180,6 +194,7 @@ class Dataframe {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   static __compileColumn(column: any, getRowByOffset: any, getRowByLabel: any) {
     /*
       Each column accessor is a function which will lookup data by
@@ -215,11 +230,13 @@ class Dataframe {
     const __id = __getMemoId();
 
     /* get value by row label */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const get = function get(rlabel: any) {
       return column[getRowByOffset(rlabel)];
     };
 
     /* get value by row offset */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const iget = function iget(roffset: any) {
       return column[roffset];
     };
@@ -230,11 +247,13 @@ class Dataframe {
     };
 
     /* test for row label inclusion in column */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const has = function has(rlabel: any) {
       const offset = getRowByOffset(rlabel);
       return offset >= 0 && offset < length;
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const ihas = function ihas(offset: any) {
       return offset >= 0 && offset < length;
     };
@@ -246,6 +265,7 @@ class Dataframe {
     NOTE: not found return is DIFFERENT than the default Array.indexOf as
     -1 is a plausible Dataframe row/col label.
     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const indexOf = function indexOf(value: any) {
       const offset = column.indexOf(value);
       if (offset === -1) {
@@ -270,10 +290,12 @@ class Dataframe {
     Create histogram bins for this column.  Memoized.
     */
     const _memoHistoCat = memoize(_histogramCategorical, hashCategorical);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const histogramCategorical = (by: any) => _memoHistoCat(get, by);
     let histogram = null;
     if (isTypedArray(column)) {
       const mFn = memoize(histogramContinuous, hashContinuous);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       histogram = (bins: any, domain: any, by: any) =>
         mFn(get, bins, domain, by);
     } else {
@@ -295,6 +317,7 @@ class Dataframe {
     return get;
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   __compile(accessors: any) {
     /*
     Compile data accessors for each column.
@@ -303,6 +326,7 @@ class Dataframe {
     */
     const getRowByOffset = this.rowIndex.getOffset.bind(this.rowIndex);
     const getRowByLabel = this.rowIndex.getLabel.bind(this.rowIndex);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     this.__columnsAccessor = this.__columns.map((column: any, idx: any) => {
       if (accessors[idx]) {
         return accessors[idx];
@@ -312,6 +336,7 @@ class Dataframe {
     Object.freeze(this.__columnsAccessor);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   clone() {
     /*
     Clone this dataframe
@@ -326,6 +351,7 @@ class Dataframe {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   withCol(label: any, colData: any, withRowIndex = null) {
     /*
     Create a new DF, which is `this` plus the new column. Example:
@@ -369,6 +395,7 @@ class Dataframe {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   withColsFrom(dataframe: any, labels: any) {
     /*
     return a new dataframe containing all columns from both `this` and the
@@ -433,6 +460,7 @@ class Dataframe {
 
     // otherwise, bulid a new dataframe combining columns from both
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const srcOffsets = srcLabels.map((l: any) =>
       dataframe.colIndex.getOffset(l)
     );
@@ -447,11 +475,13 @@ class Dataframe {
     const { rowIndex } = this;
     const columns = [
       ...this.__columns,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       ...srcOffsets.map((i: any) => dataframe.__columns[i]),
     ];
     const colIndex = this.colIndex.withLabels(dstLabels);
     const columnsAccessor = [
       ...this.__columnsAccessor,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       ...srcOffsets.map((i: any) => dataframe.__columnsAccessor[i]),
     ];
 
@@ -465,12 +495,14 @@ class Dataframe {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   withColsFromAll(dataframes = []) {
     dataframes = Array.isArray(dataframes) ? dataframes : [dataframes];
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
     return dataframes.reduce((acc, df) => acc.withColsFrom(df), this);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   dropCol(label: any) {
     /*
     Create a new dataframe, omitting one columns.
@@ -507,6 +539,7 @@ class Dataframe {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   renameCol(oldLabel: any, newLabel: any) {
     /*
     Accelerator for dropping a column and then adding it again with a new label
@@ -532,6 +565,7 @@ class Dataframe {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   replaceColData(label: any, newColData: any) {
     /*
     Accelerator for dropping a column then adding it again with same
@@ -553,6 +587,7 @@ class Dataframe {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   static empty(rowIndex = null, colIndex = null) {
     const dims = [
       // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
@@ -564,6 +599,7 @@ class Dataframe {
     return new Dataframe(dims, new Array(dims[1]), rowIndex, colIndex);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   static create(dims: any, columnarData: any) {
     /*
     Create a dataframe from raw columnar data.  All column arrays
@@ -575,6 +611,7 @@ class Dataframe {
     return new Dataframe(dims, columnarData, null, null);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   __subset(newRowIndex: any, newColIndex: any) {
     const dims = [...this.dims];
 
@@ -595,6 +632,7 @@ class Dataframe {
     let { rowIndex } = this;
     if (newRowIndex) {
       const rowOffsets = this.rowIndex.getOffsets(newRowIndex.labels());
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       __columns = __columns.map((col: any) => {
         const newCol = new col.constructor(rowOffsets.length);
         for (let i = 0, l = rowOffsets.length; i < l; i += 1) {
@@ -617,6 +655,7 @@ class Dataframe {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   subset(rowLabels: any, colLabels = null, withRowIndex = null) {
     /*
     Subset by row/col labels.
@@ -639,6 +678,7 @@ class Dataframe {
     return this.__subset(rowIndex, colIndex);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   isubset(rowOffsets: any, colOffsets = null, withRowIndex = null) {
     /*
     Subset by row/col offset.
@@ -663,6 +703,7 @@ class Dataframe {
     return this.__subset(rowIndex, colIndex);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   isubsetMask(rowMask: any, colMask = null, withRowIndex = null) {
     /*
     Subset on row/column based upon a truthy/falsey array (a mask).
@@ -682,6 +723,7 @@ class Dataframe {
     }
 
     /* convert masks to lists - method wastes space, but is fast */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const toList = (mask: any, maxSize: any) => {
       if (!mask) {
         return null;
@@ -706,11 +748,13 @@ class Dataframe {
   Data access with row/col.
   **/
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   columns() {
     /* return all column accessors as an array, in offset order */
     return [...this.__columnsAccessor];
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   col(columnLabel: any) {
     /*
     Return accessor bound to a column.  Allows random row access
@@ -731,6 +775,7 @@ class Dataframe {
     return this.__columnsAccessor[coff];
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   icol(columnOffset: any) {
     /*
     Return column accessor by offset.
@@ -740,6 +785,7 @@ class Dataframe {
       : undefined;
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   at(r: any, c: any) {
     /*
     Access a single value, for a row/col label pair.
@@ -757,6 +803,7 @@ class Dataframe {
     return this.__columns[coff][roff];
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   iat(r: any, c: any) {
     /*
     Access a single value, for a row/col offset (integer) position.
@@ -770,6 +817,7 @@ class Dataframe {
     return this.__columns[c][r];
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   has(r: any, c: any) {
     /*
     Test if row/col labels exist in the dataframe - returns true/false
@@ -780,6 +828,7 @@ class Dataframe {
     return coff >= 0 && coff < nCols && roff >= 0 && roff < nRows;
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   ihas(r: any, c: any) {
     /*
     Test if row/col offset (integer) position exists in the
@@ -796,6 +845,7 @@ class Dataframe {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   hasCol(c: any) {
     /*
     Test if col label exists - return true/false
@@ -803,6 +853,7 @@ class Dataframe {
     return !!this.col(c);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   isEmpty() {
     /*
     Return true if this is an empty dataframe, ie, has dimensions [0,0]
@@ -818,6 +869,7 @@ class Dataframe {
   add these as useful.
   ****/
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   mapColumns(callback: any) {
     /*
     map all columns in the dataframe, returning a new dataframe comprised of the
@@ -825,9 +877,11 @@ class Dataframe {
 
     callback MUST not modify the column, but instead return a mutated copy.
     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const columns = this.__columns.map((colData: any, colIdx: any) =>
       callback(colData, colIdx, this)
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const columnsAccessor = columns.map((c: any, idx: any) =>
       this.__columns[idx] === c ? this.__columnsAccessor[idx] : undefined
     );

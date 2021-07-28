@@ -51,12 +51,9 @@ creates a cache entry of:
 import { _getColumnDimensionNames } from "./schema";
 import { _hashStringValues } from "./query";
 
-export function _whereCacheGet(
-  whereCache: any,
-  schema: any,
-  field: any,
-  query: any
-) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
+export // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+function _whereCacheGet(whereCache: any, schema: any, field: any, query: any) {
   /* 
 	query will either be an where query (object) or a column name (string).
 
@@ -91,6 +88,7 @@ export function _whereCacheGet(
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function _whereCacheCreate(field, query, columnLabels) {
   /*
 	Create a new whereCache
@@ -141,6 +139,7 @@ export function _whereCacheCreate(field, query, columnLabels) {
 function __mergeQueries(dst, src) {
   for (const [queryField, columnMap] of Object.entries(src)) {
     dst[queryField] = dst[queryField] || new Map();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     for (const [queryColumn, valueMap] of columnMap as any) {
       if (!dst[queryField].has(queryColumn))
         dst[queryField].set(queryColumn, new Map());
@@ -181,6 +180,7 @@ function __whereCacheMerge(dst, src) {
 }
 
 // @ts-expect-error ts-migrate(7019) FIXME: Rest parameter 'caches' implicitly has an 'any[]' ... Remove this comment to see the full error message
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function _whereCacheMerge(...caches) {
   return caches.reduce(__whereCacheMerge, {});
 }

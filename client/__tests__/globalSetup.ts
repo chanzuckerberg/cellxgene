@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment --- FIXME: disabled temporarily on migrate to TS.
+// @ts-ignore FIXME: 'globalSetup.ts' cannot be compiled under '--isola... Remove this comment to see the full error message
 const {
   SecretsManagerClient,
   GetSecretValueCommand,

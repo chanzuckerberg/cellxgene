@@ -3,6 +3,7 @@ Dataframe histogram
 */
 import { isTypedArray } from "./util";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function _histogramContinuous(column: any, bins: any, min: any, max: any) {
   const valBins = new Array(bins).fill(0);
   if (!column) {
@@ -22,10 +23,15 @@ function _histogramContinuous(column: any, bins: any, min: any, max: any) {
 }
 
 function _histogramContinuousBy(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   column: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   bins: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   min: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   max: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   by: any
 ) {
   const byMap = new Map();
@@ -52,6 +58,7 @@ function _histogramContinuousBy(
   return byMap;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function _histogramCategorical(column: any) {
   const valMap = new Map();
   if (!column) {
@@ -69,6 +76,7 @@ function _histogramCategorical(column: any) {
   return valMap;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function _histogramCategoricalBy(column: any, by: any) {
   const byMap = new Map();
   if (!column || !by) {
@@ -96,6 +104,7 @@ function _histogramCategoricalBy(column: any, by: any) {
 /*
 Count category occupancy.  Optional group-by category.
 */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function histogramCategorical(column: any, by: any) {
   if (by && isTypedArray(by)) {
     throw new Error("Group by column must be categorical");
@@ -108,6 +117,7 @@ export function histogramCategorical(column: any, by: any) {
 /*
 Memoization hash for histogramCategorical()
 */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function hashCategorical(column: any, by: any) {
   if (by) {
     return `${column.__id}:${by.__id}`;
@@ -119,10 +129,13 @@ export function hashCategorical(column: any, by: any) {
 Bin counts for continuous/scalar values, with optional group-by category.
 Values outside domain are ignored.
 */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function histogramContinuous(
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   column: any,
   bins = 40,
   domain = [0, 1],
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   by: any
 ) {
   if (by && isTypedArray(by)) {
@@ -137,10 +150,13 @@ export function histogramContinuous(
 /*
 Memoization hash for histogramContinuous
 */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function hashContinuous(
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   column: any,
   bins = "",
   domain = [0, 0],
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   by: any
 ) {
   const [min, max] = domain;

@@ -5,6 +5,7 @@ import * as d3 from "d3";
 import maybeScientific from "../../util/maybeScientific";
 import clamp from "../../util/clamp";
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 const Histogram = ({
   field,
   fieldForId,
@@ -17,7 +18,7 @@ const Histogram = ({
   margin,
   isColorBy,
   selectionRange,
-  mini,
+  mini, // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 }: any) => {
   const svgRef = useRef(null);
   const [brush, setBrush] = useState(null);
@@ -80,6 +81,7 @@ const Histogram = ({
           // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
           isColorBy
             ? // @ts-expect-error ts-migrate(6133) FIXME: 'd' is declared but its value is never read.
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
               (d: any, i: any) => colorScale(histogramScale(binStart(i)))
             : defaultBarColor
         );
@@ -134,6 +136,7 @@ const Histogram = ({
             .tickFormat(
               // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
               d3.format(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
                 y.domain().some((n: any) => Math.abs(n) >= 10000) ? ".0e" : ","
               )
             )

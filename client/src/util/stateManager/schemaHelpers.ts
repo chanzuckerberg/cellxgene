@@ -15,24 +15,30 @@ System wide schema assumptions:
   - schema will be internally self-consistent (eg, index matches columns)
 */
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function indexEntireSchema(schema: any) {
   /* Index schema for ease of use */
   schema.annotations.obsByName = fromEntries(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     schema.annotations?.obs?.columns?.map((v: any) => [v.name, v]) ?? []
   );
   schema.annotations.varByName = fromEntries(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     schema.annotations?.var?.columns?.map((v: any) => [v.name, v]) ?? []
   );
   schema.layout.obsByName = fromEntries(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     schema.layout?.obs?.map((v: any) => [v.name, v]) ?? []
   );
   schema.layout.varByName = fromEntries(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     schema.layout?.var?.map((v: any) => [v.name, v]) ?? []
   );
 
   return schema;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function _copyObsAnno(schema: any) {
   /* redux copy conventions - WARNING, only for modifying obs annotations */
   return {
@@ -44,6 +50,7 @@ function _copyObsAnno(schema: any) {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function _copyObsLayout(schema: any) {
   return {
     ...schema,
@@ -54,36 +61,44 @@ function _copyObsLayout(schema: any) {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function _reindexObsAnno(schema: any) {
   /* reindex obs annotations ONLY */
   schema.annotations.obsByName = fromEntries(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     schema.annotations.obs.columns.map((v: any) => [v.name, v])
   );
   return schema;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function _reindexObsLayout(schema: any) {
   schema.layout.obsByName = fromEntries(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     schema.layout.obs.map((v: any) => [v.name, v])
   );
   return schema;
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function removeObsAnnoColumn(schema: any, name: any) {
   const newSchema = _copyObsAnno(schema);
   newSchema.annotations.obs.columns = schema.annotations.obs.columns.filter(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (v: any) => v.name !== name
   );
   return _reindexObsAnno(newSchema);
 }
 
 // @ts-expect-error ts-migrate(6133) FIXME: 'name' is declared but its value is never read.
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function addObsAnnoColumn(schema: any, name: any, defn: any) {
   const newSchema = _copyObsAnno(schema);
   newSchema.annotations.obs.columns.push(defn);
   return _reindexObsAnno(newSchema);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function removeObsAnnoCategory(schema: any, name: any, category: any) {
   /* remove a category from a categorical annotation */
   const categories = schema.annotations.obsByName[name]?.categories;
@@ -100,6 +115,7 @@ export function removeObsAnnoCategory(schema: any, name: any, category: any) {
   return newSchema;
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function addObsAnnoCategory(schema: any, name: any, category: any) {
   /* add a category to a categorical annotation */
   const categories = schema.annotations.obsByName[name]?.categories;
@@ -120,6 +136,7 @@ export function addObsAnnoCategory(schema: any, name: any, category: any) {
   return newSchema;
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function addObsLayout(schema: any, layout: any) {
   /* add or replace a layout */
   const newSchema = _copyObsLayout(schema);
@@ -127,9 +144,11 @@ export function addObsLayout(schema: any, layout: any) {
   return _reindexObsLayout(newSchema);
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function removeObsLayout(schema: any, name: any) {
   /* remove a layout */
   const newSchema = _copyObsLayout(schema);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   newSchema.layout.obs = schema.layout.obs.filter((v: any) => v.name !== name);
   return _reindexObsLayout(newSchema);
 }

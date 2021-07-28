@@ -1,6 +1,7 @@
 import React from "react";
 import * as globals from "../../globals";
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 const Logo = (props: any) => {
   const { size } = props;
   return (

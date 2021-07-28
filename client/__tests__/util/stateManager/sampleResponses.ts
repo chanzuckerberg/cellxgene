@@ -109,7 +109,9 @@ const anAnnotationsVarJSONResponse = {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function encodeTypedArray(builder: any, uType: any, uData: any) {
+  // @ts-expect-error --- FIXME: Element implicitly has an 'any' type.
   const uTypeName = NetEncoding.TypedArray[uType];
+  // @ts-expect-error --- FIXME: Element implicitly has an 'any' type.
   const ArrayType = NetEncoding[uTypeName];
   const dv = ArrayType.createDataVector(builder, uData);
   builder.startObject(1);
