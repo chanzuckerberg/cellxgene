@@ -1,13 +1,16 @@
 import React from "react";
 
 export default class MiniStackedBar extends React.PureComponent {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   canvasRef: any;
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   constructor(props: any) {
     super(props);
     this.canvasRef = React.createRef();
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   drawStacks = () => {
     const {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'domainValues' does not exist on type 'Re... Remove this comment to see the full error message
@@ -51,16 +54,19 @@ export default class MiniStackedBar extends React.PureComponent {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   componentDidUpdate = (prevProps: any) => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'occupancy' does not exist on type 'Reado... Remove this comment to see the full error message
     const { occupancy } = this.props;
     if (occupancy !== prevProps.occupancy) this.drawStacks();
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   componentDidMount = () => {
     this.drawStacks();
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'width' does not exist on type 'Readonly<... Remove this comment to see the full error message
     const { width, height } = this.props;

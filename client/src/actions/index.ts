@@ -24,6 +24,7 @@ function setGlobalConfig(config: any) {
 /*
 return promise fetching user-configured colors
 */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 async function userColorsFetchAndLoad(dispatch: any) {
   return fetchJson("colors").then((response) =>
     dispatch({
@@ -37,6 +38,7 @@ async function schemaFetch() {
   return fetchJson("schema");
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 async function configFetch(dispatch: any) {
   return fetchJson("config").then((response) => {
     const config = { ...globals.configDefaults, ...response.config };
@@ -51,6 +53,7 @@ async function configFetch(dispatch: any) {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 async function userInfoFetch(dispatch: any) {
   return fetchJson("userinfo").then((response) => {
     const { userinfo: userInfo } = response || {};
@@ -62,6 +65,7 @@ async function userInfoFetch(dispatch: any) {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 async function genesetsFetch(dispatch: any, config: any) {
   /* request genesets ONLY if the backend supports the feature */
   const defaultResponse = {
@@ -83,19 +87,24 @@ async function genesetsFetch(dispatch: any, config: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function prefetchEmbeddings(annoMatrix: any) {
   /*
   prefetch requests for all embeddings
   */
   const { schema } = annoMatrix;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const available = schema.layout.obs.map((v: any) => v.name);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   available.forEach((embName: any) => annoMatrix.prefetch("emb", embName));
 }
 
 /*
 Application bootstrap
 */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 const doInitialDataLoad = () =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   catchErrorsWrap(async (dispatch: any) => {
     dispatch({ type: "initial data load start" });
 
@@ -126,6 +135,7 @@ const doInitialDataLoad = () =>
       const layoutSchema = schema?.schema?.layout?.obs ?? [];
       if (
         defaultEmbedding &&
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
         layoutSchema.some((s: any) => s.name === defaultEmbedding)
       ) {
         dispatch(embActions.layoutChoiceAction(defaultEmbedding));
@@ -135,6 +145,7 @@ const doInitialDataLoad = () =>
     }
   }, true);
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 function requestSingleGeneExpressionCountsForColoringPOST(gene: any) {
   return {
     type: "color by expression",
@@ -142,6 +153,7 @@ function requestSingleGeneExpressionCountsForColoringPOST(gene: any) {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 const requestUserDefinedGene = (gene: any) => ({
   type: "request user defined gene success",
 
@@ -150,6 +162,7 @@ const requestUserDefinedGene = (gene: any) => ({
   },
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const dispatchDiffExpErrors = (dispatch: any, response: any) => {
   switch (response.status) {
     case 403:
@@ -174,9 +187,12 @@ const dispatchDiffExpErrors = (dispatch: any, response: any) => {
 };
 
 const requestDifferentialExpression = (
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   set1: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   set2: any,
   num_genes = 50
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 ) => async (dispatch: any, getState: any) => {
   dispatch({ type: "request differential expression started" });
   try {
@@ -226,6 +242,7 @@ const requestDifferentialExpression = (
     const diffexpLists = { negative: [], positive: [] };
     for (const polarity of Object.keys(diffexpLists)) {
       // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       diffexpLists[polarity] = response[polarity].map((v: any) => [
         varIndex.at(v[0], varIndexName),
         ...v.slice(1),
@@ -245,6 +262,7 @@ const requestDifferentialExpression = (
   }
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function fetchJson(pathAndQuery: any) {
   return doJsonRequest(
     `${globals.API.prefix}${globals.API.version}${pathAndQuery}`

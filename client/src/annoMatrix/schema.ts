@@ -42,6 +42,7 @@ export function _getColumnDimensionNames(schema: any, field: any, col: any) {
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function _schemaColumns(schema, field) {
   switch (field) {
     case "obs":
@@ -56,6 +57,7 @@ export function _schemaColumns(schema, field) {
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function _getWritableColumns(schema, field) {
   if (field !== "obs") return [];
   return (
@@ -68,6 +70,7 @@ export function _getWritableColumns(schema, field) {
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function _isContinuousType(schema) {
   const { type } = schema;
   return !(type === "string" || type === "boolean" || type === "categorical");

@@ -31,11 +31,13 @@ function _doFill(arr, start, step, count) {
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'arr' implicitly has an 'any' type.
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function rangeFill(arr, start = 0, step = 1) {
   return _doFill(arr, start, step, arr.length);
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'start' implicitly has an 'any' type.
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function range(start, stop, step) {
   if (start === undefined) return [];
   if (stop === undefined) {
@@ -48,6 +50,7 @@ export function range(start, stop, step) {
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'start' implicitly has an 'any' type.
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function linspace(start, stop, nsteps) {
   // @ts-expect-error ts-migrate(2363) FIXME: The right-hand side of an arithmetic operation mus... Remove this comment to see the full error message
   const delta = (stop - start) / (nsteps - 1).toFixed();

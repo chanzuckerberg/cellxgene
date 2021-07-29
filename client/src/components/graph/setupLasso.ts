@@ -1,18 +1,27 @@
 import * as d3 from "d3";
 import { Colors } from "@blueprintjs/core";
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 const Lasso = () => {
   const dispatch = d3.dispatch("start", "end", "cancel");
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const lasso = (svg: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     let lassoPolygon: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     let lassoPath: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     let closePath: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     let lassoInProgress: any;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const polygonToPath = (polygon: any) =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       `M${polygon.map((d: any) => d.join(",")).join("L")}`;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const distance = (pt1: any, pt2: any) =>
       Math.sqrt((pt2[0] - pt1[0]) ** 2 + (pt2[1] - pt1[1]) ** 2);
 
@@ -21,6 +30,7 @@ const Lasso = () => {
     const lassoPathColor = Colors.BLUE5;
 
     const handleDragStart = () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       lassoPolygon = [(d3 as any).mouse(svg.node())]; // current x y of mouse within element
 
       if (lassoPath) {
@@ -56,6 +66,7 @@ const Lasso = () => {
     };
 
     const handleDrag = () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       const point = (d3 as any).mouse(svg.node());
       lassoPolygon.push(point);
       lassoPath.attr("d", polygonToPath(lassoPolygon));
@@ -126,6 +137,7 @@ const Lasso = () => {
 
     area.call(drag);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (lasso as any).reset = () => {
       if (lassoPath) {
         lassoPath.remove();
@@ -138,6 +150,7 @@ const Lasso = () => {
       }
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (lasso as any).move = (polygon: any) => {
       if (polygon !== lassoPolygon || polygon.length !== lassoPolygon.length) {
         // @ts-expect-error ts-migrate(2339) FIXME: Property 'reset' does not exist on type '(svg: any... Remove this comment to see the full error message
@@ -155,6 +168,7 @@ const Lasso = () => {
     };
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   lasso.on = (type: any, callback: any) => {
     dispatch.on(type, callback);
     return lasso;

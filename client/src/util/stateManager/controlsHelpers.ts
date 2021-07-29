@@ -31,6 +31,7 @@ Remember that option values can be ANY js type, except undefined/null.
   }
 */
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function isSelectableCategoryName(schema: any, name: any) {
   const { index } = schema.annotations.obs;
   const colSchema = schema.annotations.obsByName[name];
@@ -41,6 +42,7 @@ export function isSelectableCategoryName(schema: any, name: any) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function selectableCategoryNames(schema: any, names: any) {
   /*
   return all obs annotation names that are categorical AND have a
@@ -49,10 +51,13 @@ export function selectableCategoryNames(schema: any, names: any) {
   If the initial name list not provided, use everything in the schema.
   */
   if (!schema) return [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   if (!names) names = schema.annotations.obs.columns.map((c: any) => c.name);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   return names.filter((name: any) => isSelectableCategoryName(schema, name));
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function createCategorySummaryFromDfCol(dfCol: any, colSchema: any) {
   const { writable: isUserAnno } = colSchema;
 
@@ -68,6 +73,7 @@ export function createCategorySummaryFromDfCol(dfCol: any, colSchema: any) {
     (cat: any) => summary.categoryCounts.get(cat) ?? 0
   );
   const categoryValueIndices = new Map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     categoryValues.map((v: any, i: any) => [v, i])
   );
   const numCategoryValues = categoryValueIndices.size;
@@ -82,10 +88,13 @@ export function createCategorySummaryFromDfCol(dfCol: any, colSchema: any) {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function createCategoricalSelection(names: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   return fromEntries(names.map((name: any) => [name, new Map()]));
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function pruneVarDataCache(varData: any, needed: any) {
   /*
   Remove any unneeded columns from the varData dataframe.  Will only

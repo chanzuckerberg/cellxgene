@@ -45,7 +45,8 @@ const Clip = React.memo((props) => {
     pendingClipPercentiles?.clipPercentileMax ?? clipPercentileMax;
   const intent =
     clipPercentileMin > 0 || clipPercentileMax < 100
-      ? (Intent as any).INTENT_WARNING
+      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+        (Intent as any).INTENT_WARNING
       : Intent.NONE;
 
   return (

@@ -37,13 +37,18 @@ function compare(a, b) {
 
 export default class PromiseLimit {
   constructor(maxConcurrency = 5) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (this as any).queue = new TinyQueue([], compare);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (this as any).maxConcurrency = maxConcurrency;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (this as any).pending = 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (this as any).insertCounter = 0;
   }
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   priorityAdd(p, fn, ...args) {
     // p - numermic priority (lower first)
     // fn - must return a promise
@@ -52,6 +57,7 @@ export default class PromiseLimit {
   }
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'fn' implicitly has an 'any' type.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   add(fn, ...args) {
     // fn - must return a promise
     // args - will be passed to fn
@@ -63,23 +69,33 @@ export default class PromiseLimit {
   **/
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'priority' implicitly has an 'any' type.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   _push(priority, fn, args) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const order = (this as any).insertCount;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (this as any).insertCount += 1;
     return new Promise((resolve, reject) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (this as any).queue.push({ priority, order, fn, args, resolve, reject });
       this._resolveNext(false);
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   _resolveNext = (completed = true) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     if (completed) (this as any).pending -= 1;
 
     while (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (this as any).queue.length > 0 &&
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (this as any).pending < (this as any).maxConcurrency
     ) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       const task = (this as any).queue.pop(); // order of insertion
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (this as any).pending += 1;
       const { resolve, reject, fn, args } = task;
 

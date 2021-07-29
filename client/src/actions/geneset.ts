@@ -21,8 +21,11 @@ The behavior manifest in these action creators:
 Note that crossfilter indices are lazy created, as needed.
 */
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export const genesetDelete = (genesetName: any) => (
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   dispatch: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   getState: any
 ) => {
   const state = getState();
@@ -43,8 +46,11 @@ export const genesetDelete = (genesetName: any) => (
   });
 };
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export const genesetAddGenes = (genesetName: any, genes: any) => async (
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   dispatch: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   getState: any
 ) => {
   const state = getState();
@@ -53,6 +59,7 @@ export const genesetAddGenes = (genesetName: any, genes: any) => async (
   const varIndex = schema.annotations.var.index;
   const df = await annoMatrix.fetch("var", varIndex);
   const geneNames = df.col(varIndex).asArray();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   genes = genes.reduce((acc: any, gene: any) => {
     if (geneNames.indexOf(gene.geneSymbol) === -1) {
       postUserErrorToast(
@@ -81,8 +88,11 @@ export const genesetAddGenes = (genesetName: any, genes: any) => async (
   });
 };
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export const genesetDeleteGenes = (genesetName: any, geneSymbols: any) => (
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   dispatch: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   getState: any
 ) => {
   const state = getState();
@@ -101,8 +111,11 @@ Private
 */
 
 function dropGenesetSummaryDimension(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   obsCrossfilter: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   state: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   genesetName: any
 ) {
   const { annoMatrix, genesets } = state;
@@ -120,6 +133,7 @@ function dropGenesetSummaryDimension(
   return obsCrossfilter.dropDimension("X", query);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function dropGeneDimension(obsCrossfilter: any, state: any, gene: any) {
   const { annoMatrix } = state;
   const varIndex = annoMatrix.schema.annotations?.var?.index;
@@ -134,13 +148,18 @@ function dropGeneDimension(obsCrossfilter: any, state: any, gene: any) {
 }
 
 function dropGeneset(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   dispatch: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   state: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   genesetName: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   geneSymbols: any
 ) {
   const { obsCrossfilter: prevObsCrossfilter } = state;
   const obsCrossfilter = geneSymbols.reduce(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (crossfilter: any, gene: any) =>
       dropGeneDimension(crossfilter, state, gene),
     dropGenesetSummaryDimension(prevObsCrossfilter, state, genesetName)
@@ -150,6 +169,7 @@ function dropGeneset(
     continuousNamespace: { isGeneSetSummary: true },
     selection: genesetName,
   });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   geneSymbols.forEach((g: any) =>
     dispatch({
       type: "continuous metadata histogram cancel",

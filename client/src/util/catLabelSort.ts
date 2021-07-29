@@ -11,6 +11,7 @@ TL;DR: sort order is:
 import isNumber from "is-number";
 import * as globals from "../globals";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function caseInsensitiveCompare(a: any, b: any) {
   const textA = String(a).toUpperCase();
   const textB = String(b).toUpperCase();
@@ -24,6 +25,7 @@ const catLabelSort = (isUserAnno: boolean, values: any[]): any[] => {
   const ints: number[] = [];
   const unassignedOrNaN: any = [];
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   values.forEach((v: any) => {
     if (isUserAnno && v === globals.unassignedCategoryLabel) {
       unassignedOrNaN.push(v);

@@ -7,13 +7,16 @@ import {
 } from "@blueprintjs/core";
 
 export default class MiniHistogram extends React.PureComponent {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   canvasRef: any;
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   constructor(props: any) {
     super(props);
     this.canvasRef = React.createRef();
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   drawHistogram = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'xScale' does not exist on type 'Readonly... Remove this comment to see the full error message
     const { xScale, yScale, bins, width, height } = this.props;
@@ -38,10 +41,12 @@ export default class MiniHistogram extends React.PureComponent {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   componentDidMount = () => {
     this.drawHistogram();
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   componentDidUpdate = (prevProps: any) => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'obsOrVarContinuousFieldDisplayName' does... Remove this comment to see the full error message
     const { obsOrVarContinuousFieldDisplayName, bins } = this.props;
@@ -53,6 +58,7 @@ export default class MiniHistogram extends React.PureComponent {
       this.drawHistogram();
   };
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     const {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'domainLabel' does not exist on type 'Rea... Remove this comment to see the full error message

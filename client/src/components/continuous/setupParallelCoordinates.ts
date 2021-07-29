@@ -5,6 +5,7 @@
 ******************************************/
 import * as d3 from "d3";
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 const setupParallelCoordinates = (width: any, height: any, margin: any) => {
   const container = d3.select("#parcoords");
 
