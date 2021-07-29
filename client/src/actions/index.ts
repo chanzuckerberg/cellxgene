@@ -14,7 +14,8 @@ import * as genesetActions from "./geneset";
 
 function setGlobalConfig(config: any) {
   /**
-   * Set any global run-time config not managed by the config reducer.
+   * Set any global run-time config not _exclusively_ managed by the config reducer.
+   * This should only set fields defined in globals.globalConfig.
    */
   globals.globalConfig.maxCategoricalOptionsToDisplay =
     config?.parameters?.["max-category-items"] ??
