@@ -24,7 +24,7 @@ class DiffExpMode(AugmentedEnum):
     VAR_FILTER = "varFilter"
 
 
-class XApproxDistribution(AugmentedEnum):
+class XApproximateDistribution(AugmentedEnum):
     NORMAL = "normal"
     COUNT = "count"
 

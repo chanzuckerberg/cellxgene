@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import sparse, stats
-from backend.common.constants import XApproxDistribution
+from backend.common.constants import XApproximateDistribution
 
 
 def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
@@ -30,13 +30,13 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     :return:  for top N genes, {"positive": for top N genes, [ varindex, foldchange, pval, pval_adj ], "negative": for top N genes, [ varindex, foldchange, pval, pval_adj ]}
     """
 
-    X_approx_distribution = adaptor.get_X_approx_distribution()
+    X_approximate_distribution = adaptor.get_X_approximate_distribution()
     dataA = adaptor.get_X_array(maskA, None)
     dataB = adaptor.get_X_array(maskB, None)
 
     # mean, variance, N - calculate for both selections
-    meanA, vA, nA = mean_var_n(dataA, X_approx_distribution)
-    meanB, vB, nB = mean_var_n(dataB, X_approx_distribution)
+    meanA, vA, nA = mean_var_n(dataA, X_approximate_distribution)
+    meanB, vB, nB = mean_var_n(dataB, X_approximate_distribution)
     res = diffexp_ttest_from_mean_var(meanA, vA, nA, meanB, vB, nB, top_n, diffexp_lfc_cutoff)
 
     return res
@@ -113,7 +113,7 @@ def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp
 
 
 # Convenience function which handles sparse data
-def mean_var_n(X, X_approx_distribution=XApproxDistribution.NORMAL):
+def mean_var_n(X, X_approximate_distribution=XApproximateDistribution.NORMAL):
     """
     Two-pass variance calculation.  Numerically (more) stable
     than naive methods (and same method used by numpy.var())
@@ -131,14 +131,14 @@ def mean_var_n(X, X_approx_distribution=XApproxDistribution.NORMAL):
     with np.errstate(divide="call", invalid="call", call=fp_err_set):
         n = X.shape[0]
         if sparse.issparse(X):
-            if X_approx_distribution == XApproxDistribution.COUNT:
+            if X_approximate_distribution == XApproximateDistribution.COUNT:
                 X = X.log1p()
             mean = X.mean(axis=0).A1
             dfm = X - mean
             sumsq = np.sum(np.multiply(dfm, dfm), axis=0).A1
             v = sumsq / (n - 1)
         else:
-            if X_approx_distribution == XApproxDistribution.COUNT:
+            if X_approximate_distribution == XApproximateDistribution.COUNT:
                 X = np.log1p(X)
             mean = X.mean(axis=0)
             dfm = X - mean

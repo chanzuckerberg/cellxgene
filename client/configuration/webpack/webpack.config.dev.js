@@ -1,13 +1,23 @@
+/* eslint-disable @blueprintjs/classes-constants -- we don't import blueprint here  */
+// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const path = require("path");
+// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const webpack = require("webpack");
+// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
+// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const ScriptExtHtmlWebpackPlugin = require("script-ext-html-webpack-plugin");
+// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const { merge } = require("webpack-merge");
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const sharedConfig = require("./webpack.config.shared");
+// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const babelOptions = require("../babel/babel.dev");
 
 const fonts = path.resolve("src/fonts");
@@ -23,7 +33,7 @@ const devConfig = {
   module: {
     rules: [
       {
-        test: /\.jsx?$/,
+        test: /\.(ts|js)x?$/,
         loader: "babel-loader",
         options: babelOptions,
       },
@@ -83,3 +93,4 @@ const devConfig = {
 };
 
 module.exports = merge(sharedConfig, devConfig);
+/* eslint-enable @blueprintjs/classes-constants -- we don't import blueprint here  */
