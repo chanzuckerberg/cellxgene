@@ -8,7 +8,7 @@ import {
 import { Dataframe } from "../util/dataframe";
 
 // @ts-expect-error ts-migrate(7006)
-export function responseNormalize(field, query, schema, response) {
+export function normalizeResponse(field, query, schema, response) {
   /**
    * There are a number of assumptions in the front-end about data typing and data
    * characteristics. This routine will normalize a server response dataframe

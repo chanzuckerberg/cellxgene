@@ -20,7 +20,7 @@ import {
   _hashStringValues,
 } from "./query";
 import {
-  responseNormalize,
+  normalizeResponse,
   normalizeWritableCategoricalSchema,
 } from "./normalize";
 
@@ -310,7 +310,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
       result.colIndex.labels()
     );
 
-    result = responseNormalize(field, query, this.schema, result);
+    result = normalizeResponse(field, query, this.schema, result);
 
     return [whereCacheUpdate, result];
   }
