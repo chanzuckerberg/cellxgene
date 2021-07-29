@@ -12,6 +12,15 @@ import * as viewActions from "./viewStack";
 import * as embActions from "./embedding";
 import * as genesetActions from "./geneset";
 
+function setGlobalConfig(config: any) {
+  /**
+   * Set any global run-time config not managed by the config reducer.
+   */
+  globals.globalConfig.maxCategoricalOptionsToDisplay =
+    config?.parameters?.["max-category-items"] ??
+    globals.globalConfig.maxCategoricalOptionsToDisplay;
+}
+
 /*
 return promise fetching user-configured colors
 */
@@ -31,6 +40,9 @@ async function schemaFetch() {
 async function configFetch(dispatch: any) {
   return fetchJson("config").then((response) => {
     const config = { ...globals.configDefaults, ...response.config };
+
+    setGlobalConfig(config);
+
     dispatch({
       type: "configuration load complete",
       config,
