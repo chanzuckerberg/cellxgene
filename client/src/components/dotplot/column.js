@@ -167,7 +167,7 @@ class Column extends React.Component {
               const columnColorScale = d3
                 .scaleLinear()
                 .domain(d3.extent(Object.values(meanGeneExpressions)))
-                .range([0, 1]);
+                .range([1, 0]);
 
               return categorySummary.categoryValues.map(
                 (val, _categoryValueIndex) => {
