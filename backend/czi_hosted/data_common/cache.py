@@ -40,8 +40,6 @@ class CacheItem(object):
                 self.data = create_data_lambda(cache_key, **create_data_args)
             except Exception as e:
                 print(e)
-                import pdb
-                pdb.set_trace()
                 # necessary to hold the reader lock after an exception, since
                 # the release will occur when the context exits.
                 self.data_lock.w_demote()
@@ -160,8 +158,6 @@ class CacheManager(object):
 
             if cache_item is None:
                 delete_adaptor = self.evict_extra_data()
-                # desired_data = info.cache_item.get()
-                # loader = self.data_loader_class(cache_key, app_config=app_config)
                 cache_item = CacheItem()
                 desired_data = cache_item.get(
                     cache_key=cache_key,
@@ -180,7 +176,7 @@ class CacheManager(object):
                 desired_data = cache_item.get(cache_key)
 
             yield desired_data
-        except (DatasetAccessError, DatasetNotFoundException):
+        except (DatasetAccessError, DatasetNotFoundException) as e:
             cache_item.release()
             with self.lock:
                 del self.data[cache_key]
@@ -190,7 +186,12 @@ class CacheManager(object):
 
         finally:
             if cache_item:
-                cache_item.release()
+                try:
+                    cache_item.release()
+                except Exception as e:
+                    import pdb
+                    pdb.set_trace()
+                    print(e)
 
     def evict_extra_data(self):
         delete_adaptor = None

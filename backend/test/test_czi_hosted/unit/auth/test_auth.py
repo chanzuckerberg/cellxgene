@@ -15,13 +15,13 @@ class AuthTest(BaseTest):
         app_config.update_server_config(app__flask_secret_key="secret")
         app_config.update_server_config(authentication__type=None, multi_dataset__dataroot=self.dataset_dataroot)
         app_config.update_default_dataset_config(user_annotations__enable=False)
-
         app_config.complete_config()
-        server= self.create_app(app_config)
+        server = self.create_app(app_config)
         server.testing = True
         session = server.test_client()
         config = json.loads(session.get(f"{self.TEST_URL_BASE}config").data)
         userinfo = json.loads(session.get(f"{self.TEST_URL_BASE}userinfo").data)
+
         self.assertNotIn("authentication", config["config"])
         self.assertIsNone(userinfo)
 

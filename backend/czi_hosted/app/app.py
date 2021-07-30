@@ -94,11 +94,20 @@ def dataset_index(url_dataroot=None, dataset=None):
     inline_scripts = dataset_config.app__inline_scripts
 
     try:
-        cache_manager = current_app.matrix_data_cache_manager
-        with cache_manager.data_adaptor(url_dataroot, location, app_config) as data_adaptor:
-            data_adaptor.set_uri_path(f"{url_dataroot}/{dataset}")
-            args = {"SCRIPTS": scripts, "INLINE_SCRIPTS": inline_scripts}
-            return render_template("index.html", **args)
+        dataset_metadata_manager = current_app.dataset_metadata_cache_manager
+        matrix_cache_manager = current_app.matrix_data_cache_manager
+        with dataset_metadata_manager.data_adaptor(cache_key=f"{url_dataroot}/{dataset}",
+                                                   create_data_lambda=get_dataset_metadata,
+                                                   create_data_args={"app_config": app_config}) as dataset_location:
+            with matrix_cache_manager.data_adaptor(
+                cache_key=dataset_location,
+                create_data_lambda=MatrixDataLoader(dataset_location, app_config=app_config).validate_and_open,
+                create_data_args={}
+            ) as data_adaptor:
+                data_adaptor.set_uri_path(f"{url_dataroot}/{dataset}")
+                args = {"SCRIPTS": scripts, "INLINE_SCRIPTS": inline_scripts}
+                return render_template("index.html", **args)
+
 
     except DatasetAccessError as e:
         return common_rest.abort_and_log(
@@ -115,10 +124,14 @@ def get_data_adaptor(url_dataroot=None, dataset=None):
     app_config = current_app.app_config
     dataset_metadata_manager = current_app.dataset_metadata_cache_manager
     matrix_cache_manager = current_app.matrix_data_cache_manager
-    with dataset_metadata_manager.data_adaptor(cache_key=f"{url_dataroot}/{dataset}",create_data_lambda=get_dataset_metadata,create_data_args={"app_config": app_config}) as dataset_location:
+    with dataset_metadata_manager.data_adaptor(
+            cache_key=f"{url_dataroot}/{dataset}",
+            create_data_lambda=get_dataset_metadata,
+            create_data_args={"app_config": app_config}
+    ) as dataset_metadata:
         return matrix_cache_manager.data_adaptor(
-            cache_key=dataset_location,
-            create_data_lambda=MatrixDataLoader(dataset_location, app_config=app_config).validate_and_open,
+            cache_key=dataset_metadata['s3_uri'],
+            create_data_lambda=MatrixDataLoader(dataset_metadata['s3_uri'], app_config=app_config).validate_and_open,
             create_data_args={}
         )
 

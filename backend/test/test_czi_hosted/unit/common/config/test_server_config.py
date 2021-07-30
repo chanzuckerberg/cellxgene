@@ -258,7 +258,11 @@ class TestServerConfig(ConfigTests):
 
         data_config = json.loads(response.data)
         assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
-        assert data_config["config"]["parameters"]["annotations"] is False
+        try:
+            assert data_config["config"]["parameters"]["annotations"] is False
+        except Exception as e:
+            import pdb
+            pdb.set_trace()
         assert data_config["config"]["parameters"]["disable-diffexp"] is False
         assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set1.html"
 

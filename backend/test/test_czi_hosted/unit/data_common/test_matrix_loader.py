@@ -7,6 +7,7 @@ import unittest
 from backend.czi_hosted.common.config.app_config import AppConfig
 from backend.common.errors import DatasetAccessError
 from backend.czi_hosted.data_common.cache import CacheManager
+from backend.czi_hosted.data_common.matrix_loader import MatrixDataLoader
 from backend.test import FIXTURES_ROOT
 
 
@@ -21,13 +22,23 @@ class MatrixCacheTest(unittest.TestCase):
             shutil.copytree(source, target)
 
     def use_dataset(self, matrix_cache, dirname, app_config, dataset_index):
-        with matrix_cache.data_adaptor(None, os.path.join(dirname, str(dataset_index) + ".cxg"), app_config) as adaptor:
+        dataset_location = os.path.join(dirname, str(dataset_index) + ".cxg")
+        with matrix_cache.data_adaptor(
+                cache_key=dataset_location,
+                create_data_lambda=MatrixDataLoader(location=dataset_location, app_config=app_config).validate_and_open,
+                create_data_args={}
+        ) as adaptor:
             pass
+
         return adaptor
 
     def use_dataset_with_error(self, matrix_cache, dirname, app_config, dataset_index):
+        dataset_location = os.path.join(dirname, str(dataset_index) + ".cxg")
         try:
-            with matrix_cache.data_adaptor(None, os.path.join(dirname, str(dataset_index) + ".cxg"), app_config):
+            with matrix_cache.data_adaptor(
+                    cache_key=dataset_location,
+                    create_data_lambda=MatrixDataLoader(dataset_location, app_config=app_config).validate_and_open,
+                    create_data_args={}):
                 raise DatasetAccessError("something bad happened")
         except DatasetAccessError:
             # the CacheManager rethrows the exception, so catch and ignore
@@ -37,8 +48,8 @@ class MatrixCacheTest(unittest.TestCase):
         datasets = matrix_cache.data
         result = {}
         for k, v in datasets.items():
-            # filter out the dirname and the .cxg from the name
-            newk = int(k[1][len(dirname) + 1 : -4])
+            # filter out the dirname and the .cxg from the name (should be an int)
+            newk = int(k.split("/")[-1][0:-4])
             result[newk] = v
 
         return result

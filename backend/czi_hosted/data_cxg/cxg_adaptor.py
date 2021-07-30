@@ -175,7 +175,6 @@ class CxgAdaptor(DataAdaptor):
 
         if cxg_version not in ["0.0", "0.1", "0.2.0"]:
             raise DatasetAccessError(f"cxg matrix is not valid: {self.url}")
-
         if self.dataset_config.X_approximate_distribution == "auto":
             raise ConfigurationError("X-approximate-distribution 'auto' mode unsupported.")
         self.X_approximate_distribution = self.dataset_config.X_approximate_distribution

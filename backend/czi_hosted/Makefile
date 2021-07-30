@@ -12,7 +12,7 @@ unit-test: create-test-db
 		--source=app,auth,cli,common,compute,converters,data_anndata,data_common,data_cxg,eb \
 		--omit=.coverage,venv \
 		-m unittest discover \
-		--start-directory ../test/test_czi_hosted/unit \
+		--start-directory ../test/test_czi_hosted/unit/common \
 		--top-level-directory ../.. \
 		--verbose; test_result=$$?; \
 	$(MAKE) clean-test-db; \

@@ -80,7 +80,7 @@ class MatrixDataLoader(object):
         # create and return a DataAdaptor object
         return self.matrix_type.open(self.location, self.app_config, dataset_config)
 
-    def validate_and_open(self, dataset_config=None, **kwargs):
+    def validate_and_open(self, dataset_location=None, dataset_config=None, **kwargs):
         # create and return a DataAdaptor object
         self.pre_load_validation()
         return self.open(dataset_config=dataset_config)
