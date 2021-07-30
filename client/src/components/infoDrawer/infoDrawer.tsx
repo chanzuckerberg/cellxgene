@@ -6,20 +6,18 @@ import InfoFormat from "./infoFormat";
 import { selectableCategoryNames } from "../../util/stateManager/controlsHelpers";
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
-@connect((state) => {
-  return {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    schema: (state as any).annoMatrix.schema,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    datasetTitle: (state as any).config?.displayNames?.dataset ?? "",
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    aboutURL: (state as any).config?.links?.["about-dataset"],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    isOpen: (state as any).controls.datasetDrawer,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    dataPortalProps: (state as any).config?.corpora_props,
-  };
-})
+@connect((state) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  schema: (state as any).annoMatrix.schema,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  datasetTitle: (state as any).config?.displayNames?.dataset ?? "",
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  aboutURL: (state as any).config?.links?.["about-dataset"],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  isOpen: (state as any).controls.datasetDrawer,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  dataPortalProps: (state as any).config?.corpora_props,
+}))
 class InfoDrawer extends PureComponent {
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleClose = () => {

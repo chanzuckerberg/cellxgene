@@ -151,9 +151,8 @@ class CategoryValue extends React.Component<{}, State> {
   };
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  instruction = (label: any) => {
-    return labelPrompt(this.labelNameError(label), "New, unique label", ":");
-  };
+  instruction = (label: any) =>
+    labelPrompt(this.labelNameError(label), "New, unique label", ":");
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   activateEditLabelMode = () => {
