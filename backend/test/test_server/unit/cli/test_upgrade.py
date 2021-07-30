@@ -4,7 +4,7 @@ from backend.server.cli.upgrade import validate_version_str, split_version, vers
 
 
 class CLIUpgradeTests(unittest.TestCase):
-    """ Test cases for CLI logic """
+    """Test cases for CLI logic"""
 
     def test_validate_version_str(self):
         self.assertTrue(validate_version_str("0.1.2"))

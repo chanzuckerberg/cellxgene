@@ -17,7 +17,7 @@ class AuthTest(BaseTest):
         app_config.update_default_dataset_config(user_annotations__enable=False)
 
         app_config.complete_config()
-        server= self.create_app(app_config)
+        server = self.create_app(app_config)
         server.testing = True
         session = server.test_client()
         config = json.loads(session.get(f"{self.TEST_URL_BASE}config").data)
@@ -61,7 +61,7 @@ class AuthTest(BaseTest):
 
         app_config.complete_config()
 
-        server=self.create_app(app_config)
+        server = self.create_app(app_config)
         server.testing = True
         session = server.test_client()
 
@@ -84,7 +84,7 @@ class AuthTest(BaseTest):
         # check that the login redirect worked
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.headers['Location'], 'http://localhost/auth/pbmc3k.cxg')
+        self.assertEqual(response.headers["Location"], "http://localhost/auth/pbmc3k.cxg")
         config = json.loads(session.get("/auth/pbmc3k.cxg/api/v0.2/config").data)
         userinfo = json.loads(session.get("/auth/pbmc3k.cxg/api/v0.2/userinfo").data)
 
@@ -142,12 +142,11 @@ class AuthTest(BaseTest):
         self.assertEqual(login_uri, "/login")
         self.assertEqual(logout_uri, "/logout")
 
-
         # check that the login redirect worked
         with server.test_client() as session:
             response = session.get(login_uri)
             self.assertEqual(response.status_code, 302)
-            self.assertEqual(response.headers['Location'], "http://localhost/")
+            self.assertEqual(response.headers["Location"], "http://localhost/")
 
         config = json.loads(session.get("api/v0.2/config").data)
         userinfo = json.loads(session.get("/api/v0.2/userinfo").data)
@@ -159,7 +158,7 @@ class AuthTest(BaseTest):
         # check that the logout redirect worked
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.headers['Location'], "http://localhost/")
+        self.assertEqual(response.headers["Location"], "http://localhost/")
         config = json.loads(session.get("/api/v0.2/config").data)
 
         userinfo = json.loads(session.get("/api/v0.2/userinfo").data)

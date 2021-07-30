@@ -100,10 +100,12 @@ class TestOntologyLookup(unittest.TestCase):
             "EFO:0008995": {
                 "iri": "http://www.ebi.ac.uk/efo/EFO_0008995",
                 "description": [
-                    ('10X is a "synthetic long-read" technology and works by capturing a barcoded oligo-coated '
-                     'gel-bead and 0.3x genome copies into a single emulsion droplet, processing the equivalent '
-                     'of 1 million pipetting steps. Successive versions of the 10x chemistry use different barcode '
-                     'locations to improve the sequencing yield and quality of 10x experiments.')
+                    (
+                        '10X is a "synthetic long-read" technology and works by capturing a barcoded oligo-coated '
+                        "gel-bead and 0.3x genome copies into a single emulsion droplet, processing the equivalent "
+                        "of 1 million pipetting steps. Successive versions of the 10x chemistry use different barcode "
+                        "locations to improve the sequencing yield and quality of 10x experiments."
+                    )
                 ],
                 "label": "10X sequencing",
             },

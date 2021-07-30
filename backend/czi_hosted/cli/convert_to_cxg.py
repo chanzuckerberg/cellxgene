@@ -14,7 +14,9 @@ from backend.czi_hosted.converters.h5ad_data_file import H5ADDataFile
     "usually with the generated CXG file.",
 )
 @click.argument(
-    "input-file", nargs=1, type=click.Path(exists=True, dir_okay=False),
+    "input-file",
+    nargs=1,
+    type=click.Path(exists=True, dir_okay=False),
 )
 @click.option(
     "-o",

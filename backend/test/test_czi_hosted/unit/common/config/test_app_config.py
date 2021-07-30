@@ -162,7 +162,8 @@ class AppConfigTest(ConfigTests):
 
         # test simple value in default dataset
         config.update_single_config_from_path_and_value(
-            ["dataset", "user_annotations", "hosted_tiledb_array", "db_uri"], "mydburi",
+            ["dataset", "user_annotations", "hosted_tiledb_array", "db_uri"],
+            "mydburi",
         )
         self.assertEqual(config.default_dataset_config.user_annotations__hosted_tiledb_array__db_uri, "mydburi")
         self.assertEqual(config.dataroot_config["s1"].user_annotations__hosted_tiledb_array__db_uri, "mydburi")
@@ -213,7 +214,8 @@ class AppConfigTest(ConfigTests):
         config = AppConfig()
         config.server_config.authentication__params_oauth__cookie = dict(key="mykey1", max_age=100)
         config.update_single_config_from_path_and_value(
-            ["server", "authentication", "params_oauth", "cookie", "httponly"], True,
+            ["server", "authentication", "params_oauth", "cookie", "httponly"],
+            True,
         )
         self.assertEqual(
             config.server_config.authentication__params_oauth__cookie, dict(key="mykey1", max_age=100, httponly=True)

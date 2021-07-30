@@ -61,7 +61,12 @@ def logout():
 
 @mock_oauth_app.route("/.well-known/jwks.json")
 def jwks():
-    data = dict(alg="RS256", kty="RSA", use="sig", kid="fake_kid",)
+    data = dict(
+        alg="RS256",
+        kty="RSA",
+        use="sig",
+        kid="fake_kid",
+    )
     return make_response(jsonify(dict(keys=[data])))
 
 
@@ -100,7 +105,7 @@ class AuthTest(BaseTest):
             # wait one second and try again
             time.sleep(1)
 
-        assert(server_okay)
+        assert server_okay
 
     @classmethod
     def tearDownClass(cls):
@@ -120,7 +125,7 @@ class AuthTest(BaseTest):
         app_config.update_server_config(multi_dataset__dataroot=self.dataset_dataroot)
         app_config.complete_config()
 
-        server= self.create_app(app_config)
+        server = self.create_app(app_config)
         server.testing = True
         session = server.test_client()
 
@@ -213,7 +218,9 @@ class AuthTest(BaseTest):
         # test with session cookies
         app_config = AppConfig()
         app_config.update_server_config(app__flask_secret_key="secret")
-        app_config.update_server_config(authentication__params_oauth__session_cookie=True,)
+        app_config.update_server_config(
+            authentication__params_oauth__session_cookie=True,
+        )
         self.auth_flow(app_config)
 
     @unittest.skip("turn on when we utilizing auth in the explorer")

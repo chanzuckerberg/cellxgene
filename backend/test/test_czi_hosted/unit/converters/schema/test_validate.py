@@ -10,7 +10,6 @@ from backend.test import PROJECT_ROOT
 
 
 class TestFieldValidation(unittest.TestCase):
-
     def test_validate_stringified_list_of_dicts(self):
 
         good = json.dumps([{"a": 1}, {2: "x", "z": "y"}])
@@ -66,12 +65,13 @@ class TestFieldValidation(unittest.TestCase):
 
 
 class TestColumnValidation(unittest.TestCase):
-
     def test_validate_unique(self):
-        unique = pd.DataFrame([["abc", "def"], ["ghi", "jkl"], ["mnop", "qrs"]],
-                              index=["X", "Y", "Z"], columns=["col1", "col2"])
-        duped = pd.DataFrame([["abc", "def"], ["ghi", "qrs"], ["abc", "qrs"]],
-                             index=["X", "Y", "X"], columns=["col1", "col2"])
+        unique = pd.DataFrame(
+            [["abc", "def"], ["ghi", "jkl"], ["mnop", "qrs"]], index=["X", "Y", "Z"], columns=["col1", "col2"]
+        )
+        duped = pd.DataFrame(
+            [["abc", "def"], ["ghi", "qrs"], ["abc", "qrs"]], index=["X", "Y", "X"], columns=["col1", "col2"]
+        )
 
         schema_def = {"unique": True}
 
@@ -94,10 +94,14 @@ class TestColumnValidation(unittest.TestCase):
         self.assertFalse(errors)
 
     def test_validate_nullable(self):
-        non_null = pd.DataFrame([["abc", "def"], ["ghi", "jkl"], ["mnop", "qrs"]],
-                                index=["X", "Y", "Z"], columns=["col1", "col2"])
-        has_null = pd.DataFrame([["abc", "", None], ["ghi", "jkl", 1], ["mnop", "qrs", 2]],
-                                index=["X", "Y", "Z"], columns=["col1", "col2", "col3"])
+        non_null = pd.DataFrame(
+            [["abc", "def"], ["ghi", "jkl"], ["mnop", "qrs"]], index=["X", "Y", "Z"], columns=["col1", "col2"]
+        )
+        has_null = pd.DataFrame(
+            [["abc", "", None], ["ghi", "jkl", 1], ["mnop", "qrs", 2]],
+            index=["X", "Y", "Z"],
+            columns=["col1", "col2", "col3"],
+        )
 
         schema_def = {"nullable": False}
         errors = validate._validate_column(non_null["col1"], "col1", "nonnull_df", schema_def)
@@ -118,10 +122,13 @@ class TestColumnValidation(unittest.TestCase):
 
     def test_human_readable(self):
         hr_df = pd.DataFrame(
-            [["for you, a human", "UBERON:12345", "UBERON:1234 (thundercat)"],
-             ["hope you're well", "bit of lungs", "brain"]],
+            [
+                ["for you, a human", "UBERON:12345", "UBERON:1234 (thundercat)"],
+                ["hope you're well", "bit of lungs", "brain"],
+            ],
             index=["ENSG00001", "ENSG00002"],
-            columns=["good", "curie", "suffixed_curie"])
+            columns=["good", "curie", "suffixed_curie"],
+        )
 
         schema_def = {"type": "human-readable string"}
         errors = validate._validate_column(hr_df["good"], "good", "hr", schema_def)
@@ -142,11 +149,14 @@ class TestColumnValidation(unittest.TestCase):
     def test_curie(self):
 
         curie_df = pd.DataFrame(
-            [["EFO:00001", "HsapDv:00001 (cell culture)", "EFO:", "MONDO:0001 cell culture"],
-             ["UBERON:00002", "HsapDv:00002 (organoid)", "EFO:12345", "MONDO:0002 (baba yaga)"],
-             ["EFO:0000000005", "HsapDv:000004 (humanzee)", "EFO:000002", "MONDO:0004 (TMNT)"]],
+            [
+                ["EFO:00001", "HsapDv:00001 (cell culture)", "EFO:", "MONDO:0001 cell culture"],
+                ["UBERON:00002", "HsapDv:00002 (organoid)", "EFO:12345", "MONDO:0002 (baba yaga)"],
+                ["EFO:0000000005", "HsapDv:000004 (humanzee)", "EFO:000002", "MONDO:0004 (TMNT)"],
+            ],
             index=["X", "Y", "Z"],
-            columns=["good", "good_suffix", "bad", "bad_suffix"])
+            columns=["good", "good_suffix", "bad", "bad_suffix"],
+        )
 
         # Good
         schema_def = {"type": "curie", "prefixes": ["EFO", "UBERON"]}
@@ -178,11 +188,7 @@ class TestColumnValidation(unittest.TestCase):
         self.assertIn("invalid ontology", errors[0])
 
     def test_enum(self):
-        enum_df = pd.DataFrame(
-            [["abc", "ghi"],
-             ["def", "jkl"]],
-            index=["X", "Y"],
-            columns=["col1", "col2"])
+        enum_df = pd.DataFrame([["abc", "ghi"], ["def", "jkl"]], index=["X", "Y"], columns=["col1", "col2"])
 
         # All match
         schema_def = {"type": "string", "enum": ["abc", "def", "xyz"]}
@@ -197,8 +203,6 @@ class TestColumnValidation(unittest.TestCase):
 
 
 class TestDictValidations(unittest.TestCase):
-
-
     def test_key_presence(self):
 
         schema_def = {"keys": {"abc": None, "def": None}}
@@ -225,8 +229,9 @@ class TestDictValidations(unittest.TestCase):
 
     def test_nullable(self):
 
-        schema_def = {"keys": {"abc": {"type": "string", "nullable": False},
-                               "def": {"type": "string", "nullable": True}}}
+        schema_def = {
+            "keys": {"abc": {"type": "string", "nullable": False}, "def": {"type": "string", "nullable": True}}
+        }
 
         dict_ = {"abc": "xyz", "def": ""}
         errors = validate._validate_dict(dict_, "d", schema_def)
@@ -241,27 +246,16 @@ class TestDictValidations(unittest.TestCase):
 
         schema_def = {
             "keys": {
-                "subdict": {
-                    "type": "dict",
-                    "keys": {
-                        "subdict_key1": None,
-                        "subdict_key2": None
-                    }
-                },
-                "ontology": {
-                    "type": "curie",
-                    "prefixes": ["ONTOLOGY"]
-                },
-                "blob": {
-                    "type": "stringified list of dicts"
-                }
+                "subdict": {"type": "dict", "keys": {"subdict_key1": None, "subdict_key2": None}},
+                "ontology": {"type": "curie", "prefixes": ["ONTOLOGY"]},
+                "blob": {"type": "stringified list of dicts"},
             }
         }
 
         dict_ = {
             "subdict": {"subdict_key1": "any", "subdict_key2": "any"},
             "ontology": "ONTOLOGY:123456",
-            "blob": json.dumps([{"abc": 123}, {"def": 456}])
+            "blob": json.dumps([{"abc": 123}, {"def": 456}]),
         }
         errors = validate._validate_dict(dict_, "d", schema_def)
         self.assertFalse(errors)
@@ -269,7 +263,7 @@ class TestDictValidations(unittest.TestCase):
         dict_ = {
             "subdict": {"subdict_key1": "any"},
             "ontology": "ONTOLOGY:123456",
-            "blob": json.dumps([{"abc": 123}, {"def": 456}])
+            "blob": json.dumps([{"abc": 123}, {"def": 456}]),
         }
         errors = validate._validate_dict(dict_, "d", schema_def)
         self.assertEqual(len(errors), 1)
@@ -278,7 +272,7 @@ class TestDictValidations(unittest.TestCase):
         dict_ = {
             "subdict": {"subdict_key1": "any", "subdict_key2": "any"},
             "ontology": "oh no not an ontology term",
-            "blob": json.dumps([{"abc": 123}, {"def": 456}])
+            "blob": json.dumps([{"abc": 123}, {"def": 456}]),
         }
         errors = validate._validate_dict(dict_, "d", schema_def)
         self.assertEqual(len(errors), 1)
@@ -287,7 +281,7 @@ class TestDictValidations(unittest.TestCase):
         dict_ = {
             "subdict": {"subdict_key1": "any", "subdict_key2": "any"},
             "ontology": "ONTOLOGY:123456",
-            "blob": [{"abc": 123}, {"def": 456}]
+            "blob": [{"abc": 123}, {"def": 456}],
         }
         errors = validate._validate_dict(dict_, "d", schema_def)
         self.assertEqual(len(errors), 1)
@@ -297,26 +291,22 @@ class TestDictValidations(unittest.TestCase):
         dict_ = {
             "subdict": {"subdict_key1": "any"},
             "ontology": "oh no not an ontology term",
-            "blob": json.dumps([{"abc": 123}, {"def": 456}])
+            "blob": json.dumps([{"abc": 123}, {"def": 456}]),
         }
         errors = validate._validate_dict(dict_, "d", schema_def)
         self.assertEqual(len(errors), 2)
 
 
 class TestDataframeValidation(unittest.TestCase):
-
     def test_column_presence(self):
         df = pd.DataFrame(
-            [["abc", "EFO:123"],
-             ["def", "UBERON:456"]],
-            columns=["hr_string", "ontology"],
-            index=["X", "Y"]
+            [["abc", "EFO:123"], ["def", "UBERON:456"]], columns=["hr_string", "ontology"], index=["X", "Y"]
         )
 
         schema_def = {
             "columns": {
                 "hr_string": {"type": "human-readable string"},
-                "ontology": {"type": "curie", "prefixes": ["EFO", "UBERON"]}
+                "ontology": {"type": "curie", "prefixes": ["EFO", "UBERON"]},
             }
         }
         errors = validate._validate_dataframe(df, "df", schema_def)
@@ -326,7 +316,7 @@ class TestDataframeValidation(unittest.TestCase):
             "columns": {
                 "hr_string": {"type": "human-readable string"},
                 "another_hr_string": {"type": "human-readable string"},
-                "ontology": {"type": "curie", "prefixes": ["EFO", "UBERON"]}
+                "ontology": {"type": "curie", "prefixes": ["EFO", "UBERON"]},
             }
         }
         errors = validate._validate_dataframe(df, "df", schema_def)
@@ -335,28 +325,21 @@ class TestDataframeValidation(unittest.TestCase):
 
         # Extra is okay
         df = pd.DataFrame(
-            [["abc", "EFO:123", "extra"],
-             ["def", "UBERON:456", "extra"]],
+            [["abc", "EFO:123", "extra"], ["def", "UBERON:456", "extra"]],
             columns=["hr_string", "ontology", "extra"],
-            index=["X", "Y"]
+            index=["X", "Y"],
         )
         schema_def = {
             "columns": {
                 "hr_string": {"type": "human-readable string"},
-                "ontology": {"type": "curie", "prefixes": ["EFO", "UBERON"]}
+                "ontology": {"type": "curie", "prefixes": ["EFO", "UBERON"]},
             }
         }
         errors = validate._validate_dataframe(df, "df", schema_def)
         self.assertFalse(errors)
 
-
     def test_index(self):
-        df = pd.DataFrame(
-            [["abc", "123"],
-             ["def", "456"]],
-            columns=["col1", "col2"],
-            index=["ENSG0001", "ENSG0002"]
-        )
+        df = pd.DataFrame([["abc", "123"], ["def", "456"]], columns=["col1", "col2"], index=["ENSG0001", "ENSG0002"])
 
         schema_def = {"index": {"unique": True}}
         errors = validate._validate_dataframe(df, "df", schema_def)
@@ -367,12 +350,7 @@ class TestDataframeValidation(unittest.TestCase):
         self.assertEqual(len(errors), 1)
         self.assertIn("non-human-readable", errors[0])
 
-        df = pd.DataFrame(
-            [["abc", "123"],
-             ["def", "456"]],
-            columns=["col1", "col2"],
-            index=["ENSG0001", "ENSG0001"]
-        )
+        df = pd.DataFrame([["abc", "123"], ["def", "456"]], columns=["col1", "col2"], index=["ENSG0001", "ENSG0001"])
         schema_def = {"index": {"unique": True}}
         errors = validate._validate_dataframe(df, "df", schema_def)
         self.assertEqual(len(errors), 1)
@@ -381,15 +359,12 @@ class TestDataframeValidation(unittest.TestCase):
     def test_recurse(self):
 
         df = pd.DataFrame(
-            [["abc", "HsapDv:0001"],
-             ["EFO:123", "UBERON:456"]],
-            columns=["hr_string", "ontology"],
-            index=["X", "Y"]
+            [["abc", "HsapDv:0001"], ["EFO:123", "UBERON:456"]], columns=["hr_string", "ontology"], index=["X", "Y"]
         )
         schema_def = {
             "columns": {
                 "hr_string": {"type": "human-readable string"},
-                "ontology": {"type": "curie", "prefixes": ["EFO", "UBERON"]}
+                "ontology": {"type": "curie", "prefixes": ["EFO", "UBERON"]},
             }
         }
         errors = validate._validate_dataframe(df, "df", schema_def)
@@ -399,7 +374,6 @@ class TestDataframeValidation(unittest.TestCase):
 
 
 class TestGetSchema(unittest.TestCase):
-
     def test_get_schema(self):
         self.assertIsInstance(validate.get_schema_definition("1.0.0"), dict)
 
@@ -408,7 +382,6 @@ class TestGetSchema(unittest.TestCase):
 
 
 class TestValidate(unittest.TestCase):
-
     def setUp(self):
         self.source_h5ad_path = f"{PROJECT_ROOT}/backend/test/fixtures/pbmc3k-CSC-gz.h5ad"
 
@@ -417,18 +390,12 @@ class TestValidate(unittest.TestCase):
         adata = sc.read_h5ad(self.source_h5ad_path)
         self.assertFalse(validate.validate_adata(adata, True))
 
-        adata.uns["version"] = {
-            "corpora_schema_version": "1.0.0",
-            "corpora_encoding_version": "0.1.0"
-        }
+        adata.uns["version"] = {"corpora_schema_version": "1.0.0", "corpora_encoding_version": "0.1.0"}
         self.assertTrue(validate.validate_adata(adata, True))
 
     def test_deep(self):
         adata = sc.read_h5ad(self.source_h5ad_path)
         self.assertFalse(validate.validate_adata(adata, False))
 
-        adata.uns["version"] = {
-            "corpora_schema_version": "1.0.0",
-            "corpora_encoding_version": "0.1.0"
-        }
+        adata.uns["version"] = {"corpora_schema_version": "1.0.0", "corpora_encoding_version": "0.1.0"}
         self.assertFalse(validate.validate_adata(adata, False))

@@ -56,7 +56,7 @@ class TestExternalConfig(ConfigTests):
         os.environ["DATAPATH"] = f"{FIXTURES_ROOT}/a95c59b4-7f5d-4b80-ad53-a694834ca18b.h5ad"
         os.environ["DIFFEXP"] = "True"
 
-        server= self.create_app(config)
+        server = self.create_app(config)
 
         server.testing = True
         session = server.test_client()

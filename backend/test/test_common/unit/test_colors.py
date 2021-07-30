@@ -9,7 +9,7 @@ from backend.test.fixtures.fixtures import pbmc3k_colors
 
 
 class ColorsTest(unittest.TestCase):
-    """ Test color helper functions """
+    """Test color helper functions"""
 
     def test_convert_color_to_hex_format(self):
         self.assertEqual(convert_color_to_hex_format("wheat"), "#f5deb3")

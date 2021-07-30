@@ -42,8 +42,9 @@ class Elastic_Beanstalk_Test(unittest.TestCase):
         config.update_server_config(multi_dataset__dataroot=f"{FIXTURES_ROOT}", app__flask_secret_key="open sesame")
         config.complete_config()
         config.write_config(f"{tempdirname}/config.yaml")
-        subprocess.check_call(f"git ls-files . | cpio -pdm {tempdirname}", cwd=f"{PROJECT_ROOT}/backend/czi_hosted/eb",
-                              shell=True)
+        subprocess.check_call(
+            f"git ls-files . | cpio -pdm {tempdirname}", cwd=f"{PROJECT_ROOT}/backend/czi_hosted/eb", shell=True
+        )
         subprocess.check_call(["make", "build"], cwd=tempdirname)
         with run_eb_app(tempdirname) as server:
             session = requests.Session()

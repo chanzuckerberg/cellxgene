@@ -13,9 +13,7 @@ def schema_cli():
     try:
         import scanpy  # noqa: F401
     except ImportError:
-        raise click.ClickException(
-            "[cellxgene] cellxgene schema requires scanpy"
-        )
+        raise click.ClickException("[cellxgene] cellxgene schema requires scanpy")
 
 
 @click.command(
@@ -38,12 +36,7 @@ def schema_cli():
     required=True,
     type=click.Path(exists=True, dir_okay=False),
 )
-@click.option(
-    "--output-filename",
-    help="Filename for the new, schema-conforming h5ad file.",
-    required=True,
-    nargs=1
-)
+@click.option("--output-filename", help="Filename for the new, schema-conforming h5ad file.", required=True, nargs=1)
 def schema_apply(source_h5ad, remix_config, output_filename):
     remix.apply_schema(source_h5ad, remix_config, output_filename)
 

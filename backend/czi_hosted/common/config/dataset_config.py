@@ -206,6 +206,4 @@ class DatasetConfig(BaseConfig):
     def handle_X_approximate_distribution(self):
         self.validate_correct_type_of_configuration_attribute("X_approximate_distribution", str)
         if self.X_approximate_distribution not in ["normal", "count"]:
-            raise ConfigurationError(
-                "X_approximate_distribution has unknown value -- must be 'normal' or 'count'."
-            )
+            raise ConfigurationError("X_approximate_distribution has unknown value -- must be 'normal' or 'count'.")

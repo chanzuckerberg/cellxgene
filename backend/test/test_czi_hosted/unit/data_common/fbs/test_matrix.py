@@ -8,10 +8,10 @@ from backend.common.fbs.matrix import encode_matrix_fbs, decode_matrix_fbs
 
 
 class FbsTests(unittest.TestCase):
-    """Test Case for Matrix FBS data encode/decode """
+    """Test Case for Matrix FBS data encode/decode"""
 
     def test_encode_boundary(self):
-        """ test various boundary checks """
+        """test various boundary checks"""
 
         # row indexing is unsupported
         with self.assertRaises(ValueError):

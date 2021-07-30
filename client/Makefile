@@ -1,7 +1,7 @@
 include ../common.mk
 
 ANNOTATIONS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../backend/test/fixtures/pbmc3k-annotations.csv)
-GENE_SETS := $(if $(GENE_SETS),$(GENE_SETS),../backend/test/fixtures/pbmc3k-genesets.csv) 
+GENE_SETS := $(if $(GENE_SETS),$(GENE_SETS),../backend/test/fixtures/pbmc3k-genesets.csv)
 ANNOTATIONS_FILENAME := $(shell basename $(ANNOTATIONS))
 GENE_SETS_FILENAME := $(shell basename $(GENE_SETS))
 
@@ -56,6 +56,9 @@ smoke-test-annotations:
 unit-test:
 	node node_modules/jest/bin/jest.js --testPathIgnorePatterns e2e
 
+.PHONY: lint
+lint:
+	npm run lint
 # pass remaining commands through to npm run
 %:
 	npm run $(*)

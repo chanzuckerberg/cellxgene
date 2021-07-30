@@ -72,7 +72,7 @@ class DataLocator:
         return self.fs.size(self.cname)
 
     def lastmodtime(self):
-        """ return datetime object representing last modification time, or None if unavailable """
+        """return datetime object representing last modification time, or None if unavailable"""
         info = self.fs.info(self.cname)
         if self.islocal() and info is not None:
             return datetime.fromtimestamp(info["mtime"])

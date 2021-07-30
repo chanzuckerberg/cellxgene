@@ -8,7 +8,6 @@ from backend.test import FIXTURES_ROOT
 
 
 class TestHGNCSymbolChecker(unittest.TestCase):
-
     def setUp(self):
         self.test_hgnc_path = os.path.join(FIXTURES_ROOT, "hgnc_example.txt.gz")
         self.hgnc_checker = gene_symbol.HGNCSymbolChecker.from_hgnc_records(self.test_hgnc_path)

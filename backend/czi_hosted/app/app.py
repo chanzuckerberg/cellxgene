@@ -57,12 +57,12 @@ def _cache_control(always, **cache_kwargs):
 
 
 def cache_control(**cache_kwargs):
-    """ config driven """
+    """config driven"""
     return _cache_control(False, **cache_kwargs)
 
 
 def cache_control_always(**cache_kwargs):
-    """ always generate headers, regardless of the config """
+    """always generate headers, regardless of the config"""
     return _cache_control(True, **cache_kwargs)
 
 
@@ -168,7 +168,7 @@ def rest_get_data_adaptor(func):
     return wrapped_function
 
 
-def  dataroot_test_index():
+def dataroot_test_index():
     # the following index page is meant for testing/debugging purposes
     data = '<!doctype html><html lang="en">'
     data += "<head><title>Hosted Cellxgene</title></head>"
@@ -389,7 +389,7 @@ def handle_api_base_url(app, app_config):
 class Server:
     @staticmethod
     def _before_adding_routes(app, app_config):
-        """ will be called before routes are added, during __init__.  Subclass protocol """
+        """will be called before routes are added, during __init__.  Subclass protocol"""
         pass
 
     def __init__(self, app_config):

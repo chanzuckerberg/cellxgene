@@ -122,7 +122,7 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
         varB=varB.astype(dtype),
         nB=nB,
         top_n=top_n,
-        diffexp_lfc_cutoff=diffexp_lfc_cutoff
+        diffexp_lfc_cutoff=diffexp_lfc_cutoff,
     )
 
     return r

@@ -95,9 +95,7 @@ class TestServerConfig(ConfigTests):
         self.assertEqual(config.server_config.app__flask_secret_key, "KEY_FROM_ENV")
 
     def test_config_for_single_dataset(self):
-        file_name = self.custom_app_config(
-            config_file_name="single_dataset.yml", dataset_datapath=f"{H5AD_FIXTURE}"
-        )
+        file_name = self.custom_app_config(config_file_name="single_dataset.yml", dataset_datapath=f"{H5AD_FIXTURE}")
         config = AppConfig()
         config.update_from_config_file(file_name)
         config.server_config.handle_single_dataset(self.context)

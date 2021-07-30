@@ -42,7 +42,7 @@ class ImmutableKVCache(MutableMapping):
                 factory_calls["is_done"] = True
                 cv.notify_all()
             else:
-                """ wait for the value to be available """
+                """wait for the value to be available"""
                 while not factory_calls["is_done"]:
                     cv.wait()
 
@@ -53,19 +53,19 @@ class ImmutableKVCache(MutableMapping):
         return self.cache[key]
 
     def __iter__(self):
-        """ weak iter, don't call factory """
+        """weak iter, don't call factory"""
         return self.cache.__iter__()
 
     def __len__(self):
         return self.cache.__len__()
 
     def __contains__(self, key):
-        """ weak contain - don't call factory """
+        """weak contain - don't call factory"""
         return self.cache.__contains__(key)
 
     def __delitem__(self, key):
         del self.cache[key]
 
     def __setitem__(self, key, value):
-        """ unsupported """
+        """unsupported"""
         raise NotImplementedError

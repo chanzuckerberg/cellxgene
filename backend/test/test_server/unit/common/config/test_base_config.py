@@ -48,7 +48,7 @@ class BaseConfigTest(ConfigTests):
                 ("app__verbose", True, False),
                 ("app__flask_secret_key", "secret", None),
                 ("single_dataset__datapath", H5AD_FIXTURE, None),
-                ('data_locator__s3__region_name', 'us-east-1', True)
+                ("data_locator__s3__region_name", "us-east-1", True),
             ],
         )
         self.assertEqual(dataset_changes, [("diffexp__lfc_cutoff", 0.05, 0.01)])

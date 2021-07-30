@@ -6,7 +6,7 @@ from backend.czi_hosted.cli.prepare import make_index_unique
 
 
 class CLIPrepareTests(unittest.TestCase):
-    """ Test cases for CLI prepare logic """
+    """Test cases for CLI prepare logic"""
 
     def test_make_index_unique(self):
         index = pd.Index(["SNORD113", "SNORD113", "SNORD113-1"])

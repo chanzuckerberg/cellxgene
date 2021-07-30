@@ -10,7 +10,7 @@ class AuthTypeBase(ABC):
     @abstractmethod
     def is_valid_authentication_type(self):
         """Return True if the auth type is valid, e.g. it can return userinfo and username.
-          (AuthTypeNone is the only one type that returns False)"""
+        (AuthTypeNone is the only one type that returns False)"""
         pass
 
     def requires_client_login(self):

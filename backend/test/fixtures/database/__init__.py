@@ -35,12 +35,17 @@ class TestDatabase:
         self.db.session.commit()
 
     def _create_test_dataset(self):
-        dataset = CellxGeneDataset(name="test_dataset",)
+        dataset = CellxGeneDataset(
+            name="test_dataset",
+        )
         self.db.session.add(dataset)
         self.db.session.commit()
 
     def _create_test_annotation(self):
-        dataset = self.db.query([CellxGeneDataset], [CellxGeneDataset.name == "test_dataset"],)[0]
+        dataset = self.db.query(
+            [CellxGeneDataset],
+            [CellxGeneDataset.name == "test_dataset"],
+        )[0]
         annotation = Annotation(tiledb_uri="tiledb_uri", user_id="test_user_id", dataset_id=str(dataset.id))
         self.db.session.add(annotation)
         self.db.session.commit()
