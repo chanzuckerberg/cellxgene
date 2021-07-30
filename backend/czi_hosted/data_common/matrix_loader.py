@@ -12,8 +12,6 @@ class MatrixDataType(Enum):
 
 
 class MatrixDataLoader(object):
-    # def __init__(self, location, matrix_data_type=None, app_config=None):
-
     def __init__(self, location, app_config=None):
         """ location can be a string or DataLocator """
         self.app_config = app_config
@@ -82,7 +80,7 @@ class MatrixDataLoader(object):
         # create and return a DataAdaptor object
         return self.matrix_type.open(self.location, self.app_config, dataset_config)
 
-    def validate_and_open(self, dataset_config=None):
+    def validate_and_open(self, dataset_config=None, **kwargs):
         # create and return a DataAdaptor object
         self.pre_load_validation()
         return self.open(dataset_config=dataset_config)

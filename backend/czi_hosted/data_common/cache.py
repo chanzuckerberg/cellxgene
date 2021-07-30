@@ -13,9 +13,10 @@ from backend.czi_hosted.data_common.rwlock import RWLock
 
 class CacheItem(object):
     """This class provides a base class for caching information.  The first time information is accessed,
-    it is located and cached.  Later accesses use the cached version.   It may also be deleted by the
-    DataCacheManager to make room.  While data is actively being used (during the lifetime of an api request),
-    a reader lock is locked.  During that time, the data cannot be removed or updated."""
+    it is located (via the lambda function passed to .get) and cached.  Later accesses use the cached version.
+    It may also be deleted by the DataCacheManager to make room.  While data is actively being used
+    (during the lifetime of an api request), a reader lock is locked.
+    During that time, the data cannot be removed or updated."""
 
     def __init__(self):
         # self.loader = loader
@@ -23,7 +24,7 @@ class CacheItem(object):
         self.data = None
 
 
-    def get(self, cache_key: str, create_data_lambda: typing.Optional[typing.Callable[[str], object]] = None, create_data_args: object = {}):
+    def get(self, cache_key: str, create_data_lambda: typing.Optional[typing.Callable[[str], object]] = None, create_data_args: object={}):
         self.data_lock.r_acquire()
         if self.data:
             return self.data
@@ -36,10 +37,11 @@ class CacheItem(object):
         if not self.data:
             try:
                 # self.data = self.loader.
+                self.data = create_data_lambda(cache_key, **create_data_args)
+            except Exception as e:
+                print(e)
                 import pdb
                 pdb.set_trace()
-                self.data = create_data_lambda(cache_key, **create_data_args)  # rename create_data
-            except:
                 # necessary to hold the reader lock after an exception, since
                 # the release will occur when the context exits.
                 self.data_lock.w_demote()
@@ -54,7 +56,8 @@ class CacheItem(object):
         self.data_lock.r_release()
 
     def delete(self):
-        """Clear resources used by this cache item"""
+        """Clear resources used by this cache item, if self.data has a cleanup method, call it, if not
+        delete the cached information"""
         with self.data_lock.w_locked():
             if self.data:
                 try:
@@ -83,6 +86,10 @@ class CacheItem(object):
 
 
 class CacheItemInfo(object):
+    """
+    This class stores a pointer to and metadata about the cached item. When the data is accessd the
+    update function is called to track the latest access
+    """
     def __init__(self, cache_item, timestamp):
         # The DataCacheItem in the cache
         self.cache_item = cache_item
@@ -125,8 +132,9 @@ class CacheManager(object):
 
         #  The number of datasets to cache.  When max_cached is reached, the least recently used
         #  cache is replaced with the newly requested one.
-        #  TODO:  This is very simple.  This can be improved by taking into account how much space is actually
-        #         taken by each dataset, instead of arbitrarily picking a max datasets to cache.
+        #  TODO:  This is very simple.  When used to cache the actual datasets this can be improved by taking into
+        #   account how much space is actually taken by each dataset, instead of arbitrarily picking a
+        #   max number to cache.
         self.max_cached = max_cached
 
         # items are automatically removed from the cache once this time limit is reached
@@ -134,7 +142,10 @@ class CacheManager(object):
 
     @contextmanager
     def data_adaptor(self, cache_key: str, create_data_lambda: Optional[Callable]=None, create_data_args: object={}):
-        # create a loader for to this location if it does not already exist
+        """"
+        If no data is stored under the given cache_key, pass the create_data_lamba to the CacheItem.get method
+        """
+
 
         delete_adaptor = None
         desired_data = None

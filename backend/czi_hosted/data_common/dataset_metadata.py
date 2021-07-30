@@ -8,12 +8,15 @@ from backend.common.errors import DatasetAccessError
 import backend.czi_hosted.common.rest as common_rest
 
 
-def get_dataset_metadata_from_data_portal(self, explorer_url_path):
+def get_dataset_metadata_from_data_portal(explorer_url: str):
+    """
+    Check the data portal metadata api for datasets stored under the given url_path
+    If present return dataset metadata object else return None
+    """
     headers = {"Content-Type": "application/json", "Accept": "application/json"}
-    curr_url = f"{self.app_config.server_config.get_web_base_url()}/{explorer_url_path}"
     try:
         response = requests.get(
-            url=f"http://{self.app_config.server_config.data_locator__api_base}/datasets/meta?url={curr_url}",
+            url=explorer_url,
             headers=headers
         )
         if response.status_code == 200:
@@ -25,8 +28,15 @@ def get_dataset_metadata_from_data_portal(self, explorer_url_path):
         return None
 
 
-def get_dataset_metadata(location, app_config, **kwargs):
-    dataset_metadata = get_dataset_metadata_from_data_portal(location=location)
+def get_dataset_metadata(location: str, **kwargs):
+    """
+    Given the dataset access location(the path to view the dataset in the explorer including the dataset root,
+    also used as the cache key) and the explorer web base url (in the app_config)
+     return a dataset_metadata object with the dataset storage location available under s3_uri
+    """
+    app_config = kwargs["app_config"]
+    explorer_url_path = f"{app_config.server_config.get_web_base_url()}/{location}"
+    dataset_metadata = get_dataset_metadata_from_data_portal(explorer_url=explorer_url_path)
     if dataset_metadata:
         return dataset_metadata
     server_config = app_config.server_config
@@ -63,5 +73,6 @@ def get_dataset_metadata(location, app_config, **kwargs):
     if dataset_metadata["s3_uri"] is None:
         return common_rest.abort_and_log(HTTPStatus.BAD_REQUEST, "Invalid dataset NONE", loglevel=logging.INFO)
 
+    print(dataset_metadata)
     return dataset_metadata
 

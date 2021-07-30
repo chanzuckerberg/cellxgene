@@ -114,18 +114,13 @@ def handle_request_exception(error):
 def get_data_adaptor(url_dataroot=None, dataset=None):
     app_config = current_app.app_config
     dataset_metadata_manager = current_app.dataset_metadata_cache_manager
-    dataset_location = dataset_metadata_manager.data_adaptor(
-        cache_key=f"{url_dataroot}/{dataset}",
-        create_data_lambda=get_dataset_metadata,
-        create_data_args={"app_config": app_config}
-    )
-
     matrix_cache_manager = current_app.matrix_data_cache_manager
-    return matrix_cache_manager.data_adaptor(
-        cache_key=dataset_location,
-        create_data_lambda=MatrixDataLoader(dataset_location, app_config=app_config).validate_and_open,
-        create_data_args={}
-    )
+    with dataset_metadata_manager.data_adaptor(cache_key=f"{url_dataroot}/{dataset}",create_data_lambda=get_dataset_metadata,create_data_args={"app_config": app_config}) as dataset_location:
+        return matrix_cache_manager.data_adaptor(
+            cache_key=dataset_location,
+            create_data_lambda=MatrixDataLoader(dataset_location, app_config=app_config).validate_and_open,
+            create_data_args={}
+        )
 
 
 """"
@@ -478,6 +473,8 @@ class Server:
             )
 
         self.app.matrix_data_cache_manager = server_config.matrix_data_cache_manager
+        self.app.dataset_metadata_cache_manager = server_config.dataset_metadata_cache_manager
+
         self.app.app_config = app_config
 
         auth = server_config.auth

@@ -12,7 +12,7 @@ from backend.common.errors import ConfigurationError, DatasetAccessError
 from backend.common.utils.utils import is_port_available, find_available_port, custom_format_warning
 from backend.czi_hosted.compute import diffexp_cxg as diffexp_tiledb
 from backend.czi_hosted.data_common.cache import CacheManager
-from backend.czi_hosted.data_common.matrix_loader import MatrixDataLoader
+from backend.czi_hosted.data_common.matrix_loader import MatrixDataLoader, MatrixDataType
 
 
 class ServerConfig(BaseConfig):
