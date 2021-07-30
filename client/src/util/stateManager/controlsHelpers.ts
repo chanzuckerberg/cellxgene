@@ -70,6 +70,7 @@ export function createCategorySummaryFromDfCol(dfCol: any, colSchema: any) {
   const { categories: allCategoryValues } = colSchema;
   const categoryValues = allCategoryValues;
   const categoryValueCounts = allCategoryValues.map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     (cat: any) => summary.categoryCounts.get(cat) ?? 0
   );
   const categoryValueIndices = new Map(

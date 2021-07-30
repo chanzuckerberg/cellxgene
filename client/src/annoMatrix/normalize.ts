@@ -7,8 +7,12 @@ import {
 } from "../globals";
 import { Dataframe } from "../util/dataframe";
 
-// @ts-expect-error ts-migrate(7006)
-export function normalizeResponse(field, query, schema, response) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+export function normalizeResponse(
+  field: string,
+  schema: any, // eslint-disable-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  response: Dataframe
+): Dataframe {
   /**
    * There are a number of assumptions in the front-end about data typing and data
    * characteristics. This routine will normalize a server response dataframe
@@ -61,6 +65,7 @@ export function normalizeResponse(field, query, schema, response) {
   return response;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 function castColumnToBoolean(df: Dataframe, label: any): Dataframe {
   const colData = df.col(label).asArray();
   const newColData = new Array(colData.length);
@@ -69,6 +74,7 @@ function castColumnToBoolean(df: Dataframe, label: any): Dataframe {
   return df;
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function normalizeWritableCategoricalSchema(colSchema: any, col: any) {
   /*
   Ensure all enum writable / categorical schema have a categories array, that
@@ -85,10 +91,11 @@ export function normalizeWritableCategoricalSchema(colSchema: any, col: any) {
   return colSchema;
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function normalizeCategorical(
   df: Dataframe,
-  colLabel: any,
-  colSchema: any
+  colLabel: any, // eslint-disable-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  colSchema: any // eslint-disable-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 ) {
   /*
   If writable, ensure schema matches data and we have an unassigned label

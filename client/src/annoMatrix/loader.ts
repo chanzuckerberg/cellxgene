@@ -310,7 +310,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
       result.colIndex.labels()
     );
 
-    result = normalizeResponse(field, query, this.schema, result);
+    result = normalizeResponse(field, this.schema, result);
 
     return [whereCacheUpdate, result];
   }
