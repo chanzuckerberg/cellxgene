@@ -3,7 +3,7 @@ import json
 import numpy as np
 import tiledb
 
-from backend.common.utils.type_conversion_utils import get_dtype_of_array, get_dtype_and_schema_of_array
+from backend.common.utils.type_conversion_utils import get_encoding_dtype_of_array, get_dtype_and_schema_of_array
 
 
 def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="cxg_group_metadata"):
@@ -47,7 +47,7 @@ def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, ind
             ]
         )
         attrs = [
-            tiledb.Attr(name=column, dtype=get_dtype_of_array(dataframe[column]), filters=tiledb_filter)
+            tiledb.Attr(name=column, dtype=get_encoding_dtype_of_array(dataframe[column]), filters=tiledb_filter)
             for column in dataframe
         ]
         domain = tiledb.Domain(

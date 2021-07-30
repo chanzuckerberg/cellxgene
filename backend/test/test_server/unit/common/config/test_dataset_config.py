@@ -7,7 +7,7 @@ from unittest.mock import patch
 from backend.server.common.annotations.local_file_csv import AnnotationsLocalFile
 from backend.server.common.config.app_config import AppConfig
 from backend.server.common.config.base_config import BaseConfig
-from backend.test import FIXTURES_ROOT, H5AD_FIXTURE
+from backend.test import H5AD_FIXTURE
 
 from backend.common.errors import ConfigurationError
 from backend.test.test_server.unit.common.config import ConfigTests
@@ -46,7 +46,7 @@ class TestDatasetConfig(ConfigTests):
         mock_check_attrs.side_effect = BaseConfig.validate_correct_type_of_configuration_attribute()
         self.dataset_config.complete_config(self.context)
         self.assertIsNotNone(self.config.server_config.data_adaptor)
-        self.assertEqual(mock_check_attrs.call_count, 16)
+        self.assertEqual(mock_check_attrs.call_count, 17)
 
     def test_app_sets_script_vars(self):
         config = self.get_config(scripts=["path/to/script"])

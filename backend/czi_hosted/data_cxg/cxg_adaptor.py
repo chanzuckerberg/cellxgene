@@ -8,7 +8,7 @@ import pandas as pd
 import tiledb
 from server_timing import Timing as ServerTiming
 
-from backend.common.constants import Axis
+from backend.common.constants import Axis, XApproximateDistribution
 from backend.common.errors import DatasetAccessError, ConfigurationError
 from backend.czi_hosted.common.immutable_kvcache import ImmutableKVCache
 from backend.common.utils.type_conversion_utils import get_schema_type_hint_from_dtype
@@ -37,6 +37,7 @@ class CxgAdaptor(DataAdaptor):
         self.lsuri_results = ImmutableKVCache(lambda key: self._lsuri(uri=key, tiledb_ctx=self.tiledb_ctx))
         self.arrays = ImmutableKVCache(lambda key: self._open_array(uri=key, tiledb_ctx=self.tiledb_ctx))
         self.schema = None
+        self.X_approximate_distribution = None
 
         self._validate_and_initialize()
 
@@ -175,6 +176,10 @@ class CxgAdaptor(DataAdaptor):
         if cxg_version not in ["0.0", "0.1", "0.2.0"]:
             raise DatasetAccessError(f"cxg matrix is not valid: {self.url}")
 
+        if self.dataset_config.X_approximate_distribution == "auto":
+            raise ConfigurationError("X-approximate-distribution 'auto' mode unsupported.")
+        self.X_approximate_distribution = self.dataset_config.X_approximate_distribution
+
         self.title = title
         self.about = about
         self.cxg_version = cxg_version
@@ -205,7 +210,8 @@ class CxgAdaptor(DataAdaptor):
         if lfc_cutoff is None:
             lfc_cutoff = self.dataset_config.diffexp__lfc_cutoff
         return diffexp_cxg.diffexp_ttest(
-            adaptor=self, maskA=maskA, maskB=maskB, top_n=top_n, diffexp_lfc_cutoff=lfc_cutoff)
+            adaptor=self, maskA=maskA, maskB=maskB, top_n=top_n, diffexp_lfc_cutoff=lfc_cutoff
+        )
 
     def get_colors(self):
         if self.cxg_version == "0.0":
@@ -281,6 +287,9 @@ class CxgAdaptor(DataAdaptor):
                 data = X.multi_index[obs_items, var_items][""]
             return data
 
+    def get_X_approximate_distribution(self) -> XApproximateDistribution:
+        return self.X_approximate_distribution
+
     def get_shape(self):
         X = self.open_array("X")
         return X.shape
@@ -349,7 +358,7 @@ class CxgAdaptor(DataAdaptor):
         shape = self.get_shape()
         dtype = self.get_X_array_dtype()
 
-        dataframe = {"nObs": shape[0], "nVar": shape[1], "type": dtype.name}
+        dataframe = {"nObs": shape[0], "nVar": shape[1], **get_schema_type_hint_from_dtype(dtype)}
 
         annotations = {}
         for ax in ("obs", "var"):

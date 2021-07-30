@@ -27,4 +27,6 @@ dataset:
     enable: {enable_difexp}
     lfc_cutoff: {lfc_cutoff}
     top_n: {top_n}
+
+  X_approximate_distribution: {X_approximate_distribution}
 """

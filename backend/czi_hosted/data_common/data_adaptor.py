@@ -7,8 +7,14 @@ from scipy import sparse
 from server_timing import Timing as ServerTiming
 
 from backend.czi_hosted.common.config.app_config import AppConfig
-from backend.common.constants import Axis
-from backend.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError, UnsupportedSummaryMethod, DatasetAccessError
+from backend.common.constants import Axis, XApproximateDistribution
+from backend.common.errors import (
+    FilterError,
+    JSONEncodingValueError,
+    ExceedsLimitError,
+    UnsupportedSummaryMethod,
+    DatasetAccessError,
+)
 from backend.common.utils.utils import jsonify_numpy
 from backend.common.fbs.matrix import encode_matrix_fbs
 
@@ -75,6 +81,11 @@ class DataAdaptor(metaclass=ABCMeta):
     def get_X_array(self, obs_mask=None, var_mask=None):
         """return the X array, possibly filtered by obs_mask or var_mask.
         the return type is either ndarray or scipy.sparse.spmatrix."""
+        pass
+
+    @abstractmethod
+    def get_X_approximate_distribution(self) -> XApproximateDistribution:
+        """return the approximate distribution of the X matrix."""
         pass
 
     @abstractmethod
@@ -158,7 +169,7 @@ class DataAdaptor(metaclass=ABCMeta):
         mask = np.zeros((count,), dtype=np.bool)
         for i in filter:
             if type(i) == list:
-                mask[i[0]: i[1]] = True
+                mask[i[0] : i[1]] = True
             else:
                 mask[i] = True
         return mask
@@ -316,12 +327,13 @@ class DataAdaptor(metaclass=ABCMeta):
             top_n = self.dataset_config.diffexp__top_n
 
         if self.server_config.exceeds_limit(
-                "diffexp_cellcount_max", np.count_nonzero(obs_mask_A) + np.count_nonzero(obs_mask_B)
+            "diffexp_cellcount_max", np.count_nonzero(obs_mask_A) + np.count_nonzero(obs_mask_B)
         ):
             raise ExceedsLimitError("Diffexp request exceeds max cell count limit")
 
         result = self.compute_diffexp_ttest(
-            maskA=obs_mask_A, maskB=obs_mask_B, top_n=top_n, lfc_cutoff=self.dataset_config.diffexp__lfc_cutoff)
+            maskA=obs_mask_A, maskB=obs_mask_B, top_n=top_n, lfc_cutoff=self.dataset_config.diffexp__lfc_cutoff
+        )
 
         try:
             return jsonify_numpy(result)

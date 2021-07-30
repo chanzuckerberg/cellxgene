@@ -8,9 +8,9 @@ from scipy import sparse
 
 import backend.common.compute.diffexp_generic as diffexp_generic
 from backend.common.colors import convert_anndata_category_colors_to_cxg_category_colors
-from backend.common.constants import Axis, MAX_LAYOUTS
+from backend.common.constants import Axis, MAX_LAYOUTS, XApproximateDistribution
 from backend.czi_hosted.common.corpora import corpora_get_props_from_anndata
-from backend.common.errors import PrepareError, DatasetAccessError
+from backend.common.errors import PrepareError, DatasetAccessError, ConfigurationError
 from backend.common.utils.type_conversion_utils import get_schema_type_hint_of_array
 from backend.czi_hosted.data_common.data_adaptor import DataAdaptor
 from backend.common.fbs.matrix import encode_matrix_fbs
@@ -28,6 +28,7 @@ class AnndataAdaptor(DataAdaptor):
     def __init__(self, data_locator, app_config=None, dataset_config=None):
         super().__init__(data_locator, app_config, dataset_config)
         self.data = None
+        self.X_approximate_distribution = None
         self._load_data(data_locator)
         self._validate_and_initialize()
 
@@ -65,11 +66,11 @@ class AnndataAdaptor(DataAdaptor):
 
     @staticmethod
     def _create_unique_column_name(df, col_name_prefix):
-        """ given the columns of a dataframe, and a name prefix, return a column name which
-            does not exist in the dataframe, AND which is prefixed by `prefix`
+        """given the columns of a dataframe, and a name prefix, return a column name which
+        does not exist in the dataframe, AND which is prefixed by `prefix`
 
-            The approach is to append a numeric suffix, starting at zero and increasing by
-            one, until an unused name is found (eg, prefix_0, prefix_1, ...).
+        The approach is to append a numeric suffix, starting at zero and increasing by
+        one, until an unused name is found (eg, prefix_0, prefix_1, ...).
         """
         suffix = 0
         while f"{col_name_prefix}{suffix}" in df:
@@ -123,7 +124,11 @@ class AnndataAdaptor(DataAdaptor):
 
     def _create_schema(self):
         self.schema = {
-            "dataframe": {"nObs": self.cell_count, "nVar": self.gene_count, "type": str(self.data.X.dtype)},
+            "dataframe": {
+                "nObs": self.cell_count,
+                "nVar": self.gene_count,
+                **get_schema_type_hint_of_array(self.data.X),
+            },
             "annotations": {
                 "obs": {"index": self.parameters.get("obs_names"), "columns": []},
                 "var": {"index": self.parameters.get("var_names"), "columns": []},
@@ -190,16 +195,20 @@ class AnndataAdaptor(DataAdaptor):
         self.gene_count = self.data.shape[1]
         self._create_schema()
 
+        if self.dataset_config.X_approximate_distribution == "auto":
+            raise ConfigurationError("X-approximate-distribution 'auto' mode unsupported.")
+        self.X_approximate_distribution = self.dataset_config.X_approximate_distribution
+
         # heuristic
         n_values = self.data.shape[0] * self.data.shape[1]
         if (n_values > 1e8 and self.server_config.adaptor__anndata_adaptor__backed is True) or (n_values > 5e8):
             self.parameters.update({"diffexp_may_be_slow": True})
 
     def _is_valid_layout(self, arr):
-        """ return True if this layout data is a valid array for front-end presentation:
-            * ndarray, dtype float/int/uint
-            * with shape (n_obs, >= 2)
-            * with all values finite or NaN (no +Inf or -Inf)
+        """return True if this layout data is a valid array for front-end presentation:
+        * ndarray, dtype float/int/uint
+        * with shape (n_obs, >= 2)
+        * with all values finite or NaN (no +Inf or -Inf)
         """
         is_valid = type(arr) == np.ndarray and arr.dtype.kind in "fiu"
         is_valid = is_valid and arr.shape[0] == self.data.n_obs and arr.shape[1] >= 2
@@ -309,12 +318,21 @@ class AnndataAdaptor(DataAdaptor):
         return convert_anndata_category_colors_to_cxg_category_colors(self.data)
 
     def get_X_array(self, obs_mask=None, var_mask=None):
+        # H5Py does not support boolean indexing (masks), so convert to integer indexing
+        # when backed (ie, when AnnData is using H5Py indexing)
         if obs_mask is None:
             obs_mask = slice(None)
+        elif self.data.isbacked and obs_mask.dtype == bool:
+            obs_mask = obs_mask.nonzero()[0]
         if var_mask is None:
             var_mask = slice(None)
+        elif self.data.isbacked and var_mask.dtype == bool:
+            var_mask = var_mask.nonzero()[0]
         X = self.data.X[obs_mask, var_mask]
         return X
+
+    def get_X_approximate_distribution(self) -> XApproximateDistribution:
+        return self.X_approximate_distribution
 
     def get_shape(self):
         return self.data.shape

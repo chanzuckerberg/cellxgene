@@ -7,8 +7,9 @@ from pandas.core.dtypes.dtypes import CategoricalDtype
 from scipy import sparse
 
 import backend.common.compute.diffexp_generic as diffexp_generic
+import backend.common.compute.estimate_distribution as estimate_distribution
 from backend.common.colors import convert_anndata_category_colors_to_cxg_category_colors
-from backend.common.constants import Axis, MAX_LAYOUTS
+from backend.common.constants import Axis, MAX_LAYOUTS, XApproximateDistribution
 from backend.server.common.corpora import corpora_get_props_from_anndata
 from backend.common.errors import PrepareError, DatasetAccessError
 from backend.common.utils.type_conversion_utils import get_schema_type_hint_of_array
@@ -28,6 +29,7 @@ class AnndataAdaptor(DataAdaptor):
     def __init__(self, data_locator, app_config=None, dataset_config=None):
         super().__init__(data_locator, app_config, dataset_config)
         self.data = None
+        self.X_approximate_distribution = None
         self._load_data(data_locator)
         self._validate_and_initialize()
 
@@ -123,7 +125,11 @@ class AnndataAdaptor(DataAdaptor):
 
     def _create_schema(self):
         self.schema = {
-            "dataframe": {"nObs": self.cell_count, "nVar": self.gene_count, "type": str(self.data.X.dtype)},
+            "dataframe": {
+                "nObs": self.cell_count,
+                "nVar": self.gene_count,
+                **get_schema_type_hint_of_array(self.data.X),
+            },
             "annotations": {
                 "obs": {"index": self.parameters.get("obs_names"), "columns": []},
                 "var": {"index": self.parameters.get("var_names"), "columns": []},
@@ -189,6 +195,13 @@ class AnndataAdaptor(DataAdaptor):
         self.cell_count = self.data.shape[0]
         self.gene_count = self.data.shape[1]
         self._create_schema()
+
+        if self.dataset_config.X_approximate_distribution == "auto":
+            """Lazy evaluate the heuristic if we are backed."""
+            if not self.data.isbacked:
+                self.X_approximate_distribution = estimate_distribution.estimate_approximate_distribution(self.data.X)
+        else:
+            self.X_approximate_distribution = self.dataset_config.X_approximate_distribution
 
         # heuristic
         n_values = self.data.shape[0] * self.data.shape[1]
@@ -309,12 +322,28 @@ class AnndataAdaptor(DataAdaptor):
         return convert_anndata_category_colors_to_cxg_category_colors(self.data)
 
     def get_X_array(self, obs_mask=None, var_mask=None):
+        # H5Py does not support boolean indexing (masks), so convert to integer indexing
+        # when backed (ie, when AnnData is using H5Py indexing)
         if obs_mask is None:
             obs_mask = slice(None)
+        elif self.data.isbacked and obs_mask.dtype == bool:
+            obs_mask = obs_mask.nonzero()[0]
         if var_mask is None:
             var_mask = slice(None)
+        elif self.data.isbacked and var_mask.dtype == bool:
+            var_mask = var_mask.nonzero()[0]
         X = self.data.X[obs_mask, var_mask]
         return X
+
+    def get_X_approximate_distribution(self) -> XApproximateDistribution:
+        """return the approximate distribution of the X matrix."""
+        if self.X_approximate_distribution is None:
+            """Not yet evaluated."""
+            assert self.dataset_config.X_approximate_distribution == "auto"
+            self.data = self.data.to_memory()  # loads data
+            self.X_approximate_distribution = estimate_distribution.estimate_approximate_distribution(self.data.X)
+
+        return self.X_approximate_distribution
 
     def get_shape(self):
         return self.data.shape

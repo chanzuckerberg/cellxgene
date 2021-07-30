@@ -6,7 +6,7 @@ from scipy import sparse
 from server_timing import Timing as ServerTiming
 
 from backend.server.common.config.app_config import AppConfig
-from backend.common.constants import Axis
+from backend.common.constants import Axis, XApproximateDistribution
 from backend.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError, UnsupportedSummaryMethod
 from backend.common.utils.utils import jsonify_numpy
 from backend.common.fbs.matrix import encode_matrix_fbs
@@ -71,6 +71,10 @@ class DataAdaptor(metaclass=ABCMeta):
         """return the X array, possibly filtered by obs_mask or var_mask.
         the return type is either ndarray or scipy.sparse.spmatrix."""
         pass
+
+    def get_X_approximate_distribution(self) -> XApproximateDistribution:
+        """return the approximate distribution of the X matrix."""
+        return XApproximateDistribution.NORMAL
 
     @abstractmethod
     def get_shape(self):

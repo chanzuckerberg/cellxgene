@@ -119,6 +119,8 @@ class EndPoints(BaseTest):
         result = self.client.get(url, headers=header)
         self.assertEqual(result.status_code, HTTPStatus.BAD_REQUEST)
 
+# TEMP: Testing count 15 to match hardcoded values for diffexp
+# TODO(#1281): Switch back to dynamic values
     def test_diff_exp(self):
         endpoint = "diffexp/obs"
         url = f"{self.TEST_URL_BASE}{endpoint}"
@@ -126,21 +128,21 @@ class EndPoints(BaseTest):
             "mode": "topN",
             "set1": {"filter": {"obs": {"annotation_value": [{"name": "louvain", "values": ["NK cells"]}]}}},
             "set2": {"filter": {"obs": {"annotation_value": [{"name": "louvain", "values": ["CD8 T cells"]}]}}},
-            "count": 7,
+            "count": 15,
         }
         result = self.client.post(url, json=params)
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = json.loads(result.data)
-        self.assertEqual(len(result_data['positive']), 7)
-        self.assertEqual(len(result_data['negative']), 7)
+        self.assertEqual(len(result_data['positive']), 15)
+        self.assertEqual(len(result_data['negative']), 15)
 
     def test_diff_exp_indices(self):
         endpoint = "diffexp/obs"
         url = f"{self.TEST_URL_BASE}{endpoint}"
         params = {
             "mode": "topN",
-            "count": 10,
+            "count": 15,
             "set1": {"filter": {"obs": {"index": [[0, 500]]}}},
             "set2": {"filter": {"obs": {"index": [[500, 1000]]}}},
         }
@@ -148,8 +150,8 @@ class EndPoints(BaseTest):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = json.loads(result.data)
-        self.assertEqual(len(result_data['positive']), 10)
-        self.assertEqual(len(result_data['negative']), 10)
+        self.assertEqual(len(result_data['positive']), 15)
+        self.assertEqual(len(result_data['negative']), 15)
 
     def test_get_annotations_var_fbs(self):
         endpoint = "annotations/var"

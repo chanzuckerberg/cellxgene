@@ -24,6 +24,11 @@ class DiffExpMode(AugmentedEnum):
     VAR_FILTER = "varFilter"
 
 
+class XApproximateDistribution(AugmentedEnum):
+    NORMAL = "normal"
+    COUNT = "count"
+
+
 JSON_NaN_to_num_warning_msg = "JSON encoding failure - please verify all data are finite values (no NaN or Infinities)"
 REACTIVE_LIMIT = 1_000_000
 
