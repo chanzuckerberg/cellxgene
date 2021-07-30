@@ -1,6 +1,6 @@
 // Core dependencies
 import { Classes, ResizeSensor } from "@blueprintjs/core";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 // Characters to be used to indicate display text has been truncated
 const CHAR_ELLIPSIS = "...";
@@ -209,9 +209,7 @@ const updateItems = (itemsState, items, availableWidth) => {
 
 const TruncatingBreadcrumbs = React.memo(
   ({ breadcrumbRenderer, currentBreadcrumbRenderer, items: originalItems }) => {
-    const [items, setItems] = useState(() => {
-      return initItems(originalItems);
-    });
+    const [items, setItems] = useState([]);
 
     const onResize = (entries) => {
       /*
@@ -252,6 +250,13 @@ const TruncatingBreadcrumbs = React.memo(
         return <li key={item.text}>{renderBreadcrumb(item, currentItem)}</li>;
       });
     };
+
+    useEffect(() => {
+      /*
+      init/update truncating breadcrumb items
+      */
+      setItems(initItems(originalItems));
+    }, [originalItems]);
 
     return (
       <ResizeSensor onResize={onResize}>

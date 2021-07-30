@@ -1,5 +1,8 @@
 import { Position, Toaster, Intent } from "@blueprintjs/core";
 
+/* styles */
+import styles from "./toasters.css";
+
 /** Singleton toaster instance. Create separate instances for different options. */
 
 const ToastTopCenter = Toaster.create({
@@ -50,3 +53,15 @@ export const postAsyncFailureToast = (message) =>
     timeout: 10000,
     intent: Intent.WARNING,
   });
+
+/*
+Dataset opened in new tab
+ */
+export const postExplainNewTab = (message) => {
+  ToastTopCenter.show({
+    className: styles.newTabToast,
+    message,
+    timeout: 1000000,
+    intent: Intent.PRIMARY,
+  });
+};

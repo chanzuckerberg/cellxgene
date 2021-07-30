@@ -1,5 +1,12 @@
 import * as globals from "../globals";
 import { AnnoMatrixLoader, AnnoMatrixObsCrossfilter } from "../annoMatrix";
+import { postExplainNewTab } from "../components/framework/toasters";
+import {
+  KEYS,
+  storageGet,
+  storageSet,
+  WORK_IN_PROGRESS_WARN_STATE,
+} from "../components/util/localStorage";
 import {
   catchErrorsWrap,
   doJsonRequest,
@@ -272,6 +279,34 @@ const requestDifferentialExpression = (set1, set2, num_genes = 50) => async (
   }
 };
 
+export const checkExplainNewTab = () => (dispatch) => {
+  /*
+  Opens toast "work in progress" warning.
+   */
+  if (
+    storageGet(KEYS.WORK_IN_PROGRESS_WARN) === WORK_IN_PROGRESS_WARN_STATE.ON
+  ) {
+    dispatch({ type: "show toast" });
+    postExplainNewTab(
+      "To maintain your in-progress work on the previous dataset, we opened this dataset in a new tab."
+    );
+    storageSet(KEYS.WORK_IN_PROGRESS_WARN, WORK_IN_PROGRESS_WARN_STATE.OFF);
+  }
+};
+
+export const openDataset = (dataset) => (dispatch) => {
+  /*
+  Update in a new tab the browser location to dataset's deployment URL, kick off data load.
+  */
+
+  const deploymentUrl = dataset.dataset_deployments?.[0].url ?? "";
+  const datasetUrl = createDatasetUrl(deploymentUrl);
+
+  dispatch({ type: "dataset opened" });
+  storageSet(KEYS.WORK_IN_PROGRESS_WARN, WORK_IN_PROGRESS_WARN_STATE.ON);
+  window.open(datasetUrl, "_blank");
+};
+
 export const switchDataset = (dataset) => (dispatch) => {
   /*
   Update browser location to dataset's deployment URL, kick off data load. 
@@ -317,6 +352,8 @@ export default {
   requestSingleGeneExpressionCountsForColoringPOST,
   requestUserDefinedGene,
   requestReembed,
+  checkExplainNewTab,
+  openDataset,
   switchDataset,
   selectContinuousMetadataAction: selnActions.selectContinuousMetadataAction,
   selectCategoricalMetadataAction: selnActions.selectCategoricalMetadataAction,

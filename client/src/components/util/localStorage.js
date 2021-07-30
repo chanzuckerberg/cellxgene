@@ -1,6 +1,13 @@
 export const KEYS = {
   COOKIE_DECISION: "cxg.cookieDecision",
   LOGIN_PROMPT: "cxg.LOGIN_PROMPT",
+  WORK_IN_PROGRESS_WARN: "cxg.WORK_IN_PROGRESS_WARN",
+};
+
+// TODO(cc) review location
+export const WORK_IN_PROGRESS_WARN_STATE = {
+  OFF: "off",
+  ON: "on",
 };
 
 export function storageGet(key, defaultValue = null) {

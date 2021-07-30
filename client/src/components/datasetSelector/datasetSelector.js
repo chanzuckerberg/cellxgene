@@ -5,7 +5,7 @@ import React, { PureComponent } from "react";
 import { connect } from "react-redux";
 
 /* app dependencies */
-import { switchDataset } from "../../actions";
+import { openDataset, switchDataset } from "../../actions";
 import DatasetMenu from "./datasetMenu";
 import * as globals from "../../globals";
 import TruncatingBreadcrumbs from "./truncatingBreadcrumbs";
@@ -18,9 +18,13 @@ import styles from "./datasetSelector.css";
 app-level collection and dataset breadcrumbs.
  */
 @connect((state) => {
+  const genesetsInProgress = state.genesets?.genesets?.size > 0;
+  const individualGenesInProgress =
+    state.controls?.userDefinedGenes?.length > 0;
   return {
     collection: state.collections?.collection,
     selectedDatasetId: state.collections?.selectedDatasetId,
+    workInProgress: genesetsInProgress || individualGenesInProgress,
   };
 })
 class DatasetSelector extends PureComponent {
@@ -31,7 +35,12 @@ class DatasetSelector extends PureComponent {
     return { ...breadcrumbProp, className: styles.datasetBreadcrumb };
   };
 
-  buildBreadcrumbProps = (dispatch, collection, selectedDatasetId) => {
+  buildBreadcrumbProps = (
+    dispatch,
+    collection,
+    selectedDatasetId,
+    workInProgress
+  ) => {
     /*
     Create the set of breadcrumbs elements, home > collection name > dataset name, where dataset name reveals the
     dataset menu.
@@ -51,16 +60,23 @@ class DatasetSelector extends PureComponent {
       selectedDatasetId,
       collection.datasets
     );
-    const datasets = [...collection.datasets].sort(sortDatasets);
+    const datasets = [...collection.datasets]
+      .sort(sortDatasets)
+      .map((dataset) => {
+        const dispatchAction = workInProgress
+          ? openDataset(dataset)
+          : switchDataset(dataset);
+        return {
+          ...dataset,
+          onClick: () => {
+            dispatch(dispatchAction);
+          },
+        };
+      });
     const datasetProp = this.buildBreadcrumbProp({
       shortText: "Dataset",
       text: selectedDataset.name,
-      datasets: datasets.map((dataset) => ({
-        ...dataset,
-        onClick: () => {
-          dispatch(switchDataset(dataset));
-        },
-      })),
+      datasets,
       selectedDatasetId,
     });
     return [homeProp, collectionProp, datasetProp];
@@ -134,7 +150,12 @@ class DatasetSelector extends PureComponent {
   };
 
   render() {
-    const { collection, dispatch, selectedDatasetId } = this.props;
+    const {
+      collection,
+      dispatch,
+      selectedDatasetId,
+      workInProgress,
+    } = this.props;
     if (!collection) {
       return null;
     }
@@ -153,7 +174,8 @@ class DatasetSelector extends PureComponent {
           items={this.buildBreadcrumbProps(
             dispatch,
             collection,
-            selectedDatasetId
+            selectedDatasetId,
+            workInProgress
           )}
         />
       </div>

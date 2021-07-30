@@ -15,7 +15,7 @@ import Autosave from "./autosave";
 import Embedding from "./embedding";
 import TermsOfServicePrompt from "./termsPrompt";
 
-import actions from "../actions";
+import actions, { checkExplainNewTab } from "../actions";
 
 @connect((state) => ({
   loading: state.controls.loading,
@@ -31,6 +31,7 @@ class App extends React.Component {
     this._onURLChanged();
 
     dispatch(actions.doInitialDataLoad(window.location.search));
+    dispatch(checkExplainNewTab());
     this.forceUpdate();
   }
 
