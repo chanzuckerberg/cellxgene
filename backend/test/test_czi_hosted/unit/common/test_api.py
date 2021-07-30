@@ -444,7 +444,7 @@ class EndPointsCxg(EndPoints):
                     {'genes': [], 'geneset_description': '', 'geneset_name': 'geneset_to_delete'},
                     {'genes': [], 'geneset_description': '', 'geneset_name': 'geneset_to_edit'},
                     {
-                        'genes': [{'gene_description': '', 'gene_symbol': 'RER1'}],
+                        'genes': [],
                         'geneset_description': '',
                         'geneset_name': 'fill_this_geneset'
                     },
