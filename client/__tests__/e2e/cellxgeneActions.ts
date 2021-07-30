@@ -71,11 +71,9 @@ export async function getAllHistograms(testclass: any, testIds: any) {
   const allHistograms = await getAllByClass(testclass);
 
   const testIDs = await Promise.all(
-    allHistograms.map((hist) => {
-      return page.evaluate((elem) => {
-        return elem.dataset.testid;
-      }, hist);
-    })
+    allHistograms.map((hist) =>
+      page.evaluate((elem) => elem.dataset.testid, hist)
+    )
   );
 
   return testIDs.map((id) => id.replace(/^histogram-/, ""));
@@ -214,11 +212,9 @@ export async function createCategory(categoryName: any) {
   await clickOn("submit-category");
 }
 
-/* 
-
-  GENESET 
-
-*/
+/**
+ * GENESET
+ */
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function colorByGeneset(genesetName: any) {
@@ -235,9 +231,9 @@ export async function assertColorLegendLabel(label: any) {
   const handle = await waitByID("continuous_legend_color_by_label");
 
   // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-  const result = await handle.evaluate((node) => {
-    return node.getAttribute("aria-label");
-  });
+  const result = await handle.evaluate((node) =>
+    node.getAttribute("aria-label")
+  );
 
   return expect(result).toBe(label);
 }
@@ -303,18 +299,16 @@ export async function assertGenesetExists(genesetName: any) {
   const handle = await waitByID(`${genesetName}:geneset-name`);
 
   // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-  const result = await handle.evaluate((node) => {
-    return node.getAttribute("aria-label");
-  });
+  const result = await handle.evaluate((node) =>
+    node.getAttribute("aria-label")
+  );
 
   return expect(result).toBe(genesetName);
 }
 
-/* 
-
-  GENE
-
-*/
+/**
+ * GENE
+ */
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function addGeneToSet(genesetName: any, geneToAddToSet: any) {
@@ -339,9 +333,9 @@ export async function assertGeneExistsInGeneset(geneSymbol: any) {
   const handle = await waitByID(`${geneSymbol}:gene-label`);
 
   // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-  const result = await handle.evaluate((node) => {
-    return node.getAttribute("aria-label");
-  });
+  const result = await handle.evaluate((node) =>
+    node.getAttribute("aria-label")
+  );
 
   return expect(result).toBe(geneSymbol);
 }
@@ -359,11 +353,9 @@ export async function expandGene(geneSymbol: any) {
   await clickOn(`maximize-${geneSymbol}`);
 }
 
-/* 
-
-  CATEGORY 
-
-*/
+/**
+ * CATEGORY
+ */
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function duplicateCategory(categoryName: any) {

@@ -55,16 +55,14 @@ const filterGenes = (query: any, genes: any) =>
 type AddGenesState = any;
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
-@connect((state) => {
-  return {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    annoMatrix: (state as any).annoMatrix,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    userDefinedGenes: (state as any).controls.userDefinedGenes,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    userDefinedGenesLoading: (state as any).controls.userDefinedGenesLoading,
-  };
-})
+@connect((state) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  annoMatrix: (state as any).annoMatrix,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  userDefinedGenes: (state as any).controls.userDefinedGenes,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  userDefinedGenesLoading: (state as any).controls.userDefinedGenesLoading,
+}))
 // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
 class AddGenes extends React.Component<{}, AddGenesState> {
   // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
@@ -291,9 +289,7 @@ class AddGenes extends React.Component<{}, AddGenesState> {
               initialContent={<MenuItem disabled text="Enter a gene…" />}
               // @ts-expect-error ts-migrate(2322) FIXME: Type '{ "data-testid": string; }' is not assignabl... Remove this comment to see the full error message
               inputProps={{ "data-testid": "gene-search" }}
-              inputValueRenderer={() => {
-                return "";
-              }}
+              inputValueRenderer={() => ""}
               // @ts-expect-error ts-migrate(2322) FIXME: Type '(query: any, genes: any) => Fuzzysort.Result... Remove this comment to see the full error message
               itemListPredicate={filterGenes}
               onActiveItemChange={(item) => this.setState({ activeItem: item })}
