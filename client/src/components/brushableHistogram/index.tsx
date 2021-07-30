@@ -118,9 +118,9 @@ class HistogramBrush extends React.PureComponent {
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'selection' is declared but its value is never rea... Remove this comment to see the full error message
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  onBrushEnd = (selection: any, x: any) => {
+  onBrushEnd = (selection: any, x: any) =>
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-    return () => {
+    () => {
       const {
         // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
         dispatch,
@@ -190,7 +190,6 @@ class HistogramBrush extends React.PureComponent {
         actions.selectContinuousMetadataAction(type, query, range, otherProps)
       );
     };
-  };
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleSetGeneAsScatterplotX = () => {

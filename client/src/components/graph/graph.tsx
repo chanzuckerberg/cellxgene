@@ -355,9 +355,10 @@ class Graph extends React.Component<{}, GraphState> {
     if (camera.handleEvent(e, projectionTF)) {
       this.renderCanvas();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-      this.setState((state: any) => {
-        return { ...state, updateOverlay: !state.updateOverlay };
-      });
+      this.setState((state: any) => ({
+        ...state,
+        updateOverlay: !state.updateOverlay,
+      }));
     }
   };
 
@@ -1036,32 +1037,29 @@ const ErrorLoading = ({ displayName, error, width, height }: any) => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-const StillLoading = ({ displayName, width, height }: any) => {
+const StillLoading = ({ displayName, width, height }: any) => (
   /*
   Render a busy/loading indicator
   */
-  return (
+  <div
+    style={{
+      position: "fixed",
+      fontWeight: 500,
+      top: height / 2,
+      width,
+    }}
+  >
     <div
       style={{
-        position: "fixed",
-        fontWeight: 500,
-        top: height / 2,
-        width,
+        display: "flex",
+        justifyContent: "center",
+        justifyItems: "center",
+        alignItems: "center",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          justifyItems: "center",
-          alignItems: "center",
-        }}
-      >
-        <Button minimal loading intent="primary" />
-        <span style={{ fontStyle: "italic" }}>Loading {displayName}</span>
-      </div>
+      <Button minimal loading intent="primary" />
+      <span style={{ fontStyle: "italic" }}>Loading {displayName}</span>
     </div>
-  );
-};
-
+  </div>
+);
 export default Graph;
