@@ -61,7 +61,7 @@ export const postExplainNewTab = (message) => {
   ToastTopCenter.show({
     className: styles.newTabToast,
     message,
-    timeout: 1000000,
+    timeout: 5000,
     intent: Intent.PRIMARY,
   });
 };

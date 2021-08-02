@@ -286,7 +286,7 @@ export const checkExplainNewTab = () => (dispatch) => {
   if (
     storageGet(KEYS.WORK_IN_PROGRESS_WARN) === WORK_IN_PROGRESS_WARN_STATE.ON
   ) {
-    dispatch({ type: "show toast" });
+    dispatch({ type: "work in progress warning displayed" });
     postExplainNewTab(
       "To maintain your in-progress work on the previous dataset, we opened this dataset in a new tab."
     );
