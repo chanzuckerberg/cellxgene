@@ -38,7 +38,8 @@ def get_dataset_metadata(location: str, **kwargs):
     app_config = kwargs["app_config"]
     if app_config:
         explorer_url_path = f"{app_config.server_config.get_web_base_url()}/{location}"
-        dataset_metadata = get_dataset_metadata_from_data_portal(explorer_url=explorer_url_path)
+        data_portal_api = f"{app_config}"
+        dataset_metadata = get_dataset_metadata_from_data_portal(data_portal_api=data_portal_api, explorer_url=explorer_url_path)
     if dataset_metadata:
         return dataset_metadata
     server_config = app_config.server_config

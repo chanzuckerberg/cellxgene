@@ -102,7 +102,7 @@ def dataset_index(url_dataroot=None, dataset=None):
             with matrix_cache_manager.data_adaptor(
                 cache_key=dataset_location,
                 create_data_lambda=MatrixDataLoader(dataset_location, app_config=app_config).validate_and_open,
-                create_data_args={}
+                create_data_args={"dataset_config": dataset_config}
             ) as data_adaptor:
                 data_adaptor.set_uri_path(f"{url_dataroot}/{dataset}")
                 args = {"SCRIPTS": scripts, "INLINE_SCRIPTS": inline_scripts}
