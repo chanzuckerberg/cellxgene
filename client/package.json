@@ -12,9 +12,10 @@
     "e2e-annotations": "jest --config __tests__/e2e/e2eJestConfig.json e2e/e2eAnnotations.test.ts",
     "e2e-prod": "CXG_URL_BASE='https://cellxgene.cziscience.com/d/pbmc3k.cxg/' jest --config __tests__/e2e/e2eJestConfig.json e2e/e2e.test.ts",
     "fmt": "eslint --fix src __tests__",
-    "lint": "eslint --fix src __tests__",
+    "lint": "eslint src __tests__ & npm run type-check",
     "prod": "npm run build -- configuration/webpack/webpack.config.prod.js",
-    "test": "jest --testPathIgnorePatterns e2e"
+    "test": "jest --testPathIgnorePatterns e2e",
+    "type-check": "tsc --noEmit"
   },
   "engineStrict": true,
   "engines": {

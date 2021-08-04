@@ -3,6 +3,8 @@ Helper functions for user-editable annotations state management.
 See also reducers/annotations.js
 */
 
+import { Schema } from "../../common/types/entities";
+
 /*
 There are a number of state constraints assumed throughout the
 application:
@@ -16,34 +18,36 @@ application:
 In addition, the current state management only allows for
 categorical annotations to be writable.
 */
-
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export function isCategoricalAnnotation(schema, name) {
-  /* 
+export function isCategoricalAnnotation(
+  schema: Schema,
+  name: string
+): boolean | undefined {
+  /*
   we treat any string, categorical or boolean as a categorical.
-  Return true/false/undefined (for unkonwn fields)
   */
   const colSchema = schema.annotations.obsByName[name];
+
   if (colSchema === undefined) return undefined;
+
   const { type } = colSchema;
+
   return type === "string" || type === "boolean" || type === "categorical";
 }
 
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export function isContinuousAnnotation(schema, name) {
-  /*
-  Return true/false/undefined
-  */
+export function isContinuousAnnotation(
+  schema: Schema,
+  name: string
+): boolean | undefined {
   const colSchema = schema.annotations.obsByName[name];
+
   if (colSchema === undefined) return undefined;
+
   const { type } = colSchema;
+
   return !(type === "string" || type === "boolean" || type === "categorical");
 }
 
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
-function _isUserAnnotation(schema, name) {
+function _isUserAnnotation(schema: Schema, name: string): boolean {
   return schema.annotations.obsByName[name]?.writable || false;
 }
 
@@ -72,9 +76,8 @@ export function allHaveLabelByMask(df, colName, label, mask) {
 }
 
 const legalCharacters = /^(\w|[ .()-])+$/;
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export function annotationNameIsErroneous(name) {
+
+export function annotationNameIsErroneous(name: string): boolean | string {
   /*
 	Validate the name - return:
 	* false - a valid name
@@ -101,6 +104,6 @@ export function annotationNameIsErroneous(name) {
     }
   }
 
-  /* all is well!  Indicte not erroneous with a false */
+  /* all is well! Indicate not erroneous with a false */
   return false;
 }
