@@ -22,7 +22,7 @@ Test the anndata adaptor using the pbmc3k data set.
 
 
 @parameterized_class(
-    ("data_locator", "backed", "X_approx_distribution"),
+    ("data_locator", "backed", "X_approximate_distribution"),
     [
         (f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad", False, "auto"),
         (f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad", False, "auto"),
@@ -36,12 +36,15 @@ Test the anndata adaptor using the pbmc3k data set.
         (f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad", True, "normal"),
         (f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad", True, "normal"),
         (f"{FIXTURES_ROOT}/pbmc3k-CSR-gz.h5ad", True, "normal"),
+        (f"{FIXTURES_ROOT}/pbmc3k_64.h5ad", False, "auto"),  # 64 bit conversion tests
     ],
 )
 class AdaptorTest(unittest.TestCase):
     def setUp(self):
         config = app_config(
-            self.data_locator, self.backed, extra_dataset_config=dict(X_approx_distribution=self.X_approx_distribution)
+            self.data_locator,
+            self.backed,
+            extra_dataset_config=dict(X_approximate_distribution=self.X_approximate_distribution),
         )
         self.data = AnndataAdaptor(DataLocator(self.data_locator), config)
 

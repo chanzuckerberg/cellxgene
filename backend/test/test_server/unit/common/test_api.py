@@ -6,9 +6,13 @@ from http import HTTPStatus
 import tempfile
 from os import path
 import hashlib
+from os.path import basename, splitext
 
 import pandas as pd
 import requests
+import numpy as np
+
+from parameterized import parameterized_class
 
 import backend.test.decode_fbs as decode_fbs
 from backend.server.data_common.matrix_loader import MatrixDataType
@@ -44,6 +48,14 @@ class EndPoints(object):
             len(result_data["schema"]["annotations"]["obs"]["columns"]), 6 if self.ANNOTATIONS_ENABLED else 5
         )
 
+        # Check that all schema types are legal
+        legal_types = ["boolean", "string", "categorical", "float32", "int32"]
+        self.assertEqual(result_data["schema"]["dataframe"]["type"], "float32")
+        for column in result_data["schema"]["annotations"]["obs"]["columns"]:
+            self.assertIn(column["type"], legal_types)
+        for column in result_data["schema"]["annotations"]["var"]["columns"]:
+            self.assertIn(column["type"], legal_types)
+
     def test_config(self):
         endpoint = "config"
         url = f"{self.URL_BASE}{endpoint}"
@@ -52,7 +64,12 @@ class EndPoints(object):
         self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
         self.assertIn("library_versions", result_data["config"])
-        self.assertEqual(result_data["config"]["displayNames"]["dataset"], "pbmc3k")
+
+        if hasattr(self, "data_locator"):
+            title = splitext(basename(self.data_locator))[0]
+        else:
+            title = "pbmc3k"
+        self.assertEqual(result_data["config"]["displayNames"]["dataset"], title)
         self.assertIsNotNone(result_data["config"]["parameters"])
 
     def test_get_layout_fbs(self):
@@ -72,6 +89,8 @@ class EndPoints(object):
         )
         self.assertIsNone(df["row_idx"])
         self.assertEqual(len(df["columns"]), df["n_cols"])
+        for column in df["columns"]:
+            self.assertEqual(column.dtype, np.float32)
 
     def test_bad_filter(self):
         endpoint = "data/var"
@@ -98,6 +117,9 @@ class EndPoints(object):
             [obs_index_col_name, "n_genes", "percent_mito", "n_counts", "louvain"]
             + (["cluster-test"] if self.ANNOTATIONS_ENABLED else []),
         )
+        for column in df["columns"]:
+            if type(column) is np.ndarray:
+                self.assertIn(column.dtype, [np.float32, np.int32])
 
     def test_get_annotations_obs_keys_fbs(self):
         endpoint = "annotations/obs"
@@ -137,6 +159,9 @@ class EndPoints(object):
         self.assertEqual(len(df["columns"]), df["n_cols"])
         var_index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
         self.assertCountEqual(df["col_idx"], [var_index_col_name, "n_cells"])
+        for column in df["columns"]:
+            if type(column) is np.ndarray:
+                self.assertIn(column.dtype, [np.float32, np.int32])
 
     def test_get_annotations_var_keys_fbs(self):
         endpoint = "annotations/var"
@@ -207,6 +232,9 @@ class EndPoints(object):
         self.assertIsNone(df["row_idx"])
         self.assertEqual(len(df["columns"]), df["n_cols"])
         self.assertListEqual(df["col_idx"].tolist(), [0, 1, 4])
+        for column in df["columns"]:
+            if type(column) is np.ndarray:
+                self.assertIn(column.dtype, [np.float32, np.int32])
 
     def test_data_get_filter_fbs(self):
         index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
@@ -220,6 +248,9 @@ class EndPoints(object):
         df = decode_fbs.decode_matrix_FBS(result.content)
         self.assertEqual(df["n_rows"], 2638)
         self.assertEqual(df["n_cols"], 1)
+        for column in df["columns"]:
+            if type(column) is np.ndarray:
+                self.assertIn(column.dtype, [np.float32, np.int32])
 
     def test_data_get_unknown_filter_fbs(self):
         index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
@@ -246,6 +277,9 @@ class EndPoints(object):
         df = decode_fbs.decode_matrix_FBS(result.content)
         self.assertEqual(df["n_rows"], 2638)
         self.assertEqual(df["n_cols"], 1)
+        for column in df["columns"]:
+            if type(column) is np.ndarray:
+                self.assertIn(column.dtype, [np.float32, np.int32])
 
     def test_colors(self):
         endpoint = "colors"
@@ -347,6 +381,14 @@ class EndPointsAnnotations(EndPoints):
         self.assertTrue(matching_columns[0]["writable"])
 
 
+@parameterized_class(
+    [
+        {"data_locator": f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad"},
+        {"data_locator": f"{FIXTURES_ROOT}/pbmc3k_64.h5ad"},
+        {"data_locator": f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad"},
+        {"data_locator": f"{FIXTURES_ROOT}/pbmc3k-CSR-gz.h5ad"},
+    ]
+)
 class EndPointsAnndata(unittest.TestCase, EndPoints):
     """Test Case for endpoints"""
 
@@ -355,10 +397,13 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
 
     @classmethod
     def setUpClass(cls):
+        if cls == EndPointsAnndata:
+            raise unittest.SkipTest("`parameterized_class` bug")
+
         cls._setupClass(
             cls,
             [
-                f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad",
+                cls.data_locator,
                 "--disable-annotations",
                 "--disable-gene-sets-save",
             ],
@@ -385,8 +430,8 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
-        self.assertEqual(len(result_data['positive']), 7)
-        self.assertEqual(len(result_data['negative']), 7)
+        self.assertEqual(len(result_data["positive"]), 7)
+        self.assertEqual(len(result_data["negative"]), 7)
 
     def test_diff_exp_indices(self):
         endpoint = "diffexp/obs"
@@ -401,8 +446,8 @@ class EndPointsAnndata(unittest.TestCase, EndPoints):
         self.assertEqual(result.status_code, HTTPStatus.OK)
         self.assertEqual(result.headers["Content-Type"], "application/json")
         result_data = result.json()
-        self.assertEqual(len(result_data['positive']), 10)
-        self.assertEqual(len(result_data['negative']), 10)
+        self.assertEqual(len(result_data["positive"]), 10)
+        self.assertEqual(len(result_data["negative"]), 10)
 
     def test_get_summaryvar(self):
         index_col_name = self.schema["schema"]["annotations"]["var"]["index"]
@@ -561,23 +606,23 @@ class EndPointsAnnDataGenesets(unittest.TestCase, EndPoints):
                         "geneset_description": "",
                         "geneset_name": "summary test",
                     },
-                    {'genes': [], 'geneset_description': '', 'geneset_name': 'geneset_to_delete'},
-                    {'genes': [], 'geneset_description': '', 'geneset_name': 'geneset_to_edit'},
+                    {"genes": [], "geneset_description": "", "geneset_name": "geneset_to_delete"},
+                    {"genes": [], "geneset_description": "", "geneset_name": "geneset_to_edit"},
                     {
-                        'genes': [{'gene_description': '', 'gene_symbol': 'RER1'}],
-                        'geneset_description': '',
-                        'geneset_name': 'fill_this_geneset'
+                        "genes": [],
+                        "geneset_description": "",
+                        "geneset_name": "fill_this_geneset",
                     },
                     {
-                        'genes': [{'gene_description': '', 'gene_symbol': 'SIK1'}],
-                        'geneset_description': '',
-                        'geneset_name': 'empty_this_geneset'
+                        "genes": [{"gene_description": "", "gene_symbol": "SIK1"}],
+                        "geneset_description": "",
+                        "geneset_name": "empty_this_geneset",
                     },
                     {
-                        'genes': [{'gene_description': '', 'gene_symbol': 'SIK1'}],
-                        'geneset_description': '',
-                        'geneset_name': 'brush_this_gene'
-                    }
+                        "genes": [{"gene_description": "", "gene_symbol": "SIK1"}],
+                        "geneset_description": "",
+                        "geneset_name": "brush_this_gene",
+                    },
                 ],
                 "tid": 0,
             },
@@ -606,7 +651,7 @@ summary test,,F5,\r
 summary test,,PIGU,\r
 geneset_to_delete,,,\r
 geneset_to_edit,,,\r
-fill_this_geneset,,RER1,\r
+fill_this_geneset,,,\r
 empty_this_geneset,,SIK1,\r
 brush_this_gene,,SIK1,\r
 """,
@@ -680,7 +725,7 @@ brush_this_gene,,SIK1,\r
         self.assertEqual(result.json(), test3)
 
     def test_put_genesets_malformed(self):
-        """ test malformed submissions that we expect the backend to catch/tolerate """
+        """test malformed submissions that we expect the backend to catch/tolerate"""
         endpoint = "genesets"
         url = f"{self.URL_BASE}{endpoint}"
 
@@ -690,7 +735,7 @@ brush_this_gene,,SIK1,\r
         tid = original_data["tid"]
 
         def test_case(test, expected_code, original_data):
-            """ check for expected error AND that no change was made to the original state """
+            """check for expected error AND that no change was made to the original state"""
             result = self.session.put(url, json=test)
             self.assertEqual(result.status_code, expected_code)
             result = self.session.get(url, headers={"Accept": "application/json"})
