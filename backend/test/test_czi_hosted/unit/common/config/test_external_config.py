@@ -56,12 +56,18 @@ class TestExternalConfig(ConfigTests):
         os.environ["DATAPATH"] = f"{FIXTURES_ROOT}/a95c59b4-7f5d-4b80-ad53-a694834ca18b.h5ad"
         os.environ["DIFFEXP"] = "True"
 
+        config = AppConfig()
+        config.update_from_config_file(configfile)
+
+
+        # config.update_from_config_file(configfile)
+        config.update_server_config(app__flask_secret_key="123 magic")
+
         server= self.create_app(config)
 
         server.testing = True
         session = server.test_client()
 
-        # session = requests.Session()
         response = session.get("/api/v0.2/config")
         data_config = json.loads(response.data)
         self.assertEqual(data_config["config"]["displayNames"]["dataset"], "a95c59b4-7f5d-4b80-ad53-a694834ca18b")

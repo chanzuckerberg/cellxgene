@@ -4,7 +4,6 @@ import time
 from http import HTTPStatus
 import hashlib
 from http.client import HTTPException
-from unittest import skip
 from unittest.mock import patch
 
 import requests
@@ -548,8 +547,8 @@ class TestDataLocatorMockApi(BaseTest):
         result = cls.client.get(f"{cls.TEST_URL_BASE}schema")
         cls.schema = json.loads(result.data)
 
-        assert mock_get.call_count == 1
-        assert mock_get._mock_call_args[1]['url'] == f"http://{cls.data_locator_api_base}/datasets/meta?url={cls.config.server_config.get_web_base_url()}{cls.TEST_DATASET_URL_BASE}"
+        cls.assertEqual(mock_get.call_count, 1)
+        cls.assertEqual(mock_get._mock_call_args[1]['url'], f"http://{cls.data_locator_api_base}/datasets/meta?url={cls.config.server_config.get_web_base_url()}{cls.TEST_DATASET_URL_BASE}")
 
 
     @patch('backend.czi_hosted.data_common.matrix_loader.requests.get')

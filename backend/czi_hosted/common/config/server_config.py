@@ -255,7 +255,8 @@ class ServerConfig(BaseConfig):
             self.dataset_metadata_cache_manager = CacheManager(max_cached=1, timelimit_s=None)
 
         # preload this data set
-        matrix_data_loader = MatrixDataLoader(self.single_dataset__datapath, app_config=self.app_config)
+        matrix_data_loader = MatrixDataLoader(
+            location=self.single_dataset__datapath, app_config=self.app_config)
 
         try:
             matrix_data_loader.pre_load_validation()

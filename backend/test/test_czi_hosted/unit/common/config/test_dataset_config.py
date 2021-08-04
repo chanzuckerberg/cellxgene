@@ -3,6 +3,7 @@ import os
 import tempfile
 
 import unittest
+from time import sleep
 from unittest.mock import patch
 
 from backend.czi_hosted.common.annotations.hosted_tiledb import AnnotationsHostedTileDB
@@ -186,30 +187,33 @@ class TestDatasetConfig(ConfigTests):
         server.testing = True
         session = server.test_client()
 
-        response = session.get("/set1/1/2/pbmc3k.h5ad/api/v0.2/config")
-        data_config = json.loads(response.data)
+        with self.subTest("Test config for dataroot /set1/1/2/ returns the s1 config"):
+            response1 = session.get("/set1/1/2/pbmc3k.h5ad/api/v0.2/config")
+            data_config_set_1 = json.loads(response1.data)
 
-        assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
-        assert data_config["config"]["parameters"]["annotations"] is False
-        assert data_config["config"]["parameters"]["disable-diffexp"] is False
-        assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set1.html"
+            self.assertEqual(data_config_set_1["config"]["displayNames"]["dataset"], "pbmc3k")
+            self.assertFalse(data_config_set_1["config"]["parameters"]["annotations"])
+            self.assertFalse(data_config_set_1["config"]["parameters"]["disable-diffexp"])
+            self.assertEqual(data_config_set_1["config"]["parameters"]["about_legal_tos"], "tos_set1.html")
 
-        response = session.get("/set2/pbmc3k.cxg/api/v0.2/config")
-        data_config = json.loads(response.data)
-        assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
-        assert data_config["config"]["parameters"]["annotations"] is True
-        assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set2.html"
+        with self.subTest("Test config for dataroot /set2 returns the s2 config"):
+            response2 = session.get("/set2/pbmc3k.cxg/api/v0.2/config")
+            data_config_set_2 = json.loads(response2.data)
+            self.assertEqual(data_config_set_2["config"]["displayNames"]["dataset"], "pbmc3k")
+            self.assertTrue(data_config_set_2["config"]["parameters"]["annotations"])
+            self.assertEqual(data_config_set_2["config"]["parameters"]["about_legal_tos"], "tos_set2.html")
 
-        response = session.get("/set3/pbmc3k.cxg/api/v0.2/config")
-        data_config = json.loads(response.data)
-        assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
-        assert data_config["config"]["parameters"]["annotations"] is True
-        assert data_config["config"]["parameters"]["disable-diffexp"] is False
-        assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_default.html"
+        with self.subTest("Test config for dataroot /set3/ returns the default dataset config"):
+            response3 = session.get("/set3/pbmc3k.cxg/api/v0.2/config")
+            data_config_set_3 = json.loads(response3.data)
+            self.assertEqual(data_config_set_3["config"]["displayNames"]["dataset"], "pbmc3k")
+            self.assertTrue(data_config_set_3["config"]["parameters"]["annotations"])
+            self.assertFalse(data_config_set_3["config"]["parameters"]["disable-diffexp"])
+            self.assertEqual(data_config_set_3["config"]["parameters"]["about_legal_tos"], "tos_default.html")
+
 
         response = session.get("/health")
-
-        assert json.loads(response.data)["status"] == "pass"
+        self.assertEqual(json.loads(response.data)["status"], "pass")
 
     def test_configfile_with_specialization(self):
         # test that per_dataset_config config load the default config, then the specialized config

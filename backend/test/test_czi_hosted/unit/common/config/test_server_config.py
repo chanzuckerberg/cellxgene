@@ -258,30 +258,27 @@ class TestServerConfig(ConfigTests):
 
         data_config = json.loads(response.data)
         assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
-        try:
-            assert data_config["config"]["parameters"]["annotations"] is False
-        except Exception as e:
-            import pdb
-            pdb.set_trace()
+        assert data_config["config"]["parameters"]["annotations"] is False
         assert data_config["config"]["parameters"]["disable-diffexp"] is False
+
         assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set1.html"
 
         response = session.get("/set2/pbmc3k.cxg/api/v0.2/config")
 
         data_config = json.loads(response.data)
-        assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
-        assert data_config["config"]["parameters"]["annotations"] is True
-        assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_set2.html"
+        self.assertEqual(data_config["config"]["displayNames"]["dataset"], "pbmc3k")
+        self.assertTrue(data_config["config"]["parameters"]["annotations"])
+        self.assertEqual(data_config["config"]["parameters"]["about_legal_tos"], "tos_set2.html")
 
         response = session.get("/set3/pbmc3k.cxg/api/v0.2/config")
         data_config = json.loads(response.data)
-        assert data_config["config"]["displayNames"]["dataset"] == "pbmc3k"
-        assert data_config["config"]["parameters"]["annotations"] is True
-        assert data_config["config"]["parameters"]["disable-diffexp"] is False
-        assert data_config["config"]["parameters"]["about_legal_tos"] == "tos_default.html"
+        self.assertEqual(data_config["config"]["displayNames"]["dataset"], "pbmc3k")
+        self.assertTrue(data_config["config"]["parameters"]["annotations"])
+        self.assertFalse(data_config["config"]["parameters"]["disable-diffexp"])
+        self.assertEqual(data_config["config"]["parameters"]["about_legal_tos"], "tos_default.html")
 
         response = session.get("/health")
-        assert json.loads(response.data)["status"] == "pass"
+        self.assertEqual(json.loads(response.data)["status"], "pass")
 
         # access a dataset (no slash)
         response = session.get("/set2/pbmc3k.cxg")

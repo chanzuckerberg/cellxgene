@@ -186,12 +186,8 @@ class CacheManager(object):
 
         finally:
             if cache_item:
-                try:
-                    cache_item.release()
-                except Exception as e:
-                    import pdb
-                    pdb.set_trace()
-                    print(e)
+                cache_item.release()
+
 
     def evict_extra_data(self):
         delete_adaptor = None

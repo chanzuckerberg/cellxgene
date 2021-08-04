@@ -89,7 +89,7 @@ def dataset_index(url_dataroot=None, dataset=None):
             abort(HTTPStatus.NOT_FOUND)
         location = path_join(dataroot, dataset)
 
-    dataset_config = app_config.get_dataset_config(url_dataroot)
+    dataset_config = app_config.get_dataset_config(dataroot)
     scripts = dataset_config.app__scripts
     inline_scripts = dataset_config.app__inline_scripts
 
@@ -122,6 +122,15 @@ def handle_request_exception(error):
 
 def get_data_adaptor(url_dataroot=None, dataset=None):
     app_config = current_app.app_config
+    # dataroot = None
+    # for key, dataroot_dict in app_config.server_config.multi_dataset__dataroot.items():
+    #     if dataroot_dict["base_url"] == url_dataroot:
+    #         dataroot = key
+    #         break
+    # if dataroot:
+    #     dataset_config = app_config.get_dataset_config(dataroot)
+    # else:
+    #     dataset_config = app_config.default_dataset_config
     dataset_metadata_manager = current_app.dataset_metadata_cache_manager
     matrix_cache_manager = current_app.matrix_data_cache_manager
     with dataset_metadata_manager.data_adaptor(
@@ -131,34 +140,12 @@ def get_data_adaptor(url_dataroot=None, dataset=None):
     ) as dataset_metadata:
         return matrix_cache_manager.data_adaptor(
             cache_key=dataset_metadata['s3_uri'],
-            create_data_lambda=MatrixDataLoader(dataset_metadata['s3_uri'], app_config=app_config).validate_and_open,
+            create_data_lambda=MatrixDataLoader(
+                location=dataset_metadata['s3_uri'],
+                url_dataroot = url_dataroot,
+                app_config=app_config).validate_and_open,
             create_data_args={}
         )
-
-
-""""
-That still doesn't address the issue of how complex this particular function is and 
-the number of independent routes through it (based on config changes). 
-It also spreads the logic of detering the S3 path across two separate modules 
-(get_data_adaptor() uses dataset to make a physical path, and now data_adaptor() does the same thing with 
-indirection via the poral). Super likely this will be a source of future bugs IMHO.
-
-Here is an alternative approach that (I think) solves both:
-key value lru , getter, setter, both update timestamp associated with key. with a garbage collector 
-do caching based on the dataset value
-add a new function which, given a dataset, returns two values: 
-the explorer path (ie, join(dataroot, datapath), 
-and the S3 dataset location. 
-
-Something like: getDatasetLocation(dataset:str) -> (explorer_path: str, S3_path: str)
-All of the config-driven logic and communication with Portal are in that single function. 
-
-This function could even have its own cache to make things simpler (ie, don't rely on the adaptor cache)
-This new function could be called by either get_data_adaptor or the matrix loader (assuming it has its own cache). It makes the code in matrix_loader.py::data_adaptor() more transparent, ie, you could define it as:
-
-def data_adaptor(self, base_url, explorer_dataset_url, S3_dataset_url)
-
-And all of the config-related branching in data_adaptor() gets removed...."""
 
 
 def requires_authentication(func):
@@ -267,7 +254,7 @@ class SchemaAPI(DatasetResource):
 
 
 class ConfigAPI(DatasetResource):
-    @cache_control(public=True, max_age=ONE_WEEK)
+    # @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.config_get(current_app.app_config, data_adaptor)

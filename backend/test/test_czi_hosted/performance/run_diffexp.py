@@ -35,7 +35,7 @@ def main():
     app_config.update_server_config(app__verbose=True)
     app_config.complete_config()
 
-    loader = MatrixDataLoader(args.dataset)
+    loader = MatrixDataLoader(location=args.dataset, app_config=app_config)
     adaptor = loader.open(app_config)
 
     if args.show:
