@@ -26,6 +26,7 @@ type EmbeddingState = any;
   schema: (state as any).annoMatrix?.schema,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   crossfilter: (state as any).obsCrossfilter,
+  dotplot: (state as any).layoutChoice.dotplot,
 }))
 // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
 class Embedding extends React.PureComponent<{}, EmbeddingState> {
@@ -45,13 +46,13 @@ class Embedding extends React.PureComponent<{}, EmbeddingState> {
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'layoutChoice' does not exist on type 'Re... Remove this comment to see the full error message
-    const { layoutChoice, schema, crossfilter } = this.props;
+    const { layoutChoice, schema, crossfilter, dotplot } = this.props;
     const { annoMatrix } = crossfilter;
     return (
       <ButtonGroup
         style={{
           position: "absolute",
-          display: "inherit",
+          display: dotplot ? "none" : "inherit",
           left: 8,
           bottom: 8,
           zIndex: 9999,
