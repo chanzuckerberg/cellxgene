@@ -45,7 +45,7 @@ def data_with_tmp_tiledb_annotations(ext: MatrixDataType):
 
     config.complete_config()
 
-    data = MatrixDataLoader(location=data_locator.abspath(), app_config=app_config()).open(config)
+    data = MatrixDataLoader(location=data_locator.abspath(), app_config=app_config(data_locator=data_locator.abspath())).open()
     annotations = AnnotationsHostedTileDB(
         {
             "user-annotations": True,
@@ -81,7 +81,7 @@ def data_with_tmp_annotations(ext: MatrixDataType, annotations_fixture=False):
     )
 
     config.complete_config()
-    data = MatrixDataLoader(data_locator.abspath()).open(config)
+    data = MatrixDataLoader(location=data_locator.abspath(), app_config=config).open()
     annotations = AnnotationsLocalFile(
         {
             "user-annotations": True,

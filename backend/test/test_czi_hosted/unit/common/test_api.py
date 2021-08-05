@@ -8,8 +8,8 @@ from unittest.mock import patch
 
 import requests
 
+from backend.czi_hosted.app.app import handle_api_base_url
 from backend.czi_hosted.common.config.app_config import AppConfig
-from backend.czi_hosted.data_common.matrix_loader import MatrixDataLoader
 from backend.test import decode_fbs, FIXTURES_ROOT
 from backend.test.fixtures.fixtures import pbmc3k_colors
 from backend.test.test_czi_hosted.unit import BaseTest, skip_if
@@ -511,8 +511,7 @@ brush_this_gene,,SIK1,\r
 class TestDataLocatorMockApi(BaseTest):
     @classmethod
     @patch('backend.czi_hosted.data_common.dataset_metadata.requests.get')
-    @patch('backend.czi_hosted.data_common.matrix_loader.MatrixDataLoader')
-    def setUpClass(cls, mock_matrix_loader, mock_get):
+    def setUpClass(cls, mock_get):
         cls.data_locator_api_base = "api.cellxgene.staging.single-cell.czi.technology/dp/v1"
         cls.config = AppConfig()
         cls.config.update_server_config(
@@ -526,6 +525,7 @@ class TestDataLocatorMockApi(BaseTest):
             data_locator__s3__region_name="us-east-1"
         )
         super().setUpClass(cls.config)
+
         cls.TEST_DATASET_URL_BASE = "/e/pbmc3k_v1.cxg"
         cls.TEST_URL_BASE = f"{cls.TEST_DATASET_URL_BASE}/api/v0.2/"
         cls.config.complete_config()
@@ -533,29 +533,23 @@ class TestDataLocatorMockApi(BaseTest):
             "collection_id": "4f098ff4-4a12-446b-a841-91ba3d8e3fa6",
             "collection_visibility": "PUBLIC",
             "dataset_id": "2fa37b10-ab4d-49c9-97a8-b4b3d80bf939",
-            "s3_uri": "s3://hosted-cellxgene-staging/2fa37b10-ab4d-49c9-97a8-b4b3d80bf939.cxg/",
+            "s3_uri": f"{FIXTURES_ROOT}/pbmc3k.cxg",
             "tombstoned": "False"
         })
         mock_get.return_value = MockResponse(body=cls.response_body, status_code=200)
 
-        mock_matrix_loader.return_value = MatrixDataLoader(location=f"{FIXTURES_ROOT}/pbmc3k.cxg",
-                                                           app_config=cls.config)
         cls.app.testing = True
         cls.client = cls.app.test_client()
-        os.environ["SKIP_STATIC"] = "True"
+        handle_api_base_url(cls.app, cls.config)
 
         result = cls.client.get(f"{cls.TEST_URL_BASE}schema")
         cls.schema = json.loads(result.data)
 
-        cls.assertEqual(mock_get.call_count, 1)
-        cls.assertEqual(mock_get._mock_call_args[1]['url'], f"http://{cls.data_locator_api_base}/datasets/meta?url={cls.config.server_config.get_web_base_url()}{cls.TEST_DATASET_URL_BASE}")
+        assert mock_get.call_count == 1
+        assert f"http://{mock_get._mock_call_args[1]['url']}" == f"http://{cls.data_locator_api_base}/datasets/meta?url={cls.config.server_config.get_web_base_url()}{cls.TEST_DATASET_URL_BASE}" # noqa
 
-
-    @patch('backend.czi_hosted.data_common.matrix_loader.requests.get')
-    @patch('backend.czi_hosted.data_common.matrix_loader.MatrixDataLoader')
-    def test_data_adaptor_uses_corpora_api(self, mock_matrix_loader, mock_get):
-        mock_matrix_loader.return_value = MatrixDataLoader(location=f"{FIXTURES_ROOT}/pbmc3k.cxg",
-                                                           app_config=self.config)
+    @patch('backend.czi_hosted.data_common.dataset_metadata.requests.get')
+    def test_data_adaptor_uses_corpora_api(self, mock_get):
         endpoint = "schema"
         url = f"{self.TEST_URL_BASE}{endpoint}"
         result = self.client.get(url)
@@ -573,12 +567,9 @@ class TestDataLocatorMockApi(BaseTest):
             len(result_data["schema"]["annotations"]["obs"]["columns"]), 5
         )
 
-    @patch('backend.czi_hosted.data_common.matrix_loader.requests.get')
-    @patch('backend.czi_hosted.data_common.matrix_loader.MatrixDataLoader')
-    def test_config(self, mock_matrix_loader, mock_get):
-        # mock_get.return_value = MockResponse(body=self.response_body, status_code=200)
-        mock_matrix_loader.return_value = MatrixDataLoader(location=f"{FIXTURES_ROOT}/pbmc3k.cxg",
-                                                           app_config=self.config)
+    @patch('backend.czi_hosted.data_common.dataset_metadata.requests.get')
+    def test_config(self, mock_get):
+        mock_get.return_value = MockResponse(body=self.response_body, status_code=200)
         endpoint = "config"
         url = f"{self.TEST_URL_BASE}{endpoint}"
         result = self.client.get(url)
@@ -591,12 +582,9 @@ class TestDataLocatorMockApi(BaseTest):
         # check that the dataset was cached correctly and the metadata api was not called
         self.assertEqual(mock_get.call_count, 0)
 
-    @patch('backend.czi_hosted.data_common.matrix_loader.requests.get')
-    @patch('backend.czi_hosted.data_common.matrix_loader.MatrixDataLoader')
-    def test_get_annotations_obs_fbs(self, mock_matrix_loader, mock_get):
-        # mock_get.return_value = MockResponse(body=self.response_body, status_code=200)
-        mock_matrix_loader.return_value = MatrixDataLoader(location=f"{FIXTURES_ROOT}/pbmc3k.cxg",
-                                                           app_config=self.config)
+    @patch('backend.czi_hosted.data_common.dataset_metadata.requests.get')
+    def test_get_annotations_obs_fbs(self, mock_get):
+        mock_get.return_value = MockResponse(body=self.response_body, status_code=200)
         endpoint = "annotations/obs"
         url = f"{self.TEST_URL_BASE}{endpoint}"
         header = {"Accept": "application/octet-stream"}
@@ -614,21 +602,18 @@ class TestDataLocatorMockApi(BaseTest):
         df = decode_fbs.decode_matrix_FBS(result.data)
         self.assertEqual(df["n_rows"], 2638)
 
-    @patch('backend.czi_hosted.data_common.matrix_loader.requests.get')
-    @patch('backend.czi_hosted.data_common.matrix_loader.MatrixDataLoader')
-    def test_metadata_api_called_for_new_dataset(self, mock_matrix_loader, mock_get):
+    @patch('backend.czi_hosted.data_common.dataset_metadata.requests.get')
+    def test_metadata_api_called_for_new_dataset(self, mock_get):
         self.TEST_DATASET_URL_BASE = "/e/pbmc3k_v0.cxg"
         self.TEST_URL_BASE = f"{self.TEST_DATASET_URL_BASE}/api/v0.2/"
         response_body = json.dumps({
             "collection_id": "4f098ff4-4a12-446b-a841-91ba3d8e3fa6",
             "collection_visibility": "PUBLIC",
             "dataset_id": "2fa37b10-ab4d-49c9-97a8-b4b3d80bf939",
-            "s3_uri": "s3://hosted-cellxgene-staging/2fa37b10-ab4d-49c9-97a8-b4b3d80bf939.cxg/",
+            "s3_uri": f"{FIXTURES_ROOT}/pbmc3k.cxg",
             "tombstoned": "False"
         })
         mock_get.return_value = MockResponse(body=response_body, status_code=200)
-        mock_matrix_loader.return_value = MatrixDataLoader(location=f"{FIXTURES_ROOT}/pbmc3k_v0.cxg",
-                                                           app_config=self.config)
 
         endpoint = "schema"
         url = f"{self.TEST_URL_BASE}{endpoint}"
@@ -639,19 +624,12 @@ class TestDataLocatorMockApi(BaseTest):
 
         # check that the metadata api was correctly called for the new (uncached) dataset
         self.assertEqual(mock_get.call_count, 1)
-        self.assertEqual(mock_get._mock_call_args[1]['url'], 'http://api.cellxgene.staging.single-cell.czi.technology/dp/v1/datasets/meta?url=http://localhost:5005/e/pbmc3k_v0.cxg')
+        self.assertEqual(f"http://{mock_get._mock_call_args[1]['url']}", 'http://api.cellxgene.staging.single-cell.czi.technology/dp/v1/datasets/meta?url=http://localhost:5005/e/pbmc3k_v0.cxg')
 
-    @patch('backend.czi_hosted.data_common.matrix_loader.requests.get')
+    @patch('backend.czi_hosted.data_common.dataset_metadata.requests.get')
     def test_data_locator_defaults_to_name_based_lookup_if_metadata_api_throws_error(self, mock_get):
         self.TEST_DATASET_URL_BASE = "/e/pbmc3k.cxg"
         self.TEST_URL_BASE = f"{self.TEST_DATASET_URL_BASE}/api/v0.2/"
-        response_body = json.dumps({
-            "collection_id": "4f098ff4-4a12-446b-a841-91ba3d8e3fa6",
-            "collection_visibility": "PUBLIC",
-            "dataset_id": "2fa37b10-ab4d-49c9-97a8-b4b3d80bf939",
-            "s3_uri": "s3://hosted-cellxgene-staging/2fa37b10-ab4d-49c9-97a8-b4b3d80bf939.cxg/",
-            "tombstoned": "False"
-        })
         mock_get.side_effect = HTTPException
 
         endpoint = "schema"
@@ -660,7 +638,7 @@ class TestDataLocatorMockApi(BaseTest):
 
         # check that the metadata api was correctly called for the new (uncached) dataset
         self.assertEqual(mock_get.call_count, 1)
-        self.assertEqual(mock_get._mock_call_args[1]['url'], 'http://api.cellxgene.staging.single-cell.czi.technology/dp/v1/datasets/meta?url=http://localhost:5005/e/pbmc3k.cxg')
+        self.assertEqual(f"http://{mock_get._mock_call_args[1]['url']}", 'http://api.cellxgene.staging.single-cell.czi.technology/dp/v1/datasets/meta?url=http://localhost:5005/e/pbmc3k.cxg')
 
 
         # check schema loads correctly even with metadata api exception
