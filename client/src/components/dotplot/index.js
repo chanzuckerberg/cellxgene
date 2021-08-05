@@ -83,6 +83,7 @@ class Dotplot extends React.Component {
               {!dotplot.column && "Select a column"}
             </text>
           </g>
+          {/* ASYNC HERE */}
           {dotplot.row && dotplot.column && (
             <g
               id="dotplot_interface_margin"
@@ -90,8 +91,7 @@ class Dotplot extends React.Component {
             >
               {/* Acaa1b, Mal, Foxq1 ... across the top of the dotplot */}
               <g id="dotplot_column_labels" transform="translate(14,-13)">
-                {_genes.map((_geneSymbol, _geneIndexInGeneset) => {
-                  return (
+                {_genes.map((_geneSymbol, _geneIndexInGeneset) => (
                     <text
                       key={_geneSymbol}
                       x={0}
@@ -103,13 +103,11 @@ class Dotplot extends React.Component {
                     >
                       {_geneSymbol}
                     </text>
-                  );
-                })}
+                  ))}
               </g>
               {/* loop over genes in the geneset, */}
               <g id="dotplot_columns">
-                {_genes.map((_geneSymbol, _geneIndexInGeneset) => {
-                  return (
+                {_genes.map((_geneSymbol, _geneIndexInGeneset) => (
                     <Column
                       key={_geneSymbol}
                       _geneSymbol={_geneSymbol}
@@ -118,8 +116,7 @@ class Dotplot extends React.Component {
                       rowColumnSize={this.rowColumnSize}
                       metadataField={dotplot.row}
                     />
-                  );
-                })}
+                  ))}
               </g>
             </g>
           )}
