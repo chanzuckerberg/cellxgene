@@ -38,8 +38,7 @@ class CacheItem(object):
             try:
                 # self.data = self.loader.
                 self.data = create_data_lambda(cache_key, **create_data_args)
-            except Exception as e:
-                print(e)
+            except Exception:
                 # necessary to hold the reader lock after an exception, since
                 # the release will occur when the context exits.
                 self.data_lock.w_demote()
@@ -88,12 +87,9 @@ class CacheItemInfo(object):
     This class stores a pointer to and metadata about the cached item. When the data is accessd the
     update function is called to track the latest access
     """
-    def __init__(self, cache_item, timestamp):
-        # The DataCacheItem in the cache
+    def __init__(self, cache_item: CacheItem(), timestamp):
         self.cache_item = cache_item
-        # The last time the cache_item was accessed
         self.last_access = timestamp
-        # The number of times the cache_item was accessed (used for testing)
         self.num_access = 1
 
     def update_latest_cache_access(self):
@@ -118,9 +114,9 @@ class CacheManager(object):
     # lead to a dataset being deleted and a new only being opened: the cache will get thrashed.
     # In this case, we may need to send back a 503 (Server Unavailable), or some other error message.
 
-    # NOTE:  If the actual dataset is changed.  E.g. a new set of datafiles replaces an existing set,
-    # then the cache will not react to this, however once the cache time limit is reached, the dataset
-    # will automatically be refreshed.
+    # NOTE:  If the actual dataset is changed.  E.g. a new set of datafiles replaces an existing set, or the location
+    # of the data is updated then the cache will not react to this, however once the cache time limit is reached,
+    # the data will automatically be refreshed.
 
     def __init__(self, max_cached: int, timelimit_s: int=None):
         self.data = {}
@@ -128,14 +124,14 @@ class CacheManager(object):
         # lock to protect the datasets
         self.lock = threading.Lock()
 
-        #  The number of datasets to cache.  When max_cached is reached, the least recently used
+        #  The number of items to cache.  When max_cached is reached, the least recently used
         #  cache is replaced with the newly requested one.
-        #  TODO:  This is very simple.  When used to cache the actual datasets this can be improved by taking into
-        #   account how much space is actually taken by each dataset, instead of arbitrarily picking a
-        #   max number to cache.
+        #  TODO:  This is very simple.  When this class is used to cache the actual datasets
+        #   this can be improved by taking into account how much space is actually taken by each dataset,
+        #   instead of arbitrarily picking a max number to cache.
         self.max_cached = max_cached
 
-        # items are automatically removed from the cache once this time limit is reached
+        # items are automatically removed from the cache once this time limit (in seconds) is reached
         self.timelimit_s = timelimit_s
 
     @contextmanager
@@ -143,7 +139,6 @@ class CacheManager(object):
         """"
         If no data is stored under the given cache_key, pass the create_data_lamba to the CacheItem.get method
         """
-
 
         delete_adaptor = None
         desired_data = None
@@ -176,7 +171,7 @@ class CacheManager(object):
                 desired_data = cache_item.get(cache_key)
 
             yield desired_data
-        except (DatasetAccessError, DatasetNotFoundException) as e:
+        except (DatasetAccessError, DatasetNotFoundException):
             cache_item.release()
             with self.lock:
                 del self.data[cache_key]

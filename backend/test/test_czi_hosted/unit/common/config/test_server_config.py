@@ -281,12 +281,14 @@ class TestServerConfig(ConfigTests):
         self.assertEqual(json.loads(response.data)["status"], "pass")
 
         # access a dataset (no slash)
-        response = session.get("/set2/pbmc3k.cxg")
-        self.assertEqual(response.status_code, 200)
+        with self.subTest("access a dataset without a trailing a slash"):
+            response = session.get("/set2/pbmc3k.cxg")
+            self.assertEqual(response.status_code, 200)
 
         # access a dataset (with slash)
-        response = session.get("/set2/pbmc3k.cxg/")
-        self.assertEqual(response.status_code, 200)
+        with self.subTest("access a dataset with a slash"):
+            response = session.get("/set2/pbmc3k.cxg/")
+            self.assertEqual(response.status_code, 200)
 
     @patch("backend.czi_hosted.common.config.server_config.diffexp_tiledb.set_config")
     def test_handle_diffexp(self, mock_tiledb_config):

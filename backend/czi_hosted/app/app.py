@@ -77,8 +77,6 @@ def dataset_index(url_dataroot=None, dataset=None):
     if dataset is None:
         if app_config.is_multi_dataset():
             return dataroot_index()
-        else:
-            location = server_config.single_dataset__datapath
     else:
         dataroot = None
         for key, dataroot_dict in server_config.multi_dataset__dataroot.items():
@@ -87,27 +85,16 @@ def dataset_index(url_dataroot=None, dataset=None):
                 break
         if dataroot is None:
             abort(HTTPStatus.NOT_FOUND)
-        location = path_join(dataroot, dataset)
 
     dataset_config = app_config.get_dataset_config(dataroot)
     scripts = dataset_config.app__scripts
     inline_scripts = dataset_config.app__inline_scripts
 
     try:
-        dataset_metadata_manager = current_app.dataset_metadata_cache_manager
-        matrix_cache_manager = current_app.matrix_data_cache_manager
-        with dataset_metadata_manager.data_adaptor(cache_key=f"{url_dataroot}/{dataset}",
-                                                   create_data_lambda=get_dataset_metadata,
-                                                   create_data_args={"app_config": app_config}) as dataset_location:
-            with matrix_cache_manager.data_adaptor(
-                cache_key=dataset_location,
-                create_data_lambda=MatrixDataLoader(dataset_location, app_config=app_config).validate_and_open,
-                create_data_args={"dataset_config": dataset_config}
-            ) as data_adaptor:
-                data_adaptor.set_uri_path(f"{url_dataroot}/{dataset}")
-                args = {"SCRIPTS": scripts, "INLINE_SCRIPTS": inline_scripts}
-                return render_template("index.html", **args)
-
+        with get_data_adaptor(url_dataroot=url_dataroot, dataset=dataset) as data_adaptor:
+            data_adaptor.set_uri_path(f"{url_dataroot}/{dataset}")
+            args = {"SCRIPTS": scripts, "INLINE_SCRIPTS": inline_scripts}
+            return render_template("index.html", **args)
 
     except DatasetAccessError as e:
         return common_rest.abort_and_log(
@@ -122,15 +109,6 @@ def handle_request_exception(error):
 
 def get_data_adaptor(url_dataroot=None, dataset=None):
     app_config = current_app.app_config
-    # dataroot = None
-    # for key, dataroot_dict in app_config.server_config.multi_dataset__dataroot.items():
-    #     if dataroot_dict["base_url"] == url_dataroot:
-    #         dataroot = key
-    #         break
-    # if dataroot:
-    #     dataset_config = app_config.get_dataset_config(dataroot)
-    # else:
-    #     dataset_config = app_config.default_dataset_config
     dataset_metadata_manager = current_app.dataset_metadata_cache_manager
     matrix_cache_manager = current_app.matrix_data_cache_manager
     with dataset_metadata_manager.data_adaptor(
@@ -139,7 +117,7 @@ def get_data_adaptor(url_dataroot=None, dataset=None):
             create_data_args={"app_config": app_config}
     ) as dataset_metadata:
         return matrix_cache_manager.data_adaptor(
-            cache_key=dataset_metadata['s3_uri'],
+            cache_key=f"{url_dataroot}/{dataset}",
             create_data_lambda=MatrixDataLoader(
                 location=dataset_metadata['s3_uri'],
                 url_dataroot = url_dataroot,
@@ -202,7 +180,7 @@ def dataroot_test_index():
         for fname in locator.ls():
             location = path_join(dataroot, fname)
             try:
-                MatrixDataLoader(location, app_config=config)
+                MatrixDataLoader(location, url_dataroot=url_dataroot, app_config=config)
                 datasets.append((url_dataroot, fname))
             except DatasetAccessError:
                 # skip over invalid datasets
@@ -254,7 +232,7 @@ class SchemaAPI(DatasetResource):
 
 
 class ConfigAPI(DatasetResource):
-    # @cache_control(public=True, max_age=ONE_WEEK)
+    @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.config_get(current_app.app_config, data_adaptor)

@@ -6,7 +6,6 @@ import requests
 from backend.common.utils.utils import path_join
 from backend.common.errors import DatasetAccessError
 import backend.czi_hosted.common.rest as common_rest
-from backend.czi_hosted.common.config import app_config
 
 
 def get_dataset_metadata_from_data_portal(data_portal_api_base: str, explorer_url: str):
@@ -32,10 +31,10 @@ def get_dataset_metadata_from_data_portal(data_portal_api_base: str, explorer_ur
 def get_dataset_metadata(location: str, **kwargs):
     """
     Given the dataset access location(the path to view the dataset in the explorer including the dataset root,
-    also used as the cache key) and the explorer web base url (in the app_config)
-     return a dataset_metadata object with the dataset storage location available under s3_uri
+    also used as the cache key) and the explorer web base url (in the app_config) return a dataset_metadata object
+    with the dataset storage location available under s3_uri
     """
-    app_config = kwargs["app_config"]
+    app_config = kwargs.get("app_config", None)
     if app_config and app_config.server_config.data_locator__api_base:
         explorer_url_path = f"{app_config.server_config.get_web_base_url()}/{location}"
         dataset_metadata = get_dataset_metadata_from_data_portal(
@@ -52,14 +51,15 @@ def get_dataset_metadata(location: str, **kwargs):
         "s3_uri": None,
         "tombstoned": False
     }
-    # TODO @mdunitz remove after fork, update config to remove single_dataset option, the multiroot lookup will need to remain while we support covid 19 cell atlas
+    # TODO @mdunitz remove after fork, update config to remove single_dataset option, the multiroot lookup will need to
+    #  remain while we support covid 19 cell atlas
     if server_config.single_dataset__datapath:
         datapath = server_config.single_dataset__datapath
         dataset_metadata["s3_uri"] = datapath
     else:
         location = location.split("/")
         dataset = location.pop(-1)
-        url_dataroot = "/".join(location) # TODO check that this returns dataroot (called on e/dataset_id.cxg not /e/dataset_id.cxg)
+        url_dataroot = "/".join(location)
         dataroot = None
         for key, dataroot_dict in server_config.multi_dataset__dataroot.items():
             if dataroot_dict["base_url"] == url_dataroot:
@@ -77,7 +77,5 @@ def get_dataset_metadata(location: str, **kwargs):
         dataset_metadata["s3_uri"] = datapath
     if dataset_metadata["s3_uri"] is None:
         return common_rest.abort_and_log(HTTPStatus.BAD_REQUEST, "Invalid dataset NONE", loglevel=logging.INFO)
-
-    print(dataset_metadata)
     return dataset_metadata
 
