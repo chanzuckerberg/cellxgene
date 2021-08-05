@@ -19,7 +19,6 @@ class CacheItem(object):
     During that time, the data cannot be removed or updated."""
 
     def __init__(self):
-        # self.loader = loader
         self.data_lock = RWLock()
         self.data = None
 

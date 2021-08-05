@@ -521,7 +521,6 @@ class TestDataLocatorMockApi(BaseTest):
             authentication__insecure_test_environment=True,
             app__flask_secret_key="testing",
             app__debug=True,
-            app__api_base_url="local",
             data_locator__s3__region_name="us-east-1"
         )
         super().setUpClass(cls.config)
