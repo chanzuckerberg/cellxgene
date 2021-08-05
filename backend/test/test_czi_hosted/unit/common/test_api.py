@@ -539,7 +539,6 @@ class TestDataLocatorMockApi(BaseTest):
 
         cls.app.testing = True
         cls.client = cls.app.test_client()
-        handle_api_base_url(cls.app, cls.config)
 
         result = cls.client.get(f"{cls.TEST_URL_BASE}schema")
         cls.schema = json.loads(result.data)
@@ -623,7 +622,7 @@ class TestDataLocatorMockApi(BaseTest):
 
         # check that the metadata api was correctly called for the new (uncached) dataset
         self.assertEqual(mock_get.call_count, 1)
-        self.assertEqual(f"http://{mock_get._mock_call_args[1]['url']}", 'http://api.cellxgene.staging.single-cell.czi.technology/dp/v1/datasets/meta?url=http://localhost:5005/e/pbmc3k_v0.cxg')
+        self.assertEqual(f"http://{mock_get._mock_call_args[1]['url']}", 'http://api.cellxgene.staging.single-cell.czi.technology/dp/v1/datasets/meta?url=None/e/pbmc3k_v0.cxg')
 
     @patch('backend.czi_hosted.data_common.dataset_metadata.requests.get')
     def test_data_locator_defaults_to_name_based_lookup_if_metadata_api_throws_error(self, mock_get):
@@ -637,7 +636,7 @@ class TestDataLocatorMockApi(BaseTest):
 
         # check that the metadata api was correctly called for the new (uncached) dataset
         self.assertEqual(mock_get.call_count, 1)
-        self.assertEqual(f"http://{mock_get._mock_call_args[1]['url']}", 'http://api.cellxgene.staging.single-cell.czi.technology/dp/v1/datasets/meta?url=http://localhost:5005/e/pbmc3k.cxg')
+        self.assertEqual(f"http://{mock_get._mock_call_args[1]['url']}", 'http://api.cellxgene.staging.single-cell.czi.technology/dp/v1/datasets/meta?url=None/e/pbmc3k.cxg')
 
 
         # check schema loads correctly even with metadata api exception
