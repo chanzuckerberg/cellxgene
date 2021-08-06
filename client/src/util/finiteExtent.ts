@@ -6,8 +6,7 @@ If undefined or empty array, or array contains only non-finite numbers,
 will return [undefined, undefined]
 */
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-function finiteExtent(tarr: any) {
+function finiteExtent(tarr: Array<number>) {
   let min;
   let max;
   let i;

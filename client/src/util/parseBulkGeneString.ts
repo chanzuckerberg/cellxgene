@@ -6,7 +6,6 @@
 import pull from "lodash.pull";
 import uniq from "lodash.uniq";
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export default function parseBulkGeneString(geneString: any) {
+export default function parseBulkGeneString(geneString: string) {
   return pull(uniq(geneString.split(/[ ,]+/)), "");
 }

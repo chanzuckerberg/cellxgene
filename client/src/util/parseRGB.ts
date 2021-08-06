@@ -6,13 +6,13 @@ import scaleRGB from "./scaleRGB";
 //
 const colorCache = {};
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-function parseColorName(c: any) {
+function parseColorName(c: string) {
   if (c[0] !== "#") {
     const _c = c.replace(/[^\d,.]/g, "").split(",");
     return [scaleRGB(+_c[0]), scaleRGB(+_c[1]), scaleRGB(+_c[2])];
   }
   const parsedHex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(c);
+  // typescript probably wants a check on the existence o parsedHex since regex could be null
   return [
     // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
     scaleRGB(parseInt(parsedHex[1], 16)),
@@ -23,13 +23,10 @@ function parseColorName(c: any) {
   ];
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export default (c: any) => {
-  // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+export default (c: string) => {
   let cv = colorCache[c];
   if (!cv) {
     cv = parseColorName(c);
-    // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     colorCache[c] = cv;
   }
   return cv;

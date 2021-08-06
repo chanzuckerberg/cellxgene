@@ -10,13 +10,13 @@ import significantDigits from "./significantDigits";
  * @returns - the number formatted as scientific, if it's big enough
  */
 
+// this type needs to come from https://www.npmjs.com/package/@types/d3-axis
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export default function maybeScientific(x: any) {
   let format = ",";
   const _ticks = x.ticks(4);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  if (x.domain().some((n: any) => Math.abs(n) >= 10000)) {
+  if (x.domain().some((n: number) => Math.abs(n) >= 10000)) {
     /* 
           heuristic: if the last tick d3 wants to render has one significant
           digit ie., 2000, render 2e+3, but if it's anything else ie., 42000000 render
