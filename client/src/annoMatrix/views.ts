@@ -4,37 +4,59 @@
 Views on the annomatrix.  all API here is defined in viewCreators.js and annoMatrix.js.
 */
 import clip from "../util/clip";
-import AnnoMatrix from "./annoMatrix";
-import { _whereCacheCreate } from "./whereCache";
+import AnnoMatrix, { ObsColumnValue } from "./annoMatrix";
+import { _whereCacheCreate, WhereCache } from "./whereCache";
 import { _isContinuousType, _getColumnSchema } from "./schema";
+import {
+  Dataframe,
+  DenseInt32Index,
+  IdentityInt32Index,
+  KeyIndex,
+} from "../util/dataframe";
+import { Query } from "./query";
+import {
+  AnnotationColumnSchema,
+  ArraySchema,
+  Field,
+  EmbeddingSchema,
+} from "../common/types/schema";
+import { AnyArray } from "../common/types/arraytypes";
 
-class AnnoMatrixView extends AnnoMatrix {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  constructor(viewOf: any, rowIndex = null) {
-    // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
+type MapFn = (
+  field: Field,
+  colLabel: string,
+  colSchema: ArraySchema,
+  colData: string[],
+  df: Dataframe
+) => string[];
+
+abstract class AnnoMatrixView extends AnnoMatrix {
+  constructor(
+    viewOf: AnnoMatrix,
+    rowIndex: DenseInt32Index | IdentityInt32Index | KeyIndex | null = null
+  ) {
     const nObs = rowIndex ? rowIndex.size() : viewOf.nObs;
     super(viewOf.schema, nObs, viewOf.nVar, rowIndex || viewOf.rowIndex);
     this.viewOf = viewOf;
     this.isView = true;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  addObsAnnoCategory(col: any, category: any) {
+  addObsAnnoCategory(col: string, category: string): AnnoMatrix {
     const newAnnoMatrix = this._clone();
+    // @ts-expect-error ts-migrate --- TODO revisit:
+    // `this.viewOf`: Object is possibly 'undefined'.
     newAnnoMatrix.viewOf = this.viewOf.addObsAnnoCategory(col, category);
     newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
     return newAnnoMatrix;
   }
 
   async removeObsAnnoCategory(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    col: any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    category: any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    unassignedCategory: any
-  ) {
+    col: string,
+    category: string,
+    unassignedCategory: string
+  ): Promise<AnnoMatrix> {
     const newAnnoMatrix = this._clone();
+    // @ts-expect-error ts-migrate --- TODO revisit: see comments on L46
     newAnnoMatrix.viewOf = await this.viewOf.removeObsAnnoCategory(
       col,
       category,
@@ -44,34 +66,42 @@ class AnnoMatrixView extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  dropObsColumn(col: any) {
+  dropObsColumn(col: string): AnnoMatrix {
     const newAnnoMatrix = this._clone();
+    // @ts-expect-error ts-migrate --- TODO revisit: see comments on L46
     newAnnoMatrix.viewOf = this.viewOf.dropObsColumn(col);
     newAnnoMatrix._cache.obs = this._cache.obs.dropCol(col);
     newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
     return newAnnoMatrix;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  addObsColumn(colSchema: any, Ctor: any, value: any) {
+  addObsColumn<T extends ObsColumnValue>(
+    colSchema: AnnotationColumnSchema,
+    Ctor: new (n: number) => T[],
+    value: T | T[]
+  ): AnnoMatrix {
     const newAnnoMatrix = this._clone();
+    // @ts-expect-error ts-migrate --- TODO revisit: see comments on L46
     newAnnoMatrix.viewOf = this.viewOf.addObsColumn(colSchema, Ctor, value);
     newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
     return newAnnoMatrix;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  renameObsColumn(oldCol: any, newCol: any) {
+  renameObsColumn(oldCol: string, newCol: string): AnnoMatrix {
     const newAnnoMatrix = this._clone();
+    // @ts-expect-error ts-migrate --- TODO revisit: see comments on L46
     newAnnoMatrix.viewOf = this.viewOf.renameObsColumn(oldCol, newCol);
     newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
     return newAnnoMatrix;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  async setObsColumnValues(col: any, rowLabels: any, value: any) {
+  async setObsColumnValues(
+    col: string,
+    rowLabels: Int32Array,
+    value: ObsColumnValue
+  ): Promise<AnnoMatrix> {
     const newAnnoMatrix = this._clone();
+    // @ts-expect-error ts-migrate --- TODO revisit: see comments on L46
     newAnnoMatrix.viewOf = await this.viewOf.setObsColumnValues(
       col,
       rowLabels,
@@ -82,9 +112,13 @@ class AnnoMatrixView extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  async resetObsColumnValues(col: any, oldValue: any, newValue: any) {
+  async resetObsColumnValues<T extends ObsColumnValue>(
+    col: string,
+    oldValue: T,
+    newValue: T
+  ): Promise<AnnoMatrix> {
     const newAnnoMatrix = this._clone();
+    // @ts-expect-error ts-migrate --- TODO revisit: see comments on L46
     newAnnoMatrix.viewOf = await this.viewOf.resetObsColumnValues(
       col,
       oldValue,
@@ -95,9 +129,9 @@ class AnnoMatrixView extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  addEmbedding(colSchema: any) {
+  addEmbedding(colSchema: EmbeddingSchema): AnnoMatrix {
     const newAnnoMatrix = this._clone();
+    // @ts-expect-error ts-migrate --- TODO revisit: see comments on L46
     newAnnoMatrix.viewOf = this.viewOf.addEmbedding(colSchema);
     newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
     return newAnnoMatrix;
@@ -105,25 +139,33 @@ class AnnoMatrixView extends AnnoMatrix {
 }
 
 class AnnoMatrixMapView extends AnnoMatrixView {
+  mapFn: MapFn;
+
   /*
-	A view which knows how to transform its data.
-	*/
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'viewOf' implicitly has an 'any' type.
-  constructor(viewOf, mapFn) {
+    A view which knows how to transform its data.
+    */
+  constructor(viewOf: AnnoMatrix, mapFn: MapFn) {
     super(viewOf);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    (this as any).mapFn = mapFn;
+    this.mapFn = mapFn;
   }
 
-  // @ts-expect-error ts-migrate(2416) FIXME: Property '_doLoad' in type 'AnnoMatrixMapView' is ... Remove this comment to see the full error message
-  async _doLoad(field, query) {
+  async _doLoad(
+    field: Field,
+    query: Query
+  ): Promise<[WhereCache | null, Dataframe]> {
+    // @ts-expect-error ts-migrate --- TODO revisit:
+    // `this.viewOf`: Object is possibly 'undefined'.
     const df = await this.viewOf._fetch(field, query);
-    // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'colData' implicitly has an 'any' type.
-    const dfMapped = df.mapColumns((colData, colIdx) => {
+    // @ts-expect-error ts-migrate --- TODO revisit:
+    // `df`: Object is possibly 'undefined'.
+    const dfMapped = df.mapColumns((colData: string[], colIdx: number) => {
+      // @ts-expect-error ts-migrate --- TODO revisit:
+      // `df`: Object is possibly 'undefined'.
       const colLabel = df.colIndex.getLabel(colIdx);
       const colSchema = _getColumnSchema(this.schema, field, colLabel);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-      return (this as any).mapFn(field, colLabel, colSchema, colData, df);
+      // @ts-expect-error ts-migrate --- TODO revisit:
+      // `df`: Object is possibly 'undefined'.
+      return this.mapFn(field, colLabel, colSchema, colData, df);
     });
     const whereCacheUpdate = _whereCacheCreate(
       field,
@@ -135,45 +177,59 @@ class AnnoMatrixMapView extends AnnoMatrixView {
 }
 
 export class AnnoMatrixClipView extends AnnoMatrixMapView {
+  clipRange: [number, number];
+
+  isClipped: boolean;
+
   /*
-	A view which is a clipped transformation of its parent
-	*/
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'viewOf' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  constructor(viewOf, qmin, qmax) {
-    // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
-    super(viewOf, (field, colLabel, colSchema, colData, df) =>
-      _clipAnnoMatrix(field, colLabel, colSchema, colData, df, qmin, qmax)
+    A view which is a clipped transformation of its parent
+    */
+  constructor(viewOf: AnnoMatrix, qmin: number, qmax: number) {
+    super(
+      viewOf,
+      (
+        field: Field,
+        colLabel: string,
+        colSchema: ArraySchema,
+        colData: string[],
+        df: Dataframe
+      ) => _clipAnnoMatrix(field, colLabel, colSchema, colData, df, qmin, qmax)
     );
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    (this as any).isClipped = true;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    (this as any).clipRange = [qmin, qmax];
+    this.isClipped = true;
+    this.clipRange = [qmin, qmax];
     Object.seal(this);
   }
 }
 
 export class AnnoMatrixRowSubsetView extends AnnoMatrixView {
   /*
-	A view which is a subset of total rows.
-	*/
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'viewOf' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  constructor(viewOf, rowIndex) {
+    A view which is a subset of total rows.
+    */
+  constructor(
+    viewOf: AnnoMatrix,
+    rowIndex: DenseInt32Index | IdentityInt32Index | KeyIndex
+  ) {
     super(viewOf, rowIndex);
     Object.seal(this);
   }
 
-  // @ts-expect-error ts-migrate(2416) FIXME: Property '_doLoad' in type 'AnnoMatrixRowSubsetVie... Remove this comment to see the full error message
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  async _doLoad(field, query) {
+  async _doLoad(
+    field: Field,
+    query: Query
+  ): Promise<[WhereCache | null, Dataframe]> {
+    // @ts-expect-error ts-migrate --- TODO revisit:
+    // `this.viewOf`: Object is possibly 'undefined'.
     const df = await this.viewOf._fetch(field, query);
 
     // don't try to row-subset the var dimension.
-    if (field === "var") {
+    if (field === Field.var) {
+      // @ts-expect-error ts-migrate --- TODO revisit:
+      // `df`:  Type 'Dataframe | undefined' is not assignable to type 'Dataframe'. Type 'undefined' is not assignable to type 'Dataframe'.
       return [null, df];
     }
 
+    // @ts-expect-error ts-migrate --- TODO revisit:
+    // `df`: Object is possibly 'undefined'.
     const dfSubset = df.subset(null, null, this.rowIndex);
     const whereCacheUpdate = _whereCacheCreate(
       field,
@@ -188,10 +244,17 @@ export class AnnoMatrixRowSubsetView extends AnnoMatrixView {
 Utility functions below
 */
 
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
-function _clipAnnoMatrix(field, colLabel, colSchema, colData, df, qmin, qmax) {
+function _clipAnnoMatrix<T extends AnyArray>(
+  field: Field,
+  colLabel: string,
+  colSchema: ArraySchema,
+  colData: T,
+  df: Dataframe,
+  qmin: number,
+  qmax: number
+): T {
   /* only clip obs and var scalar columns */
-  if (field !== "obs" && field !== "X") return colData;
+  if (field !== Field.obs && field !== Field.X) return colData;
   if (!_isContinuousType(colSchema)) return colData;
   if (qmin < 0) qmin = 0;
   if (qmax > 1) qmax = 1;

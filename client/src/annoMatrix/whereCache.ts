@@ -2,7 +2,7 @@
 Private support functions.
 
 This implements a query resolver cache, mapping a query onto the column labels
-resolved by that query. These labels are then used to manage the acutal data cache,
+resolved by that query. These labels are then used to manage the actual data cache,
 which stores data by the resolved label.
 
 There are three query forms:
@@ -49,19 +49,32 @@ creates a cache entry of:
 }
 */
 import { _getColumnDimensionNames } from "./schema";
-import { _hashStringValues } from "./query";
+import { _hashStringValues, Query } from "./query";
+import { Field, Schema } from "../common/types/schema";
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
+export interface WhereCache {
+  summarize?: {
+    [key: string]: {
+      [key: string]: WhereCacheTerms;
+    };
+  };
+  where?: {
+    [key: string]: WhereCacheTerms;
+  };
+}
+
+export type WhereCacheColumnLabels = string[] | number[] | Int32Array;
+
+interface WhereCacheTerms {
+  [key: string]: Map<string, Map<string, WhereCacheColumnLabels>>;
+}
+
 export function _whereCacheGet(
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  whereCache: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  schema: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  field: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  query: any
-) {
+  whereCache: WhereCache,
+  schema: Schema,
+  field: Field,
+  query: Query
+): WhereCacheColumnLabels | [undefined] {
   /* 
 	query will either be an where query (object) or a column name (string).
 
@@ -69,7 +82,7 @@ export function _whereCacheGet(
 	*/
 
   if (typeof query === "object") {
-    if (query.where) {
+    if ("where" in query) {
       const {
         field: queryField,
         column: queryColumn,
@@ -78,7 +91,7 @@ export function _whereCacheGet(
       const columnMap = whereCache?.where?.[field]?.[queryField];
       return columnMap?.get(queryColumn)?.get(queryValue) ?? [undefined];
     }
-    if (query.summarize) {
+    if ("summarize" in query) {
       const {
         method,
         field: queryField,
@@ -95,15 +108,17 @@ export function _whereCacheGet(
   return _getColumnDimensionNames(schema, field, query) ?? [undefined];
 }
 
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export function _whereCacheCreate(field, query, columnLabels) {
+export function _whereCacheCreate(
+  field: Field,
+  query: Query,
+  columnLabels: string[] | number[]
+): WhereCache | null {
   /*
 	Create a new whereCache
 	*/
   if (typeof query !== "object") return null;
 
-  if (query.where) {
+  if ("where" in query) {
     const {
       field: queryField,
       column: queryColumn,
@@ -119,7 +134,7 @@ export function _whereCacheCreate(field, query, columnLabels) {
       },
     };
   }
-  if (query.summarize) {
+  if ("summarize" in query) {
     const {
       method,
       field: queryField,
@@ -143,23 +158,25 @@ export function _whereCacheCreate(field, query, columnLabels) {
   return {};
 }
 
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'dst' implicitly has an 'any' type.
-function __mergeQueries(dst, src) {
+function __mergeQueries(dst: WhereCacheTerms, src: WhereCacheTerms) {
   for (const [queryField, columnMap] of Object.entries(src)) {
     dst[queryField] = dst[queryField] || new Map();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    for (const [queryColumn, valueMap] of columnMap as any) {
+    for (const [queryColumn, valueMap] of columnMap) {
       if (!dst[queryField].has(queryColumn))
         dst[queryField].set(queryColumn, new Map());
       for (const [queryValue, columnLabels] of valueMap) {
+        // @ts-expect-error ts-migrate --- TODO revisit:
+        // `dst[queryField].get(queryColumn)` Object is possibly 'undefined'.
         dst[queryField].get(queryColumn).set(queryValue, columnLabels);
       }
     }
   }
 }
 
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'dst' implicitly has an 'any' type.
-function __whereCacheMerge(dst, src) {
+function __whereCacheMerge(
+  dst: WhereCache,
+  src: WhereCache | null
+): WhereCache {
   /*
 	merge src into dst (modifies dst)
 	*/
@@ -176,7 +193,6 @@ function __whereCacheMerge(dst, src) {
     dst.summarize = dst.summarize || {};
     for (const [field, method] of Object.entries(src.summarize)) {
       dst.summarize[field] = dst.summarize[field] || {};
-      // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
       for (const [methodName, query] of Object.entries(method)) {
         dst.summarize[field][methodName] =
           dst.summarize[field][methodName] || {};
@@ -187,8 +203,6 @@ function __whereCacheMerge(dst, src) {
   return dst;
 }
 
-// @ts-expect-error ts-migrate(7019) FIXME: Rest parameter 'caches' implicitly has an 'any[]' ... Remove this comment to see the full error message
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export function _whereCacheMerge(...caches) {
-  return caches.reduce(__whereCacheMerge, {});
+export function _whereCacheMerge(...caches: (WhereCache | null)[]): WhereCache {
+  return caches.reduce(__whereCacheMerge, {} as WhereCache);
 }

@@ -1,22 +1,51 @@
 import sha1 from "sha1";
 import { _dubEncURIComp } from "./fetchHelpers";
+import { Field } from "../common/types/schema";
 
 /**
  * Query utilities, mostly for debugging support and validation.
  */
 
+export type ComplexQuery = SummarizeQuery | WhereQuery;
+
+export type Query = string | ComplexQuery;
+
+interface SummarizeQuery {
+  summarize: SummarizeQueryTerm;
+}
+
+interface SummarizeQueryTerm {
+  column: string;
+  field: string;
+  method: string;
+  values: string[];
+}
+
+interface WhereQuery {
+  where: WhereQueryTerm;
+}
+
+interface WhereQueryTerm {
+  column: string;
+  field: string;
+  value: string;
+}
+
+export function _expectSimpleQuery(query: Query): void {
+  if (typeof query === "object") throw new Error("expected simple query");
+}
+
 /**
  * Normalize & error check the query.
- * @param {object | string} query - the query
- * @returns {object | string} - the normalized query
+ * @param {Query} query - the query
+ * @returns {Query} - the normalized query
  */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function _queryValidate(query: any) {
+export function _queryValidate(query: Query): Query {
   if (typeof query !== "object") return query;
 
-  if (query.where && query.summarize)
+  if ("where" in query && "summarize" in query)
     throw new Error("query may not specify both where and summarize");
-  if (query.where) {
+  if ("where" in query) {
     const {
       field: queryField,
       column: queryColumn,
@@ -26,7 +55,7 @@ export function _queryValidate(query: any) {
       throw new Error("Incomplete where query");
     return query;
   }
-  if (query.summarize) {
+  if ("summarize" in query) {
     const {
       field: queryField,
       column: queryColumn,
@@ -41,13 +70,7 @@ export function _queryValidate(query: any) {
   throw new Error("query must specify one of where or summarize");
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function _expectSimpleQuery(query: any) {
-  if (typeof query === "object") throw new Error("expected simple query");
-}
-
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function _expectComplexQuery(query: any) {
+export function _expectComplexQuery(query: Query): void {
   if (typeof query !== "object") throw new Error("expected complex query");
 }
 
@@ -56,13 +79,12 @@ export function _expectComplexQuery(query: any) {
  *
  * @param {string} field
  * @param {string|object} query
- * @returns the key
+ * @returns {string} the key
  */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function _queryCacheKey(field: any, query: any) {
+export function _queryCacheKey(field: Field, query: Query): string {
   if (typeof query === "object") {
     // complex query
-    if (query.where) {
+    if ("where" in query) {
       const {
         field: queryField,
         column: queryColumn,
@@ -70,7 +92,7 @@ export function _queryCacheKey(field: any, query: any) {
       } = query.where;
       return `${field}/${queryField}/${queryColumn}/${queryValue}`;
     }
-    if (query.summarize) {
+    if ("summarize" in query) {
       const {
         method,
         field: queryField,
@@ -88,38 +110,34 @@ export function _queryCacheKey(field: any, query: any) {
   return `${field}/${query}`;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-function _urlEncodeWhereQuery(q: any) {
+function _urlEncodeWhereQuery(q: WhereQueryTerm): string {
   const { field: queryField, column: queryColumn, value: queryValue } = q;
   return `${_dubEncURIComp(queryField)}:${_dubEncURIComp(
     queryColumn
   )}=${_dubEncURIComp(queryValue)}`;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-function _urlEncodeSummarizeQuery(q: any) {
+function _urlEncodeSummarizeQuery(q: SummarizeQueryTerm): string {
   const { method, field, column, values } = q;
-  const filter = values // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    .map((value: any) => _urlEncodeWhereQuery({ field, column, value }))
+  const filter = values
+    .map((value: string) => _urlEncodeWhereQuery({ field, column, value }))
     .join("&");
   return `method=${method}&${filter}`;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function _urlEncodeComplexQuery(q: any) {
+export function _urlEncodeComplexQuery(q: ComplexQuery): string {
   if (typeof q === "object") {
-    if (q.where) {
+    if ("where" in q) {
       return _urlEncodeWhereQuery(q.where);
     }
-    if (q.summarize) {
+    if ("summarize" in q) {
       return _urlEncodeSummarizeQuery(q.summarize);
     }
   }
   throw new Error("Unrecognized complex query type");
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function _urlEncodeLabelQuery(colKey: any, q: any) {
+export function _urlEncodeLabelQuery(colKey: string, q: Query): string {
   if (!colKey) throw new Error("Unsupported query by name");
   if (typeof q !== "string") throw new Error("Query must be a simple label.");
   return `${colKey}=${encodeURIComponent(q)}`;
@@ -128,8 +146,6 @@ export function _urlEncodeLabelQuery(colKey: any, q: any) {
 /**
  * Generate the column key the server will send us for this query.
  */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function _hashStringValues(arrayOfString: any) {
-  const hash = sha1(arrayOfString.join(""));
-  return hash;
+export function _hashStringValues(arrayOfString: string[]): string {
+  return sha1(arrayOfString.join(""));
 }

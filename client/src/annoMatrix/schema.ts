@@ -1,37 +1,51 @@
 /*
 Private helper functions related to schema
 */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function _getColumnSchema(schema: any, field: any, col: any) {
+import {
+  AnnotationColumnSchema,
+  ArraySchema,
+  Field,
+  Schema,
+} from "../common/types/schema";
+
+export function _getColumnSchema(
+  schema: Schema,
+  field: Field,
+  col: string
+): ArraySchema {
   /* look up the column definition */
   switch (field) {
-    case "obs":
+    case Field.obs:
       if (typeof col === "object")
         throw new Error("unable to get column schema by query");
       return schema.annotations.obsByName[col];
-    case "var":
+    case Field.var:
       if (typeof col === "object")
         throw new Error("unable to get column schema by query");
       return schema.annotations.varByName[col];
-    case "emb":
+    case Field.emb:
       if (typeof col === "object")
         throw new Error("unable to get column schema by query");
       return schema.layout.obsByName[col];
-    case "X":
+    case Field.X:
       return schema.dataframe;
     default:
       throw new Error(`unknown field name: ${field}`);
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function _isIndex(schema: any, field: any, col: any): boolean {
+export function _isIndex(schema: Schema, field: Field, col: string): boolean {
+  // @ts-expect-error ts-migrate --- TODO revisit:
+  // `schema.annotations?.[field]`: Element implicitly has an 'any' type because expression of type 'Field' can't be used to index type 'AnnotationsSchema'. Property '[Field.emb]' does not exist on type 'AnnotationsSchema'.
   const index = schema.annotations?.[field].index;
   return index && index === col;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-export function _getColumnDimensionNames(schema: any, field: any, col: any) {
+export function _getColumnDimensionNames(
+  schema: Schema,
+  field: Field,
+  col: string
+): string[] | undefined {
   /*
 		field/col may be an alias for multiple columns. Currently used to map ND 
 		values to 1D dataframe columns for embeddings/layout. Signified by the presence
@@ -41,40 +55,33 @@ export function _getColumnDimensionNames(schema: any, field: any, col: any) {
   if (!colSchema) {
     return undefined;
   }
-  return colSchema.dims || [col];
+  if ("dims" in colSchema) {
+    return colSchema.dims;
+  }
+  return [col];
 }
 
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export function _schemaColumns(schema, field) {
+export function _schemaColumns(schema: Schema, field: Field): string[] {
   switch (field) {
-    case "obs":
+    case Field.obs:
       return Object.keys(schema.annotations.obsByName);
-    case "var":
+    case Field.var:
       return Object.keys(schema.annotations.varByName);
-    case "emb":
+    case Field.emb:
       return Object.keys(schema.layout.obsByName);
     default:
       throw new Error(`unknown field name: ${field}`);
   }
 }
 
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export function _getWritableColumns(schema, field) {
-  if (field !== "obs") return [];
-  return (
-    schema.annotations.obs.columns
-      // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'v' implicitly has an 'any' type.
-      .filter((v) => v.writable)
-      // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'v' implicitly has an 'any' type.
-      .map((v) => v.name)
-  );
+export function _getWritableColumns(schema: Schema, field: Field): string[] {
+  if (field !== Field.obs) return [];
+  return schema.annotations.obs.columns
+    .filter((v: AnnotationColumnSchema) => v.writable)
+    .map((v: AnnotationColumnSchema) => v.name);
 }
 
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export function _isContinuousType(schema) {
+export function _isContinuousType(schema: ArraySchema): boolean {
   const { type } = schema;
   return !(type === "string" || type === "boolean" || type === "categorical");
 }

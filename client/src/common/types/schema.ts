@@ -1,4 +1,4 @@
-type Category = number | string | boolean;
+export type Category = number | string | boolean;
 
 export interface AnnotationColumnSchema {
   categories?: Category[];
@@ -7,7 +7,7 @@ export interface AnnotationColumnSchema {
   writable: boolean;
 }
 
-interface XMatrixSchema {
+export interface XMatrixSchema {
   nObs: number;
   nVar: number;
   // TODO(thuang): Not sure what other types are available
@@ -55,4 +55,22 @@ interface LayoutSchema extends RawLayoutSchema {
 export interface Schema extends RawSchema {
   annotations: AnnotationsSchema;
   layout: LayoutSchema;
+}
+
+/**
+ * Sub-schema objects describing the schema for a primitive Array or Matrix in one of the fields.
+ */
+export type ArraySchema =
+  | AnnotationColumnSchema
+  | EmbeddingSchema
+  | XMatrixSchema;
+
+/**
+ * Set of data / metadata objects that must be specified in a CXG.
+ */
+export enum Field {
+  "obs" = "obs",
+  "var" = "var",
+  "emb" = "emb",
+  "X" = "X",
 }

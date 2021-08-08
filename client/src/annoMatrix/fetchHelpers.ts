@@ -1,8 +1,7 @@
 export { doBinaryRequest, doFetch } from "../util/actionHelpers";
 
 /* double URI encode - needed for query-param filters */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function _dubEncURIComp(s: any) {
+export function _dubEncURIComp(s: string | number | boolean): string {
   return encodeURIComponent(encodeURIComponent(s));
 }
 

@@ -7,6 +7,7 @@ import { ThunkAction } from "redux-thunk";
 import { AnnoMatrixObsCrossfilter } from "../annoMatrix";
 import type { AppDispatch, RootState } from "../reducers";
 import { _setEmbeddingSubset } from "../util/stateManager/viewStackHelpers";
+import { Field } from "../common/types/schema";
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export async function _switchEmbedding(
@@ -26,7 +27,7 @@ export async function _switchEmbedding(
   const obsCrossfilter = await new AnnoMatrixObsCrossfilter(
     annoMatrix,
     prevCrossfilter.obsCrossfilter
-  ).select("emb", newEmbeddingName, {
+  ).select(Field.emb, newEmbeddingName, {
     mode: "all",
   });
   return [annoMatrix, obsCrossfilter];
