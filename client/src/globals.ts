@@ -8,11 +8,24 @@ export const overflowCategoryLabel = ": all other labels";
 /* default "unassigned" value for user-created categorical metadata */
 export const unassignedCategoryLabel = "unassigned";
 
+/* rough shape of config object */
+export interface Config {
+  features: Record<string, unknown>;
+  displayNames: Record<string, unknown>;
+  parameters: {
+    "disable-diffexp"?: boolean;
+    "diffexp-may-be-slow"?: boolean;
+    default_embedding?: string;
+    [key: string]: unknown;
+  };
+  links: Record<string, unknown>;
+}
+
 /*
 these are default values for configuration the CLI may supply.
 See the REST API and CLI specs for more info.
 */
-export const configDefaults = {
+export const configDefaults: Config = {
   features: {},
   displayNames: {},
   parameters: {

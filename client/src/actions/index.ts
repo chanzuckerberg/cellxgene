@@ -44,25 +44,23 @@ async function schemaFetch(): Promise<{ schema: Schema }> {
   return (await fetchJson("schema")) as { schema: Schema };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-async function configFetch(dispatch: any) {
-  return fetchJson("config").then((response) => {
-    const config = { ...globals.configDefaults, ...response.config };
+async function configFetch(dispatch: Dispatch) {
+  const response = (await fetchJson("config")) as { config: globals.Config };
+  const config = { ...globals.configDefaults, ...response.config };
 
-    setGlobalConfig(config);
+  setGlobalConfig(config);
 
-    dispatch({
-      type: "configuration load complete",
-      config,
-    });
-    return config;
+  dispatch({
+    type: "configuration load complete",
+    config,
   });
+  return config;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 async function userInfoFetch(dispatch: any) {
   return fetchJson("userinfo").then((response) => {
-    const { userinfo: userInfo } = response || {};
+    const { userinfo: userInfo } = (response || {}) as { userinfo: unknown };
     dispatch({
       type: "userInfo load complete",
       userInfo,
@@ -200,6 +198,7 @@ const requestDifferentialExpression =
     num_genes = 50
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   ) =>
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   async (dispatch: any, getState: any) => {
     dispatch({ type: "request differential expression started" });
     try {
@@ -272,7 +271,7 @@ const requestDifferentialExpression =
 function fetchJson(pathAndQuery: string) {
   return doJsonRequest(
     `${globals.API.prefix}${globals.API.version}${pathAndQuery}`
-  );
+  ) as Promise<unknown>;
 }
 
 export default {
