@@ -22,12 +22,14 @@ rangeFill(array, start, step) -> array
 
 */
 
-function _doFill(
-  arr: Array<number>,
+import type { NumericArray, TypedArray } from "../common/types/entities";
+
+function _doFill<T extends TypedArray | Array<number>>(
+  arr: T,
   start: number,
   step: number,
   count: number
-) {
+): T {
   for (let idx = 0, val = start; idx < count; idx += 1, val += step) {
     arr[idx] = val;
   }
@@ -35,10 +37,10 @@ function _doFill(
 }
 
 export function rangeFill(
-  arr: Array<number>,
+  arr: NumericArray,
   start = 0,
   step = 1
-): Array<number> {
+): NumericArray {
   return _doFill(arr, start, step, arr.length);
 }
 
