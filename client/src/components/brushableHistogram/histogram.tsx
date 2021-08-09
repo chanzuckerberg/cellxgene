@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { interpolateCool } from "d3-scale-chromatic";
 import * as d3 from "d3";
 
+import { AxisDomain } from "d3";
 import maybeScientific from "../../util/maybeScientific";
 import clamp from "../../util/clamp";
 
@@ -120,8 +121,12 @@ const Histogram = ({
           d3
             .axisBottom(x)
             .ticks(4)
-            // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
-            .tickFormat(d3.format(maybeScientific(x)))
+            .tickFormat(
+              d3.format(maybeScientific(x)) as (
+                dv: AxisDomain,
+                i: number
+              ) => string
+            )
         );
 
       /* Y AXIS */
