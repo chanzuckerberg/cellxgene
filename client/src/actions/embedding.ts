@@ -2,7 +2,9 @@
 action creators related to embeddings choice
 */
 
+import { Dispatch } from "redux";
 import { AnnoMatrixObsCrossfilter } from "../annoMatrix";
+import type { RootState } from "../reducers";
 import { _setEmbeddingSubset } from "../util/stateManager/viewStackHelpers";
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
@@ -29,30 +31,24 @@ export async function _switchEmbedding(
   return [annoMatrix, obsCrossfilter];
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export const layoutChoiceAction = (newLayoutChoice: any) => async (
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  dispatch: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  getState: any
-) => {
-  /*
+export const layoutChoiceAction =
+  (newLayoutChoice: string) =>
+  async (dispatch: Dispatch, getState: () => RootState): Promise<void> => {
+    /*
   On layout choice, make sure we have selected all on the previous layout, AND the new
   layout.
   */
-  const {
-    annoMatrix: prevAnnoMatrix,
-    obsCrossfilter: prevCrossfilter,
-  } = getState();
-  const [annoMatrix, obsCrossfilter] = await _switchEmbedding(
-    prevAnnoMatrix,
-    prevCrossfilter,
-    newLayoutChoice
-  );
-  dispatch({
-    type: "set layout choice",
-    layoutChoice: newLayoutChoice,
-    obsCrossfilter,
-    annoMatrix,
-  });
-};
+    const { annoMatrix: prevAnnoMatrix, obsCrossfilter: prevCrossfilter } =
+      getState();
+    const [annoMatrix, obsCrossfilter] = await _switchEmbedding(
+      prevAnnoMatrix,
+      prevCrossfilter,
+      newLayoutChoice
+    );
+    dispatch({
+      type: "set layout choice",
+      layoutChoice: newLayoutChoice,
+      obsCrossfilter,
+      annoMatrix,
+    });
+  };
