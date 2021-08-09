@@ -14,15 +14,25 @@ Arguments:
 
 import { sortArray } from "./typedCrossfilter/sort";
 
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'quantArr' implicitly has an 'any' type.
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export default function quantile(quantArr, tarr, sorted = false) {
+export default function quantile(
+  quantArr: Array<number>,
+  tarr:
+    | Int8Array
+    | Uint8Array
+    | Int16Array
+    | Uint16Array
+    | Int32Array
+    | Uint32Array
+    | Uint8ClampedArray
+    | Float32Array
+    | Float64Array,
+  sorted = false
+): Array<unknown> {
   /*
 	start with the naive (sort) implementation.  Later, use a faster partition
 	*/
-  const arr = sorted ? tarr : sortArray(new tarr.constructor(tarr)); // copy
+  const arr = sorted ? tarr : sortArray(tarr.constructor(tarr)); // copy
   const len = arr.length;
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'q' implicitly has an 'any' type.
   return quantArr.map((q) => {
     if (q === 1) {
       return arr[len - 1];
