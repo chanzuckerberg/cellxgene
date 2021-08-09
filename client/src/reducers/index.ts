@@ -63,4 +63,6 @@ const Reducer = undoable(
 
 const store = createStore(Reducer, applyMiddleware(thunk, annoMatrixGC));
 
+export type RootState = ReturnType<typeof store.getState>;
+
 export default store;
