@@ -161,7 +161,7 @@ class Camera {
     return true;
   }
 
-  handleEvent(e: MouseEvent, projectionTF: any) {
+  handleEvent(e: MouseEvent, projectionTF: mat3) {
     /*
     process the event, and return true if camera view changed
     */
@@ -177,7 +177,7 @@ class Camera {
       }
 
       case "wheel": {
-        viewChanged = this.wheelZoom(e, projectionTF);
+        viewChanged = this.wheelZoom(e as WheelEvent, projectionTF);
         this.flush(e);
         break;
       }
@@ -190,7 +190,7 @@ class Camera {
   }
 }
 
-function attachCamera(canvas: HTMLCanvasElement) {
+function attachCamera(canvas: HTMLCanvasElement): Camera {
   return new Camera(canvas);
 }
 
