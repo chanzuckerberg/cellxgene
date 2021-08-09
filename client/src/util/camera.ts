@@ -16,7 +16,7 @@ function clamp(val: number, rng: Array<number>) {
 }
 
 class Camera {
-  canvas: any;
+  canvas: HTMLCanvasElement;
 
   prevEvent: {
     clientX: number;
