@@ -12,22 +12,14 @@ Arguments:
 
 */
 
+import { TypedArray } from "../common/types/entities";
 import { sortArray } from "./typedCrossfilter/sort";
 
 export default function quantile(
   quantArr: Array<number>,
-  tarr:
-    | Int8Array
-    | Uint8Array
-    | Int16Array
-    | Uint16Array
-    | Int32Array
-    | Uint32Array
-    | Uint8ClampedArray
-    | Float32Array
-    | Float64Array,
+  tarr: TypedArray,
   sorted = false
-): Array<unknown> {
+): Array<number> {
   /*
 	start with the naive (sort) implementation.  Later, use a faster partition
 	*/
