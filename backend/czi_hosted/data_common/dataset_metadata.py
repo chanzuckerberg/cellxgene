@@ -30,6 +30,9 @@ def request_dataset_metadata_from_data_portal(data_portal_api_base: str, explore
         return None
 
 def extrapolate_dataset_location_from_config(server_config: ServerConfig, dataset_explorer_location: str):
+    """
+    Use the dataset_explorer_location and the server config to determine where the dataset is stored
+    """
     # TODO @mdunitz remove after fork, update config to remove single_dataset option, the multiroot lookup will need to
     #  remain while we support covid 19 cell atlas
     if server_config.single_dataset__datapath:
@@ -58,8 +61,11 @@ def extrapolate_dataset_location_from_config(server_config: ServerConfig, datase
 def get_dataset_metadata_for_explorer_location(dataset_explorer_location: str, app_config: AppConfig):
     """
     Given the dataset access location(the path to view the dataset in the explorer including the dataset root,
-    also used as the cache key) and the explorer web base url (in the app_config) return a dataset_metadata object
-    with the dataset storage location available under s3_uri
+    also used as the cache key) and the explorer web base url (from the app_config) this function returns the location
+    of the dataset, along with additional metadata.
+    The dataset location is is either retrieved from the data portal, or built based on the dataroot information stored
+    in the server config.
+    In the case of a single dataset the dataset location is pulled directly from the server_config.
     """
     if app_config.server_config.data_locator__api_base:
         explorer_url_path = f"{app_config.server_config.get_web_base_url()}/{dataset_explorer_location}"
