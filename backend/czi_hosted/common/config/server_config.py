@@ -70,6 +70,12 @@ class ServerConfig(BaseConfig):
             self.multi_dataset__matrix_cache__timelimit_s = default_config["multi_dataset"]["matrix_cache"][
                 "timelimit_s"
             ]
+            self.multi_dataset__metadata_cache__max_datasets = default_config["multi_dataset"]["metadata_cache"][
+                "max_datasets"
+            ]
+            self.multi_dataset__metadata_cache__timelimit_s = default_config["multi_dataset"]["metadata_cache"][
+                "timelimit_s"
+            ]
 
             self.single_dataset__datapath = default_config["single_dataset"]["datapath"]
             self.single_dataset__obs_names = default_config["single_dataset"]["obs_names"]
@@ -292,8 +298,13 @@ class ServerConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute("multi_dataset__index", (type(None), bool, str))
         self.validate_correct_type_of_configuration_attribute("multi_dataset__allowed_matrix_types", list)
         self.validate_correct_type_of_configuration_attribute("multi_dataset__matrix_cache__max_datasets", int)
+        self.validate_correct_type_of_configuration_attribute("multi_dataset__metadata_cache__max_datasets", int)
+
         self.validate_correct_type_of_configuration_attribute(
             "multi_dataset__matrix_cache__timelimit_s", (type(None), int, float)
+        )
+        self.validate_correct_type_of_configuration_attribute(
+            "multi_dataset__metadata_cache__timelimit_s", (type(None), int, float)
         )
 
         if self.multi_dataset__dataroot is None:
@@ -347,8 +358,8 @@ class ServerConfig(BaseConfig):
         # create the dataset location data cache manager:
         if self.dataset_metadata_cache_manager is None:
             self.dataset_metadata_cache_manager = CacheManager(
-                max_cached=400,
-                timelimit_s=600,
+                max_cached=self.multi_dataset__matrix_cache__max_datasets,
+                timelimit_s=self.multi_dataset__metadata_cache__timelimit_s,
             )
 
     def handle_diffexp(self):

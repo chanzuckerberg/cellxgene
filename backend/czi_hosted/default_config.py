@@ -121,6 +121,15 @@ server:
       # A matrix is automatically removed from the cache after timelimit_s number of seconds.
       # If timelimit_s is set to None, then there is no time limit.
       timelimit_s: 30
+      
+    metadata_cache:
+      # The maximum number of datasets that may be opened at one time.  The least recently used dataset
+      # is evicted from the cache first.
+      max_datasets: 400
+
+      # A matrix is automatically removed from the cache after timelimit_s number of seconds.
+      # If timelimit_s is set to None, then there is no time limit.
+      timelimit_s: 300
 
   single_dataset:
     # If datapath is set, then cellxgene with serve a single dataset located at datapath.  This parameter is not
