@@ -11,24 +11,23 @@ TL;DR: sort order is:
 import isNumber from "is-number";
 import * as globals from "../globals";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-function caseInsensitiveCompare(a: any, b: any) {
+function caseInsensitiveCompare(a: string, b: string): number {
   const textA = String(a).toUpperCase();
   const textB = String(b).toUpperCase();
   return textA < textB ? -1 : textA > textB ? 1 : 0;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-const catLabelSort = (isUserAnno: boolean, values: any[]): any[] => {
+const catLabelSort = (
+  isUserAnno: boolean,
+  values: Array<string>
+): Array<string> => {
   /* this sort could be memoized for perf */
 
-  const strings: string[] = [];
-  const ints: number[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  const unassignedOrNaN: any = [];
+  const strings = new Array<string>();
+  const ints = new Array<string>();
+  const unassignedOrNaN = new Array<string>();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  values.forEach((v: any) => {
+  values.forEach((v: string) => {
     if (isUserAnno && v === globals.unassignedCategoryLabel) {
       unassignedOrNaN.push(v);
     } else if (String(v).toLowerCase() === "nan") {
@@ -44,8 +43,7 @@ const catLabelSort = (isUserAnno: boolean, values: any[]): any[] => {
   ints.sort((a, b) => +a - +b);
   unassignedOrNaN.sort(caseInsensitiveCompare);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  return (<any>ints).concat(strings, unassignedOrNaN);
+  return ints.concat(strings, unassignedOrNaN);
 };
 
 export default catLabelSort;
