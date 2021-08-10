@@ -30,6 +30,9 @@ f"""server:
     matrix_cache:
       max_datasets: {max_cached_datasets}
       timelimit_s: {timelimit_s}
+    metadata_cache:
+      max_datasets: {max_cached_dataset_metadata}
+      timelimit_s: {timelimit_s_metadata}
 
   single_dataset:
     datapath: {dataset_datapath}

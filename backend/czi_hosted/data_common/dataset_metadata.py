@@ -6,9 +6,11 @@ import requests
 from backend.common.utils.utils import path_join
 from backend.common.errors import DatasetAccessError
 import backend.czi_hosted.common.rest as common_rest
+from backend.czi_hosted.common.config.app_config import AppConfig
+from backend.czi_hosted.common.config.server_config import ServerConfig
 
 
-def get_dataset_metadata_from_data_portal(data_portal_api_base: str, explorer_url: str):
+def request_dataset_metadata_from_data_portal(data_portal_api_base: str, explorer_url: str):
     """
     Check the data portal metadata api for datasets stored under the given url_path
     If present return dataset metadata object else return None
@@ -27,39 +29,16 @@ def get_dataset_metadata_from_data_portal(data_portal_api_base: str, explorer_ur
     except Exception:
         return None
 
-
-def get_dataset_metadata(location: str, **kwargs):
-    """
-    Given the dataset access location(the path to view the dataset in the explorer including the dataset root,
-    also used as the cache key) and the explorer web base url (in the app_config) return a dataset_metadata object
-    with the dataset storage location available under s3_uri
-    """
-    app_config = kwargs.get("app_config", None)
-    if app_config and app_config.server_config.data_locator__api_base:
-        explorer_url_path = f"{app_config.server_config.get_web_base_url()}/{location}"
-        dataset_metadata = get_dataset_metadata_from_data_portal(
-            data_portal_api_base=app_config.server_config.data_locator__api_base,
-            explorer_url=explorer_url_path
-        )
-        if dataset_metadata:
-            return dataset_metadata
-    server_config = app_config.server_config
-    dataset_metadata = {
-        "collection_id": None,
-        "collection_visibility": None,
-        "dataset_id": None,
-        "s3_uri": None,
-        "tombstoned": False
-    }
+def extrapolate_dataset_location_from_config(server_config: ServerConfig, dataset_explorer_location: str):
     # TODO @mdunitz remove after fork, update config to remove single_dataset option, the multiroot lookup will need to
     #  remain while we support covid 19 cell atlas
     if server_config.single_dataset__datapath:
         datapath = server_config.single_dataset__datapath
-        dataset_metadata["s3_uri"] = datapath
+        return datapath
     else:
-        location = location.split("/")
-        dataset = location.pop(-1)
-        url_dataroot = "/".join(location)
+        dataset_explorer_location = dataset_explorer_location.split("/")
+        dataset = dataset_explorer_location.pop(-1)
+        url_dataroot = "/".join(dataset_explorer_location)
         dataroot = None
         for key, dataroot_dict in server_config.multi_dataset__dataroot.items():
             if dataroot_dict["base_url"] == url_dataroot:
@@ -73,9 +52,34 @@ def get_dataset_metadata(location: str, **kwargs):
         # dataroot to determine that the datapath is under the dataroot.
         if not datapath.startswith(dataroot):
             raise DatasetAccessError(f"Invalid dataset {url_dataroot}/{dataset}")
+        return datapath
 
-        dataset_metadata["s3_uri"] = datapath
+
+def get_dataset_metadata_for_explorer_location(dataset_explorer_location: str, app_config: AppConfig):
+    """
+    Given the dataset access location(the path to view the dataset in the explorer including the dataset root,
+    also used as the cache key) and the explorer web base url (in the app_config) return a dataset_metadata object
+    with the dataset storage location available under s3_uri
+    """
+    if app_config.server_config.data_locator__api_base:
+        explorer_url_path = f"{app_config.server_config.get_web_base_url()}/{dataset_explorer_location}"
+        dataset_metadata = request_dataset_metadata_from_data_portal(
+            data_portal_api_base=app_config.server_config.data_locator__api_base,
+            explorer_url=explorer_url_path
+        )
+        if dataset_metadata:
+            return dataset_metadata
+    server_config = app_config.server_config
+    dataset_metadata = {
+        "collection_id": None,
+        "collection_visibility": None,
+        "dataset_id": None,
+        "s3_uri": None,
+        "tombstoned": False
+    }
+    dataset_metadata["s3_uri"] = extrapolate_dataset_location_from_config(server_config=server_config, dataset_explorer_location=dataset_explorer_location)
     if dataset_metadata["s3_uri"] is None:
         return common_rest.abort_and_log(HTTPStatus.BAD_REQUEST, "Invalid dataset NONE", loglevel=logging.INFO)
+
     return dataset_metadata
 

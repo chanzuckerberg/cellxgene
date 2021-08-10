@@ -25,7 +25,7 @@ from backend.common.utils.data_locator import DataLocator
 from backend.common.errors import DatasetAccessError, RequestException
 from backend.czi_hosted.common.health import health_check
 from backend.common.utils.utils import path_join, Float32JSONEncoder
-from backend.czi_hosted.data_common.dataset_metadata import get_dataset_metadata
+from backend.czi_hosted.data_common.dataset_metadata import get_dataset_metadata_for_explorer_location
 from backend.czi_hosted.data_common.matrix_loader import MatrixDataLoader
 
 webbp = Blueprint("webapp", "backend.czi_hosted.common.web", template_folder="templates")
@@ -113,7 +113,7 @@ def get_data_adaptor(url_dataroot: str=None, dataset: str=None):
     matrix_cache_manager = current_app.matrix_data_cache_manager
     with dataset_metadata_manager.data_adaptor(
             cache_key=f"{url_dataroot}/{dataset}",
-            create_data_lambda=get_dataset_metadata,
+            create_data_lambda=get_dataset_metadata_for_explorer_location,
             create_data_args={"app_config": app_config}
     ) as dataset_metadata:
         return matrix_cache_manager.data_adaptor(
