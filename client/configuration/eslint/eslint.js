@@ -37,7 +37,8 @@ module.exports = {
       jsx: true,
       generators: true,
     },
-    project: "./tsconfig.json",
+    project: "../../tsconfig.json",
+    tsconfigRootDir: __dirname,
   },
   rules: {
     "react/jsx-no-target-blank": "off",
