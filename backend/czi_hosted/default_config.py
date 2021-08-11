@@ -108,7 +108,7 @@ server:
     #   false or null:  this returns a 404 code
     #   true:  loads a test index page, which links to the datasets that are available in the dataroot
     #   string/URL:  redirect to this URL:  flask.redirect(config.multi_dataset__index)
-    index: false
+    index: true
 
     # A list of allowed matrix types.  If an empty list, then all matrix types are allowed
     allowed_matrix_types: []

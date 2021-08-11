@@ -1,0 +1,17 @@
+:local(.datasetBreadcrumb),
+:local(.datasetDisabledBreadcrumb) {
+  font-size: 14px;
+}
+
+:local(.datasetBreadcrumb):hover {
+  color: #10161a; /* Colors.BLACK */ /* TODO(cc) revisit variable specification */
+}
+
+:local(.datasetPopoverTarget) {
+  cursor: pointer;
+}
+
+:local(.datasetPopover) {
+  box-shadow: 0 8px 24px 0 rgba(16, 22, 26, 0.2),
+    0 2px 4px 0 rgba(16, 22, 26, 0.2), 0 0 0 0 rgba(16, 22, 26, 0.1);
+}

@@ -52,6 +52,9 @@ const skipOnActions = new Set([
   "geneset: disable add new genes mode",
   "geneset: activate rename geneset mode",
   "geneset: disable rename geneset mode",
+
+  /* collections */
+  "collection load complete",
 ]);
 
 /*
@@ -112,6 +115,9 @@ const saveOnActions = new Set([
   "geneset: add genes",
   "geneset: delete genes",
   "geneset: set gene description",
+
+  /* collections */
+  "collection load complete",
 ]);
 
 /**
@@ -186,52 +192,54 @@ Basic approach:
     multi-event selection and the like)
 */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-const actionFilter = (debug: any) => (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  state: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  action: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  prevFilterState: any
-) => {
-  const actionType = action.type;
-  const filterState = {
-    ...prevFilterState,
-    prevAction: action,
-  };
-  if (skipOnActions.has(actionType)) {
-    return { [actionKey]: "skip", [stateKey]: filterState };
-  }
-  if (
-    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-    debounceOnActions.has(actionType) &&
-    shallowObjectEq(action, prevFilterState.prevAction)
-  ) {
-    return { [actionKey]: "skip", [stateKey]: filterState };
-  }
-  if (clearOnActions.has(actionType)) {
-    return { [actionKey]: "clear", [stateKey]: filterState };
-  }
-  if (saveOnActions.has(actionType)) {
-    return { [actionKey]: "save", [stateKey]: filterState };
-  }
+const actionFilter =
+  (debug: any) =>
+  (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+    state: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+    action: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+    prevFilterState: any
+  ) => {
+    const actionType = action.type;
+    const filterState = {
+      ...prevFilterState,
+      prevAction: action,
+    };
+    if (skipOnActions.has(actionType)) {
+      return { [actionKey]: "skip", [stateKey]: filterState };
+    }
+    if (
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
+      debounceOnActions.has(actionType) &&
+      shallowObjectEq(action, prevFilterState.prevAction)
+    ) {
+      return { [actionKey]: "skip", [stateKey]: filterState };
+    }
+    if (clearOnActions.has(actionType)) {
+      return { [actionKey]: "clear", [stateKey]: filterState };
+    }
+    if (saveOnActions.has(actionType)) {
+      return { [actionKey]: "save", [stateKey]: filterState };
+    }
 
-  /*
+    /*
     Else, something more complex OR unknown to us....
     */
-  if (seedFsm.events.has(actionType)) {
-    let { fsm } = filterState;
-    if (!fsm) {
-      /* no active FSM, so create one in init state */
-      fsm = seedFsm.clone("init");
+    if (seedFsm.events.has(actionType)) {
+      let { fsm } = filterState;
+      if (!fsm) {
+        /* no active FSM, so create one in init state */
+        fsm = seedFsm.clone("init");
+      }
+      return fsm.next(action.type, { state, action });
     }
-    return fsm.next(action.type, { state, action });
-  }
 
-  /* else, we have no idea what this is - skip it */
-  if (debug) console.log("**** ACTION FILTER EVENT HANDLER MISS", actionType);
-  return { [actionKey]: "skip", [stateKey]: filterState };
-};
+    /* else, we have no idea what this is - skip it */
+    if (debug) console.log("**** ACTION FILTER EVENT HANDLER MISS", actionType);
+    return { [actionKey]: "skip", [stateKey]: filterState };
+  };
 
 /*
 return true if objA and objB are ===, OR if:

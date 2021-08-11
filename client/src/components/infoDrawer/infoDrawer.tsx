@@ -8,6 +8,8 @@ import { selectableCategoryNames } from "../../util/stateManager/controlsHelpers
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  collection: ((state as any).collections as any)?.collection,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   schema: (state as any).annoMatrix.schema,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   datasetTitle: (state as any).config?.displayNames?.dataset ?? "",
@@ -30,6 +32,8 @@ class InfoDrawer extends PureComponent {
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     const {
+      // @ts-expect-error ts-migrate(2339) FIXME: Property 'collection' does not exist on type 'Readon... Remove this comment to see the full error message
+      collection,
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'position' does not exist on type 'Readon... Remove this comment to see the full error message
       position,
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'aboutURL' does not exist on type 'Readon... Remove this comment to see the full error message
@@ -58,15 +62,10 @@ class InfoDrawer extends PureComponent {
     });
 
     return (
-      <Drawer
-        title="Dataset Overview"
-        onClose={this.handleClose}
-        {...{ isOpen, position }}
-      >
+      <Drawer onClose={this.handleClose} size={480} {...{ isOpen, position }}>
         <InfoFormat
           {...{
-            datasetTitle,
-            aboutURL,
+            collection,
             singleValueCategories,
             dataPortalProps: dataPortalProps ?? {},
           }}

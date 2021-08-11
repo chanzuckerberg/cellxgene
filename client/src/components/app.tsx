@@ -2,8 +2,10 @@ import React from "react";
 import Helmet from "react-helmet";
 import { connect } from "react-redux";
 
+import DatasetSelector from "./datasetSelector/datasetSelector";
 import Container from "./framework/container";
 import Layout from "./framework/layout";
+import Skeleton from "./framework/skeleton";
 import LeftSideBar from "./leftSidebar";
 import RightSideBar from "./rightSidebar";
 import Legend from "./continuousLegend";
@@ -13,7 +15,7 @@ import Autosave from "./autosave";
 import Embedding from "./embedding";
 import TermsOfServicePrompt from "./termsPrompt";
 
-import actions from "../actions";
+import actions, { checkExplainNewTab } from "../actions";
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
@@ -34,6 +36,7 @@ class App extends React.Component {
     this._onURLChanged();
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 0 arguments, but got 1.
     dispatch(actions.doInitialDataLoad(window.location.search));
+    dispatch(checkExplainNewTab());
     this.forceUpdate();
   }
 
@@ -51,18 +54,7 @@ class App extends React.Component {
     return (
       <Container>
         <Helmet title="cellxgene" />
-        {loading ? (
-          <div
-            style={{
-              position: "fixed",
-              fontWeight: 500,
-              top: window.innerHeight / 2,
-              left: window.innerWidth / 2 - 50,
-            }}
-          >
-            loading cellxgene
-          </div>
-        ) : null}
+        {loading ? <Skeleton /> : null}
         {error ? (
           <div
             style={{
@@ -81,7 +73,20 @@ class App extends React.Component {
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS. */}
             {(viewportRef: any) => (
               <>
-                <MenuBar />
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    left: 8,
+                    position: "absolute",
+                    right: 8,
+                    top: 0,
+                    zIndex: 3,
+                  }}
+                >
+                  <DatasetSelector />
+                  <MenuBar />
+                </div>
                 <Embedding />
                 <Autosave />
                 <TermsOfServicePrompt />

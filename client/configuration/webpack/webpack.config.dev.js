@@ -25,7 +25,7 @@ const nodeModules = path.resolve("node_modules");
 
 const devConfig = {
   mode: "development",
-  devtool: "eval",
+  devtool: "source-map",
   output: {
     pathinfo: true,
     filename: "static/js/bundle.js",

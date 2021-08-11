@@ -1,0 +1,4 @@
+:local(.newTabToast) {
+  max-width: fit-content;
+  top: 42px;
+}

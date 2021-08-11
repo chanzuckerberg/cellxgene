@@ -3,6 +3,7 @@ import thunk from "redux-thunk";
 
 import cascadeReducers from "./cascade";
 import undoable from "./undoable";
+import collections from "./collections";
 import config from "./config";
 import userInfo from "./userInfo";
 import annoMatrix from "./annoMatrix";
@@ -43,6 +44,7 @@ const Reducer = undoable(
     ["pointDilation", pointDialation],
     ["autosave", autosave],
     ["userInfo", userInfo],
+    ["collections", collections],
   ]),
   [
     "annoMatrix",

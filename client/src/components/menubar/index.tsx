@@ -1,6 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import { ButtonGroup, AnchorButton, Tooltip } from "@blueprintjs/core";
+import { IconNames } from "@blueprintjs/icons";
 
 import * as globals from "../../globals";
 // @ts-expect-error ts-migrate(2307) FIXME: Cannot find module './menubar.css' or its correspo... Remove this comment to see the full error message
@@ -9,6 +10,7 @@ import actions from "../../actions";
 import Clip from "./clip";
 
 import AuthButtons from "./authButtons";
+import InfoDrawer from "../infoDrawer/infoDrawer";
 import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
 import DiffexpButtons from "./diffexpButtons";
@@ -286,18 +288,27 @@ class MenuBar extends React.PureComponent<{}, State> {
     return (
       <div
         style={{
-          position: "absolute",
-          right: 8,
-          top: 0,
           display: "flex",
           flexDirection: "row-reverse",
           alignItems: "flex-start",
           flexWrap: "wrap",
           justifyContent: "flex-start",
-          zIndex: 3,
         }}
       >
         <AuthButtons {...{ auth, userInfo }} />
+        <ButtonGroup className={styles.menubarButton}>
+          <AnchorButton
+            type="button"
+            icon={IconNames.INFO_SIGN}
+            onClick={() => {
+              dispatch({ type: "toggle dataset drawer" });
+            }}
+            style={{
+              cursor: "pointer",
+            }}
+            data-testid="drawer"
+          />
+        </ButtonGroup>
         <UndoRedoReset
           // @ts-expect-error ts-migrate(2322) FIXME: Type '{ dispatch: any; undoDisabled: any; redoDisa... Remove this comment to see the full error message
           dispatch={dispatch}
@@ -384,6 +395,7 @@ class MenuBar extends React.PureComponent<{}, State> {
           handleSubsetReset={this.handleSubsetReset}
         />
         {disableDiffexp ? null : <DiffexpButtons />}
+        <InfoDrawer />
       </div>
     );
   }

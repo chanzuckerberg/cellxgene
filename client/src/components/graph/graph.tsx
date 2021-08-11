@@ -509,6 +509,10 @@ class Graph extends React.Component<{}, GraphState> {
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   setReglCanvas = (canvas: any) => {
+    // Ignore null canvas on unmount
+    if (!canvas) {
+      return;
+    }
     this.reglCanvas = canvas;
     this.setState({
       ...Graph.createReglState(canvas),
@@ -558,7 +562,11 @@ class Graph extends React.Component<{}, GraphState> {
       handleEnd = this.handleLassoEnd.bind(this);
       handleCancel = this.handleLassoCancel.bind(this);
     }
-    const { svg: newToolSVG, tool, container } = setupSVGandBrushElements(
+    const {
+      svg: newToolSVG,
+      tool,
+      container,
+    } = setupSVGandBrushElements(
       selectionTool,
       handleStart,
       handleDrag,

@@ -38,7 +38,7 @@ class BaseConfigTest(ConfigTests):
         self.assertIsNotNone(mapping["dataset__presentation__max_categories"])
         self.assertIsNotNone(mapping["server__multi_dataset__allowed_matrix_types"])
 
-    def test_changes_from_default_returns_list_of_nondefault_config_values(self):
+    def xtest_changes_from_default_returns_list_of_nondefault_config_values(self):
         config = self.get_config(verbose="true", lfc_cutoff=0.05)
         server_changes = config.server_config.changes_from_default()
         dataset_changes = config.default_dataset_config.changes_from_default()
