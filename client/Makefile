@@ -5,9 +5,9 @@ GENE_SETS := $(if $(GENE_SETS),$(GENE_SETS),../backend/test/fixtures/pbmc3k-gene
 ANNOTATIONS_FILENAME := $(shell basename $(ANNOTATIONS))
 GENE_SETS_FILENAME := $(shell basename $(GENE_SETS))
 
-CXG_CONFIG := $(if $(CXG_CONFIG), $(CXG_CONFIG), ./__tests__/e2e/test_config.yaml)
+CXG_CONFIG := $(if $(CXG_CONFIG), $(CXG_CONFIG),./__tests__/e2e/test_config.yaml)
 
-CXG_AUTH_TYPE := $(if $(CXG_AUTH_TYPE), $(CXG_AUTH_TYPE), "test")
+CXG_AUTH_TYPE := $(if $(CXG_AUTH_TYPE), $(CXG_AUTH_TYPE),"test")
 
 
 # Packaging
