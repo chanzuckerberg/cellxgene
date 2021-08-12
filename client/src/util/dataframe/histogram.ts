@@ -1,7 +1,7 @@
 /*
 Dataframe histogram
 */
-import { isTypedArray } from "./util";
+import { isTypedArray } from "../../common/types/arraytypes";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function _histogramContinuous(column: any, bins: any, min: any, max: any) {
