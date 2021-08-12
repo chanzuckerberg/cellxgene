@@ -7,22 +7,22 @@ export interface AnnotationColumnSchema {
   writable: boolean;
 }
 
-interface DataFrameSchema {
+interface XMatrixSchema {
   nObs: number;
   nVar: number;
   // TODO(thuang): Not sure what other types are available
   type: "float32";
 }
 
-export interface LayoutColumnSchema {
+export interface EmbeddingSchema {
   dims: string[];
   name: string;
   // TODO(thuang): Not sure what other types are available
   type: "float32";
 }
 interface RawLayoutSchema {
-  obs: LayoutColumnSchema[];
-  var?: LayoutColumnSchema[];
+  obs: EmbeddingSchema[];
+  var?: EmbeddingSchema[];
 }
 
 interface RawAnnotationsSchema {
@@ -38,7 +38,7 @@ interface RawAnnotationsSchema {
 
 export interface RawSchema {
   annotations: RawAnnotationsSchema;
-  dataframe: DataFrameSchema;
+  dataframe: XMatrixSchema;
   layout: RawLayoutSchema;
 }
 
@@ -48,8 +48,8 @@ interface AnnotationsSchema extends RawAnnotationsSchema {
 }
 
 interface LayoutSchema extends RawLayoutSchema {
-  obsByName: { [name: string]: LayoutColumnSchema };
-  varByName: { [name: string]: LayoutColumnSchema };
+  obsByName: { [name: string]: EmbeddingSchema };
+  varByName: { [name: string]: EmbeddingSchema };
 }
 
 export interface Schema extends RawSchema {
