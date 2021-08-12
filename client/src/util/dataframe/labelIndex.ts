@@ -4,14 +4,25 @@ Label indexing - map a label to & from an integer offset.  See Dataframe
 for how this is used.
 **/
 
+import { AnyArray, TypedArray } from "../../common/types/arraytypes";
 import { rangeFill as fillRange } from "../range";
 import { __getMemoId } from "./util";
+
+export type OffsetArray =
+  | Int8Array
+  | Uint8Array
+  | Int16Array
+  | Uint16Array
+  | Int32Array
+  | Uint32Array
+  | number[];
 
 /*
 Private utility functions
 */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-function extent(tarr: any) {
+
+/** @internal */
+function extent(tarr: OffsetArray): [number, number] {
   let min = 0x7fffffff;
   let max = ~min; // eslint-disable-line no-bitwise -- Establishes 0 of same size
   for (let i = 0, l = tarr.length; i < l; i += 1) {
@@ -26,25 +37,52 @@ function extent(tarr: any) {
   return [min, max];
 }
 
-class IdentityInt32Index {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  maxOffset: any;
+abstract class LabelIndex<LabelArrayType extends AnyArray> {
+  readonly __id: string;
+
+  constructor(id: string) {
+    this.__id = id;
+  }
+
+  abstract labels(): LabelArrayType;
+
+  abstract getOffset(label: LabelArrayType[0]): number | undefined;
+
+  abstract getOffsets(labels: LabelArrayType): (number | undefined)[];
+
+  abstract getLabel(offset: number): LabelArrayType[0] | undefined;
+
+  abstract getLabels(
+    offsets: OffsetArray
+  ): Array<LabelArrayType[0] | undefined>;
+
+  abstract size(): number;
+
+  abstract subset(labels: LabelArrayType): LabelIndexImplementations;
+
+  abstract isubset(offsets: OffsetArray): LabelIndexImplementations;
+
+  abstract isubsetMask(mask: Uint8Array): LabelIndexImplementations;
+
+  abstract withLabel(label: LabelArrayType[0]): LabelIndexImplementations;
+
+  abstract withLabels(labels: LabelArrayType): LabelIndexImplementations;
+
+  abstract dropLabel(label: LabelArrayType[0]): LabelIndexImplementations;
+}
+
+class IdentityInt32Index extends LabelIndex<Int32Array> {
+  readonly maxOffset: Int32Array[0];
 
   /*
   identity/noop index, with small assumptions that labels are int32
   */
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  constructor(maxOffset: any) {
+  constructor(maxOffset: number) {
+    super(`IdentityInt32Index_${maxOffset}`);
     this.maxOffset = maxOffset;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  get __id() {
-    return `IdentityInt32Index_${this.maxOffset}`;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  labels() {
+  labels(): Int32Array {
     // memoize
     const k = fillRange(new Int32Array(this.maxOffset));
     this.labels = function labels() {
@@ -53,39 +91,43 @@ class IdentityInt32Index {
     return k;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  getOffset(i: any) {
+  getOffset(label: number): number | undefined {
     // label to offset
-    return Number.isInteger(i) && i >= 0 && i < this.maxOffset ? i : undefined;
+    return Number.isInteger(label) && label >= 0 && label < this.maxOffset
+      ? label
+      : undefined;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  getOffsets(arr: any) {
+  getOffsets(labels: OffsetArray): (number | undefined)[] {
     // labels to offsets
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    return arr.map((i: any) => this.getOffset(i));
+    const result = new Array(labels.length);
+    for (let i = 0; i < labels.length; i += 1) {
+      result[i] = this.getOffset(labels[i]);
+    }
+    return result;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  getLabel(i: any) {
+  getLabel(offset: number): number | undefined {
     // offset to label
-    return Number.isInteger(i) && i >= 0 && i < this.maxOffset ? i : undefined;
+    return Number.isInteger(offset) && offset >= 0 && offset < this.maxOffset
+      ? offset
+      : undefined;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  getLabels(arr: any) {
+  getLabels(offsets: OffsetArray): (number | undefined)[] {
     // offsets to labels
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    return arr.map((i: any) => this.getLabel(i));
+    const result = new Array(offsets.length);
+    for (let i = 0; i < offsets.length; i += 1) {
+      result[i] = this.getOffset(offsets[i]);
+    }
+    return result;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  size() {
+  size(): number {
     return this.maxOffset;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  __promote(labelArray: any) {
+  __promote(labelArray: OffsetArray): LabelIndexImplementations {
     /*
     time/space decision - based on the resulting density
     */
@@ -99,12 +141,10 @@ class IdentityInt32Index {
     if (density < 0.1) {
       return new KeyIndex(labelArray);
     }
-    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'number[]' is not assignable to p... Remove this comment to see the full error message
     return new DenseInt32Index(labelArray, [minLabel, maxLabel]);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  subset(labels: any) {
+  subset(labels: OffsetArray): LabelIndexImplementations {
     /* validate subset */
     const { maxOffset } = this;
     for (let i = 0, l = labels.length; i < l; i += 1) {
@@ -116,14 +156,12 @@ class IdentityInt32Index {
   }
 
   /* identity index - labels are offsets */
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  isubset(offsets: any) {
+  isubset(offsets: OffsetArray): LabelIndexImplementations {
     return this.subset(offsets);
   }
 
   /* identity index - labels are offsets */
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  isubsetMask(mask: any) {
+  isubsetMask(mask: Uint8Array): LabelIndexImplementations {
     let count = 0;
     if (mask.length !== this.maxOffset) {
       throw new RangeError("mask has invalid length for index");
@@ -139,21 +177,18 @@ class IdentityInt32Index {
     return this.subset(labels);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  withLabel(label: any) {
+  withLabel(label: number): LabelIndexImplementations {
     if (label === this.maxOffset) {
       return new IdentityInt32Index(label + 1);
     }
     return this.__promote([...this.labels(), label]);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  withLabels(labels: any) {
+  withLabels(labels: OffsetArray): LabelIndexImplementations {
     return this.__promote([...this.labels(), ...labels]);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  dropLabel(label: any) {
+  dropLabel(label: number): LabelIndexImplementations {
     if (label === this.maxOffset - 1) {
       return new IdentityInt32Index(label);
     }
@@ -163,29 +198,19 @@ class IdentityInt32Index {
   }
 }
 
-class DenseInt32Index {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  __id: any;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+class DenseInt32Index extends LabelIndex<Int32Array> {
   getLabel: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   getLabels: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   getOffset: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   getOffsets: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   index: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   minLabel: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   rindex: any;
 
   /*
@@ -194,17 +219,15 @@ class DenseInt32Index {
   of the forward index labels must be known a priori (so that the index
   array can be pre-allocated).
   */
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   constructor(labels: any, labelRange = null) {
+    super(__getMemoId());
     if (labels.constructor !== Int32Array) {
       labels = new Int32Array(labels);
     }
 
     if (!labelRange) {
-      // @ts-expect-error ts-migrate(2322) FIXME: Type 'number[]' is not assignable to type 'null'.
       labelRange = extent(labels);
     }
-    // @ts-expect-error ts-migrate(2488) FIXME: Type 'null' must have a '[Symbol.iterator]()' meth... Remove this comment to see the full error message
     const [minLabel, maxLabel] = labelRange;
     const labelSpaceSize = maxLabel - minLabel + 1;
     const index = new Int32Array(labelSpaceSize).fill(-1);
@@ -216,49 +239,38 @@ class DenseInt32Index {
     this.minLabel = minLabel;
     this.rindex = labels;
     this.index = index;
-    this.__id = __getMemoId();
     this.__compile();
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   __compile() {
     const { minLabel, index, rindex } = this;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     this.getOffset = function getOffset(l: any) {
       if (!Number.isInteger(l)) return undefined;
       const offset = index[l - minLabel];
       return offset === -1 ? undefined : offset;
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     this.getOffsets = function getOffsets(arr: any) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       return arr.map((i: any) => this.getOffset(i));
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     this.getLabel = function getLabel(i: any) {
       return Number.isInteger(i) ? rindex[i] : undefined;
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     this.getLabels = function getLabels(arr: any) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       return arr.map((i: any) => this.getLabel(i));
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   labels() {
     return this.rindex;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   size() {
     return this.rindex.length;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   __promote(labelArray: any) {
     /*
     time/space decision - if we are going to use less than 10% of the
@@ -272,11 +284,9 @@ class DenseInt32Index {
     if (density < 0.1) {
       return new KeyIndex(labelArray);
     }
-    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'number[]' is not assignable to p... Remove this comment to see the full error message
     return new DenseInt32Index(labelArray, [minLabel, maxLabel]);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   subset(labels: any) {
     /* validate subset */
     for (let i = 0, l = labels.length; i < l; i += 1) {
@@ -288,7 +298,6 @@ class DenseInt32Index {
     return this.__promote(labels);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   isubset(offsets: any) {
     /* validate subset */
     const { rindex } = this;
@@ -303,7 +312,6 @@ class DenseInt32Index {
     return this.__promote(labels);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   isubsetMask(mask: any) {
     const { rindex } = this;
     if (mask.length !== rindex.length)
@@ -320,17 +328,14 @@ class DenseInt32Index {
     return this.__promote(labels);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   withLabel(label: any) {
     return this.__promote([...this.labels(), label]);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   withLabels(labels: any) {
     return this.__promote([...this.labels(), ...labels]);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   dropLabel(label: any) {
     const labelArray = [...this.labels()];
     labelArray.splice(labelArray.indexOf(label), 1);
@@ -338,40 +343,32 @@ class DenseInt32Index {
   }
 }
 
-class KeyIndex {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+class KeyIndex extends LabelIndex {
   __id: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   getLabel: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   getLabels: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   getOffset: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   getOffsets: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   index: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   rindex: any;
 
   /*
   KeyIndex indexes arbitrary JS primitive types, and uses a Map()
   as its core data structure.
   */
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   constructor(labels: any) {
+    super();
     const index = new Map();
     if (labels === undefined) {
       labels = [];
     }
     const rindex = labels;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     labels.forEach((v: any, i: any) => {
       index.set(v, i);
     });
@@ -387,43 +384,33 @@ class KeyIndex {
     this.__compile();
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   __compile() {
     const { index, rindex } = this;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     this.getOffset = function getOffset(k: any) {
       return index.get(k);
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     this.getOffsets = function getOffsets(arr: any) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       return arr.map((l: any) => this.getOffset(l));
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     this.getLabel = function getLabel(i: any) {
       return Number.isInteger(i) ? rindex[i] : undefined;
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     this.getLabels = function getLabels(arr: any) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       return arr.map((i: any) => this.getLabel(i));
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   labels() {
     return this.rindex;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  size() {
+  size(): number {
     return this.rindex.length;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   subset(labels: any) {
     /* validate subset */
     for (let i = 0, l = labels.length; i < l; i += 1) {
@@ -437,7 +424,6 @@ class KeyIndex {
     return new KeyIndex(labels);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   isubset(offsets: any) {
     const { rindex } = this;
     const maxOffset = rindex.length;
@@ -452,7 +438,6 @@ class KeyIndex {
     return new KeyIndex(labels);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   isubsetMask(mask: any) {
     const { rindex } = this;
     if (mask.length !== rindex.length)
@@ -469,17 +454,14 @@ class KeyIndex {
     return new KeyIndex(labels);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   withLabel(label: any) {
     return new KeyIndex([...this.rindex, label]);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   withLabels(labels: any) {
     return new KeyIndex([...this.rindex, ...labels]);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   dropLabel(label: any) {
     const idx = this.rindex.indexOf(label);
     const labelArray = [...this.rindex];
@@ -488,8 +470,12 @@ class KeyIndex {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-function isLabelIndex(i: any) {
+type LabelIndexImplementations =
+  | DenseInt32Index
+  | IdentityInt32Index
+  | KeyIndex;
+
+function isLabelIndex(i: unknown): i is LabelIndex {
   return (
     i instanceof IdentityInt32Index ||
     i instanceof DenseInt32Index ||

@@ -9,22 +9,19 @@ This is a function that will maintain a least-recently created cache of Datafram
 objects.
 */
 
-import { memoize } from "./util";
+import { memoize, AnyFunction } from "./util";
+import Dataframe from "./dataframe";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-function hashDataframe(df: any) {
+function hashDataframe(df: Dataframe): string {
   if (df.isEmpty()) return "";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   return df.__columnsAccessor.map((c: any) => c.__id).join(",");
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-function noop(df: any) {
+function noop(df: Dataframe) {
   return df;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-const dataframeMemo = (capacity = 100) =>
+const dataframeMemo = (capacity = 100): AnyFunction<Dataframe> =>
   memoize(noop, hashDataframe, capacity);
 
 export default dataframeMemo;

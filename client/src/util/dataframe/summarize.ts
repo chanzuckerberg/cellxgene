@@ -9,19 +9,34 @@ partition at some point.
 import quantile from "../quantile";
 import { sortArray } from "../typedCrossfilter/sort";
 
-// [ 0, 0.01, 0.02, ..., 1.0]
-// @ts-expect-error ts-migrate(6133) FIXME: 'v' is declared but its value is never read.
-const centileNames = new Array(101).fill(0).map((v, idx) => idx / 100);
+export type ContinuousColumnSummary = {
+  categorical: false;
+  min: number | undefined;
+  max: number | undefined;
+  nan: number;
+  pinf: number;
+  ninf: number;
+  percentiles: number[] | undefined;
+};
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function summarizeContinuous(col: any) {
-  let min;
-  let max;
-  let nan = 0;
-  let pinf = 0;
-  let ninf = 0;
-  let percentiles;
+export type CategoricalColumnSummary = {
+  categorical: true;
+  categories: (number | string | boolean)[];
+  categoryCounts: Map<number | string | boolean, number>;
+  numCategories: number;
+};
+
+export type ColumnSummary = ContinuousColumnSummary | CategoricalColumnSummary;
+
+// [ 0, 0.01, 0.02, ..., 1.0]
+const centileNames = new Array(101).fill(0).map((_v, idx) => idx / 100);
+
+export function summarizeContinuous(col: any): ContinuousColumnSummary {
   if (col) {
+    let nan = 0;
+    let pinf = 0;
+    let ninf = 0;
+
     // -Inf < finite < Inf < NaN
     const sortedCol = sortArray(new col.constructor(col));
 
@@ -50,23 +65,32 @@ export function summarizeContinuous(col: any) {
       ninf,
       sortedCol.length - nan - pinf
     );
-    percentiles = quantile(centileNames, sortedColFiniteOnly, true);
-    min = percentiles[0];
-    max = percentiles[100];
+    const percentiles = quantile(centileNames, sortedColFiniteOnly, true);
+    const min = percentiles[0];
+    const max = percentiles[100];
+
+    return {
+      categorical: false,
+      min,
+      max,
+      nan,
+      pinf,
+      ninf,
+      percentiles,
+    };
   }
   return {
     categorical: false,
-    min,
-    max,
-    nan,
-    pinf,
-    ninf,
-    percentiles,
+    min: undefined,
+    max: undefined,
+    nan: 0,
+    pinf: 0,
+    ninf: 0,
+    percentiles: undefined,
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function summarizeCategorical(col: any) {
+export function summarizeCategorical(col: any): CategoricalColumnSummary {
   const categoryCounts = new Map();
   if (col) {
     for (let r = 0, l = col.length; r < l; r += 1) {
