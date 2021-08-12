@@ -9,6 +9,7 @@ import {
   upperBoundIndirect,
 } from "./sort";
 import { makeSortIndex } from "./util";
+import { isAnyArray } from "../../common/types/arraytypes";
 
 class NotImplementedError extends Error {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
@@ -450,7 +451,7 @@ class ImmutableScalarDimension extends _ImmutableBaseDimension {
         value,
         new ValueArrayType(data.length)
       );
-    } else if (isArrayOrTypedArray(value)) {
+    } else if (isAnyArray(value)) {
       // Create value array from user-provided array.  Typically used
       // only by enumerated dimensions
       array = this._createValueArray(
@@ -728,15 +729,6 @@ export const DimTypes = {
   enum: ImmutableEnumDimension,
   spatial: ImmutableSpatialDimension,
 };
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-function isArrayOrTypedArray(x: any) {
-  return (
-    Array.isArray(x) ||
-    (ArrayBuffer.isView(x) &&
-      Object.prototype.toString.call(x) !== "[object DataView]")
-  );
-}
 
 /* return bounding box of the polygon */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
