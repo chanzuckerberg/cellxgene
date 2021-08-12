@@ -1,4 +1,5 @@
 import { vec2, mat3 } from "gl-matrix";
+import clamp from "./clamp";
 
 const EPSILON = 0.000001;
 
@@ -10,10 +11,6 @@ const panBound = 0.8;
 // private
 const scratch0 = new Float32Array(16);
 const scratch1 = new Float32Array(16);
-
-function clamp(val: number, rng: Array<number>) {
-  return Math.max(Math.min(val, rng[1]), rng[0]);
-}
 
 class Camera {
   canvas: HTMLCanvasElement;
@@ -53,11 +50,11 @@ class Camera {
 
   pan(dx: number, dy: number) {
     const m = this.viewMatrix;
-    const dyRange = [
+    const dyRange: [number, number] = [
       -panBound - (m[7] + 1) / m[4],
       panBound - (m[7] - 1) / m[4],
     ];
-    const dxRange = [
+    const dxRange: [number, number] = [
       -panBound - (m[6] + 1) / m[0],
       panBound - (m[6] - 1) / m[0],
     ];
@@ -76,7 +73,7 @@ class Camera {
     Camera zoom at [x,y]
     */
     const m = this.viewMatrix;
-    const bounds = [-panBound, panBound];
+    const bounds: [number, number] = [-panBound, panBound];
     x = clamp(x, bounds);
     y = clamp(y, bounds);
 

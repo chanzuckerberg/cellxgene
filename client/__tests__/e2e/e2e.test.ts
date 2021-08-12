@@ -199,7 +199,6 @@ describe("clipping", () => {
   test("clip continuous", async () => {
     await goToPage(appUrlBase);
 
-    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     await clip(data.clip.min, data.clip.max);
     const histBrushableAreaId = `histogram-${data.clip.metadata}-plot-brushable-area`;
     const coords = await calcDragCoordinates(
