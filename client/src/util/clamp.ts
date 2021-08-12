@@ -8,7 +8,6 @@
  * @returns a number
  */
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export default function clamp(val: any, rng: any) {
+export default function clamp(val: number, rng: [number, number]): number {
   return Math.max(Math.min(val, rng[1]), rng[0]);
 }
