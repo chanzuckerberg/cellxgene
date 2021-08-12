@@ -34,7 +34,7 @@ function makeMockColumn(s: any, length: any) {
       return new Array(length).fill(s.categories[0]);
 
     default:
-      throw new Error("unkonwn type");
+      throw new Error("unknown type");
   }
 }
 

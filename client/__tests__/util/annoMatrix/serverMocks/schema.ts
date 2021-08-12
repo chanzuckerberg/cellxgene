@@ -1,4 +1,4 @@
-import { RawSchema } from "../../../../src/common/types/entities";
+import { RawSchema } from "../../../../src/common/types/schema";
 
 export const schema: { schema: RawSchema } = {
   schema: {
