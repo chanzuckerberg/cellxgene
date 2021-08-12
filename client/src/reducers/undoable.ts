@@ -79,7 +79,7 @@ export interface UndoableAction<FilterStateType extends UndoableFilterState> {
 export type ActionFilterFn<FilterStateType extends UndoableFilterState> = (
   undoableState: UndoableState<FilterStateType>,
   action: AnyAction,
-  filterState: FilterStateType | undefined
+  filterState?: FilterStateType
 ) => UndoableAction<FilterStateType>;
 
 export interface UndoableState<FilterStateType extends UndoableFilterState> {
