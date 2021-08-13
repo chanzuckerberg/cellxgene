@@ -828,9 +828,7 @@ describe("dataframe factories", () => {
         [3, 3],
         [new Array(3).fill(0), new Array(3).fill(0), new Array(3).fill(0)]
       );
-      const dfB = dfA.mapColumns(() => {
-        return new Array(3).fill(1);
-      });
+      const dfB = dfA.mapColumns(() => new Array(3).fill(1));
       expect(dfA).not.toBe(dfB);
       expect(dfB.iat(0, 0)).toEqual(1);
       expect(dfB.iat(0, 1)).toEqual(1);

@@ -310,7 +310,6 @@ class Category extends React.PureComponent {
                 // @ts-expect-error ts-migrate(2339) FIXME: Property 'handleCategoryToggleAllClick' does not e... Remove this comment to see the full error message
                 handleCategoryToggleAllClick,
               } = asyncProps;
-              const isTruncated = !!categorySummary?.isTruncated;
               const selectionState = this.getSelectionState(categorySummary);
               return (
                 <CategoryRender
@@ -318,7 +317,6 @@ class Category extends React.PureComponent {
                   metadataField={metadataField}
                   checkboxID={checkboxID}
                   isUserAnno={isUserAnno}
-                  isTruncated={isTruncated}
                   isExpanded={isExpanded}
                   isColorAccessor={isColorAccessor}
                   selectionState={selectionState}
@@ -344,57 +342,54 @@ class Category extends React.PureComponent {
 export default Category;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-const StillLoading = ({ metadataField, checkboxID }: any) => {
+const StillLoading = ({ metadataField, checkboxID }: any) => (
   /*
   We are still loading this category, so render a "busy" signal.
   */
-  return (
+  <div
+    style={{
+      maxWidth: globals.maxControlsWidth,
+    }}
+  >
     <div
       style={{
-        maxWidth: globals.maxControlsWidth,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "baseline",
       }}
     >
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "baseline",
+          justifyContent: "flex-start",
+          alignItems: "flex-start",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-start",
-            alignItems: "flex-start",
-          }}
+        <label
+          htmlFor={checkboxID}
+          className={`${Classes.CONTROL} ${Classes.CHECKBOX}`}
         >
-          <label
-            htmlFor={checkboxID}
-            className={`${Classes.CONTROL} ${Classes.CHECKBOX}`}
+          <input disabled id={checkboxID} checked type="checkbox" />
+          <span className={Classes.CONTROL_INDICATOR} />
+        </label>
+        <Truncate>
+          <span
+            style={{
+              cursor: "pointer",
+              display: "inline-block",
+              width: LABEL_WIDTH,
+            }}
           >
-            <input disabled id={checkboxID} checked type="checkbox" />
-            <span className={Classes.CONTROL_INDICATOR} />
-          </label>
-          <Truncate>
-            <span
-              style={{
-                cursor: "pointer",
-                display: "inline-block",
-                width: LABEL_WIDTH,
-              }}
-            >
-              {metadataField}
-            </span>
-          </Truncate>
-        </div>
-        <div>
-          <Button minimal loading intent="primary" />
-        </div>
+            {metadataField}
+          </span>
+        </Truncate>
+      </div>
+      <div>
+        <Button minimal loading intent="primary" />
       </div>
     </div>
-  );
-};
-
+  </div>
+);
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const ErrorLoading = ({ metadataField, error }: any) => {
   console.error(error); // log error to console as it is unexpected.
@@ -422,8 +417,6 @@ const CategoryHeader = React.memo(
     checkboxID,
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'isUserAnno' does not exist on type '{ ch... Remove this comment to see the full error message
     isUserAnno,
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'isTruncated' does not exist on type '{ c... Remove this comment to see the full error message
-    isTruncated,
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'isColorAccessor' does not exist on type ... Remove this comment to see the full error message
     isColorAccessor,
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'isExpanded' does not exist on type '{ ch... Remove this comment to see the full error message
@@ -525,11 +518,7 @@ const CategoryHeader = React.memo(
           />
 
           <Tooltip
-            content={
-              isTruncated
-                ? `Coloring by ${metadataField} is disabled, as it exceeds the limit of ${globals.maxCategoricalOptionsToDisplay} labels`
-                : "Use as color scale"
-            }
+            content="Use as color scale"
             position={Position.LEFT}
             usePortal
             hoverOpenDelay={globals.tooltipHoverOpenDelay}
@@ -544,7 +533,6 @@ const CategoryHeader = React.memo(
               onClick={onColorChangeClick}
               active={isColorAccessor}
               intent={isColorAccessor ? "primary" : "none"}
-              disabled={isTruncated}
               icon="tint"
             />
           </Tooltip>
@@ -562,8 +550,6 @@ const CategoryRender = React.memo(
     checkboxID,
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'isUserAnno' does not exist on type '{ ch... Remove this comment to see the full error message
     isUserAnno,
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'isTruncated' does not exist on type '{ c... Remove this comment to see the full error message
-    isTruncated,
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'isColorAccessor' does not exist on type ... Remove this comment to see the full error message
     isColorAccessor,
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'isExpanded' does not exist on type '{ ch... Remove this comment to see the full error message
@@ -625,7 +611,6 @@ const CategoryRender = React.memo(
             metadataField={metadataField}
             checkboxID={checkboxID}
             isUserAnno={isUserAnno}
-            isTruncated={isTruncated}
             isExpanded={isExpanded}
             isColorAccessor={isColorAccessor}
             selectionState={selectionState}
@@ -651,11 +636,6 @@ const CategoryRender = React.memo(
               />
             ) : null
           }
-        </div>
-        <div>
-          {isExpanded && isTruncated ? (
-            <p style={{ paddingLeft: 15 }}>... truncated list ...</p>
-          ) : null}
         </div>
       </div>
     );

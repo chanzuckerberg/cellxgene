@@ -116,13 +116,8 @@ class Categories extends React.Component<{}, State> {
   };
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  instruction = (name: any) => {
-    return labelPrompt(
-      this.categoryNameError(name),
-      "New, unique category name",
-      ":"
-    );
-  };
+  instruction = (name: any) =>
+    labelPrompt(this.categoryNameError(name), "New, unique category name", ":");
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   onExpansionChange = (catName: any) => {

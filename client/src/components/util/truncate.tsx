@@ -34,7 +34,7 @@ const SECOND_HALF_INNER_STYLE = {
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export default (props: any) => {
-  const { children, tooltipAddendum = "" } = props;
+  const { children, isGenesetDescription, tooltipAddendum = "" } = props;
   // Truncate only support a single child with a text child
 
   if (
@@ -89,9 +89,22 @@ export default (props: any) => {
       "aria-label": originalString,
     })
   );
+  // we need an ID to check for this content, since this is the only place the geneset description appears
+  const descriptionContent = (
+    <span
+      test-id={`geneset-description-tooltip-${originalString}${tooltipAddendum}`}
+    >
+      {originalString}
+      {tooltipAddendum}
+    </span>
+  );
   return (
     <Tooltip2
-      content={`${originalString}${tooltipAddendum}`}
+      content={
+        isGenesetDescription
+          ? descriptionContent
+          : `${originalString}${tooltipAddendum}`
+      }
       hoverOpenDelay={tooltipHoverOpenDelayQuick}
       // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
       targetProps={{ style: children.props.style }}

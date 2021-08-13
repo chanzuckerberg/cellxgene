@@ -44,7 +44,7 @@ export default class AnnoMatrixObsCrossfilter {
   }
 
   /**
-  Managing the associated annoMatrix.  These wrappers are necessary to 
+  Managing the associated annoMatrix.  These wrappers are necessary to
   make coordinated changes to BOTH the crossfilter and annoMatrix, and
   ensure that all state stays synchronized.
 
@@ -249,10 +249,12 @@ export default class AnnoMatrixObsCrossfilter {
     const { annoMatrix } = this;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const currentDims = (this as any).obsCrossfilter.dimensionNames();
-    // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'xfltr' implicitly has an 'any' type.
-    const obsCrossfilter = currentDims.reduce((xfltr, dim) => {
-      return xfltr.select(dim, { mode: "all" });
-    }, (this as any).obsCrossfilter); // eslint-disable-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+    const obsCrossfilter = currentDims.reduce(
+      // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'xfltr' implicitly has an 'any' type.
+      (xfltr, dim) => xfltr.select(dim, { mode: "all" }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+      (this as any).obsCrossfilter
+    ); // eslint-disable-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
 

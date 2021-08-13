@@ -18,7 +18,7 @@ const HistogramFooter = React.memo(
     isObs,
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'isGeneSetSummary' does not exist on type... Remove this comment to see the full error message
     isGeneSetSummary,
-  }) => {
+  }) => (
     /*
     Footer of each histogram.  Will render range and title.
 
@@ -28,44 +28,42 @@ const HistogramFooter = React.memo(
       * range - length two array, [min, max], containing the range values to display
       * rangeColor - length two array, [mincolor, maxcolor], each a CSS color
     */
-    return (
-      <div>
-        <div
+    <div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: hideRanges ? "center" : "space-between",
+        }}
+      >
+        <span
           style={{
-            display: "flex",
-            justifyContent: hideRanges ? "center" : "space-between",
+            color: rangeColorMin,
+            display: hideRanges ? "none" : "block",
           }}
         >
-          <span
-            style={{
-              color: rangeColorMin,
-              display: hideRanges ? "none" : "block",
-            }}
-          >
-            min {rangeMin.toPrecision(4)}
-          </span>
-          <span
-            data-testclass="brushable-histogram-field-name"
-            style={{ fontStyle: "italic" }}
-          >
-            {isObs && displayName}
-            {isGeneSetSummary && "gene set mean expression"}
-          </span>
-          <div style={{ display: hideRanges ? "block" : "none" }}>
-            : {rangeMin}
-          </div>
-          <span
-            style={{
-              color: rangeColorMax,
-              display: hideRanges ? "none" : "block",
-            }}
-          >
-            max {rangeMax.toPrecision(4)}
-          </span>
+          min {rangeMin.toPrecision(4)}
+        </span>
+        <span
+          data-testclass="brushable-histogram-field-name"
+          style={{ fontStyle: "italic" }}
+        >
+          {isObs && displayName}
+          {isGeneSetSummary && "gene set mean expression"}
+        </span>
+        <div style={{ display: hideRanges ? "block" : "none" }}>
+          : {rangeMin}
         </div>
+        <span
+          style={{
+            color: rangeColorMax,
+            display: hideRanges ? "none" : "block",
+          }}
+        >
+          max {rangeMax.toPrecision(4)}
+        </span>
       </div>
-    );
-  }
+    </div>
+  )
 );
 
 export default HistogramFooter;

@@ -1,4 +1,6 @@
-export const schema = {
+import { RawSchema } from "../../../../src/common/types/schema";
+
+export const schema: { schema: RawSchema } = {
   schema: {
     annotations: {
       obs: {

@@ -12,6 +12,17 @@ import * as viewActions from "./viewStack";
 import * as embActions from "./embedding";
 import * as genesetActions from "./geneset";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+function setGlobalConfig(config: any) {
+  /**
+   * Set any global run-time config not _exclusively_ managed by the config reducer.
+   * This should only set fields defined in globals.globalConfig.
+   */
+  globals.globalConfig.maxCategoricalOptionsToDisplay =
+    config?.parameters?.["max-category-items"] ??
+    globals.globalConfig.maxCategoricalOptionsToDisplay;
+}
+
 /*
 return promise fetching user-configured colors
 */
@@ -33,6 +44,9 @@ async function schemaFetch() {
 async function configFetch(dispatch: any) {
   return fetchJson("config").then((response) => {
     const config = { ...globals.configDefaults, ...response.config };
+
+    setGlobalConfig(config);
+
     dispatch({
       type: "configuration load complete",
       config,

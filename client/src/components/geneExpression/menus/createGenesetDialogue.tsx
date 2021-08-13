@@ -90,9 +90,7 @@ class CreateGenesetDialogue extends React.PureComponent<{}, State> {
   };
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  genesetNameError = () => {
-    return false;
-  };
+  genesetNameError = () => false;
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleChange = (e: any) => {
@@ -113,11 +111,10 @@ class CreateGenesetDialogue extends React.PureComponent<{}, State> {
   };
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  instruction = (genesetName: any, genesets: any) => {
-    return genesets.has(genesetName)
+  instruction = (genesetName: any, genesets: any) =>
+    genesets.has(genesetName)
       ? "Gene set name must be unique."
       : "New, unique gene set name";
-  };
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   validate = (genesetName: any, genesets: any) => {
