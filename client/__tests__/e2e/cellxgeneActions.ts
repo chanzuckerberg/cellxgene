@@ -94,10 +94,12 @@ export async function getAllCategoriesAndCounts(category: any) {
             .querySelector("[data-testclass='categorical-value']")
             .getAttribute("aria-label");
 
-          const count = (row.querySelector(
-            "[data-testclass='categorical-value-count']"
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-          ) as any).innerText;
+          const count = (
+            row.querySelector(
+              "[data-testclass='categorical-value-count']"
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+            ) as any
+          ).innerText;
 
           return [cat, count];
         })
@@ -194,8 +196,7 @@ export async function expandCategory(category: any) {
   if (notExpanded) await clickOn(`${category}:category-expand`);
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export async function clip(min = 0, max = 100) {
+export async function clip(min = "0", max = "100"): Promise<void> {
   await clickOn("visualization-settings");
   await clearInputAndTypeInto("clip-min-input", min);
   await clearInputAndTypeInto("clip-max-input", max);
