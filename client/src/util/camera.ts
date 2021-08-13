@@ -36,19 +36,19 @@ class Camera {
     this.viewMatrixInv = mat3.create();
   }
 
-  view() {
+  view(): mat3 {
     return this.viewMatrix;
   }
 
-  invView() {
+  invView(): mat3 {
     return this.viewMatrixInv;
   }
 
-  distance() {
+  distance(): number {
     return this.viewMatrix[0];
   }
 
-  pan(dx: number, dy: number) {
+  pan(dx: number, dy: number): void {
     const m = this.viewMatrix;
     const dyRange: [number, number] = [
       -panBound - (m[7] + 1) / m[4],
@@ -68,7 +68,7 @@ class Camera {
     mat3.invert(this.viewMatrixInv, m);
   }
 
-  zoomAt(d: number, x = 0, y = 0) {
+  zoomAt(d: number, x = 0, y = 0): void {
     /*
     Camera zoom at [x,y]
     */
@@ -102,7 +102,7 @@ class Camera {
     canvasX: number,
     canvasY: number,
     projectionInvTF: mat3
-  ) {
+  ): vec2 {
     /*
     Convert mouse position to local
     */
@@ -122,7 +122,7 @@ class Camera {
     return pos;
   }
 
-  mousePan(e: MouseEvent, projectionTF: mat3) {
+  mousePan(e: MouseEvent, projectionTF: mat3): true {
     const projectionInvTF = mat3.invert(scratch0, projectionTF);
     const pos = this.localPosition(
       this.canvas,
@@ -142,7 +142,7 @@ class Camera {
     return true;
   }
 
-  wheelZoom(e: WheelEvent, projectionTF: mat3) {
+  wheelZoom(e: WheelEvent, projectionTF: mat3): true {
     const { height } = this.canvas;
     const { deltaY, deltaMode, clientX, clientY } = e;
     const scale = scaleSpeed * (deltaMode === 1 ? 12 : 1) * (deltaY || 0);
@@ -158,7 +158,7 @@ class Camera {
     return true;
   }
 
-  handleEvent(e: MouseEvent, projectionTF: mat3) {
+  handleEvent(e: MouseEvent, projectionTF: mat3): boolean {
     /*
     process the event, and return true if camera view changed
     */
