@@ -5,6 +5,7 @@ import {
   createCategorySummaryFromDfCol,
   isSelectableCategoryName,
 } from "./stateManager/controlsHelpers";
+import { Dataframe } from "./dataframe";
 
 /*
   Centroid coordinate calculation
@@ -25,14 +26,11 @@ label -> {
 const getCoordinatesByLabel = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   schema: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  categoryName: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  categoryDf: any,
+  categoryName: string,
+  categoryDf: Dataframe,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   layoutChoice: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  layoutDf: any
+  layoutDf: Dataframe
 ) => {
   const coordsByCategoryLabel = new Map();
   // If the coloredBy is not a categorical col
@@ -50,11 +48,8 @@ const getCoordinatesByLabel = (
     schema.annotations.obsByName[categoryName]
   );
 
-  const {
-    isUserAnno,
-    categoryValueIndices,
-    categoryValueCounts,
-  } = categorySummary;
+  const { isUserAnno, categoryValueIndices, categoryValueCounts } =
+    categorySummary;
 
   // Iterate over all cells
   for (let i = 0, len = categoryArray.length; i < len; i += 1) {
@@ -77,7 +72,7 @@ const getCoordinatesByLabel = (
       let coords = coordsByCategoryLabel.get(label);
       if (coords === undefined) {
         // Get the number of cells which are in the label
-        // @ts-expect-error ts-migrate(2538) FIXME: Type 'unknown' cannot be used as an index type.
+        // @ts-expect-error ts-migrate(2538) FIXME: Blocked by StateManager/ControlsHelpers
         const numInLabel = categoryValueCounts[labelIndex];
         coords = {
           hasFinite: false,
@@ -103,7 +98,7 @@ const getCoordinatesByLabel = (
   return coordsByCategoryLabel;
 };
 
-/* 
+/*
   calcMedianCentroid calculates the median coordinates for labels in a given category
 
   label -> [x-Coordinate, y-Coordinate]
@@ -112,14 +107,11 @@ const getCoordinatesByLabel = (
 const calcMedianCentroid = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   schema: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  categoryName: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  categoryDf: any,
+  categoryName: string,
+  categoryDf: Dataframe,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   layoutChoice: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  layoutDf: any
+  layoutDf: Dataframe
 ) => {
   // generate a map describing the coordinates for each label within the given category
   const dataMap = getCoordinatesByLabel(
@@ -157,14 +149,11 @@ const hashMedianCentroid = (
   // @ts-expect-error ts-migrate(6133) FIXME: 'schema' is declared but its value is never read.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   schema: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  categoryName: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  categoryDf: any,
+  categoryName: string,
+  categoryDf: Dataframe,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   layoutChoice: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  layoutDf: any
+  layoutDf: Dataframe
 ) => {
   const category = categoryDf.col(categoryName);
   const layoutDimNames = layoutChoice.currentDimNames;
