@@ -1,3 +1,4 @@
+import { Schema } from "../common/types/schema";
 import { _getColumnSchema, _isIndex } from "./schema";
 import catLabelSort from "../util/catLabelSort";
 import {
@@ -5,12 +6,11 @@ import {
   overflowCategoryLabel,
   globalConfig,
 } from "../globals";
-import { Dataframe } from "../util/dataframe";
+import { Dataframe, LabelType, DataframeColumn } from "../util/dataframe";
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function normalizeResponse(
   field: string,
-  schema: any, // eslint-disable-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  schema: Schema,
   response: Dataframe
 ): Dataframe {
   /**
@@ -65,8 +65,7 @@ export function normalizeResponse(
   return response;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-function castColumnToBoolean(df: Dataframe, label: any): Dataframe {
+function castColumnToBoolean(df: Dataframe, label: LabelType): Dataframe {
   const colData = df.col(label).asArray();
   const newColData = new Array(colData.length);
   for (let i = 0; i < colData.length; i += 1) newColData[i] = !!colData[i];
@@ -75,7 +74,10 @@ function castColumnToBoolean(df: Dataframe, label: any): Dataframe {
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function normalizeWritableCategoricalSchema(colSchema: any, col: any) {
+export function normalizeWritableCategoricalSchema(
+  colSchema: any, // eslint-disable-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  col: DataframeColumn
+) {
   /*
   Ensure all enum writable / categorical schema have a categories array, that
   the categories array contains all unique values in the data array, AND that 
@@ -91,12 +93,11 @@ export function normalizeWritableCategoricalSchema(colSchema: any, col: any) {
   return colSchema;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function normalizeCategorical(
   df: Dataframe,
-  colLabel: any, // eslint-disable-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  colLabel: LabelType,
   colSchema: any // eslint-disable-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-) {
+): Dataframe {
   /*
   If writable, ensure schema matches data and we have an unassigned label
 

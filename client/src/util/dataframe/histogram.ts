@@ -1,16 +1,27 @@
 /*
 Dataframe histogram
 */
-import { isTypedArray } from "../../common/types/arraytypes";
+import { NumberArray } from "../../common/types/arraytypes";
+import {
+  DataframeColumn,
+  ContinuousHistogram,
+  ContinuousHistogramBy,
+  CategoricalHistogram,
+  CategoricalHistogramBy,
+} from "./types";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-function _histogramContinuous(column: any, bins: any, min: any, max: any) {
+export function histogramContinuous(
+  column: DataframeColumn,
+  bins: number,
+  domain: [number, number]
+): ContinuousHistogram {
   const valBins = new Array(bins).fill(0);
   if (!column) {
     return valBins;
   }
+  const [min, max] = domain;
   const binWidth = (max - min) / bins;
-  const colArray = column.asArray();
+  const colArray: NumberArray = column.asArray() as NumberArray;
   for (let r = 0, len = colArray.length; r < len; r += 1) {
     const val = colArray[r];
     if (val <= max && val >= min) {
@@ -22,25 +33,20 @@ function _histogramContinuous(column: any, bins: any, min: any, max: any) {
   return valBins;
 }
 
-function _histogramContinuousBy(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  column: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  bins: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  min: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  max: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  by: any
-) {
+export function histogramContinuousBy(
+  column: DataframeColumn,
+  bins: number,
+  domain: [number, number],
+  by: DataframeColumn
+): ContinuousHistogramBy {
   const byMap = new Map();
   if (!column || !by) {
     return byMap;
   }
+  const [min, max] = domain;
   const binWidth = (max - min) / bins;
   const byArray = by.asArray();
-  const colArray = column.asArray();
+  const colArray = column.asArray() as NumberArray;
   for (let r = 0, len = colArray.length; r < len; r += 1) {
     const byBin = byArray[r];
     let valBins = byMap.get(byBin);
@@ -58,8 +64,9 @@ function _histogramContinuousBy(
   return byMap;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-function _histogramCategorical(column: any) {
+export function histogramCategorical(
+  column: DataframeColumn
+): CategoricalHistogram {
   const valMap = new Map();
   if (!column) {
     return valMap;
@@ -76,8 +83,10 @@ function _histogramCategorical(column: any) {
   return valMap;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-function _histogramCategoricalBy(column: any, by: any) {
+export function histogramCategoricalBy(
+  column: DataframeColumn,
+  by: DataframeColumn
+): CategoricalHistogramBy {
   const byMap = new Map();
   if (!column || !by) {
     return byMap;
@@ -102,23 +111,12 @@ function _histogramCategoricalBy(column: any, by: any) {
 }
 
 /*
-Count category occupancy.  Optional group-by category.
-*/
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function histogramCategorical(column: any, by: any) {
-  if (by && isTypedArray(by)) {
-    throw new Error("Group by column must be categorical");
-  }
-  return by
-    ? _histogramCategoricalBy(column, by)
-    : _histogramCategorical(column);
-}
-
-/*
 Memoization hash for histogramCategorical()
 */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function hashCategorical(column: any, by: any) {
+export function hashCategorical(
+  column: DataframeColumn,
+  by?: DataframeColumn
+): string {
   if (by) {
     return `${column.__id}:${by.__id}`;
   }
@@ -126,39 +124,14 @@ export function hashCategorical(column: any, by: any) {
 }
 
 /*
-Bin counts for continuous/scalar values, with optional group-by category.
-Values outside domain are ignored.
-*/
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export function histogramContinuous(
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  column: any,
-  bins = 40,
-  domain = [0, 1],
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  by: any
-) {
-  if (by && isTypedArray(by)) {
-    throw new Error("Group by column must be categorical");
-  }
-  const [min, max] = domain;
-  return by
-    ? _histogramContinuousBy(column, bins, min, max, by)
-    : _histogramContinuous(column, bins, min, max);
-}
-
-/*
 Memoization hash for histogramContinuous
 */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function hashContinuous(
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  column: any,
+  column: DataframeColumn,
   bins = "",
-  domain = [0, 0],
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  by: any
-) {
+  domain: [number, number] = [0, 0],
+  by?: DataframeColumn
+): string {
   const [min, max] = domain;
   if (by) {
     return `${column.__id}:${bins}:${min}:${max}:${by.__id}`;

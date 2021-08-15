@@ -1,12 +1,7 @@
 /*
 Private utility code for dataframe
 */
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- a legitimate use of any, does not require a fix.
-export type AnyFunction<T = unknown> = (...args: any[]) => T;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- a legitimate use of any, does not require a fix.
-export type HashArgsFunction = (...args: any[]) => string | number;
+import { AnyFunction, HashArgsFunction } from "./types";
 
 export function callOnceLazy<T>(f: AnyFunction<T>): AnyFunction<T> {
   /*
@@ -62,8 +57,8 @@ export function memoize<T>(
 }
 
 /**
-memoization helpers - just a global counter.
-**/
+ *memoization helpers - just a global counter.
+ */
 let __DataframeMemoId__ = 0;
 export function __getMemoId(): string {
   const id = __DataframeMemoId__;

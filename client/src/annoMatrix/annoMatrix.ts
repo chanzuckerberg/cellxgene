@@ -248,7 +248,7 @@ export default class AnnoMatrix {
     1. Fetch the "n_genes" column the "obs":
 
 			const df = await fetch("obs", "n_genes")
-      console.log("Largest number of genes is: ", df.summarize().max);
+      console.log("Largest number of genes is: ", df.summarizeContinuous().max);
 
     2. Fetch two separate columns from obs.  Returns a single dataframe containing
        the columns:

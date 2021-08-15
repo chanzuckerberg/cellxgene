@@ -592,8 +592,7 @@ class Graph extends React.Component<{}, GraphState> {
     const positions = this.computePointPositions(X, Y, modelTF);
     const colorTable = this.updateColorTable(colorsProp, colorDf);
     const colors = this.computePointColors(colorTable.rgb);
-    const { colorAccessor } = colorsProp;
-    const colorByData = colorDf?.col(colorAccessor)?.asArray();
+    const colorByData = colorDf?.icol(0)?.asArray();
     const {
       metadataField: pointDilationCategory,
       categoryField: pointDilationLabel,

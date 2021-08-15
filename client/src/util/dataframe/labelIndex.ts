@@ -1,78 +1,74 @@
 /* eslint-disable max-classes-per-file -- Classes are interrelated*/
+
 /**
 Label indexing - map a label to & from an integer offset.  See Dataframe
 for how this is used.
 **/
 
-import { AnyArray, TypedArray } from "../../common/types/arraytypes";
 import { rangeFill as fillRange } from "../range";
 import { __getMemoId } from "./util";
+import { OffsetArray, LabelType, LabelArray, GenericLabelArray } from "./types";
 
-export type OffsetArray =
-  | Int8Array
-  | Uint8Array
-  | Int16Array
-  | Uint16Array
-  | Int32Array
-  | Uint32Array
-  | number[];
-
-/*
-Private utility functions
-*/
-
-/** @internal */
-function extent(tarr: OffsetArray): [number, number] {
-  let min = 0x7fffffff;
-  let max = ~min; // eslint-disable-line no-bitwise -- Establishes 0 of same size
-  for (let i = 0, l = tarr.length; i < l; i += 1) {
-    const v = tarr[i];
-    if (v < min) {
-      min = v;
-    }
-    if (v > max) {
-      max = v;
-    }
-  }
-  return [min, max];
-}
-
-abstract class LabelIndex<LabelArrayType extends AnyArray> {
-  readonly __id: string;
+export abstract class LabelIndexBase {
+  readonly __id: string; // memoization helper
 
   constructor(id: string) {
     this.__id = id;
   }
 
-  abstract labels(): LabelArrayType;
+  abstract labels(): LabelArray;
 
-  abstract getOffset(label: LabelArrayType[0]): number | undefined;
+  /**
+   * Look up the offset for the label.
+   *
+   * @param label - label to look up
+   * @returns - offset number or -1 if not found.
+   */
+  abstract getOffset(label: LabelType): number;
 
-  abstract getOffsets(labels: LabelArrayType): (number | undefined)[];
+  getOffsets(labels: LabelArray): Int32Array {
+    // labels to offsets
+    const result = new Int32Array(labels.length);
+    for (let i = 0; i < labels.length; i += 1) {
+      result[i] = this.getOffset(labels[i]);
+    }
+    return result;
+  }
 
-  abstract getLabel(offset: number): LabelArrayType[0] | undefined;
+  /**
+   * Look up the label for the offset.
+   *
+   * @param offset - offset to look up
+   * @returns - label or undefined if not found.
+   */
+  abstract getLabel(offset: number): LabelType | undefined;
 
-  abstract getLabels(
-    offsets: OffsetArray
-  ): Array<LabelArrayType[0] | undefined>;
+  getLabels(offsets: OffsetArray): (LabelType | undefined)[] {
+    // offsets to labels
+    const result = new Array(offsets.length);
+    for (let i = 0; i < offsets.length; i += 1) {
+      result[i] = this.getLabel(offsets[i]);
+    }
+    return result;
+  }
 
   abstract size(): number;
 
-  abstract subset(labels: LabelArrayType): LabelIndexImplementations;
+  abstract subset(labels: LabelArray): LabelIndexBase;
 
-  abstract isubset(offsets: OffsetArray): LabelIndexImplementations;
+  abstract isubset(offsets: OffsetArray): LabelIndexBase;
 
-  abstract isubsetMask(mask: Uint8Array): LabelIndexImplementations;
+  abstract isubsetMask(mask: Uint8Array | boolean[]): LabelIndexBase;
 
-  abstract withLabel(label: LabelArrayType[0]): LabelIndexImplementations;
+  abstract withLabel(label: LabelType): LabelIndexBase;
 
-  abstract withLabels(labels: LabelArrayType): LabelIndexImplementations;
+  abstract withLabels(labels: LabelArray): LabelIndexBase;
 
-  abstract dropLabel(label: LabelArrayType[0]): LabelIndexImplementations;
+  abstract dropLabel(label: LabelType): LabelIndexBase;
 }
 
-class IdentityInt32Index extends LabelIndex<Int32Array> {
-  readonly maxOffset: Int32Array[0];
+export class IdentityInt32Index extends LabelIndexBase {
+  readonly maxOffset: number;
 
   /*
   identity/noop index, with small assumptions that labels are int32
@@ -82,7 +78,7 @@ class IdentityInt32Index extends LabelIndex<Int32Array> {
     this.maxOffset = maxOffset;
   }
 
-  labels(): Int32Array {
+  labels(): LabelArray {
     // memoize
     const k = fillRange(new Int32Array(this.maxOffset));
     this.labels = function labels() {
@@ -91,20 +87,11 @@ class IdentityInt32Index extends LabelIndex<Int32Array> {
     return k;
   }
 
-  getOffset(label: number): number | undefined {
+  getOffset(label: LabelType): number {
     // label to offset
     return Number.isInteger(label) && label >= 0 && label < this.maxOffset
-      ? label
-      : undefined;
-  }
-
-  getOffsets(labels: OffsetArray): (number | undefined)[] {
-    // labels to offsets
-    const result = new Array(labels.length);
-    for (let i = 0; i < labels.length; i += 1) {
-      result[i] = this.getOffset(labels[i]);
-    }
-    return result;
+      ? (label as number)
+      : -1;
   }
 
   getLabel(offset: number): number | undefined {
@@ -114,54 +101,65 @@ class IdentityInt32Index extends LabelIndex<Int32Array> {
       : undefined;
   }
 
-  getLabels(offsets: OffsetArray): (number | undefined)[] {
-    // offsets to labels
-    const result = new Array(offsets.length);
-    for (let i = 0; i < offsets.length; i += 1) {
-      result[i] = this.getOffset(offsets[i]);
-    }
-    return result;
-  }
-
   size(): number {
     return this.maxOffset;
   }
 
-  __promote(labelArray: OffsetArray): LabelIndexImplementations {
+  /** @internal */
+  __promote(labelArray: LabelArray, allInts: boolean): LabelIndexBase {
     /*
     time/space decision - based on the resulting density
     */
-    const [minLabel, maxLabel] = extent(labelArray);
-    if (minLabel === 0 && maxLabel === labelArray.length - 1)
-      return new IdentityInt32Index(labelArray.length);
+    if (labelArray.length === 0) return new KeyIndex(Array.from(labelArray));
+    if (allInts) {
+      const [minLabel, maxLabel] = extent(
+        labelArray as GenericLabelArray<number> // safe, as allInts is true
+      );
+      if (minLabel === 0 && maxLabel === labelArray.length - 1)
+        return new IdentityInt32Index(labelArray.length);
 
-    const labelSpaceSize = maxLabel - minLabel + 1;
-    const density = labelSpaceSize / this.maxOffset;
-    /* 0.1 is a magic number, that needs testing to optimize */
-    if (density < 0.1) {
-      return new KeyIndex(labelArray);
+      const labelSpaceSize = maxLabel - minLabel + 1;
+      const density = labelSpaceSize / this.maxOffset;
+      /* 0.1 is a magic number which needs testing to optimize */
+      if (density < 0.1) {
+        return new KeyIndex(Array.from(labelArray));
+      }
+      return new DenseInt32Index(labelArray as GenericLabelArray<number>, [
+        minLabel,
+        maxLabel,
+      ]);
     }
-    return new DenseInt32Index(labelArray, [minLabel, maxLabel]);
+    return new KeyIndex(Array.from(labelArray));
   }
 
-  subset(labels: OffsetArray): LabelIndexImplementations {
+  subset(labels: LabelArray): LabelIndexBase {
     /* validate subset */
     const { maxOffset } = this;
     for (let i = 0, l = labels.length; i < l; i += 1) {
       const label = labels[i];
       if (!Number.isInteger(label) || label < 0 || label >= maxOffset)
-        throw new RangeError(`offset or label: ${label}`);
+        throw new RangeError(`label: ${label}`);
     }
-    return this.__promote(labels);
+    return this.__promote(labels, true);
   }
 
   /* identity index - labels are offsets */
-  isubset(offsets: OffsetArray): LabelIndexImplementations {
-    return this.subset(offsets);
+  isubset(offsets: OffsetArray): LabelIndexBase {
+    /* validate isubset */
+    const { maxOffset } = this;
+    for (let i = 0, l = offsets.length; i < l; i += 1) {
+      const offset = offsets[i];
+      if (!Number.isInteger(offset) || offset < 0 || offset >= maxOffset)
+        throw new RangeError(`offset: ${offset}`);
+    }
+    if (!(offsets instanceof Int32Array)) {
+      offsets = new Int32Array(offsets);
+    }
+    return this.__promote(offsets, true);
   }
 
   /* identity index - labels are offsets */
-  isubsetMask(mask: Uint8Array): LabelIndexImplementations {
+  isubsetMask(mask: Uint8Array | boolean[]): LabelIndexBase {
     let count = 0;
     if (mask.length !== this.maxOffset) {
       throw new RangeError("mask has invalid length for index");
@@ -177,41 +175,42 @@ class IdentityInt32Index extends LabelIndex<Int32Array> {
     return this.subset(labels);
   }
 
-  withLabel(label: number): LabelIndexImplementations {
+  withLabel(label: LabelType): LabelIndexBase {
     if (label === this.maxOffset) {
       return new IdentityInt32Index(label + 1);
     }
-    return this.__promote([...this.labels(), label]);
+    return this.__promote([...this.labels(), label], Number.isInteger(label));
   }
 
-  withLabels(labels: OffsetArray): LabelIndexImplementations {
-    return this.__promote([...this.labels(), ...labels]);
+  withLabels(labels: LabelArray): LabelIndexBase {
+    return this.__promote(
+      [...this.labels(), ...labels],
+      labels.every(Number.isInteger)
+    );
   }
 
-  dropLabel(label: number): LabelIndexImplementations {
+  dropLabel(label: LabelType): LabelIndexBase {
+    if (!Number.isInteger(label) || label < 0 || label > this.maxOffset - 1)
+      throw new RangeError("Invalid label.");
     if (label === this.maxOffset - 1) {
       return new IdentityInt32Index(label);
     }
     const labelArray = [...this.labels()];
-    labelArray.splice(labelArray.indexOf(label), 1);
-    return this.__promote(labelArray);
+    labelArray.splice(labelArray.indexOf(label as number), 1);
+    return this.__promote(labelArray, true);
   }
 }
 
-class DenseInt32Index extends LabelIndex<Int32Array> {
-  getLabel: any;
+export class DenseInt32Index extends LabelIndexBase {
+  getLabel: (offset: number) => number | undefined;
 
-  getLabels: any;
+  getOffset: (label: LabelType) => number;
 
-  getOffset: any;
+  index: Int32Array;
 
-  getOffsets: any;
+  minLabel: number;
 
-  index: any;
-
-  minLabel: any;
-
-  rindex: any;
+  rindex: Int32Array;
 
   /*
   DenseInt32Index indexes integer labels, and uses Int32Array typed arrays
@@ -219,14 +218,15 @@ class DenseInt32Index extends LabelIndex<Int32Array> {
   of the forward index labels must be known a priori (so that the index
   array can be pre-allocated).
   */
-  constructor(labels: any, labelRange = null) {
+  constructor(
+    labels: GenericLabelArray<number>,
+    labelRange?: [number, number]
+  ) {
     super(__getMemoId());
-    if (labels.constructor !== Int32Array) {
-      labels = new Int32Array(labels);
-    }
-
+    const int32Labels =
+      labels instanceof Int32Array ? labels : new Int32Array(labels);
     if (!labelRange) {
-      labelRange = extent(labels);
+      labelRange = extent(int32Labels);
     }
     const [minLabel, maxLabel] = labelRange;
     const labelSpaceSize = maxLabel - minLabel + 1;
@@ -237,68 +237,70 @@ class DenseInt32Index extends LabelIndex<Int32Array> {
     }
 
     this.minLabel = minLabel;
-    this.rindex = labels;
+    this.rindex = int32Labels;
     this.index = index;
-    this.__compile();
-  }
 
-  __compile() {
-    const { minLabel, index, rindex } = this;
-    this.getOffset = function getOffset(l: any) {
-      if (!Number.isInteger(l)) return undefined;
-      const offset = index[l - minLabel];
-      return offset === -1 ? undefined : offset;
+    this.getOffset = function getOffset(label: LabelType) {
+      if (!Number.isInteger(label)) return -1;
+      const lblIdx: number = <number>label - minLabel;
+      if (lblIdx < 0 || lblIdx >= index.length) return -1;
+      const offset = index[lblIdx];
+      return offset;
     };
 
-    this.getOffsets = function getOffsets(arr: any) {
-      return arr.map((i: any) => this.getOffset(i));
-    };
-
-    this.getLabel = function getLabel(i: any) {
-      return Number.isInteger(i) ? rindex[i] : undefined;
-    };
-
-    this.getLabels = function getLabels(arr: any) {
-      return arr.map((i: any) => this.getLabel(i));
+    this.getLabel = function getLabel(offset: number) {
+      return Number.isInteger(offset) ? labels[offset] : undefined;
     };
   }
 
-  labels() {
+  labels(): LabelArray {
     return this.rindex;
   }
 
-  size() {
+  size(): number {
     return this.rindex.length;
   }
 
-  __promote(labelArray: any) {
+  /** @internal */
+  __promote(labelArray: LabelArray, allInts: boolean): LabelIndexBase {
     /*
     time/space decision - if we are going to use less than 10% of the
     dense index space, switch to a KeyIndex (which is slower, but uses
     less memory for sparse label spaces).
     */
-    const [minLabel, maxLabel] = extent(labelArray);
-    const labelSpaceSize = maxLabel - minLabel + 1;
-    const density = labelSpaceSize / this.rindex.length;
-    /* 0.1 is a magic number, that needs testing to optimize */
-    if (density < 0.1) {
-      return new KeyIndex(labelArray);
+    if (labelArray.length === 0) return new KeyIndex(Array.from(labelArray));
+    if (allInts) {
+      if (!(labelArray instanceof Int32Array)) {
+        labelArray = new Int32Array(labelArray as number[]);
+      }
+      const [minLabel, maxLabel] = extent(
+        labelArray as GenericLabelArray<number> // safe, as allInts is true
+      );
+      const labelSpaceSize = maxLabel - minLabel + 1;
+      const density = labelSpaceSize / this.rindex.length;
+      /* 0.1 is a magic number, that needs testing to optimize */
+      if (density < 0.1) {
+        return new KeyIndex(Array.from(labelArray));
+      }
+      return new DenseInt32Index(labelArray as GenericLabelArray<number>, [
+        minLabel,
+        maxLabel,
+      ]);
     }
-    return new DenseInt32Index(labelArray, [minLabel, maxLabel]);
+    return new KeyIndex(Array.from(labelArray));
   }
 
-  subset(labels: any) {
+  subset(labels: LabelArray): LabelIndexBase {
     /* validate subset */
     for (let i = 0, l = labels.length; i < l; i += 1) {
-      const label = labels[i];
-      const offset = this.getOffset(label);
-      if (offset === undefined || offset === -1)
-        throw new RangeError(`unknown label: ${label}`);
+      const label = labels[i]; // if not a number, getOffset will error
+      const offset = this.getOffset(label as number);
+      if (offset === -1) throw new RangeError(`unknown label: ${label}`);
     }
-    return this.__promote(labels);
+    return this.__promote(labels as GenericLabelArray<number>, true);
   }
 
-  isubset(offsets: any) {
+  isubset(offsets: OffsetArray): LabelIndexBase {
     /* validate subset */
     const { rindex } = this;
     const maxOffset = rindex.length;
@@ -309,10 +311,10 @@ class DenseInt32Index extends LabelIndex<Int32Array> {
         throw new RangeError(`out of bounds offset: ${offset}`);
       labels[i] = rindex[offset];
     }
-    return this.__promote(labels);
+    return this.__promote(labels, true);
   }
 
-  isubsetMask(mask: any) {
+  isubsetMask(mask: Uint8Array | boolean[]): LabelIndexBase {
     const { rindex } = this;
     if (mask.length !== rindex.length)
       throw new RangeError("mask has invalid length for index");
@@ -325,51 +327,55 @@ class DenseInt32Index extends LabelIndex<Int32Array> {
       }
     }
     labels = labels.slice(0, count);
-    return this.__promote(labels);
+    return this.__promote(labels, true);
   }
 
-  withLabel(label: any) {
-    return this.__promote([...this.labels(), label]);
+  withLabel(label: LabelType): LabelIndexBase {
+    return this.__promote([...this.labels(), label], Number.isInteger(label));
   }
 
-  withLabels(labels: any) {
-    return this.__promote([...this.labels(), ...labels]);
+  withLabels(labels: LabelArray): LabelIndexBase {
+    return this.__promote(
+      [...this.labels(), ...labels],
+      labels.every(Number.isInteger)
+    );
   }
 
-  dropLabel(label: any) {
+  dropLabel(label: LabelType): LabelIndexBase {
+    if (!Number.isInteger(label)) throw new RangeError("Invalid label.");
     const labelArray = [...this.labels()];
-    labelArray.splice(labelArray.indexOf(label), 1);
-    return this.__promote(labelArray);
+    labelArray.splice(labelArray.indexOf(label as number), 1);
+    return this.__promote(
+      new Int32Array(labelArray as GenericLabelArray<number>),
+      true
+    );
   }
 }
 
-class KeyIndex extends LabelIndex {
-  __id: any;
+export class KeyIndex extends LabelIndexBase {
+  getLabel: (offset: number) => LabelType | undefined;
 
-  getLabel: any;
+  getOffset: (label: LabelType) => number | -1;
 
-  getLabels: any;
+  index: Map<string | number, number>;
 
-  getOffset: any;
-
-  getOffsets: any;
-
-  index: any;
-
-  rindex: any;
+  rindex: (string | number)[];
 
   /*
   KeyIndex indexes arbitrary JS primitive types, and uses a Map()
   as its core data structure.
   */
-  constructor(labels: any) {
-    super();
-    const index = new Map();
+  constructor(labels: Array<string | number>) {
+    super(__getMemoId());
+    const index = new Map<string | number, number>();
     if (labels === undefined) {
       labels = [];
     }
+    if (!Array.isArray(labels)) {
+      labels = Array.from(labels);
+    }
     const rindex = labels;
-    labels.forEach((v: any, i: any) => {
+    labels.forEach((v, i) => {
       index.set(v, i);
     });
 
@@ -380,30 +386,19 @@ class KeyIndex extends LabelIndex {
 
     this.index = index;
     this.rindex = rindex;
-    this.__id = __getMemoId();
-    this.__compile();
-  }
 
-  __compile() {
-    const { index, rindex } = this;
-    this.getOffset = function getOffset(k: any) {
-      return index.get(k);
+    this.getOffset = function getOffset(label: LabelType) {
+      const offset = index.get(label);
+      if (offset === undefined) return -1;
+      return offset;
     };
 
-    this.getOffsets = function getOffsets(arr: any) {
-      return arr.map((l: any) => this.getOffset(l));
-    };
-
-    this.getLabel = function getLabel(i: any) {
-      return Number.isInteger(i) ? rindex[i] : undefined;
-    };
-
-    this.getLabels = function getLabels(arr: any) {
-      return arr.map((i: any) => this.getLabel(i));
+    this.getLabel = function getLabel(offset: number) {
+      return Number.isInteger(offset) ? rindex[offset] : undefined;
     };
   }
 
-  labels() {
+  labels(): LabelArray {
     return this.rindex;
   }
 
@@ -411,7 +406,7 @@ class KeyIndex extends LabelIndex {
     return this.rindex.length;
   }
 
-  subset(labels: any) {
+  subset(labels: (string | number)[]): LabelIndexBase {
     /* validate subset */
     for (let i = 0, l = labels.length; i < l; i += 1) {
       const label = labels[i];
@@ -424,7 +419,7 @@ class KeyIndex extends LabelIndex {
     return new KeyIndex(labels);
   }
 
-  isubset(offsets: any) {
+  isubset(offsets: OffsetArray): LabelIndexBase {
     const { rindex } = this;
     const maxOffset = rindex.length;
     const labels = new Array(offsets.length);
@@ -438,7 +433,7 @@ class KeyIndex extends LabelIndex {
     return new KeyIndex(labels);
   }
 
-  isubsetMask(mask: any) {
+  isubsetMask(mask: Uint8Array | boolean[]): LabelIndexBase {
     const { rindex } = this;
     if (mask.length !== rindex.length)
       throw new RangeError("mask has invalid length for index");
@@ -454,15 +449,15 @@ class KeyIndex extends LabelIndex {
     return new KeyIndex(labels);
   }
 
-  withLabel(label: any) {
+  withLabel(label: LabelType): LabelIndexBase {
     return new KeyIndex([...this.rindex, label]);
   }
 
-  withLabels(labels: any) {
+  withLabels(labels: LabelArray): LabelIndexBase {
     return new KeyIndex([...this.rindex, ...labels]);
   }
 
-  dropLabel(label: any) {
+  dropLabel(label: LabelType): LabelIndexBase {
     const idx = this.rindex.indexOf(label);
     const labelArray = [...this.rindex];
     labelArray.splice(idx, 1);
@@ -470,18 +465,31 @@ class KeyIndex extends LabelIndex {
   }
 }
 
-type LabelIndexImplementations =
-  | DenseInt32Index
-  | IdentityInt32Index
-  | KeyIndex;
+export type LabelIndex = LabelIndexBase;
 
-function isLabelIndex(i: unknown): i is LabelIndex {
+export function isLabelIndex(i: unknown): i is LabelIndex {
   return (
+    i instanceof LabelIndexBase ||
     i instanceof IdentityInt32Index ||
     i instanceof DenseInt32Index ||
     i instanceof KeyIndex
   );
 }
 
-export { DenseInt32Index, IdentityInt32Index, KeyIndex, isLabelIndex };
+/** @internal */
+function extent(tarr: GenericLabelArray<number>): [number, number] {
+  let min = 0x7fffffff;
+  let max = ~min; // eslint-disable-line no-bitwise -- Establishes 0 of same size
+  for (let i = 0, l = tarr.length; i < l; i += 1) {
+    const v = tarr[i];
+    if (v < min) {
+      min = v;
+    }
+    if (v > max) {
+      max = v;
+    }
+  }
+  return [min, max];
+}
+
 /* eslint-enable max-classes-per-file -- enable*/

@@ -41,12 +41,12 @@ class Occupancy extends React.PureComponent {
     if (!this.canvas) return;
     const groupBy = categoryData.col(metadataField);
     const col = colorData.icol(0);
-    const range = col.summarize();
-    const histogramMap = col.histogram(
+    const range = col.summarizeContinuous();
+    const histogramMap = col.histogramContinuousBy(
       50,
       [range.min, range.max],
       groupBy
-    ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
+    ); 
     const bins = histogramMap.has(categoryValue)
       ? histogramMap.get(categoryValue)
       : new Array(50).fill(0);
@@ -100,7 +100,7 @@ class Occupancy extends React.PureComponent {
     const groupBy = categoryData.col(metadataField);
     const occupancyMap = colorData
       .col(colorAccessor)
-      .histogramCategorical(groupBy);
+      .histogramCategoricalBy(groupBy);
     const occupancy = occupancyMap.get(categoryValue);
     if (occupancy && occupancy.size > 0) {
       // not all categories have occupancy, so occupancy may be undefined.

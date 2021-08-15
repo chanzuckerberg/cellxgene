@@ -22,6 +22,7 @@ import {
   flagSelected,
   flagHighlight,
 } from "../../util/glHelpers";
+import { DataframeColumn } from "../../util/dataframe";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function createProjectionTF(viewportWidth: any, viewportHeight: any) {
@@ -33,9 +34,9 @@ function createProjectionTF(viewportWidth: any, viewportHeight: any) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-function getScale(col: any, rangeMin: any, rangeMax: any) {
+function getScale(col: DataframeColumn, rangeMin: any, rangeMax: any) {
   if (!col) return null;
-  const { min, max } = col.summarize();
+  const { min, max } = col.summarizeContinuous();
   return d3.scaleLinear().domain([min, max]).range([rangeMin, rangeMax]);
 }
 const getXScale = memoize(getScale);

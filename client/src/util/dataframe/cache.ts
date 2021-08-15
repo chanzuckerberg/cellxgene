@@ -9,12 +9,13 @@ This is a function that will maintain a least-recently created cache of Datafram
 objects.
 */
 
-import { memoize, AnyFunction } from "./util";
+import { AnyFunction } from "./types";
+import { memoize } from "./util";
 import Dataframe from "./dataframe";
 
 function hashDataframe(df: Dataframe): string {
   if (df.isEmpty()) return "";
-  return df.__columnsAccessor.map((c: any) => c.__id).join(",");
+  return df.__columnsAccessor.map((c) => c.__id).join(",");
 }
 
 function noop(df: Dataframe) {

@@ -4,6 +4,7 @@ See also reducers/annotations.js
 */
 
 import { Schema } from "../../common/types/schema";
+import { Dataframe, LabelType } from "../dataframe";
 
 /*
 There are a number of state constraints assumed throughout the
@@ -57,9 +58,12 @@ export function isUserAnnotation(annoMatrix, name) {
   return _isUserAnnotation(annoMatrix.schema, name);
 }
 
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'df' implicitly has an 'any' type.
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export function allHaveLabelByMask(df, colName, label, mask) {
+export function allHaveLabelByMask(
+  df: Dataframe,
+  colName: LabelType,
+  label: string,
+  mask: Uint8Array
+): boolean {
   // return true if all rows as indicated by mask have the colname set to label.
   // False if not.
   const col = df.col(colName);

@@ -12,6 +12,7 @@ import {
   AnnoMatrixObsCrossfilter,
   isubsetMask,
 } from "../../../src/annoMatrix";
+import { Dataframe } from "../../../src/util/dataframe";
 import { rangeFill } from "../../../src/util/range";
 
 enableFetchMocks();
@@ -266,7 +267,8 @@ describe("AnnoMatrixCrossfilter", () => {
       expect(xfltr.countSelected()).toEqual(240);
 
       const df = await annoMatrixSubset.fetch("obs", "louvain");
-      const values = df.col("louvain").asArray();
+      expect(df).toBeDefined();
+      const values = (df as Dataframe).col("louvain").asArray();
       const selected = xfltr.allSelectedMask();
       values.every(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
@@ -649,7 +651,7 @@ describe("AnnoMatrixCrossfilter", () => {
         values: ["purple"],
       });
       expect(xfltr2.countSelected()).toEqual(2);
-      expect(xfltr2.allSelectedLabels()).toEqual(Int32Array.from([0, 10]));
+      expect(xfltr2.allSelectedLabels()).toEqual(Array.from([0, 10]));
     });
 
     test("resetObsColumnValues", async () => {

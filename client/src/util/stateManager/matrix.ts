@@ -1,6 +1,10 @@
 import { flatbuffers } from "flatbuffers";
 import { NetEncoding } from "./matrix_generated";
-import { isTypedArray, isFloatTypedArray } from "../../common/types/arraytypes";
+import {
+  TypedArray,
+  isTypedArray,
+  isFloatTypedArray,
+} from "../../common/types/arraytypes";
 import {
   Dataframe,
   IdentityInt32Index,
@@ -94,14 +98,13 @@ function encodeTypedArray(builder: any, uType: any, uData: any) {
   return builder.endObject();
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function encodeMatrixFBS(df: any) {
+export function encodeMatrixFBS(df: Dataframe): Uint8Array {
   /*
   encode the dataframe as an FBS Matrix
   */
 
   /* row indexing not supported currently */
-  if (df.rowIndex.constructor !== IdentityInt32Index) {
+  if (!(df.rowIndex instanceof IdentityInt32Index)) {
     throw new Error("FBS does not support row index encoding at this time");
   }
 
@@ -115,11 +118,9 @@ export function encodeMatrixFBS(df: any) {
   let encColumns;
 
   if (shape[0] > 0 && shape[1] > 0) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    const columns = df.columns().map((col: any) => col.asArray());
+    const columns = df.columns().map((col) => col.asArray());
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    const cols = columns.map((carr: any) => {
+    const cols = columns.map((carr) => {
       let uType;
       let tarr;
       if (isTypedArray(carr)) {
@@ -179,8 +180,7 @@ export function encodeMatrixFBS(df: any) {
   return builder.asUint8Array();
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-function promoteTypedArray(o: any) {
+function promoteTypedArray(o: TypedArray) {
   /*
   Decide what internal data type to use for the data returned from
   the server.
@@ -212,8 +212,9 @@ function promoteTypedArray(o: any) {
   return new TypedArrayCtor(o);
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function matrixFBSToDataframe(arrayBuffers: any) {
+export function matrixFBSToDataframe(
+  arrayBuffers: ArrayBuffer | ArrayBuffer[]
+): Dataframe {
   /*
   Convert array of Matrix FBS to a Dataframe.
 
@@ -229,37 +230,30 @@ export function matrixFBSToDataframe(arrayBuffers: any) {
     arrayBuffers = [arrayBuffers];
   }
   if (arrayBuffers.length === 0) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    return (Dataframe as any).Dataframe.empty();
+    return Dataframe.empty();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  const fbs = arrayBuffers.map((ab: any) => decodeMatrixFBS(ab, true)); // leave in place
+  const fbs = arrayBuffers.map((ab) => decodeMatrixFBS(ab, true)); // leave in place
   /* check that all FBS have same row dimensionality */
   const { nRows } = fbs[0];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  fbs.forEach((b: any) => {
+  fbs.forEach((b) => {
     if (b.nRows !== nRows)
       throw new Error("FBS with inconsistent dimensionality");
   });
-  const columns = fbs // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    .map((fb: any) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-      fb.columns.map((c: any) => {
+  const columns = fbs
+    .map((fb) =>
+      fb.columns.map((c) => {
         if (isFloatTypedArray(c) || Array.isArray(c)) return c;
         return promoteTypedArray(c);
       })
     )
     .flat();
   // colIdx may be TypedArray or Array
-  const colIdx = fbs // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    .map((b: any) =>
-      Array.isArray(b.colIdx) ? b.colIdx : Array.from(b.colIdx)
-    )
+  const colIdx = fbs
+    .map((b) => (Array.isArray(b.colIdx) ? b.colIdx : Array.from(b.colIdx)))
     .flat();
   const nCols = columns.length;
 
-  // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
   const df = new Dataframe([nRows, nCols], columns, null, new KeyIndex(colIdx));
   return df;
 }

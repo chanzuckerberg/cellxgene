@@ -24,6 +24,11 @@ export default function quantile(
   /*
 	start with the naive (sort) implementation.  Later, use a faster partition
 	*/
+
+  if (tarr.length === 0) {
+    return new Array(quantArr.length).fill(0);
+  }
+
   const Ctor: TypedArrayConstructor = tarr.constructor as TypedArrayConstructor;
   const arr = sorted ? tarr : sortArray(new Ctor(tarr)); // copy
   const len = arr.length;

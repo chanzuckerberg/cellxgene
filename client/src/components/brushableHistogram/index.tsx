@@ -262,13 +262,13 @@ class HistogramBrush extends React.PureComponent {
 
     // if we are clipped, fetch both our value and our unclipped value,
     // as we need the absolute min/max range, not just the clipped min/max.
-    const summary = column.summarize();
+    const summary = column.summarizeContinuous();
     const range = [summary.min, summary.max];
 
     let unclippedRange = [...range];
     if (isClipped) {
       const parent = await annoMatrix.viewOf.fetch(...query);
-      const { min, max } = parent.icol(0).summarize();
+      const { min, max } = parent.icol(0).summarizeContinuous();
       unclippedRange = [min, max];
     }
 
@@ -320,7 +320,7 @@ class HistogramBrush extends React.PureComponent {
      recalculate expensive stuff, notably bins, summaries, etc.
     */
     const histogramCache = {}; /* maybe change this so that it computes ... */
-    const summary = col.summarize(); /* this is memoized, so it's free the second time you call it */
+    const summary = col.summarizeContinuous(); /* this is memoized, so it's free the second time you call it */
     const { min: domainMin, max: domainMax } = summary;
     const numBins = 40;
     const { TOP: topMargin, LEFT: leftMargin } = newMargin;
@@ -333,7 +333,7 @@ class HistogramBrush extends React.PureComponent {
       .range([leftMargin, leftMargin + newWidth]);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    (histogramCache as any).bins = col.histogram(numBins, [
+    (histogramCache as any).bins = col.histogramContinuous(numBins, [
       domainMin,
       domainMax,
     ]);

@@ -43,7 +43,6 @@ function getEncodedDataframe(colNames: any, length: any, colSchemas: any) {
   const colIndex = new KeyIndex(colNames);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const columns = colSchemas.map((s: any) => makeMockColumn(s, length));
-  // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
   const df = new Dataframe([length, colNames.length], columns, null, colIndex);
   const body = encodeMatrixFBS(df);
   return body;
@@ -56,7 +55,6 @@ export function dataframeResponse(colNames: any, columns: any) {
     [columns[0].length, colNames.length],
     columns,
     null,
-    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
     colIndex
   );
   const body = encodeMatrixFBS(df);

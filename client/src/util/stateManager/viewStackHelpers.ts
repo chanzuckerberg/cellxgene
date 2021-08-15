@@ -176,7 +176,6 @@ export function _getDiscreteCellEmbeddingRowIndex(embeddingDf) {
 }
 export const getDiscreteCellEmbeddingRowIndex = memoize(
   _getDiscreteCellEmbeddingRowIndex,
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'df' implicitly has an 'any' type.
   (df) => df.__id
 );
 
