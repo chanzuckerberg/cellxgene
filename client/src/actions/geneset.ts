@@ -21,90 +21,90 @@ The behavior manifest in these action creators:
 Note that crossfilter indices are lazy created, as needed.
 */
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export const genesetDelete = (genesetName: any) => (
+import { Dataframe } from "../util/dataframe";
+
+export const genesetDelete =
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  dispatch: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  getState: any
-) => {
-  const state = getState();
-  const { genesets } = state;
-  const gs = genesets?.genesets?.get(genesetName) ?? {};
-  const geneSymbols = Array.from(gs.genes.keys());
-  const obsCrossfilter = dropGeneset(dispatch, state, genesetName, geneSymbols);
-  if (genesetName === state.colors.colorAccessor) {
+  (genesetName: any) => (dispatch: any, getState: any) => {
+    const state = getState();
+    const { genesets } = state;
+    const gs = genesets?.genesets?.get(genesetName) ?? {};
+    const geneSymbols = Array.from(gs.genes.keys());
+    const obsCrossfilter = dropGeneset(
+      dispatch,
+      state,
+      genesetName,
+      geneSymbols
+    );
+    if (genesetName === state.colors.colorAccessor) {
+      dispatch({
+        type: "reset colorscale",
+      });
+    }
     dispatch({
-      type: "reset colorscale",
+      type: "geneset: delete",
+      genesetName,
+      obsCrossfilter,
+      annoMatrix: obsCrossfilter.annoMatrix,
     });
-  }
-  dispatch({
-    type: "geneset: delete",
-    genesetName,
-    obsCrossfilter,
-    annoMatrix: obsCrossfilter.annoMatrix,
-  });
-};
+  };
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export const genesetAddGenes = (genesetName: any, genes: any) => async (
+export const genesetAddGenes =
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  dispatch: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  getState: any
-) => {
-  const state = getState();
-  const { obsCrossfilter: prevObsCrossfilter, annoMatrix } = state;
-  const { schema } = annoMatrix;
-  const varIndex = schema.annotations.var.index;
-  const df = await annoMatrix.fetch("var", varIndex);
-  const geneNames = df.col(varIndex).asArray();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  genes = genes.reduce((acc: any, gene: any) => {
-    if (geneNames.indexOf(gene.geneSymbol) === -1) {
-      postUserErrorToast(
-        `${gene.geneSymbol} doesn't appear to be a valid gene name.`
-      );
-    } else acc.push(gene);
-    return acc;
-  }, []);
+  (genesetName: any, genes: any) => async (dispatch: any, getState: any) => {
+    const state = getState();
+    const { obsCrossfilter: prevObsCrossfilter, annoMatrix } = state;
+    const { schema } = annoMatrix;
+    const varIndex = schema.annotations.var.index;
+    const df: Dataframe = await annoMatrix.fetch("var", varIndex);
+    const geneNames = df.col(varIndex).asArray();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+    genes = genes.reduce((acc: any, gene: any) => {
+      if (geneNames.indexOf(gene.geneSymbol) === -1) {
+        postUserErrorToast(
+          `${gene.geneSymbol} doesn't appear to be a valid gene name.`
+        );
+      } else acc.push(gene);
+      return acc;
+    }, []);
 
-  const obsCrossfilter = dropGenesetSummaryDimension(
-    prevObsCrossfilter,
-    state,
-    genesetName
-  );
-  dispatch({
-    type: "continuous metadata histogram cancel",
-    continuousNamespace: { isGeneSetSummary: true },
-    selection: genesetName,
-  });
-  return dispatch({
-    type: "geneset: add genes",
-    genesetName,
-    genes,
-    obsCrossfilter,
-    annoMatrix: obsCrossfilter.annoMatrix,
-  });
-};
+    const obsCrossfilter = dropGenesetSummaryDimension(
+      prevObsCrossfilter,
+      state,
+      genesetName
+    );
+    dispatch({
+      type: "continuous metadata histogram cancel",
+      continuousNamespace: { isGeneSetSummary: true },
+      selection: genesetName,
+    });
+    return dispatch({
+      type: "geneset: add genes",
+      genesetName,
+      genes,
+      obsCrossfilter,
+      annoMatrix: obsCrossfilter.annoMatrix,
+    });
+  };
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export const genesetDeleteGenes = (genesetName: any, geneSymbols: any) => (
+export const genesetDeleteGenes =
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  dispatch: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  getState: any
-) => {
-  const state = getState();
-  const obsCrossfilter = dropGeneset(dispatch, state, genesetName, geneSymbols);
-  return dispatch({
-    type: "geneset: delete genes",
-    genesetName,
-    geneSymbols,
-    obsCrossfilter,
-    annoMatrix: obsCrossfilter.annoMatrix,
-  });
-};
+  (genesetName: any, geneSymbols: any) => (dispatch: any, getState: any) => {
+    const state = getState();
+    const obsCrossfilter = dropGeneset(
+      dispatch,
+      state,
+      genesetName,
+      geneSymbols
+    );
+    return dispatch({
+      type: "geneset: delete genes",
+      genesetName,
+      geneSymbols,
+      obsCrossfilter,
+      annoMatrix: obsCrossfilter.annoMatrix,
+    });
+  };
 
 /*
 Private

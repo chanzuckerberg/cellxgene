@@ -47,7 +47,7 @@ export type CategoricalHistogramBy = Map<DataframeValue, CategoricalHistogram>;
 
 export type DataframeValue = number | string | boolean;
 
-export type DataframeColumnarArray = DataframeValue[] | TypedArray;
+export type DataframeValueArray = DataframeValue[] | TypedArray;
 
 export type DataframeColumnGetter = (
   label: LabelType
@@ -57,7 +57,7 @@ export interface DataframeColumn extends DataframeColumnGetter {
   readonly __id: string;
   isContinuous: boolean;
 
-  asArray: () => DataframeColumnarArray;
+  asArray: () => DataframeValueArray;
 
   summarizeContinuous: () => ContinuousColumnSummary;
   summarizeCategorical: () => CategoricalColumnSummary;

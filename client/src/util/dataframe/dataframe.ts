@@ -20,7 +20,7 @@ import {
 } from "./histogram";
 import {
   DataframeValue,
-  DataframeColumnarArray,
+  DataframeValueArray,
   DataframeColumn,
   OffsetType,
   OffsetArray,
@@ -88,17 +88,17 @@ interface DataframeConstructor {
 }
 
 export type MapColumnsCallbackFn = (
-  data: DataframeColumnarArray,
+  data: DataframeValueArray,
   idx: number,
   df: Dataframe
-) => DataframeColumnarArray;
+) => DataframeValueArray;
 
 const raiseIsNotContinuous = () => {
   throw TypeError("Column is not a continuous data type.");
 };
 
 class Dataframe {
-  __columns: DataframeColumnarArray[];
+  __columns: DataframeValueArray[];
 
   __columnsAccessor: DataframeColumn[] = [];
 
@@ -117,7 +117,7 @@ class Dataframe {
 
   constructor(
     dims: [number, number],
-    columnarData: DataframeColumnarArray[],
+    columnarData: DataframeValueArray[],
     rowIndex?: LabelIndex | null,
     colIndex?: LabelIndex | null,
     __columnsAccessor: (DataframeColumn | null)[] = [] // private interface
@@ -204,7 +204,7 @@ class Dataframe {
   }
 
   static __compileColumn(
-    column: DataframeColumnarArray,
+    column: DataframeValueArray,
     getRowOffset: (label: LabelType) => OffsetType | -1,
     getRowLabel: (offset: number) => LabelType | undefined
   ): DataframeColumn {
@@ -358,7 +358,7 @@ class Dataframe {
 
   withCol(
     label: LabelType,
-    colData: DataframeColumnarArray,
+    colData: DataframeValueArray,
     withRowIndex?: LabelIndex
   ): Dataframe {
     /*
@@ -481,7 +481,7 @@ class Dataframe {
       this.dims[1] + srcOffsets.length,
     ];
     const { rowIndex } = this;
-    const columns: DataframeColumnarArray[] = [
+    const columns: DataframeValueArray[] = [
       ...this.__columns,
       ...srcOffsets.map((i) => dataframe.__columns[i]),
     ];
@@ -566,10 +566,7 @@ class Dataframe {
     );
   }
 
-  replaceColData(
-    label: LabelType,
-    newColData: DataframeColumnarArray
-  ): Dataframe {
+  replaceColData(label: LabelType, newColData: DataframeValueArray): Dataframe {
     /*
     Accelerator for dropping a column then adding it again with same
     label and different values.
@@ -603,7 +600,7 @@ class Dataframe {
 
   static create(
     dims: [number, number],
-    columnarData: DataframeColumnarArray[]
+    columnarData: DataframeValueArray[]
   ): Dataframe {
     /*
     Create a dataframe from raw columnar data.  All column arrays

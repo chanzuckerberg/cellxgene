@@ -8,6 +8,8 @@ export {
 export { default as dataframeMemo } from "./cache";
 export type {
   LabelType,
+  DataframeValue,
+  DataframeValueArray,
   DataframeColumn,
   ContinuousHistogram,
   ContinuousHistogramBy,

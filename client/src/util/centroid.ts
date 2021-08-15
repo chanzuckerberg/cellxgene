@@ -1,5 +1,6 @@
 import quantile from "./quantile";
 import { memoize } from "./dataframe/util";
+import { Dataframe } from "./dataframe";
 import { unassignedCategoryLabel } from "../globals";
 import {
   createCategorySummaryFromDfCol,
@@ -27,12 +28,10 @@ const getCoordinatesByLabel = (
   schema: any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   categoryName: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  categoryDf: any,
+  categoryDf: Dataframe,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   layoutChoice: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  layoutDf: any
+  layoutDf: Dataframe
 ) => {
   const coordsByCategoryLabel = new Map();
   // If the coloredBy is not a categorical col
@@ -50,11 +49,8 @@ const getCoordinatesByLabel = (
     schema.annotations.obsByName[categoryName]
   );
 
-  const {
-    isUserAnno,
-    categoryValueIndices,
-    categoryValueCounts,
-  } = categorySummary;
+  const { isUserAnno, categoryValueIndices, categoryValueCounts } =
+    categorySummary;
 
   // Iterate over all cells
   for (let i = 0, len = categoryArray.length; i < len; i += 1) {
@@ -114,12 +110,10 @@ const calcMedianCentroid = (
   schema: any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   categoryName: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  categoryDf: any,
+  categoryDf: Dataframe,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   layoutChoice: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  layoutDf: any
+  layoutDf: Dataframe
 ) => {
   // generate a map describing the coordinates for each label within the given category
   const dataMap = getCoordinatesByLabel(
@@ -159,13 +153,11 @@ const hashMedianCentroid = (
   schema: any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   categoryName: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  categoryDf: any,
+  categoryDf: Dataframe,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   layoutChoice: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  layoutDf: any
-) => {
+  layoutDf: Dataframe
+): string => {
   const category = categoryDf.col(categoryName);
   const layoutDimNames = layoutChoice.currentDimNames;
   const layoutX = layoutDf.col(layoutDimNames[0]);
