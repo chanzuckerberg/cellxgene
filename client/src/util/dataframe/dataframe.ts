@@ -25,8 +25,7 @@ import {
   OffsetType,
   OffsetArray,
   LabelType,
-  ColLabelArray,
-  RowLabelArray,
+  LabelArray,
 } from "./types";
 
 /*
@@ -93,13 +92,16 @@ export type MapColumnsCallbackFn = (
   df: Dataframe
 ) => DataframeValueArray;
 
+/** @internal */
 const raiseIsNotContinuous = () => {
   throw TypeError("Column is not a continuous data type.");
 };
 
 class Dataframe {
+  /** @internal */
   __columns: DataframeValueArray[];
 
+  /** @internal */
   __columnsAccessor: DataframeColumn[] = [];
 
   __id: string;
@@ -111,6 +113,7 @@ class Dataframe {
   length: number;
 
   rowIndex: LabelIndex;
+
   /**
   Constructors & factories
   **/
@@ -160,6 +163,7 @@ class Dataframe {
     Object.freeze(this);
   }
 
+  /** @internal */
   static __errorChecks(
     dims: [number, number],
     columnarData: AnyArray[],
@@ -203,6 +207,7 @@ class Dataframe {
     }
   }
 
+  /** @internal */
   static __compileColumn(
     column: DataframeValueArray,
     getRowOffset: (label: LabelType) => OffsetType | -1,
@@ -324,6 +329,7 @@ class Dataframe {
     return get;
   }
 
+  /** @internal */
   __compile(accessors: (DataframeColumn | null)[]): void {
     /*
     Compile data accessors for each column.
@@ -430,8 +436,8 @@ class Dataframe {
      */
 
     // resolve the source and dest label names.
-    let srcLabels: ColLabelArray;
-    let dstLabels: ColLabelArray;
+    let srcLabels: LabelArray;
+    let dstLabels: LabelArray;
     if (!labels) {
       // combine all columns
       dstLabels = dataframe.colIndex.labels();
@@ -612,6 +618,7 @@ class Dataframe {
     return new Dataframe(dims, columnarData);
   }
 
+  /** @internal */
   __subset(
     newRowIndex: LabelIndex | null,
     newColIndex: LabelIndex | null
@@ -664,8 +671,8 @@ class Dataframe {
   }
 
   subset(
-    rowLabels: RowLabelArray | null,
-    colLabels: ColLabelArray | null,
+    rowLabels: LabelArray | null,
+    colLabels: LabelArray | null,
     withRowIndex?: LabelIndex | null
   ): Dataframe {
     /*
