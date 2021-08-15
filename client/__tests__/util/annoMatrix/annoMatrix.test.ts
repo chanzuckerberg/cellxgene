@@ -218,7 +218,7 @@ describe("AnnoMatrix", () => {
       );
       expect(base.getMatrixColumns("obs")).not.toContain("foo");
       expect(am1.getMatrixColumns("obs")).toContain("foo");
-      const foo = await am1.fetch("obs", "foo");
+      const foo: Dataframe = await am1.fetch("obs", "foo");
       expect(foo).toBeDefined();
       expect(foo).toBeInstanceOf(Dataframe);
       expect(foo).toHaveLength(am1.nObs);

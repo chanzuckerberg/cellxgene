@@ -400,30 +400,6 @@ class Scatterplot extends React.PureComponent<{}, State> {
           : Promise.resolve(null),
       ];
 
-    // const promises: Promise<Dataframe|null>[] = [];    // X and Y dimensions
-    // promises.push(
-    //   // @ts-expect-error ts-migrate(2488) FIXME: Type '(string | { where: { field: string; column: ... Remove this comment to see the full error message
-    //   annoMatrix.fetch(...this.createXQuery(scatterplotXXaccessor))
-    // );
-    // promises.push(
-    //   annoMatrix.fetch(...this.createXQuery(scatterplotYYaccessor))
-    // );
-
-    // // color
-    // const query = this.createColorByQuery(colors);
-    // if (query) {
-    //   promises.push(annoMatrix.fetch(...query));
-    // } else {
-    //   promises.push(Promise.resolve(null));
-    // }
-
-    // // point highlighting
-    // if (pointDilationAccessor) {
-    //   promises.push(annoMatrix.fetch("obs", pointDilationAccessor));
-    // } else {
-    //   promises.push(Promise.resolve(null));
-    // }
-
     return Promise.all<
       Dataframe,
       Dataframe,

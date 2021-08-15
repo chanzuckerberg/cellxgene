@@ -133,7 +133,7 @@ describe("AnnoMatrixCrossfilter", () => {
         )
       );
 
-      const df = await annoMatrix.fetch("obs", "louvain");
+      const df: Dataframe = await annoMatrix.fetch("obs", "louvain");
       const values = df.col("louvain").asArray();
       const selected = xfltr.allSelectedMask();
       values.every(
@@ -266,9 +266,12 @@ describe("AnnoMatrixCrossfilter", () => {
       expect(xfltr).toBeDefined();
       expect(xfltr.countSelected()).toEqual(240);
 
-      const df = await annoMatrixSubset.fetch("obs", "louvain");
+      const df: Dataframe = (await annoMatrixSubset.fetch(
+        "obs",
+        "louvain"
+      )) as Dataframe;
       expect(df).toBeDefined();
-      const values = (df as Dataframe).col("louvain").asArray();
+      const values = df.col("louvain").asArray();
       const selected = xfltr.allSelectedMask();
       values.every(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
@@ -356,7 +359,7 @@ describe("AnnoMatrixCrossfilter", () => {
       ).toHaveLength(1);
 
       // check data update.
-      const df = await xfltr.annoMatrix.fetch("obs", "foo");
+      const df: Dataframe = await xfltr.annoMatrix.fetch("obs", "foo");
       expect(
         df
           .col("foo")

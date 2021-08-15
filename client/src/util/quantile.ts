@@ -12,13 +12,13 @@ Arguments:
 
 */
 
-import { TypedArray, TypedArrayConstructor } from "../common/types/arraytypes";
+import { NumberArray, TypedArrayConstructor } from "../common/types/arraytypes";
 
 import { sortArray } from "./typedCrossfilter/sort";
 
 export default function quantile(
   quantArr: number[],
-  tarr: TypedArray,
+  tarr: NumberArray,
   sorted = false
 ): number[] {
   /*
