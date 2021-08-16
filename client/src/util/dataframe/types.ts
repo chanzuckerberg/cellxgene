@@ -137,9 +137,3 @@ export interface DataframeColumn extends DataframeColumnGetter {
    */
   iget: (offset: OffsetType) => DataframeValue | undefined;
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- a legitimate use of any.
-export type AnyFunction<T = unknown> = (...args: any[]) => T;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- a legitimate use of any.
-export type HashArgsFunction = (...args: any[]) => string | number;

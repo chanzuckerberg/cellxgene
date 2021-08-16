@@ -9,7 +9,6 @@ This is a function that will maintain a least-recently created cache of Datafram
 objects.
 */
 
-import { AnyFunction } from "./types";
 import { memoize } from "./util";
 import Dataframe from "./dataframe";
 
@@ -18,11 +17,11 @@ function hashDataframe(df: Dataframe): string {
   return df.__columnsAccessor.map((c) => c.__id).join(",");
 }
 
-function noop(df: Dataframe) {
+function noop(df: Dataframe): Dataframe {
   return df;
 }
 
-const dataframeMemo = (capacity = 100): AnyFunction<Dataframe> =>
+const dataframeMemo = (capacity = 100): ((df: Dataframe) => Dataframe) =>
   memoize(noop, hashDataframe, capacity);
 
 export default dataframeMemo;

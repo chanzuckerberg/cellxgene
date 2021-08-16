@@ -1,18 +1,20 @@
 /*
 Private utility code for dataframe
 */
-import { AnyFunction, HashArgsFunction } from "./types";
 
-export function callOnceLazy<T>(f: AnyFunction<T>): AnyFunction<T> {
+export function callOnceLazy<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- a legitimate use of any.
+  T extends (...args: any[]) => any = (...args: any[]) => any
+>(fn: T): (...args: Parameters<T>) => ReturnType<T> {
   /*
   call function once, and save the result, regardless of arguments (this is not
   the same as typical memoization).
   */
-  let value: T;
+  let value: ReturnType<T>;
   let calledOnce = false;
-  const result = function result(...args: unknown[]): T {
+  const result = function result(...args: Parameters<T>): ReturnType<T> {
     if (!calledOnce) {
-      value = f(...args);
+      value = fn(...args);
       calledOnce = true;
     }
     return value;
@@ -20,11 +22,14 @@ export function callOnceLazy<T>(f: AnyFunction<T>): AnyFunction<T> {
   return result;
 }
 
-export function memoize<T>(
-  fn: AnyFunction<T>,
-  hashFn: HashArgsFunction,
+export function memoize<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- a legitimate use of any.
+  T extends (...args: any[]) => any = (...args: any[]) => any
+>(
+  fn: T,
+  hashFn: (...args: Parameters<T>) => string,
   maxResultsCached = -1
-): AnyFunction<T> {
+): (...args: Parameters<T>) => ReturnType<T> {
   /* 
   function memoization, with user-provided hash.  hashFn must return a
   key which will be unique as a Map key (ie, obeys "sameValueZero" algorithm
@@ -32,7 +37,7 @@ export function memoize<T>(
   https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#Key_equality
   */
   const cache = new Map();
-  const wrap = function wrap(...args: unknown[]) {
+  const wrap = function wrap(...args: Parameters<T>): ReturnType<T> {
     const key = hashFn(...args);
     if (cache.has(key)) {
       return cache.get(key);

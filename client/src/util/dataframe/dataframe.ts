@@ -14,9 +14,11 @@ import {
   histogramCategorical as _histogramCategorical,
   histogramCategoricalBy as _histogramCategoricalBy,
   hashCategorical,
+  hashCategoricalBy,
   histogramContinuous as _histogramContinuous,
   histogramContinuousBy as _histogramContinuousBy,
   hashContinuous,
+  hashContinuousBy,
 } from "./histogram";
 import {
   DataframeValue,
@@ -26,6 +28,8 @@ import {
   OffsetArray,
   LabelType,
   LabelArray,
+  ContinuousHistogram,
+  ContinuousHistogramBy,
 } from "./types";
 
 /*
@@ -93,9 +97,9 @@ export type MapColumnsCallbackFn = (
 ) => DataframeValueArray;
 
 /** @internal */
-const raiseIsNotContinuous = () => {
+function raiseIsNotContinuous<R = void>(): R {
   throw TypeError("Column is not a continuous data type.");
-};
+}
 
 class Dataframe {
   /** @internal */
@@ -267,7 +271,7 @@ class Dataframe {
     /* test for row label inclusion in column */
     const has = function has(rlabel: LabelType) {
       const offset = getRowOffset(rlabel);
-      return offset !== undefined && offset >= 0 && offset < length;
+      return offset >= 0 && offset < length;
     };
 
     const ihas = function ihas(offset: OffsetType) {
@@ -305,17 +309,26 @@ class Dataframe {
     Create histogram bins for this column.  Memoized.
     */
     get.histogramContinuous = isContinuous
-      ? (bins: number, domain: [number, number]) =>
+      ? (bins: number, domain: [number, number]): ContinuousHistogram =>
           memoize(_histogramContinuous, hashContinuous)(get, bins, domain)
       : raiseIsNotContinuous;
     get.histogramContinuousBy = isContinuous
-      ? (bins: number, domain: [number, number], by: DataframeColumn) =>
-          memoize(_histogramContinuousBy, hashContinuous)(get, bins, domain, by)
+      ? (
+          bins: number,
+          domain: [number, number],
+          by: DataframeColumn
+        ): ContinuousHistogramBy =>
+          memoize(_histogramContinuousBy, hashContinuousBy)(
+            get,
+            bins,
+            domain,
+            by
+          )
       : raiseIsNotContinuous;
     get.histogramCategorical = () =>
       memoize(_histogramCategorical, hashCategorical)(get);
     get.histogramCategoricalBy = (by: DataframeColumn) =>
-      memoize(_histogramCategoricalBy, hashCategorical)(get, by);
+      memoize(_histogramCategoricalBy, hashCategoricalBy)(get, by);
 
     get.asArray = asArray;
     get.has = has;

@@ -113,14 +113,15 @@ export function histogramCategoricalBy(
 /*
 Memoization hash for histogramCategorical()
 */
-export function hashCategorical(
-  column: DataframeColumn,
-  by?: DataframeColumn
-): string {
-  if (by) {
-    return `${column.__id}:${by.__id}`;
-  }
+export function hashCategorical(column: DataframeColumn): string {
   return `${column.__id}:`;
+}
+
+export function hashCategoricalBy(
+  column: DataframeColumn,
+  by: DataframeColumn
+): string {
+  return `${column.__id}:${by.__id}`;
 }
 
 /*
@@ -128,13 +129,19 @@ Memoization hash for histogramContinuous
 */
 export function hashContinuous(
   column: DataframeColumn,
-  bins = "",
-  domain: [number, number] = [0, 0],
-  by?: DataframeColumn
+  bins: number,
+  domain: [number, number]
 ): string {
   const [min, max] = domain;
-  if (by) {
-    return `${column.__id}:${bins}:${min}:${max}:${by.__id}`;
-  }
   return `${column.__id}::${bins}:${min}:${max}`;
+}
+
+export function hashContinuousBy(
+  column: DataframeColumn,
+  bins: number,
+  domain: [number, number],
+  by: DataframeColumn
+): string {
+  const [min, max] = domain;
+  return `${column.__id}:${bins}:${min}:${max}:${by.__id}`;
 }
