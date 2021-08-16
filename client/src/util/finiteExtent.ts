@@ -10,7 +10,7 @@ import type { TypedArray } from "../common/types/entities";
 
 function finiteExtent(
   tarr: TypedArray
-): [number | undefined, number | undefined] {
+): [number, number] | [undefined, undefined] {
   let min;
   let max;
   let i;
@@ -24,7 +24,7 @@ function finiteExtent(
       break;
     }
   }
-  if (min && max)
+  if (min !== undefined && max !== undefined) {
     for (; i < tarr.length; i += 1) {
       const val = tarr[i];
       if (Number.isFinite(val)) {
@@ -32,7 +32,9 @@ function finiteExtent(
         if (max < val) max = val;
       }
     }
-  return [min, max];
+    return [min, max];
+  }
+  return [undefined, undefined];
 }
 
 export default finiteExtent;
