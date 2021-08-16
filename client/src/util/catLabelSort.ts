@@ -23,9 +23,9 @@ const catLabelSort = (
 ): Array<string> => {
   /* this sort could be memoized for perf */
 
-  const strings = new Array<string>();
-  const ints = new Array<string>();
-  const unassignedOrNaN = new Array<string>();
+  const strings: string[] = [];
+  const ints: string[] = [];
+  const unassignedOrNaN: string[] = [];
 
   values.forEach((v: string) => {
     if (isUserAnno && v === globals.unassignedCategoryLabel) {
