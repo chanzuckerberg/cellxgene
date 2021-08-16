@@ -1,9 +1,8 @@
-import { Action } from "redux";
-import type { RootState } from ".";
-import {
-  ContinuousNamespace,
-  makeContinuousDimensionName,
-} from "../util/nameCreators";
+import type { Action } from "redux";
+
+import { makeContinuousDimensionName } from "../util/nameCreators";
+
+import type { ContinuousNamespace } from "../util/nameCreators";
 
 export interface ContinuousSelectionAction extends Action<string> {
   continuousNamespace: ContinuousNamespace;
@@ -18,7 +17,7 @@ export interface ContinuousSelectionState {
 const ContinuousSelection = (
   state: ContinuousSelectionState = {},
   action: ContinuousSelectionAction
-): RootState => {
+): ContinuousSelectionState => {
   switch (action.type) {
     case "reset subset":
     case "subset to selection":
