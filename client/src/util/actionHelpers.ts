@@ -120,7 +120,7 @@ export const rangeEncodeIndices = (
   indices: Array<number>,
   minRangeLength = 3,
   sorted = false
-): Array<number | Array<number>> => {
+): Array<number | [number, number]> => {
   if (indices.length === 0) {
     return indices;
   }
