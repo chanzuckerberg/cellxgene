@@ -13,8 +13,8 @@ import * as annoActions from "./annotation";
 import * as viewActions from "./viewStack";
 import * as embActions from "./embedding";
 import * as genesetActions from "./geneset";
-import { LayoutColumn, Schema } from "../common/types/entities";
 import { RootState } from "../reducers";
+import { EmbeddingSchema, Schema } from "../common/types/schema";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function setGlobalConfig(config: any) {
@@ -41,11 +41,11 @@ async function userColorsFetchAndLoad(dispatch: any) {
 }
 
 async function schemaFetch(): Promise<{ schema: Schema }> {
-  return (await fetchJson("schema")) as { schema: Schema };
+  return fetchJson<{ schema: Schema }>("schema");
 }
 
 async function configFetch(dispatch: Dispatch) {
-  const response = (await fetchJson("config")) as { config: globals.Config };
+  const response = await fetchJson<{ config: globals.Config }>("config");
   const config = { ...globals.configDefaults, ...response.config };
 
   setGlobalConfig(config);
@@ -139,7 +139,7 @@ const doInitialDataLoad = (): ((
       const layoutSchema = schema?.schema?.layout?.obs ?? [];
       if (
         defaultEmbedding &&
-        layoutSchema.some((s: LayoutColumn) => s.name === defaultEmbedding)
+        layoutSchema.some((s: EmbeddingSchema) => s.name === defaultEmbedding)
       ) {
         embActions.layoutChoiceAction(defaultEmbedding);
       }
@@ -268,10 +268,10 @@ const requestDifferentialExpression =
     }
   };
 
-function fetchJson(pathAndQuery: string) {
+function fetchJson<T>(pathAndQuery: string): Promise<T> {
   return doJsonRequest(
     `${globals.API.prefix}${globals.API.version}${pathAndQuery}`
-  ) as Promise<unknown>;
+  ) as Promise<T>;
 }
 
 export default {
