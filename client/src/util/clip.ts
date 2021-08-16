@@ -1,4 +1,4 @@
-import { NumericArray } from "../common/types/entities";
+import { NumberArray } from "../common/types/arraytypes";
 
 /*
 clip - clip all values in a Array or TypedArray, IN PLACE.
@@ -13,11 +13,11 @@ If `setTo` is not undefined, values outside the [lower, upper] range will be set
 
 */
 export default function clip(
-  arr: NumericArray,
+  arr: NumberArray,
   lower: number,
   upper: number,
   setTo?: number
-): NumericArray {
+): NumberArray {
   const lowerSet = setTo === undefined ? lower : setTo;
   const upperSet = setTo === undefined ? upper : setTo;
   for (let i = 0, l = arr.length; i < l; i += 1) {

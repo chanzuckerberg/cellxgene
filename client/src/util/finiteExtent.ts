@@ -6,7 +6,7 @@ If undefined or empty array, or array contains only non-finite numbers,
 will return [undefined, undefined]
 */
 
-import type { TypedArray } from "../common/types/entities";
+import type { TypedArray } from "../common/types/arraytypes";
 
 function finiteExtent(
   tarr: TypedArray

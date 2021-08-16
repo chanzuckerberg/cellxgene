@@ -12,8 +12,10 @@ Arguments:
 
 */
 
-import { TypedArrayConstructor } from "../common/types/arraytypes";
-import { TypedArray } from "../common/types/entities";
+import type {
+  TypedArray,
+  TypedArrayConstructor,
+} from "../common/types/arraytypes";
 import { sortArray } from "./typedCrossfilter/sort";
 
 export default function quantile(
