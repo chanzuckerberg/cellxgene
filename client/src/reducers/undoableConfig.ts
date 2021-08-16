@@ -1,13 +1,19 @@
-import StateMachine from "../util/statemachine";
+import { AnyAction } from "redux";
+import { StateMachine, FsmActionFn, FsmErrorFn } from "../util/statemachine";
+import {
+  UndoableConfig,
+  UndoableState,
+  UndoableFilterState,
+  UndoableAction,
+  filterActionKey,
+  filterStateKey,
+} from "./undoable";
 import createFsmTransitions from "./undoableFsm";
-
-const actionKey = "@@undoable/filterAction";
-const stateKey = "@@undoable/filterState";
 
 /*
 these actions will not affect history
 */
-const skipOnActions = new Set([
+const skipOnActions = new Set<string>([
   "annoMatrix: init complete",
   "url changed",
   "initial data load start",
@@ -58,12 +64,12 @@ const skipOnActions = new Set([
 identical, repeated occurances of these action types will be debounced.
 Entire action must be identical (all keys).
 */
-const debounceOnActions = new Set([]);
+const debounceOnActions = new Set<string>([]);
 
 /*
 history will be cleared when these actions occur
 */
-const clearOnActions = new Set([
+const clearOnActions = new Set<string>([
   "initial data load complete",
   "initial data load error",
 ]);
@@ -71,7 +77,7 @@ const clearOnActions = new Set([
 /*
 An immediate history save will be done for these
 */
-const saveOnActions = new Set([
+const saveOnActions = new Set<string>([
   "categorical metadata filter select",
   "categorical metadata filter deselect",
   "categorical metadata filter all of these",
@@ -123,35 +129,43 @@ StateMachine - processing complex action handling - see FSM graph for
 actual structure, in undoableFsm.js
 **/
 
+interface MyFilterState extends UndoableFilterState {
+  prevAction?: AnyAction;
+  fsm: StateMachine<MyUndoableAction> | null;
+}
+type MyUndoableAction = UndoableAction<MyFilterState>;
+
 /*
 Default FSM actions.  Used to side-effect transitions in the graph.
 See graph definition for the transitions that use each.
 
 Signature:  (fsm, transition, reducerState, reducerAction) => undoableAction
 */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-const stashPending = (fsm: any) => ({
-  [actionKey]: "stashPending",
-  [stateKey]: { fsm },
+const stashPending: FsmActionFn<MyUndoableAction> = (
+  fsm: StateMachine<MyUndoableAction>
+) => ({
+  [filterActionKey]: "stashPending",
+  [filterStateKey]: { fsm },
 });
-const cancelPending = () => ({
-  [actionKey]: "cancelPending",
-  [stateKey]: { fsm: null },
+const cancelPending: FsmActionFn<MyUndoableAction> = () => ({
+  [filterActionKey]: "cancelPending",
+  [filterStateKey]: { fsm: null },
 });
-const applyPending = () => ({
-  [actionKey]: "applyPending",
-  [stateKey]: { fsm: null },
+const applyPending: FsmActionFn<MyUndoableAction> = () => ({
+  [filterActionKey]: "applyPending",
+  [filterStateKey]: { fsm: null },
 });
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'fsm' implicitly has an 'any' type.
-const skip = (fsm, transition) => ({
-  [actionKey]: "skip",
-  [stateKey]: { fsm: transition.to !== "done" ? fsm : null },
+const skip: FsmActionFn<MyUndoableAction> = (fsm, transition) => ({
+  [filterActionKey]: "skip",
+  [filterStateKey]: { fsm: transition.to !== "done" ? fsm : null },
 });
-const clear = () => ({ [actionKey]: "clear", [stateKey]: { fsm: null } });
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'fsm' implicitly has an 'any' type.
-const save = (fsm, transition) => ({
-  [actionKey]: "save",
-  [stateKey]: { fsm: transition.to !== "done" ? fsm : null },
+const clear: FsmActionFn<MyUndoableAction> = () => ({
+  [filterActionKey]: "clear",
+  [filterStateKey]: { fsm: null },
+});
+const save: FsmActionFn<MyUndoableAction> = (fsm, transition) => ({
+  [filterActionKey]: "save",
+  [filterStateKey]: { fsm: transition.to !== "done" ? fsm : null },
 });
 
 /*
@@ -160,11 +174,13 @@ StateMachine when it doesn't know what to do.
 
 Signature:  (fsm, event, from) => undoableAction
 */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-const onFsmError = (fsm: any, event: any, from: any) => {
+const onFsmError: FsmErrorFn<MyUndoableAction> = (fsm, event, from) => {
   console.error(`FSM error [event: "${event}", state: "${from}"]`, fsm);
   // In production, try to recover gracefully if we have unexpected state
-  return clear();
+  return {
+    [filterActionKey]: "clear",
+    [filterStateKey]: { fsm: null },
+  };
 };
 
 /*
@@ -179,7 +195,11 @@ const fsmTransitions = createFsmTransitions(
   save
 );
 /* State machine we clone whenever we need to run it */
-const seedFsm = new StateMachine("init", fsmTransitions, onFsmError);
+const seedFsm = new StateMachine<MyUndoableAction>(
+  "init",
+  fsmTransitions,
+  onFsmError
+);
 
 /*
 See undoable.js for description action filter interface description.
@@ -189,53 +209,52 @@ Basic approach:
   * only implement complex state machines where absolutely required (eg,
     multi-event selection and the like)
 */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-const actionFilter = (debug: any) => (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  state: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  action: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  prevFilterState: any
-) => {
-  const actionType = action.type;
-  const filterState = {
-    ...prevFilterState,
-    prevAction: action,
-  };
-  if (skipOnActions.has(actionType)) {
-    return { [actionKey]: "skip", [stateKey]: filterState };
-  }
-  if (
-    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-    debounceOnActions.has(actionType) &&
-    shallowObjectEq(action, prevFilterState.prevAction)
-  ) {
-    return { [actionKey]: "skip", [stateKey]: filterState };
-  }
-  if (clearOnActions.has(actionType)) {
-    return { [actionKey]: "clear", [stateKey]: filterState };
-  }
-  if (saveOnActions.has(actionType)) {
-    return { [actionKey]: "save", [stateKey]: filterState };
-  }
+const actionFilter =
+  (debug: boolean) =>
+  (
+    state: UndoableState<MyFilterState>,
+    action: AnyAction,
+    prevFilterState: MyFilterState | undefined
+  ): UndoableAction<MyFilterState> => {
+    const actionType = action.type;
+    prevFilterState = prevFilterState || { fsm: null };
+    const filterState: MyFilterState = {
+      ...prevFilterState,
+      prevAction: action,
+    };
+    if (skipOnActions.has(actionType)) {
+      return { [filterActionKey]: "skip", [filterStateKey]: filterState };
+    }
+    if (
+      debounceOnActions.has(actionType) &&
+      prevFilterState.prevAction &&
+      shallowObjectEq(action, prevFilterState.prevAction)
+    ) {
+      return { [filterActionKey]: "skip", [filterStateKey]: filterState };
+    }
+    if (clearOnActions.has(actionType)) {
+      return { [filterActionKey]: "clear", [filterStateKey]: filterState };
+    }
+    if (saveOnActions.has(actionType)) {
+      return { [filterActionKey]: "save", [filterStateKey]: filterState };
+    }
 
-  /*
+    /*
     Else, something more complex OR unknown to us....
     */
-  if (seedFsm.events.has(actionType)) {
-    let { fsm } = filterState;
-    if (!fsm) {
-      /* no active FSM, so create one in init state */
-      fsm = seedFsm.clone("init");
+    if (seedFsm.events.has(actionType)) {
+      let { fsm } = filterState;
+      if (!fsm) {
+        /* no active FSM, so create one in init state */
+        fsm = seedFsm.clone("init");
+      }
+      return fsm.next(action.type, { state, action });
     }
-    return fsm.next(action.type, { state, action });
-  }
 
-  /* else, we have no idea what this is - skip it */
-  if (debug) console.log("**** ACTION FILTER EVENT HANDLER MISS", actionType);
-  return { [actionKey]: "skip", [stateKey]: filterState };
-};
+    /* else, we have no idea what this is - skip it */
+    if (debug) console.log("**** ACTION FILTER EVENT HANDLER MISS", actionType);
+    return { [filterActionKey]: "skip", [filterStateKey]: filterState };
+  };
 
 /*
 return true if objA and objB are ===, OR if:
@@ -243,8 +262,10 @@ return true if objA and objB are ===, OR if:
   - have same own properties
   - all values are strict equal (===)
 */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-function shallowObjectEq(objA: any, objB: any) {
+function shallowObjectEq(
+  objA: Record<string | number | symbol, unknown>,
+  objB: Record<string | number | symbol, unknown>
+) {
   if (objA === objB) return true;
   if (!objA || !objB) return false;
   if (!shallowArrayEq(Object.keys(objA), Object.keys(objB))) return false;
@@ -256,8 +277,7 @@ function shallowObjectEq(objA: any, objB: any) {
 return true if arrA and arrB contain the same strict-equal values,
 in the same order.
 */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-function shallowArrayEq(arrA: any, arrB: any) {
+function shallowArrayEq(arrA: unknown[], arrB: unknown[]) {
   if (arrA.length !== arrB.length) return false;
   for (let i = 0, l = arrA.length; i < l; i += 1) {
     if (arrA[i] !== arrB[i]) return false;
@@ -272,7 +292,7 @@ Set to true or 1 for base logging, high number for more verbosity (currently onl
 or 2).
 */
 const debug = false;
-const undoableConfig = {
+const undoableConfig: UndoableConfig<MyFilterState> = {
   debug,
   historyLimit: 50, // maximum history size
   actionFilter: actionFilter(debug),
@@ -311,7 +331,7 @@ if (debug) {
   );
   if (trivialOverlapWithFsm.size > 0) {
     console.error(
-      "Undoable misconfiguration - trivival action filter blocking FSM filter",
+      "Undoable misconfiguration - trivial action filter blocking FSM filter",
       [...trivialOverlapWithFsm]
     );
   }

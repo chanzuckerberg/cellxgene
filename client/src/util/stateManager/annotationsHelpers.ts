@@ -3,7 +3,7 @@ Helper functions for user-editable annotations state management.
 See also reducers/annotations.js
 */
 
-import { Schema } from "../../common/types/entities";
+import { Schema } from "../../common/types/schema";
 
 /*
 There are a number of state constraints assumed throughout the
