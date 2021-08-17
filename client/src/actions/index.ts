@@ -13,7 +13,7 @@ import * as annoActions from "./annotation";
 import * as viewActions from "./viewStack";
 import * as embActions from "./embedding";
 import * as genesetActions from "./geneset";
-import { RootState } from "../reducers";
+import { AppDispatch, RootState } from "../reducers";
 import { EmbeddingSchema, Schema } from "../common/types/schema";
 import { UserInfoPayload } from "../reducers/userInfo";
 
@@ -45,7 +45,7 @@ async function schemaFetch(): Promise<{ schema: Schema }> {
   return fetchJson<{ schema: Schema }>("schema");
 }
 
-async function configFetch(dispatch: Dispatch): Promise<Config> {
+async function configFetch(dispatch: AppDispatch): Promise<Config> {
   const response = await fetchJson<{ config: globals.Config }>("config");
   const config = { ...globals.configDefaults, ...response.config };
 
@@ -58,7 +58,7 @@ async function configFetch(dispatch: Dispatch): Promise<Config> {
   return config;
 }
 
-async function userInfoFetch(dispatch: Dispatch): Promise<UserInfoPayload> {
+async function userInfoFetch(dispatch: AppDispatch): Promise<UserInfoPayload> {
   return fetchJson<{ userinfo: UserInfoPayload }>("userinfo").then(
     (response) => {
       const { userinfo: userInfo } = response || {};
@@ -109,10 +109,10 @@ function prefetchEmbeddings(annoMatrix: any) {
 Application bootstrap
 */
 const doInitialDataLoad = (): ((
-  dispatch: Dispatch,
+  dispatch: AppDispatch,
   getState: () => RootState
 ) => void) =>
-  catchErrorsWrap(async (dispatch: Dispatch) => {
+  catchErrorsWrap(async (dispatch: AppDispatch) => {
     dispatch({ type: "initial data load start" });
 
     try {
