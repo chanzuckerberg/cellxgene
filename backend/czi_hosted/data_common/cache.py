@@ -5,7 +5,7 @@ from typing import Optional
 
 import typing
 
-from backend.common.errors import DatasetAccessError, DatasetNotFoundException
+from backend.common.errors import DatasetAccessError
 from contextlib import contextmanager
 
 from backend.czi_hosted.data_common.rwlock import RWLock
@@ -22,8 +22,8 @@ class CacheItem(object):
         self.data_lock = RWLock()
         self.data = None
 
-
-    def get(self, cache_key: str, create_data_lambda: typing.Optional[typing.Callable[[str], object]] = None, create_data_args: object={}):
+    def get(self, cache_key: str, create_data_lambda: typing.Optional[typing.Callable[[str], object]] = None,
+            create_data_args: object = {}):
         self.data_lock.r_acquire()
         if self.data:
             return self.data
@@ -35,7 +35,6 @@ class CacheItem(object):
         # the data may have been loaded while waiting on the lock
         if not self.data:
             try:
-                # self.data = self.loader.
                 self.data = create_data_lambda(cache_key, **create_data_args)
             except Exception:
                 # necessary to hold the reader lock after an exception, since
@@ -86,6 +85,7 @@ class CacheItemInfo(object):
     This class stores a pointer to and metadata about the cached item. When the data is accessd the
     update function is called to track the latest access
     """
+
     def __init__(self, cache_item: CacheItem(), timestamp):
         self.cache_item = cache_item
         self.last_access = timestamp
@@ -93,7 +93,8 @@ class CacheItemInfo(object):
 
     def update_latest_cache_access(self):
         self.last_access = time.time()
-        self.num_access +=1
+        self.num_access += 1
+
 
 class CacheManager(object):
     """An base class to manage cached data. This is intended to be used as a context manager
@@ -117,7 +118,7 @@ class CacheManager(object):
     # of the data is updated then the cache will not react to this, however once the cache time limit is reached,
     # the data will automatically be refreshed.
 
-    def __init__(self, max_cached: int, timelimit_s: int=None):
+    def __init__(self, max_cached: int, timelimit_s: int = None):
         self.data = {}
 
         # lock to protect the datasets
@@ -134,7 +135,8 @@ class CacheManager(object):
         self.timelimit_s = timelimit_s
 
     @contextmanager
-    def data_adaptor(self, cache_key: str, create_data_lambda: Optional[Callable]=None, create_data_args: object={}):
+    def data_adaptor(self, cache_key: str, create_data_function: Optional[Callable] = None,
+                     create_data_args: object = {}):
         """"
         If no data is stored under the given cache_key, pass the create_data_lamba to the CacheItem.get method
         """
@@ -155,7 +157,7 @@ class CacheManager(object):
                 cache_item = CacheItem()
                 desired_data = cache_item.get(
                     cache_key=cache_key,
-                    create_data_lambda=create_data_lambda,
+                    create_data_lambda=create_data_function,
                     create_data_args=create_data_args
                 )
                 cache_item_info = CacheItemInfo(cache_item, time.time())
@@ -164,13 +166,12 @@ class CacheManager(object):
         try:
             assert cache_item
             if delete_adaptor:
-                delete_adaptor.delete()
-            # TODO @mdunitz can this be removed?
+                delete_adaptor.attempt_delete()
             if desired_data is None:
                 desired_data = cache_item.get(cache_key)
 
             yield desired_data
-        except (DatasetAccessError, DatasetNotFoundException):
+        except DatasetAccessError:
             cache_item.release()
             with self.lock:
                 del self.data[cache_key]
@@ -181,7 +182,6 @@ class CacheManager(object):
         finally:
             if cache_item:
                 cache_item.release()
-
 
     def evict_extra_data(self):
         delete_adaptor = None

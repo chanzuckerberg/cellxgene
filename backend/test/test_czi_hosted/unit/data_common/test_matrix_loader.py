@@ -25,7 +25,7 @@ class MatrixCacheTest(unittest.TestCase):
         dataset_location = os.path.join(dirname, str(dataset_index) + ".cxg")
         with matrix_cache.data_adaptor(
                 cache_key=dataset_location,
-                create_data_lambda=MatrixDataLoader(location=dataset_location, app_config=app_config).validate_and_open,
+                create_data_function=MatrixDataLoader(location=dataset_location, app_config=app_config).validate_and_open,
                 create_data_args={}
         ) as adaptor:
             pass
@@ -37,7 +37,7 @@ class MatrixCacheTest(unittest.TestCase):
         try:
             with matrix_cache.data_adaptor(
                     cache_key=dataset_location,
-                    create_data_lambda=MatrixDataLoader(dataset_location, app_config=app_config).validate_and_open,
+                    create_data_function=MatrixDataLoader(dataset_location, app_config=app_config).validate_and_open,
                     create_data_args={}):
                 raise DatasetAccessError("something bad happened")
         except DatasetAccessError:

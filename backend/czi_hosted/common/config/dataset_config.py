@@ -150,7 +150,7 @@ class DatasetConfig(BaseConfig):
         if server_config.single_dataset__datapath and self.user_annotations__local_file_csv__file:
             with server_config.matrix_data_cache_manager.data_adaptor(
                     cache_key=server_config.single_dataset__datapath,
-                    create_data_lambda=MatrixDataLoader(
+                    create_data_function=MatrixDataLoader(
                         location=server_config.single_dataset__datapath,
                         app_config=self.app_config).validate_and_open,
                     create_data_args={"dataset_config": self}

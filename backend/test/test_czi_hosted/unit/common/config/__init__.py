@@ -46,7 +46,7 @@ class ConfigTests(BaseTest):
         allowed_matrix_types=[],
         max_cached_datasets=5,
         timelimit_s=5,
-        max_cached_dataset_metadata=400,
+        max_cached_dataset_metadata=10000,
         timelimit_s_metadata=300,
         dataset_datapath="null",
         obs_names="null",

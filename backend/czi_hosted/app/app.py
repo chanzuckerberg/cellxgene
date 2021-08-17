@@ -113,12 +113,12 @@ def get_data_adaptor(url_dataroot: str=None, dataset: str=None):
     matrix_cache_manager = current_app.matrix_data_cache_manager
     with dataset_metadata_manager.data_adaptor(
             cache_key=f"{url_dataroot}/{dataset}",
-            create_data_lambda=get_dataset_metadata_for_explorer_location,
+            create_data_function=get_dataset_metadata_for_explorer_location,
             create_data_args={"app_config": app_config}
     ) as dataset_metadata:
         return matrix_cache_manager.data_adaptor(
             cache_key=f"{url_dataroot}/{dataset}",
-            create_data_lambda=MatrixDataLoader(
+            create_data_function=MatrixDataLoader(
                 location=dataset_metadata['s3_uri'],
                 url_dataroot = url_dataroot,
                 app_config=app_config).validate_and_open,

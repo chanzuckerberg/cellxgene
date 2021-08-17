@@ -29,6 +29,7 @@ def request_dataset_metadata_from_data_portal(data_portal_api_base: str, explore
     except Exception:
         return None
 
+
 def extrapolate_dataset_location_from_config(server_config: ServerConfig, dataset_explorer_location: str):
     """
     Use the dataset_explorer_location and the server config to determine where the dataset is stored
@@ -83,9 +84,9 @@ def get_dataset_metadata_for_explorer_location(dataset_explorer_location: str, a
         "s3_uri": None,
         "tombstoned": False
     }
-    dataset_metadata["s3_uri"] = extrapolate_dataset_location_from_config(server_config=server_config, dataset_explorer_location=dataset_explorer_location)
+    dataset_metadata["s3_uri"] = extrapolate_dataset_location_from_config(
+        server_config=server_config, dataset_explorer_location=dataset_explorer_location)
     if dataset_metadata["s3_uri"] is None:
         return common_rest.abort_and_log(HTTPStatus.BAD_REQUEST, "Invalid dataset NONE", loglevel=logging.INFO)
 
     return dataset_metadata
-

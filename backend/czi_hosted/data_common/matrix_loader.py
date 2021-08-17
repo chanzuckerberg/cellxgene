@@ -13,7 +13,7 @@ class MatrixDataType(Enum):
 
 class MatrixDataLoader(object):
     def __init__(self, location, app_config=None, url_dataroot=None, matrix_data_type=None):
-        """ location can be a string or Data2Locator """
+        """ location can be a string or DataLocator """
         self.app_config = app_config
         self.url_dataroot = url_dataroot
         self.dataset_config = self.app_config.default_dataset_config
@@ -25,6 +25,8 @@ class MatrixDataLoader(object):
                     break
             if dataroot:
                 self.dataset_config = self.app_config.get_dataset_config(dataroot)
+        if self.dataset_config is None:
+            raise DatasetAccessError("Missing dataset config", HTTPStatus.NOT_FOUND)
         region_name = None if app_config is None else app_config.server_config.data_locator__s3__region_name
         self.location = DataLocator(location, region_name=region_name)
         if not self.location.exists():
@@ -97,5 +99,3 @@ class MatrixDataLoader(object):
         # create and return a DataAdaptor object
         self.pre_load_validation()
         return self.open()
-
-
