@@ -143,7 +143,7 @@ const doInitialDataLoad = (): ((
         defaultEmbedding &&
         layoutSchema.some((s: EmbeddingSchema) => s.name === defaultEmbedding)
       ) {
-        embActions.layoutChoiceAction(defaultEmbedding);
+        dispatch(embActions.layoutChoiceAction(defaultEmbedding));
       }
     } catch (error) {
       dispatch({ type: "initial data load error", error });
