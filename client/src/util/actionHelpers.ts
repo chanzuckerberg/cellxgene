@@ -79,7 +79,7 @@ Wrapper to perform an async fetch and JSON decode response.
 export const doJsonRequest = async (
   url: string,
   init?: RequestInit
-): Promise<unknown> => {
+): Promise<T> => {
   const res = await doFetch(url, {
     ...init,
     headers: new Headers({ Accept: "application/json" }),
