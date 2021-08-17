@@ -1,5 +1,5 @@
 import { Dispatch } from "redux";
-
+import type { Config } from "../globals";
 import * as globals from "../globals";
 import { AnnoMatrixLoader, AnnoMatrixObsCrossfilter } from "../annoMatrix";
 import {
@@ -15,6 +15,7 @@ import * as embActions from "./embedding";
 import * as genesetActions from "./geneset";
 import { RootState } from "../reducers";
 import { EmbeddingSchema, Schema } from "../common/types/schema";
+import { UserInfoPayload } from "../reducers/userInfo";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function setGlobalConfig(config: any) {
@@ -44,7 +45,7 @@ async function schemaFetch(): Promise<{ schema: Schema }> {
   return fetchJson<{ schema: Schema }>("schema");
 }
 
-async function configFetch(dispatch: Dispatch) {
+async function configFetch(dispatch: Dispatch): Promise<Config> {
   const response = await fetchJson<{ config: globals.Config }>("config");
   const config = { ...globals.configDefaults, ...response.config };
 
@@ -57,16 +58,17 @@ async function configFetch(dispatch: Dispatch) {
   return config;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-async function userInfoFetch(dispatch: any) {
-  return fetchJson("userinfo").then((response) => {
-    const { userinfo: userInfo } = (response || {}) as { userinfo: unknown };
-    dispatch({
-      type: "userInfo load complete",
-      userInfo,
-    });
-    return userInfo;
-  });
+async function userInfoFetch(dispatch: Dispatch): Promise<UserInfoPayload> {
+  return fetchJson<{ userinfo: UserInfoPayload }>("userinfo").then(
+    (response) => {
+      const { userinfo: userInfo } = response || {};
+      dispatch({
+        type: "userInfo load complete",
+        userInfo,
+      });
+      return userInfo;
+    }
+  );
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
