@@ -219,7 +219,7 @@ export default class AnnoMatrix {
    **/
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  fetch(field, q) {
+  fetch(field, q): Dataframe {
     /*
 		Return the given query on a single matrix field as a single dataframe.
 		Currently supports ONLY full column query.
@@ -248,7 +248,7 @@ export default class AnnoMatrix {
     1. Fetch the "n_genes" column the "obs":
 
 			const df = await fetch("obs", "n_genes")
-      console.log("Largest number of genes is: ", df.summarize().max);
+      console.log("Largest number of genes is: ", df.summarizeContinuous().max);
 
     2. Fetch two separate columns from obs.  Returns a single dataframe containing
        the columns:
@@ -278,7 +278,7 @@ export default class AnnoMatrix {
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  prefetch(field, q) {
+  prefetch(field, q): void {
     /*
 		Start a data fetch & cache fill.  Identical to fetch() except it does
 		not return a value.
@@ -287,7 +287,6 @@ export default class AnnoMatrix {
     overall component rendering latency.
 		*/
     this._fetch(field, q);
-    return undefined;
   }
 
   /**
@@ -494,8 +493,8 @@ Return cache keys for columns associated with this query.  May return
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  async _fetch(field, q) {
-    if (!AnnoMatrix.fields().includes(field)) return undefined;
+  async _fetch(field, q): Dataframe {
+    if (!AnnoMatrix.fields().includes(field)) return Dataframe.empty();
     const queries = Array.isArray(q) ? q : [q];
     queries.forEach(_queryValidate);
 

@@ -12,6 +12,7 @@ import {
   AnnoMatrixObsCrossfilter,
   isubsetMask,
 } from "../../../src/annoMatrix";
+import { Dataframe } from "../../../src/util/dataframe";
 import { rangeFill } from "../../../src/util/range";
 
 enableFetchMocks();
@@ -132,7 +133,7 @@ describe("AnnoMatrixCrossfilter", () => {
         )
       );
 
-      const df = await annoMatrix.fetch("obs", "louvain");
+      const df: Dataframe = await annoMatrix.fetch("obs", "louvain");
       const values = df.col("louvain").asArray();
       const selected = xfltr.allSelectedMask();
       values.every(
@@ -265,7 +266,11 @@ describe("AnnoMatrixCrossfilter", () => {
       expect(xfltr).toBeDefined();
       expect(xfltr.countSelected()).toEqual(240);
 
-      const df = await annoMatrixSubset.fetch("obs", "louvain");
+      const df: Dataframe = (await annoMatrixSubset.fetch(
+        "obs",
+        "louvain"
+      )) as Dataframe;
+      expect(df).toBeDefined();
       const values = df.col("louvain").asArray();
       const selected = xfltr.allSelectedMask();
       values.every(
@@ -354,7 +359,7 @@ describe("AnnoMatrixCrossfilter", () => {
       ).toHaveLength(1);
 
       // check data update.
-      const df = await xfltr.annoMatrix.fetch("obs", "foo");
+      const df: Dataframe = await xfltr.annoMatrix.fetch("obs", "foo");
       expect(
         df
           .col("foo")
@@ -649,7 +654,7 @@ describe("AnnoMatrixCrossfilter", () => {
         values: ["purple"],
       });
       expect(xfltr2.countSelected()).toEqual(2);
-      expect(xfltr2.allSelectedLabels()).toEqual(Int32Array.from([0, 10]));
+      expect(xfltr2.allSelectedLabels()).toEqual(Array.from([0, 10]));
     });
 
     test("resetObsColumnValues", async () => {

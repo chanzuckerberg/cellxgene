@@ -22,6 +22,7 @@ import {
   flagSelected,
   flagHighlight,
 } from "../../util/glHelpers";
+import { Dataframe, DataframeColumn } from "../../util/dataframe";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function createProjectionTF(viewportWidth: any, viewportHeight: any) {
@@ -33,9 +34,9 @@ function createProjectionTF(viewportWidth: any, viewportHeight: any) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-function getScale(col: any, rangeMin: any, rangeMax: any) {
+function getScale(col: DataframeColumn, rangeMin: any, rangeMax: any) {
   if (!col) return null;
-  const { min, max } = col.summarize();
+  const { min, max } = col.summarizeContinuous();
   return d3.scaleLinear().domain([min, max]).range([rangeMin, rangeMax]);
 }
 const getXScale = memoize(getScale);
@@ -276,17 +277,13 @@ class Scatterplot extends React.PureComponent<{}, State> {
       pointDilation,
     } = props.watchProps;
 
-    const [
-      expressionXDf,
-      expressionYDf,
-      colorDf,
-      pointDilationDf,
-    ] = await this.fetchData(
-      scatterplotXXaccessor,
-      scatterplotYYaccessor,
-      colorsProp,
-      pointDilation
-    );
+    const [expressionXDf, expressionYDf, colorDf, pointDilationDf] =
+      await this.fetchData(
+        scatterplotXXaccessor,
+        scatterplotYYaccessor,
+        colorsProp,
+        pointDilation
+      );
     const colorTable = this.updateColorTable(colorsProp, colorDf);
 
     const xCol = expressionXDf.icol(0);
@@ -383,37 +380,32 @@ class Scatterplot extends React.PureComponent<{}, State> {
     colors: any,
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     pointDilation: any
-  ) {
+  ): Promise<
+    [Dataframe, Dataframe, Dataframe | null, Dataframe | null]
+  > {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
     const { annoMatrix } = this.props;
     const { metadataField: pointDilationAccessor } = pointDilation;
 
-    const promises = [];
-    // X and Y dimensions
-    promises.push(
-      // @ts-expect-error ts-migrate(2488) FIXME: Type '(string | { where: { field: string; column: ... Remove this comment to see the full error message
-      annoMatrix.fetch(...this.createXQuery(scatterplotXXaccessor))
-    );
-    promises.push(
-      annoMatrix.fetch(...this.createXQuery(scatterplotYYaccessor))
-    );
-
-    // color
     const query = this.createColorByQuery(colors);
-    if (query) {
-      promises.push(annoMatrix.fetch(...query));
-    } else {
-      promises.push(Promise.resolve(null));
-    }
 
-    // point highlighting
-    if (pointDilationAccessor) {
-      promises.push(annoMatrix.fetch("obs", pointDilationAccessor));
-    } else {
-      promises.push(Promise.resolve(null));
-    }
+    const promises: [Dataframe, Dataframe, Dataframe | null, Dataframe | null] =
+      [
+        // @ts-expect-error ts-migrate(2488) FIXME: Type '(string | { where: { field: string; column: ... Remove this comment to see the full error message
+        annoMatrix.fetch(...this.createXQuery(scatterplotXXaccessor)),
+        annoMatrix.fetch(...this.createXQuery(scatterplotYYaccessor)),
+        query ? annoMatrix.fetch(...query) : Promise.resolve(null),
+        pointDilationAccessor
+          ? annoMatrix.fetch("obs", pointDilationAccessor)
+          : Promise.resolve(null),
+      ];
 
-    return Promise.all(promises);
+    return Promise.all<
+      Dataframe,
+      Dataframe,
+      Dataframe | null,
+      Dataframe | null
+    >(promises);
   }
 
   renderCanvas = renderThrottle(() => {

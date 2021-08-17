@@ -8,6 +8,8 @@ import {
   Position,
 } from "@blueprintjs/core";
 
+import { Dataframe } from "../../../util/dataframe";
+
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
@@ -21,34 +23,32 @@ class Occupancy extends React.PureComponent {
 
   _HEIGHT = 11;
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  createHistogram = () => {
+  createHistogram = (): void => {
     /*
-          Knowing that colorScale is based off continous data,
-          createHistogram fetches the continous data in relation to the cells releveant to the catagory value.
-          It then seperates that data into 50 bins for drawing the mini-histogram
+          Knowing that colorScale is based off continuous data,
+          createHistogram fetches the continuous data in relation to the cells relevant to the category value.
+          It then separates that data into 50 bins for drawing the mini-histogram
         */
-    const {
+    const { metadataField, categoryData, colorData, categoryValue } = this
+      .props as {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type 'R... Remove this comment to see the full error message
-      metadataField,
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'categoryData' does not exist on type 'Re... Remove this comment to see the full error message
-      categoryData,
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorData' does not exist on type 'Reado... Remove this comment to see the full error message
-      colorData,
+      metadataField;
+      categoryData: Dataframe;
+      colorData: Dataframe;
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'categoryValue' does not exist on type 'R... Remove this comment to see the full error message
-      categoryValue,
-    } = this.props;
+      categoryValue;
+    };
     if (!this.canvas) return;
     const groupBy = categoryData.col(metadataField);
     const col = colorData.icol(0);
-    const range = col.summarize();
-    const histogramMap = col.histogram(
+    const range = col.summarizeContinuous();
+    const histogramMap = col.histogramContinuousBy(
       50,
       [range.min, range.max],
       groupBy
-    ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
+    );
     const bins = histogramMap.has(categoryValue)
-      ? histogramMap.get(categoryValue)
+      ? (histogramMap.get(categoryValue) as number[])
       : new Array(50).fill(0);
     const xScale = d3
       .scaleLinear()
@@ -71,36 +71,41 @@ class Occupancy extends React.PureComponent {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  createOccupancyStack = () => {
+  createOccupancyStack = (): void => {
     /*
           Knowing that the color scale is based off of catagorical data,
           createOccupancyStack obtains a map showing the number if cells per colored value
           Using the colorScale a stack of colored bars is drawn representing the map
          */
     const {
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type 'R... Remove this comment to see the full error message
       metadataField,
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'categoryData' does not exist on type 'Re... Remove this comment to see the full error message
       categoryData,
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorAccessor' does not exist on type 'R... Remove this comment to see the full error message
       colorAccessor,
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'categoryValue' does not exist on type 'R... Remove this comment to see the full error message
       categoryValue,
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorTable' does not exist on type 'Read... Remove this comment to see the full error message
       colorTable,
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'schema' does not exist on type 'Readonly... Remove this comment to see the full error message
       schema,
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorData' does not exist on type 'Reado... Remove this comment to see the full error message
       colorData,
-    } = this.props;
+    } = this.props as {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+      metadataField: any;
+      categoryData: Dataframe;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+      colorAccessor: any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+      categoryValue: any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+      colorTable: any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+      schema: any;
+      colorData: Dataframe;
+    };
     const { scale: colorScale } = colorTable;
     const ctx = this.canvas?.getContext("2d");
     if (!ctx) return;
     const groupBy = categoryData.col(metadataField);
     const occupancyMap = colorData
       .col(colorAccessor)
-      .histogramCategorical(groupBy);
+      .histogramCategoricalBy(groupBy);
     const occupancy = occupancyMap.get(categoryValue);
     if (occupancy && occupancy.size > 0) {
       // not all categories have occupancy, so occupancy may be undefined.
@@ -119,7 +124,7 @@ class Occupancy extends React.PureComponent {
       let value;
       for (let i = 0, { length } = categoryValues; i < length; i += 1) {
         value = categoryValues[i];
-        o = occupancy.get(value);
+        o = occupancy.get(value) as number;
         scaledValue = x(o);
         ctx.fillStyle = o
           ? colorScale(categories.indexOf(value))

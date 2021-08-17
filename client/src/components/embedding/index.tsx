@@ -121,6 +121,7 @@ const loadAllEmbeddingCounts = async ({ annoMatrix, available }: any) => {
   return available.map((name, idx) => ({
     embeddingName: name,
     embedding: embeddings[idx],
+    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'unknown' is not assignable...
     discreteCellIndex: getDiscreteCellEmbeddingRowIndex(embeddings[idx]),
   }));
 };
