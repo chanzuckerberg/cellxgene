@@ -271,7 +271,7 @@ const requestDifferentialExpression =
   };
 
 function fetchJson<T>(pathAndQuery: string): Promise<T> {
-  return doJsonRequest(
+  return doJsonRequest<T>(
     `${globals.API.prefix}${globals.API.version}${pathAndQuery}`
   ) as Promise<T>;
 }

@@ -1,8 +1,7 @@
 import sortBy from "lodash.sortby";
-import { Dispatch } from "redux";
 /* XXX: cough, cough, ... */
 import { postNetworkErrorToast } from "../components/framework/toasters";
-import type { RootState } from "../reducers";
+import type { AppDispatch, RootState } from "../reducers";
 
 /*
 dispatch an action error to the user.   Currently we use
@@ -74,10 +73,10 @@ export const doFetch = async (
 /*
 Wrapper to perform an async fetch and JSON decode response.
 */
-export const doJsonRequest = async (
+export const doJsonRequest = async <T = unknown>(
   url: string,
   init?: RequestInit
-): Promise<unknown> => {
+): Promise<T> => {
   const res = await doFetch(url, {
     ...init,
     headers: new Headers({ Accept: "application/json" }),
