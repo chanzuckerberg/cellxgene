@@ -53,10 +53,8 @@ export const doFetch = async (
     const acceptType = (init.headers as Headers)?.get("Accept");
     const res = await fetch(url, init);
     if (
-      (res.ok &&
-        (!acceptType ||
-          res.headers?.get("Content-Type")?.includes(acceptType))) ??
-      false
+      res.ok &&
+      (!acceptType || res.headers?.get("Content-Type")?.includes(acceptType))
     ) {
       return res;
     }
