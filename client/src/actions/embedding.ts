@@ -2,9 +2,10 @@
 action creators related to embeddings choice
 */
 
-import { Dispatch } from "redux";
+import { Action, ActionCreator, AnyAction, Dispatch } from "redux";
+import { ThunkAction } from "redux-thunk";
 import { AnnoMatrixObsCrossfilter } from "../annoMatrix";
-import type { RootState } from "../reducers";
+import type { AppDispatch, RootState } from "../reducers";
 import { _setEmbeddingSubset } from "../util/stateManager/viewStackHelpers";
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
@@ -31,9 +32,11 @@ export async function _switchEmbedding(
   return [annoMatrix, obsCrossfilter];
 }
 
-export const layoutChoiceAction =
+export const layoutChoiceAction: ActionCreator<
+  ThunkAction<Promise<void>, RootState, never, Action<"set layout choice">>
+> =
   (newLayoutChoice: string) =>
-  async (dispatch: Dispatch, getState: () => RootState): Promise<void> => {
+  async (dispatch: AppDispatch, getState: () => RootState): Promise<void> => {
     /*
   On layout choice, make sure we have selected all on the previous layout, AND the new
   layout.
