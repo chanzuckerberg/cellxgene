@@ -24,7 +24,6 @@ describe("encode/decode", () => {
     expect(dfA.columns).toEqual(columns);
 
     const colIndex = new KeyIndex(["a", "b", "c", "d"]);
-    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
     const dfWithColIdx = new Dataframe([3, 4], columns, null, colIndex);
     const dfB = decodeMatrixFBS(encodeMatrixFBS(dfWithColIdx));
     expect([dfB.nRows, dfB.nCols]).toEqual(dfWithColIdx.dims);

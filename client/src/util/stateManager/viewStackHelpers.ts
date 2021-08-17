@@ -37,6 +37,7 @@ Views can be interogated for their type with the following:
 
 import { clip, isubsetMask, isubset } from "../../annoMatrix";
 import { memoize } from "../dataframe/util";
+import { Dataframe, LabelIndex } from "../dataframe";
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
@@ -101,7 +102,7 @@ export function _userResetSubsetAnnoMatrix(annoMatrix) {
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export function _setEmbeddingSubset(annoMatrix, embeddingDf) {
+export function _setEmbeddingSubset(annoMatrix, embeddingDf: Dataframe) {
   /*
   Set the embedding subset view.  Only create a subset view for the embedding
   when it is needed, ie, there are NaN values in the embeddings.
@@ -141,8 +142,10 @@ export function _setEmbeddingSubset(annoMatrix, embeddingDf) {
   return annoMatrix;
 }
 
-// @ts-expect-error ts-migrate(6133) FIXME: 'baseRowIndex' is declared but its value is never ... Remove this comment to see the full error message
-function _getEmbeddingRowOffsets(baseRowIndex, embeddingDf) {
+function _getEmbeddingRowOffsets(
+  _baseRowIndex: LabelIndex,
+  embeddingDf: Dataframe
+) {
   /*
   given a dataframe containing an embedding:
     - if the embedding contains no NaN coordinates, return null
@@ -167,17 +170,16 @@ function _getEmbeddingRowOffsets(baseRowIndex, embeddingDf) {
   return offsets.subarray(0, numOffsets);
 }
 
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'embeddingDf' implicitly has an 'any' ty... Remove this comment to see the full error message
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export function _getDiscreteCellEmbeddingRowIndex(embeddingDf) {
+export function _getDiscreteCellEmbeddingRowIndex(
+  embeddingDf: Dataframe
+): LabelIndex {
   const idx = _getEmbeddingRowOffsets(embeddingDf.rowIndex, embeddingDf);
   if (idx === null) return embeddingDf.rowIndex;
   return embeddingDf.rowIndex.isubset(idx);
 }
 export const getDiscreteCellEmbeddingRowIndex = memoize(
   _getDiscreteCellEmbeddingRowIndex,
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'df' implicitly has an 'any' type.
-  (df) => df.__id
+  (df: Dataframe) => df.__id
 );
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message

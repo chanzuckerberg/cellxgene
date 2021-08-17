@@ -1,5 +1,6 @@
 import quantile from "./quantile";
 import { memoize } from "./dataframe/util";
+import { Dataframe } from "./dataframe";
 import { unassignedCategoryLabel } from "../globals";
 import {
   createCategorySummaryFromDfCol,
@@ -154,7 +155,7 @@ const hashMedianCentroid = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   layoutChoice: any,
   layoutDf: Dataframe
-) => {
+): string => {
   const category = categoryDf.col(categoryName);
   const layoutDimNames = layoutChoice.currentDimNames;
   const layoutX = layoutDf.col(layoutDimNames[0]);

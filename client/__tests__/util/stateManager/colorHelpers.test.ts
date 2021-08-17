@@ -81,7 +81,6 @@ describe("categorical color helpers", () => {
         ),
     ],
     null,
-    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
     new Dataframe.KeyIndex(["continuousColumn", "categoricalColumn"])
   );
 

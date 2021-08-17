@@ -12,23 +12,25 @@ Arguments:
 
 */
 
-import type {
-  TypedArray,
-  TypedArrayConstructor,
-} from "../common/types/arraytypes";
+import { NumberArray, TypedArrayConstructor } from "../common/types/arraytypes";
+
 import { sortArray } from "./typedCrossfilter/sort";
 
 export default function quantile(
-  quantArr: Array<number>,
-  tarr: TypedArray,
+  quantArr: number[],
+  tarr: NumberArray,
   sorted = false
-): Array<number> {
+): number[] {
   /*
 	start with the naive (sort) implementation.  Later, use a faster partition
 	*/
-  const arr = sorted
-    ? tarr
-    : sortArray(new (tarr.constructor as TypedArrayConstructor)(tarr)); // copy
+
+  if (tarr.length === 0) {
+    return new Array(quantArr.length).fill(0);
+  }
+
+  const Ctor: TypedArrayConstructor = tarr.constructor as TypedArrayConstructor;
+  const arr = sorted ? tarr : sortArray(new Ctor(tarr)); // copy
   const len = arr.length;
   return quantArr.map((q) => {
     if (q === 1) {

@@ -19,6 +19,7 @@ import {
 
 import { memoize } from "../../../util/dataframe/util";
 import parseBulkGeneString from "../../../util/parseBulkGeneString";
+import { Dataframe } from "../../../util/dataframe";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const renderGene = (fuzzySortResult: any, { handleClick, modifiers }: any) => {
@@ -187,7 +188,7 @@ class AddGenes extends React.Component<{}, AddGenesState> {
 
       this.setState({ status: "pending" });
       try {
-        const df = await annoMatrix.fetch("var", varIndex);
+        const df: Dataframe = await annoMatrix.fetch("var", varIndex);
         this.setState({
           status: "success",
           geneNames: df.col(varIndex).asArray(),

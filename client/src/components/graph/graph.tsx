@@ -26,6 +26,7 @@ import {
   flagSelected,
   flagHighlight,
 } from "../../util/glHelpers";
+import { Dataframe } from "../../util/dataframe";
 
 /*
 Simple 2D transforms control all point painting.  There are three:
@@ -558,7 +559,11 @@ class Graph extends React.Component<{}, GraphState> {
       handleEnd = this.handleLassoEnd.bind(this);
       handleCancel = this.handleLassoCancel.bind(this);
     }
-    const { svg: newToolSVG, tool, container } = setupSVGandBrushElements(
+    const {
+      svg: newToolSVG,
+      tool,
+      container,
+    } = setupSVGandBrushElements(
       selectionTool,
       handleStart,
       handleDrag,
@@ -592,8 +597,7 @@ class Graph extends React.Component<{}, GraphState> {
     const positions = this.computePointPositions(X, Y, modelTF);
     const colorTable = this.updateColorTable(colorsProp, colorDf);
     const colors = this.computePointColors(colorTable.rgb);
-    const { colorAccessor } = colorsProp;
-    const colorByData = colorDf?.col(colorAccessor)?.asArray();
+    const colorByData = colorDf?.icol(0)?.asArray();
     const {
       metadataField: pointDilationCategory,
       categoryField: pointDilationLabel,
@@ -627,7 +631,7 @@ class Graph extends React.Component<{}, GraphState> {
     colors: any,
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     pointDilation: any
-  ) {
+  ): Promise<[Dataframe, Dataframe | null, Dataframe | null]> {
     /*
         fetch all data needed.  Includes:
           - the color by dataframe
@@ -635,22 +639,18 @@ class Graph extends React.Component<{}, GraphState> {
           - the point dilation dataframe
         */
     const { metadataField: pointDilationAccessor } = pointDilation;
-    const promises = [];
-    // layout
-    promises.push(annoMatrix.fetch("emb", layoutChoice.current));
-    // color
     const query = this.createColorByQuery(colors);
-    if (query) {
-      promises.push(annoMatrix.fetch(...query));
-    } else {
-      promises.push(Promise.resolve(null));
-    }
-    // point highlighting
-    if (pointDilationAccessor) {
-      promises.push(annoMatrix.fetch("obs", pointDilationAccessor));
-    } else {
-      promises.push(Promise.resolve(null));
-    }
+    const promises: [
+      Promise<Dataframe>,
+      Promise<Dataframe | null>,
+      Promise<Dataframe | null>
+    ] = [
+      annoMatrix.fetch("emb", layoutChoice.current),
+      query ? annoMatrix.fetch(...query) : Promise.resolve(null),
+      pointDilationAccessor
+        ? annoMatrix.fetch("obs", pointDilationAccessor)
+        : Promise.resolve(null),
+    ];
     return Promise.all(promises);
   }
 
