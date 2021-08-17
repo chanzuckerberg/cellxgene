@@ -21,10 +21,10 @@ export const dispatchNetworkErrorMessageToUser = (message: string): void => {
 Catch unexpected errors and make sure we don't lose them!
 */
 export function catchErrorsWrap(
-  fn: (dispatch: Dispatch, getState: () => RootState) => Promise<void>,
+  fn: (dispatch: AppDispatch, getState: () => RootState) => Promise<void>,
   dispatchToUser = false
 ) {
-  return (dispatch: Dispatch, getState: () => RootState): void => {
+  return (dispatch: AppDispatch, getState: () => RootState): void => {
     fn(dispatch, getState).catch((error: Error) => {
       console.error(error);
       if (dispatchToUser) {
