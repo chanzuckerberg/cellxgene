@@ -218,7 +218,7 @@ describe("whereCache", () => {
     expect(wc).toEqual(
       expect.objectContaining({
         where: {
-          obs: {
+          [Field.obs]: {
             queryField: expect.any(Map),
           },
         },
