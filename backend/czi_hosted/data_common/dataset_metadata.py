@@ -35,7 +35,8 @@ def extrapolate_dataset_location_from_config(server_config: ServerConfig, datase
     Use the dataset_explorer_location and the server config to determine where the dataset is stored
     """
     # TODO @mdunitz remove after fork, update config to remove single_dataset option, the multiroot lookup will need to
-    #  remain while we support covid 19 cell atlas
+    #  remain while we support covid 19 cell atlas.
+    #   See ticket https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/corpora-data-portal/1281 # noqa
     if server_config.single_dataset__datapath:
         datapath = server_config.single_dataset__datapath
         return datapath
