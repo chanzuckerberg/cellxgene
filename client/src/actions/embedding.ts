@@ -42,17 +42,19 @@ export const layoutChoiceAction: ActionCreator<
   On layout choice, make sure we have selected all on the previous layout, AND the new
   layout.
   */
-    const { annoMatrix: prevAnnoMatrix, obsCrossfilter: prevCrossfilter } =
-      getState();
-    const [annoMatrix, obsCrossfilter] = await _switchEmbedding(
-      prevAnnoMatrix,
-      prevCrossfilter,
-      newLayoutChoice
-    );
-    dispatch({
-      type: "set layout choice",
-      layoutChoice: newLayoutChoice,
-      obsCrossfilter,
-      annoMatrix,
-    });
-  };
+  const {
+    annoMatrix: prevAnnoMatrix,
+    obsCrossfilter: prevCrossfilter,
+  } = getState();
+  const [annoMatrix, obsCrossfilter] = await _switchEmbedding(
+    prevAnnoMatrix,
+    prevCrossfilter,
+    newLayoutChoice
+  );
+  dispatch({
+    type: "set layout choice",
+    layoutChoice: newLayoutChoice,
+    obsCrossfilter,
+    annoMatrix,
+  });
+};
