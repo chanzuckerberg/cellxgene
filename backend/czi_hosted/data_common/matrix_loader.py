@@ -51,6 +51,7 @@ class MatrixDataLoader(object):
             self.matrix_type = CxgAdaptor
 
     # TODO @mdunitz remove when removing conversion code, also remove server_config.multi_dataset__allowed_matrix_types
+    # https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/corpora-data-portal/1277 # noqa
     def __matrix_data_type(self):
         if self.location.path.endswith(".h5ad"):
             return MatrixDataType.H5AD
