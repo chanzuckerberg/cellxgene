@@ -428,7 +428,6 @@ export default abstract class AnnoMatrix {
   
   Example:
     await setObsColmnValues("flavor", [383, 400], "tasty") -> AnnoMtarix
-  
   */
   abstract setObsColumnValues(
     col: LabelType,
