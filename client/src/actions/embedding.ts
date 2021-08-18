@@ -2,7 +2,7 @@
 action creators related to embeddings choice
 */
 
-import { Action, ActionCreator, AnyAction, Dispatch } from "redux";
+import { Action, ActionCreator } from "redux";
 import { ThunkAction } from "redux-thunk";
 import { AnnoMatrixObsCrossfilter } from "../annoMatrix";
 import type { AppDispatch, RootState } from "../reducers";

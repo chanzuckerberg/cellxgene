@@ -6,7 +6,6 @@ import {
   createCategorySummaryFromDfCol,
   isSelectableCategoryName,
 } from "./stateManager/controlsHelpers";
-import { Dataframe } from "./dataframe";
 
 /*
   Centroid coordinate calculation
