@@ -20,8 +20,6 @@ export function isubsetMask(
 		Subset annomatrix to contain the rows which have truish value in the mask.
     Maks length must equal annoMatrix.nObs (row count).
 	*/
-  // @ts-expect-error --- TODO revisit:
-  // `_maskToList`: Argument of type 'OffsetArray | null' is not assignable to parameter of type 'OffsetArray'. Type 'null' is not assignable to type 'OffsetArray'.
   return isubset(annoMatrix, _maskToList(obsMask));
 }
 
@@ -78,11 +76,8 @@ export function clip(
 Private utility functions below
 */
 
-function _maskToList(mask: Uint8Array): OffsetArray | null {
+function _maskToList(mask: Uint8Array): OffsetArray {
   /* convert masks to lists - method wastes space, but is fast */
-  if (!mask) {
-    return null;
-  }
   const list = new Int32Array(mask.length);
   let elems = 0;
   for (let i = 0, l = mask.length; i < l; i += 1) {

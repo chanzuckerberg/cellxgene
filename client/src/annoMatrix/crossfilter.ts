@@ -22,7 +22,7 @@ import {
   LabelType,
 } from "../util/dataframe";
 import { Query } from "./query";
-import { AnyArray } from "../common/types/arraytypes";
+import { TypedArray } from "../common/types/arraytypes";
 import { LabelArray } from "../util/dataframe/types";
 
 type ObsDimensionParams =
@@ -283,18 +283,18 @@ export default class AnnoMatrixObsCrossfilter {
     return index.labels();
   }
 
-  fillByIsSelected<T extends AnyArray>(
-    array: T,
-    selectedValue: T[0],
-    deselectedValue: T[0]
-  ): T {
+  fillByIsSelected<A extends TypedArray>(
+    array: A,
+    selectedValue: A[0],
+    deselectedValue: A[0]
+  ): A {
     /* if no data yet indexed in the crossfilter, just say everything is selected */
     if (
       this.obsCrossfilter.size() === 0 ||
       this.obsCrossfilter.dimensionNames().length === 0
     ) {
       // @ts-expect-error ts-migrate --- TODO revisit:
-      // Type 'Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array | unknown[]' is not assignable to type 'T'...
+      // Type 'Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array' is not assignable to type 'A'...
       return array.fill(selectedValue);
     }
     return this.obsCrossfilter.fillByIsSelected(

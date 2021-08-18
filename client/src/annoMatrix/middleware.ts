@@ -69,7 +69,7 @@ function _doGC(store: MiddlewareAPI): void {
     undoableStack.map((m: AnnoMatrix) => [m, { isHot: false }])
   );
   let am = currentAnnoMatrix;
-  while (am) {
+  while (am && am.isView) {
     allAnnoMatrices.set(am, { isHot: true });
     am = am.viewOf;
   }

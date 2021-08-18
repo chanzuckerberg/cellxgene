@@ -136,7 +136,7 @@ export default abstract class AnnoMatrix {
       * rowIndex - a rowIndex shared by all data on this view (ie, the list of cells).
         The row index labels are as defined by the base dataset from the server.
       * isView - true if this is a view, false if not.
-      * viewOf - pointer to parent annomatrix if a view, undefined/null if not a view.
+      * viewOf - pointer to parent annomatrix if a view, self if not a view.
       * userFlags - container for any additional state a user of this API wants to hang
         off of an annoMatrix, and have propagated by the (shallow) cloning protocol.
     */
