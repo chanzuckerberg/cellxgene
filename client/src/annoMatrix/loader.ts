@@ -10,7 +10,7 @@ import {
 } from "../util/stateManager/schemaHelpers";
 import { isAnyArray } from "../common/types/arraytypes";
 import { _whereCacheCreate, WhereCache } from "./whereCache";
-import AnnoMatrix, { ObsColumnValue } from "./annoMatrix";
+import AnnoMatrix from "./annoMatrix";
 import PromiseLimit from "../util/promiseLimit";
 import {
   _expectComplexQuery,
@@ -31,7 +31,12 @@ import {
   EmbeddingSchema,
   RawSchema,
 } from "../common/types/schema";
-import { Dataframe } from "../util/dataframe";
+import {
+  Dataframe,
+  DataframeValue,
+  DataframeValueArray,
+  LabelType,
+} from "../util/dataframe";
 
 const promiseThrottle = new PromiseLimit(5);
 
@@ -63,7 +68,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
   /**
    ** Public.  API described in base class.
    **/
-  addObsAnnoCategory(col: string, category: string): AnnoMatrix {
+  addObsAnnoCategory(col: LabelType, category: string): AnnoMatrix {
     /*
     Add a new category (aka label) to the schema for an obs column.
     */
@@ -72,7 +77,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
       Field.obs,
       col
     ) as AnnotationColumnSchema;
-    _writableCategoryTypeCheck(colSchema); // throws on error
+    _writableObsCategoryTypeCheck(colSchema); // throws on error
 
     const newAnnoMatrix = this._clone();
     newAnnoMatrix.schema = addObsAnnoCategory(this.schema, col, category);
@@ -80,7 +85,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
   }
 
   async removeObsAnnoCategory(
-    col: string,
+    col: LabelType,
     category: string,
     unassignedCategory: string
   ): Promise<AnnoMatrix> {
@@ -92,7 +97,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
       Field.obs,
       col
     ) as AnnotationColumnSchema;
-    _writableCategoryTypeCheck(colSchema); // throws on error
+    _writableObsCategoryTypeCheck(colSchema); // throws on error
 
     const newAnnoMatrix = await this.resetObsColumnValues(
       col,
@@ -107,7 +112,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  dropObsColumn(col: string): AnnoMatrix {
+  dropObsColumn(col: LabelType): AnnoMatrix {
     /*
 		drop column from field
 		*/
@@ -124,10 +129,10 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  addObsColumn<T extends ObsColumnValue>(
+  addObsColumn<T extends DataframeValueArray>(
     colSchema: AnnotationColumnSchema,
-    Ctor: new (n: number) => T[],
-    value: T | T[]
+    Ctor: new (n: number) => T,
+    value: T
   ): AnnoMatrix {
     /*
 		add a column to field, initializing with value.  Value may 
@@ -165,7 +170,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  renameObsColumn(oldCol: string, newCol: string): AnnoMatrix {
+  renameObsColumn(oldCol: LabelType, newCol: LabelType): AnnoMatrix {
     /*
     Rename the obs oldColName to newColName.  oldCol must be writable.
     */
@@ -181,17 +186,21 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     return this.dropObsColumn(oldCol).addObsColumn(
       {
         ...oldColSchema,
+        // @ts-expect-error ts-migrate --- TODO revisit:
+        // `name`: Type 'LabelType' is not assignable to type 'string'. Type 'number' is not assignable to type 'string'.
         name: newCol,
       },
+      // @ts-expect-error ts-migrate --- TODO revisit:
+      // `value`: Object is possibly 'undefined'.
       value.constructor,
       value
     );
   }
 
   async setObsColumnValues(
-    col: string,
+    col: LabelType,
     rowLabels: Int32Array,
-    value: ObsColumnValue
+    value: DataframeValue
   ): Promise<AnnoMatrix> {
     /*
 		Set all rows identified by rowLabels to value.
@@ -201,7 +210,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
       Field.obs,
       col
     ) as AnnotationColumnSchema;
-    _writableCategoryTypeCheck(colSchema); // throws on error
+    _writableObsCategoryTypeCheck(colSchema); // throws on error
 
     // ensure that we have the data in cache before we manipulate it
     await this.fetch(Field.obs, col);
@@ -219,16 +228,14 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix._cache.obs = this._cache.obs.replaceColData(col, data);
     const { categories } = colSchema;
-    // @ts-expect-error ts-migrate --- TODO revisit:
-    // `value`: Argument of type 'ObsColumnValue' is not assignable to parameter of type 'Category'. Type 'undefined' is not assignable to type 'Category'.
     if (!categories?.includes(value)) {
       newAnnoMatrix.schema = addObsAnnoCategory(this.schema, col, value);
     }
     return newAnnoMatrix;
   }
 
-  async resetObsColumnValues<T extends ObsColumnValue>(
-    col: string,
+  async resetObsColumnValues<T extends DataframeValue>(
+    col: LabelType,
     oldValue: T,
     newValue: T
   ): Promise<AnnoMatrix> {
@@ -240,11 +247,10 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
       Field.obs,
       col
     ) as AnnotationColumnSchema;
-    _writableCategoryTypeCheck(colSchema); // throws on error
+    _writableObsCategoryTypeCheck(colSchema); // throws on error
 
     // @ts-expect-error ts-migrate --- TODO revisit:
     // `colSchema.categories`: Object is possibly 'undefined'.
-    // `oldValue`: Argument of type 'ObsColumnValue' is not assignable to parameter of type 'Category'.
     if (!colSchema.categories.includes(oldValue)) {
       throw new Error("unknown category");
     }
@@ -262,8 +268,6 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix._cache.obs = this._cache.obs.replaceColData(col, data);
     const { categories } = colSchema;
-    // @ts-expect-error ts-migrate --- TODO revisit:
-    // `newValue`: Argument of type 'ObsColumnValue' is not assignable to parameter of type 'Category'.
     if (!categories?.includes(newValue)) {
       newAnnoMatrix.schema = addObsAnnoCategory(this.schema, col, newValue);
     }
@@ -318,7 +322,8 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
         throw new Error("Unknown field name");
     }
     const buffer = await promiseThrottle.priorityAdd(priority, doRequest);
-    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'unknown' is not assignable to parameter of type 'ArrayBuffer | ArrayBuffer[]'.... Remove this comment to see the full error message
+    // @ts-expect-error --- TODO revisit:
+    // `buffer`:  Argument of type 'unknown' is not assignable to parameter of type 'ArrayBuffer | ArrayBuffer[]'. Type 'unknown' is not assignable to type 'ArrayBuffer[]'.
     let result = matrixFBSToDataframe(buffer);
     if (!result || result.isEmpty()) throw Error("Unknown field/col");
 
@@ -344,7 +349,7 @@ function _writableObsCheck(obsColSchema: AnnotationColumnSchema): void {
   }
 }
 
-function _writableCategoryTypeCheck(
+function _writableObsCategoryTypeCheck(
   obsColSchema: AnnotationColumnSchema
 ): void {
   _writableObsCheck(obsColSchema);

@@ -7,11 +7,12 @@ import {
   Field,
   Schema,
 } from "../common/types/schema";
+import { LabelArray, LabelType } from "../util/dataframe/types";
 
 export function _getColumnSchema(
   schema: Schema,
   field: Field,
-  col: string
+  col: LabelType
 ): ArraySchema {
   /* look up the column definition */
   switch (field) {
@@ -34,18 +35,20 @@ export function _getColumnSchema(
   }
 }
 
-export function _isIndex(schema: Schema, field: Field, col: string): boolean {
-  // @ts-expect-error ts-migrate --- TODO revisit:
-  // `schema.annotations?.[field]`: Element implicitly has an 'any' type because expression of type 'Field' can't be used to index type 'AnnotationsSchema'. Property '[Field.emb]' does not exist on type 'AnnotationsSchema'.
+export function _isIndex(
+  schema: Schema,
+  field: Field.obs | Field.var,
+  col: LabelType
+): boolean {
   const index = schema.annotations?.[field].index;
-  return index && index === col;
+  return !!(index && index === col);
 }
 
 export function _getColumnDimensionNames(
   schema: Schema,
   field: Field,
-  col: string
-): string[] | undefined {
+  col: LabelType
+): LabelArray | undefined {
   /*
 		field/col may be an alias for multiple columns. Currently used to map ND 
 		values to 1D dataframe columns for embeddings/layout. Signified by the presence

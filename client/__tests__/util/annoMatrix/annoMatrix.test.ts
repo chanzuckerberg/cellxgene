@@ -35,7 +35,7 @@ describe("AnnoMatrix", () => {
       expect(annoMatrix.nObs).toEqual(serverMocks.schema.schema.dataframe.nObs);
       expect(annoMatrix.nVar).toEqual(serverMocks.schema.schema.dataframe.nVar);
       expect(annoMatrix.isView).toBeFalsy();
-      expect(annoMatrix.viewOf).toBeUndefined();
+      expect(annoMatrix.viewOf).toBe(annoMatrix);
       expect(annoMatrix.rowIndex).toBeDefined();
     });
 

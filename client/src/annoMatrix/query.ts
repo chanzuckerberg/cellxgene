@@ -1,6 +1,7 @@
 import sha1 from "sha1";
 import { _dubEncURIComp } from "./fetchHelpers";
 import { Field } from "../common/types/schema";
+import { LabelType } from "../util/dataframe";
 
 /**
  * Query utilities, mostly for debugging support and validation.
@@ -8,7 +9,7 @@ import { Field } from "../common/types/schema";
 
 export type ComplexQuery = SummarizeQuery | WhereQuery;
 
-export type Query = string | ComplexQuery;
+export type Query = LabelType | ComplexQuery;
 
 interface SummarizeQuery {
   summarize: SummarizeQueryTerm;

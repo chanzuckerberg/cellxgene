@@ -51,6 +51,7 @@ creates a cache entry of:
 import { _getColumnDimensionNames } from "./schema";
 import { _hashStringValues, Query } from "./query";
 import { Field, Schema } from "../common/types/schema";
+import { LabelArray } from "../util/dataframe/types";
 
 export interface WhereCache {
   summarize?: {
@@ -63,7 +64,7 @@ export interface WhereCache {
   };
 }
 
-export type WhereCacheColumnLabels = string[] | number[] | Int32Array;
+export type WhereCacheColumnLabels = LabelArray;
 
 interface WhereCacheTerms {
   [key: string]: Map<string, Map<string, WhereCacheColumnLabels>>;
@@ -111,7 +112,7 @@ export function _whereCacheGet(
 export function _whereCacheCreate(
   field: Field,
   query: Query,
-  columnLabels: string[] | number[]
+  columnLabels: LabelArray
 ): WhereCache | null {
   /*
 	Create a new whereCache

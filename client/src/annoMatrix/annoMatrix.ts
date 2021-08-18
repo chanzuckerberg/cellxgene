@@ -2,6 +2,9 @@ import {
   Dataframe,
   IdentityInt32Index,
   dataframeMemo,
+  LabelType,
+  DataframeValue,
+  DataframeValueArray,
 } from "../util/dataframe";
 import {
   _getColumnDimensionNames,
@@ -28,6 +31,8 @@ import {
   ArraySchema,
   RawSchema,
 } from "../common/types/schema";
+import { LabelArray } from "../util/dataframe/types";
+import { LabelIndexBase } from "../util/dataframe/labelIndex";
 
 const _dataframeCache = dataframeMemo(128);
 
@@ -37,8 +42,6 @@ interface Cache {
   [Field.emb]: Dataframe;
   [Field.X]: Dataframe;
 }
-
-export type ObsColumnValue = Category | null | undefined;
 
 interface PendingLoad {
   [Field.obs]: { [key: string]: Promise<void> };
@@ -59,14 +62,13 @@ export default abstract class AnnoMatrix {
 
   public nVar: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- TODO: waiting for typings from util/dataframe
-  public rowIndex: any;
+  public rowIndex: LabelIndexBase;
 
   public schema: Schema;
 
   public userFlags: UserFlags;
 
-  public viewOf?: AnnoMatrix;
+  public viewOf: AnnoMatrix;
 
   public _cache: Cache;
 
@@ -113,7 +115,12 @@ export default abstract class AnnoMatrix {
     return [Field.obs, Field.var, Field.emb, Field.X];
   }
 
-  constructor(schema: RawSchema, nObs: number, nVar: number, rowIndex = null) {
+  constructor(
+    schema: RawSchema,
+    nObs: number,
+    nVar: number,
+    rowIndex: LabelIndexBase | null = null
+  ) {
     /*
     Private constructor - this is an abstract base class.  Do not use.
     */
@@ -138,7 +145,7 @@ export default abstract class AnnoMatrix {
     this.nVar = nVar;
     this.rowIndex = rowIndex || new IdentityInt32Index(nObs);
     this.isView = false;
-    this.viewOf = undefined;
+    this.viewOf = this;
     this.userFlags = {};
 
     /*
@@ -191,7 +198,7 @@ export default abstract class AnnoMatrix {
     return AnnoMatrix.fields();
   }
 
-  getColumnSchema(field: Field, col: string): ArraySchema {
+  getColumnSchema(field: Field, col: LabelType): ArraySchema {
     /*
     Return the schema for the field & column ,eg,
 
@@ -203,7 +210,7 @@ export default abstract class AnnoMatrix {
     return _getColumnSchema(this.schema, field, col);
   }
 
-  getColumnDimensions(field: Field, col: string): string[] | undefined {
+  getColumnDimensions(field: Field, col: LabelType): LabelArray | undefined {
     /*
     Return the dimensions on this field / column.  For most fields, which are 1D,
     this just return the column name.  Multi-dimensional columns, such as embeddings,
@@ -233,7 +240,7 @@ export default abstract class AnnoMatrix {
   /**
    ** Load / read interfaces
    **/
-  fetch(field: Field, q: Query | Query[]): Dataframe {
+  fetch(field: Field, q: Query | Query[]): Promise<Dataframe> {
     /*
 		Return the given query on a single matrix field as a single dataframe.
 		Currently supports ONLY full column query.
@@ -331,7 +338,7 @@ export default abstract class AnnoMatrix {
     addObsAnnoCategory("my cell type", "left toenail") -> AnnoMatrix
 
   */
-  abstract addObsAnnoCategory(col: string, category: string): AnnoMatrix;
+  abstract addObsAnnoCategory(col: LabelType, category: string): AnnoMatrix;
 
   /*
   Remove a category value from an obs column, reassign any obs having that value
@@ -350,7 +357,7 @@ export default abstract class AnnoMatrix {
   NOTE: method is async as it may need to fetch data to provide the reassignment.
   */
   abstract removeObsAnnoCategory(
-    col: string,
+    col: LabelType,
     category: Category,
     unassignedCategory: string
   ): Promise<AnnoMatrix>;
@@ -366,7 +373,7 @@ export default abstract class AnnoMatrix {
 
     dropObsColumn("old annotations") ->  AnnoMatrix
   */
-  abstract dropObsColumn(col: string): AnnoMatrix;
+  abstract dropObsColumn(col: LabelType): AnnoMatrix;
 
   /*
   Add a new writable OBS annotation column, with the caller-specified schema, initial value
@@ -392,10 +399,10 @@ export default abstract class AnnoMatrix {
     ) -> AnnoMatrix
 
    */
-  abstract addObsColumn<T extends ObsColumnValue>(
+  abstract addObsColumn<T extends DataframeValueArray>(
     colSchema: AnnotationColumnSchema,
-    Ctor: new (n: number) => T[],
-    value: T | T[]
+    Ctor: new (n: number) => T,
+    value: T
   ): AnnoMatrix;
 
   /*
@@ -408,7 +415,7 @@ export default abstract class AnnoMatrix {
     renameObsColumn('cell type', 'old cell type') -> AnnoMatrix.
 
   */
-  abstract renameObsColumn(oldCol: string, newCol: string): AnnoMatrix;
+  abstract renameObsColumn(oldCol: LabelType, newCol: LabelType): AnnoMatrix;
 
   /*
   Set all obs with label in array 'obsLabels' to have 'value'.  Typical use would be
@@ -424,9 +431,9 @@ export default abstract class AnnoMatrix {
   
   */
   abstract setObsColumnValues(
-    col: string,
+    col: LabelType,
     obsLabels: Int32Array,
-    value: ObsColumnValue
+    value: DataframeValue
   ): Promise<AnnoMatrix>;
 
   /*
@@ -441,8 +448,8 @@ export default abstract class AnnoMatrix {
     await resetObsColumnValues("my notes", "good", "not-good") -> AnnoMatrix
 
     */
-  abstract resetObsColumnValues<T extends ObsColumnValue>(
-    col: string,
+  abstract resetObsColumnValues<T extends DataframeValue>(
+    col: LabelType,
     oldValue: T,
     newValue: T
   ): Promise<AnnoMatrix>;
@@ -471,20 +478,20 @@ Return cache keys for columns associated with this query.  May return
   /**
    ** Private interfaces below.
    **/
-  _resolveCachedQueries(field: Field, queries: Query[]): string[] | number[] {
+  _resolveCachedQueries(field: Field, queries: Query[]): LabelArray {
     return queries
       .map((query: Query) =>
-        // @ts-expect-error ts-migrate --- suppressing TS defect (https://github.com/microsoft/TypeScript/issues/44373).
-        // Compiler is complaining that expression is not callable on array union types. Remove suppression once fixed.
+        // @ts-expect-error --- TODO revisit:
+        // `filter`: This expression is not callable.
         _whereCacheGet(this._whereCache, this.schema, field, query).filter(
-          (cacheKey?: string | number) =>
+          (cacheKey?: LabelType) =>
             cacheKey !== undefined && this._cache[field].hasCol(cacheKey)
         )
       )
       .flat();
   }
 
-  async _fetch(field: Field, q: Query | Query[]): Dataframe {
+  async _fetch(field: Field, q: Query | Query[]): Promise<Dataframe> {
     if (!AnnoMatrix.fields().includes(field)) return Dataframe.empty();
     const queries = Array.isArray(q) ? q : [q];
     queries.forEach(_queryValidate);
@@ -496,7 +503,7 @@ Return cache keys for columns associated with this query.  May return
     /* find any query not already cached */
     const uncachedQueries = queries.filter((query) =>
       _whereCacheGet(this._whereCache, this.schema, field, query).some(
-        (cacheKey?: string | number) =>
+        (cacheKey?: LabelType) =>
           cacheKey === undefined || !this._cache[field].hasCol(cacheKey)
       )
     );
@@ -511,8 +518,6 @@ Return cache keys for columns associated with this query.  May return
             async (_field: Field, _query: Query): Promise<void> => {
               /* fetch, then index.  _doLoad is subclass interface */
               const [whereCacheUpdate, df] = await this._doLoad(_field, _query);
-              // @ts-expect-error ts-migrate --- TODO revisit:
-              // `withColsFrom`: Expected 2 arguments, but got 1.
               this._cache[_field] = this._cache[_field].withColsFrom(df);
               this._whereCache = _whereCacheMerge(
                 this._whereCache,
@@ -527,8 +532,6 @@ Return cache keys for columns associated with this query.  May return
     /* everything we need is in the cache, so just cherry-pick requested columns */
     const requestedCacheKeys = this._resolveCachedQueries(field, queries);
     const response = _dataframeCache(
-      // @ts-expect-error ts-migrate --- TODO revisit:
-      // Remove once typings in /dataframe is completed.
       this._cache[field].subset(null, requestedCacheKeys)
     );
     this._gcUpdateStats(field, response);
@@ -565,15 +568,14 @@ Return cache keys for columns associated with this query.  May return
     query: Query
   ): Promise<[WhereCache | null, Dataframe]>;
 
+  /**
+   * Determines viewOf for this annoMatrix.
+   *
+   * @internal
+   * @returns - parent annoMatrix if this annoMatrix is a view, otherwise this annoMatrix if it's not a view.
+   */
   _getViewOf(): AnnoMatrix {
-    /**
-     * Determines viewOf for this annoMatrix.
-     *
-     * @internal
-     * @returns - parent annoMatrix if this annoMatrix is a view, otherwise this annoMatrix if it's not a view.
-     */
     if (this.isView) {
-      // @ts-expect-error ts-migrate --- we can assume viewOf is not undefined if annoMatrix isView.
       return this.viewOf;
     }
     return this;
@@ -608,25 +610,21 @@ Return cache keys for columns associated with this query.  May return
   To be effective, the GC callback needs to be invoked from the undo/redo code,
   as much of the cache is pinned by that data structure.
   */
-  _gcField(
-    field: Field,
-    isHot: boolean,
-    pinnedColumns: string[] | number[]
-  ): void {
+  _gcField(field: Field, isHot: boolean, pinnedColumns: LabelArray): void {
     const maxColumns = isHot ? 256 : 10;
     const cache = this._cache[field];
     if (cache.colIndex.size() < maxColumns) return; // trivial rejection
 
     const candidates = cache.colIndex
       .labels()
-      // @ts-expect-error ts-migrate --- TODO revisit:
-      // Error on `col`: Argument of type 'string' is not assignable to parameter of type 'never'.
-      .filter((col: string) => !pinnedColumns.includes(col));
+      // @ts-expect-error --- TODO revisit:
+      // `col`: Argument of type 'LabelType' is not assignable to parameter of type 'number'. Type 'string' is not assignable to type 'number'.
+      .filter((col: LabelType) => !pinnedColumns.includes(col));
 
     const excessCount = candidates.length + pinnedColumns.length - maxColumns;
     if (excessCount > 0) {
       const { _gcInfo } = this;
-      candidates.sort((a: string, b: string) => {
+      candidates.sort((a: LabelType, b: LabelType) => {
         let atime = _gcInfo.get(_columnCacheKey(field, a));
         if (atime === undefined) atime = 0;
 
@@ -643,17 +641,19 @@ Return cache keys for columns associated with this query.  May return
       //     ", "
       //   )}]`
       // );
+      // @ts-expect-error --- TODO revisit:
+      // `reduce`: This expression is not callable.
       this._cache[field] = toDrop.reduce(
-        (df: Dataframe, col: string) => df.dropCol(col),
+        (df: Dataframe, col: LabelType) => df.dropCol(col),
         this._cache[field]
       );
-      toDrop.forEach((col: string) =>
+      toDrop.forEach((col: LabelType) =>
         _gcInfo.delete(_columnCacheKey(field, col))
       );
     }
   }
 
-  _gcFetchCleanup(field: Field, pinnedColumns: string[] | number[]): void {
+  _gcFetchCleanup(field: Field, pinnedColumns: LabelArray): void {
     /*
     Called during data load/fetch.  By definition, this is 'hot', so we
     only want to gc X.
@@ -662,8 +662,8 @@ Return cache keys for columns associated with this query.  May return
       this._gcField(
         field,
         true,
-        // @ts-expect-error ts-migrate --- suppressing TS defect (https://github.com/microsoft/TypeScript/issues/44373).
-        // Compiler is complaining that expression is not callable on array union types. Removed suppression once fixed.
+        // @ts-expect-error --- TODO revisit:
+        // Property 'concat' does not exist on type 'LabelArray'.
         pinnedColumns.concat(_getWritableColumns(this.schema, field))
       );
     }
@@ -692,7 +692,7 @@ Return cache keys for columns associated with this query.  May return
     const cols = dataframe.colIndex.labels();
     const { _gcInfo } = this;
     const now = Date.now();
-    cols.forEach((c: string) => {
+    cols.forEach((c: LabelType) => {
       _gcInfo.set(_columnCacheKey(field, c), now);
     });
   }
@@ -732,6 +732,6 @@ Return cache keys for columns associated with this query.  May return
 /*
 private utility functions below
 */
-function _columnCacheKey(field: Field, column: string): string {
+function _columnCacheKey(field: Field, column: LabelType): string {
   return `${field}/${column}`;
 }

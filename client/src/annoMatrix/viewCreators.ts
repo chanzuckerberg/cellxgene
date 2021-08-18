@@ -10,6 +10,7 @@ import {
   IdentityInt32Index,
   KeyIndex,
 } from "../util/dataframe";
+import { OffsetArray } from "../util/dataframe/types";
 
 export function isubsetMask(
   annoMatrix: AnnoMatrix,
@@ -19,12 +20,14 @@ export function isubsetMask(
 		Subset annomatrix to contain the rows which have truish value in the mask.
     Maks length must equal annoMatrix.nObs (row count).
 	*/
+  // @ts-expect-error --- TODO revisit:
+  // `_maskToList`: Argument of type 'OffsetArray | null' is not assignable to parameter of type 'OffsetArray'. Type 'null' is not assignable to type 'OffsetArray'.
   return isubset(annoMatrix, _maskToList(obsMask));
 }
 
 export function isubset(
   annoMatrix: AnnoMatrix,
-  obsOffsets: Int32Array | null
+  obsOffsets: OffsetArray
 ): AnnoMatrixRowSubsetView {
   /*
 		Subset annomatrix to contain the positions contained in the obsOffsets array
@@ -75,7 +78,7 @@ export function clip(
 Private utility functions below
 */
 
-function _maskToList(mask: Uint8Array): Int32Array | null {
+function _maskToList(mask: Uint8Array): OffsetArray | null {
   /* convert masks to lists - method wastes space, but is fast */
   if (!mask) {
     return null;
