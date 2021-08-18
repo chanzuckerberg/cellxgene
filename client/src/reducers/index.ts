@@ -1,5 +1,5 @@
-import { createStore, applyMiddleware } from "redux";
-import thunk from "redux-thunk";
+import { createStore, applyMiddleware, AnyAction } from "redux";
+import thunk, { ThunkDispatch } from "redux-thunk";
 
 import cascadeReducers from "./cascade";
 import undoable from "./undoable";
@@ -62,5 +62,9 @@ const Reducer = undoable(
 );
 
 const store = createStore(Reducer, applyMiddleware(thunk, annoMatrixGC));
+
+export type RootState = ReturnType<typeof store.getState>;
+
+export type AppDispatch = ThunkDispatch<RootState, never, AnyAction>;
 
 export default store;

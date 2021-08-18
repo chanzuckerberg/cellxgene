@@ -1,4 +1,5 @@
 import { vec2, mat3 } from "gl-matrix";
+import clamp from "./clamp";
 
 const EPSILON = 0.000001;
 
@@ -11,56 +12,49 @@ const panBound = 0.8;
 const scratch0 = new Float32Array(16);
 const scratch1 = new Float32Array(16);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-function clamp(val: any, rng: any) {
-  return Math.max(Math.min(val, rng[1]), rng[0]);
-}
-
 class Camera {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  canvas: any;
+  canvas: HTMLCanvasElement;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  prevEvent: any;
+  prevEvent: {
+    clientX: number;
+    clientY: number;
+    type: string;
+  };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  viewMatrix: any;
+  viewMatrix: mat3;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  viewMatrixInv: any;
+  viewMatrixInv: mat3;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  constructor(canvas: any) {
+  constructor(canvas: HTMLCanvasElement) {
     this.prevEvent = {
       clientX: 0,
       clientY: 0,
-      type: 0,
+      type: "",
     };
     this.canvas = canvas;
     this.viewMatrix = mat3.create();
     this.viewMatrixInv = mat3.create();
   }
 
-  view() {
+  view(): mat3 {
     return this.viewMatrix;
   }
 
-  invView() {
+  invView(): mat3 {
     return this.viewMatrixInv;
   }
 
-  distance() {
+  distance(): number {
     return this.viewMatrix[0];
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  pan(dx: any, dy: any) {
+  pan(dx: number, dy: number): void {
     const m = this.viewMatrix;
-    const dyRange = [
+    const dyRange: [number, number] = [
       -panBound - (m[7] + 1) / m[4],
       panBound - (m[7] - 1) / m[4],
     ];
-    const dxRange = [
+    const dxRange: [number, number] = [
       -panBound - (m[6] + 1) / m[0],
       panBound - (m[6] - 1) / m[0],
     ];
@@ -74,13 +68,12 @@ class Camera {
     mat3.invert(this.viewMatrixInv, m);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  zoomAt(d: any, x = 0, y = 0) {
+  zoomAt(d: number, x = 0, y = 0): void {
     /*
     Camera zoom at [x,y]
     */
     const m = this.viewMatrix;
-    const bounds = [-panBound, panBound];
+    const bounds: [number, number] = [-panBound, panBound];
     x = clamp(x, bounds);
     y = clamp(y, bounds);
 
@@ -98,15 +91,18 @@ class Camera {
   Event handling
   */
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  flush(e: any) {
+  flush(e: MouseEvent) {
     this.prevEvent.type = e.type;
     this.prevEvent.clientX = e.clientX;
     this.prevEvent.clientY = e.clientY;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  localPosition(target: any, canvasX: any, canvasY: any, projectionInvTF: any) {
+  localPosition(
+    target: HTMLCanvasElement,
+    canvasX: number,
+    canvasY: number,
+    projectionInvTF: mat3
+  ): vec2 {
     /*
     Convert mouse position to local
     */
@@ -126,8 +122,7 @@ class Camera {
     return pos;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  mousePan(e: any, projectionTF: any) {
+  mousePan(e: MouseEvent, projectionTF: mat3): true {
     const projectionInvTF = mat3.invert(scratch0, projectionTF);
     const pos = this.localPosition(
       this.canvas,
@@ -147,8 +142,7 @@ class Camera {
     return true;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  wheelZoom(e: any, projectionTF: any) {
+  wheelZoom(e: WheelEvent, projectionTF: mat3): true {
     const { height } = this.canvas;
     const { deltaY, deltaMode, clientX, clientY } = e;
     const scale = scaleSpeed * (deltaMode === 1 ? 12 : 1) * (deltaY || 0);
@@ -164,8 +158,7 @@ class Camera {
     return true;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  handleEvent(e: any, projectionTF: any) {
+  handleEvent(e: MouseEvent, projectionTF: mat3): boolean {
     /*
     process the event, and return true if camera view changed
     */
@@ -181,7 +174,7 @@ class Camera {
       }
 
       case "wheel": {
-        viewChanged = this.wheelZoom(e, projectionTF);
+        viewChanged = this.wheelZoom(e as WheelEvent, projectionTF);
         this.flush(e);
         break;
       }
@@ -194,8 +187,7 @@ class Camera {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-function attachCamera(canvas: any) {
+function attachCamera(canvas: HTMLCanvasElement): Camera {
   return new Camera(canvas);
 }
 

@@ -2,7 +2,10 @@
 action creators related to embeddings choice
 */
 
+import { Action, ActionCreator } from "redux";
+import { ThunkAction } from "redux-thunk";
 import { AnnoMatrixObsCrossfilter } from "../annoMatrix";
+import type { AppDispatch, RootState } from "../reducers";
 import { _setEmbeddingSubset } from "../util/stateManager/viewStackHelpers";
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
@@ -29,30 +32,26 @@ export async function _switchEmbedding(
   return [annoMatrix, obsCrossfilter];
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export const layoutChoiceAction = (newLayoutChoice: any) => async (
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  dispatch: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  getState: any
-) => {
-  /*
+export const layoutChoiceAction: ActionCreator<
+  ThunkAction<Promise<void>, RootState, never, Action<"set layout choice">>
+> =
+  (newLayoutChoice: string) =>
+  async (dispatch: AppDispatch, getState: () => RootState): Promise<void> => {
+    /*
   On layout choice, make sure we have selected all on the previous layout, AND the new
   layout.
   */
-  const {
-    annoMatrix: prevAnnoMatrix,
-    obsCrossfilter: prevCrossfilter,
-  } = getState();
-  const [annoMatrix, obsCrossfilter] = await _switchEmbedding(
-    prevAnnoMatrix,
-    prevCrossfilter,
-    newLayoutChoice
-  );
-  dispatch({
-    type: "set layout choice",
-    layoutChoice: newLayoutChoice,
-    obsCrossfilter,
-    annoMatrix,
-  });
-};
+    const { annoMatrix: prevAnnoMatrix, obsCrossfilter: prevCrossfilter } =
+      getState();
+    const [annoMatrix, obsCrossfilter] = await _switchEmbedding(
+      prevAnnoMatrix,
+      prevCrossfilter,
+      newLayoutChoice
+    );
+    dispatch({
+      type: "set layout choice",
+      layoutChoice: newLayoutChoice,
+      obsCrossfilter,
+      annoMatrix,
+    });
+  };

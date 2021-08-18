@@ -80,10 +80,10 @@ export function normalizeWritableCategoricalSchema(
 ) {
   /*
   Ensure all enum writable / categorical schema have a categories array, that
-  the categories array contains all unique values in the data array, AND that 
+  the categories array contains all unique values in the data array, AND that
   the array is UI sorted.
   */
-  const categorySet = new Set(
+  const categorySet = new Set<string>(
     col.summarizeCategorical().categories.concat(colSchema.categories ?? [])
   );
   if (!categorySet.has(unassignedCategoryLabel)) {
@@ -118,7 +118,7 @@ export function normalizeCategorical(
 
   // consolidate all categories from data and schema into a single list
   const colDataSummary = col.summarizeCategorical();
-  const allCategories = new Set(
+  const allCategories = new Set<string>(
     colDataSummary.categories.concat(colSchema.categories ?? [])
   );
 
