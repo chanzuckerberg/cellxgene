@@ -230,7 +230,7 @@ describe("whereCache", () => {
     expect(
       // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-      (wc.where as any).obs.queryField.get("queryColumn")
+      (wc.where as any)[Field.obs].queryField.get("queryColumn")
     ).toBeInstanceOf(Map);
     expect(
       // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
