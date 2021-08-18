@@ -4,9 +4,18 @@ instances of AnnoMatrix, implementing common UI functions.
 */
 
 import { AnnoMatrixRowSubsetView, AnnoMatrixClipView } from "./views";
+import AnnoMatrix from "./annoMatrix";
+import {
+  DenseInt32Index,
+  IdentityInt32Index,
+  KeyIndex,
+} from "../util/dataframe";
+import { OffsetArray } from "../util/dataframe/types";
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function isubsetMask(annoMatrix: any, obsMask: any) {
+export function isubsetMask(
+  annoMatrix: AnnoMatrix,
+  obsMask: Uint8Array
+): AnnoMatrixRowSubsetView {
   /*
 		Subset annomatrix to contain the rows which have truish value in the mask.
     Maks length must equal annoMatrix.nObs (row count).
@@ -14,9 +23,10 @@ export function isubsetMask(annoMatrix: any, obsMask: any) {
   return isubset(annoMatrix, _maskToList(obsMask));
 }
 
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export function isubset(annoMatrix, obsOffsets) {
+export function isubset(
+  annoMatrix: AnnoMatrix,
+  obsOffsets: OffsetArray
+): AnnoMatrixRowSubsetView {
   /*
 		Subset annomatrix to contain the positions contained in the obsOffsets array
 
@@ -28,9 +38,10 @@ export function isubset(annoMatrix, obsOffsets) {
   return new AnnoMatrixRowSubsetView(annoMatrix, obsIndex);
 }
 
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export function subset(annoMatrix, obsLabels) {
+export function subset(
+  annoMatrix: AnnoMatrix,
+  obsLabels: Int32Array
+): AnnoMatrixRowSubsetView {
   /*
 		subset based on labels
   */
@@ -38,18 +49,21 @@ export function subset(annoMatrix, obsLabels) {
   return new AnnoMatrixRowSubsetView(annoMatrix, obsIndex);
 }
 
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export function subsetByIndex(annoMatrix, obsIndex) {
+export function subsetByIndex(
+  annoMatrix: AnnoMatrix,
+  obsIndex: DenseInt32Index | IdentityInt32Index | KeyIndex
+): AnnoMatrixRowSubsetView {
   /*
   subset based upon the new obs index.
   */
   return new AnnoMatrixRowSubsetView(annoMatrix, obsIndex);
 }
 
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-export function clip(annoMatrix, qmin, qmax) {
+export function clip(
+  annoMatrix: AnnoMatrix,
+  qmin: number,
+  qmax: number
+): AnnoMatrix {
   /*
 		Create a view that clips all continuous data to the [min, max] range.
 		The matrix shape does not change, but the continuous values outside the
@@ -62,12 +76,8 @@ export function clip(annoMatrix, qmin, qmax) {
 Private utility functions below
 */
 
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'mask' implicitly has an 'any' type.
-function _maskToList(mask) {
+function _maskToList(mask: Uint8Array): OffsetArray {
   /* convert masks to lists - method wastes space, but is fast */
-  if (!mask) {
-    return null;
-  }
   const list = new Int32Array(mask.length);
   let elems = 0;
   for (let i = 0, l = mask.length; i < l; i += 1) {

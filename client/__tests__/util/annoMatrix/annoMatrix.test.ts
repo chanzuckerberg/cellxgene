@@ -10,6 +10,7 @@ import {
   isubsetMask,
 } from "../../../src/annoMatrix";
 import { Dataframe } from "../../../src/util/dataframe";
+import { Field } from "../../../src/common/types/schema";
 
 enableFetchMocks();
 
@@ -34,7 +35,7 @@ describe("AnnoMatrix", () => {
       expect(annoMatrix.nObs).toEqual(serverMocks.schema.schema.dataframe.nObs);
       expect(annoMatrix.nVar).toEqual(serverMocks.schema.schema.dataframe.nVar);
       expect(annoMatrix.isView).toBeFalsy();
-      expect(annoMatrix.viewOf).toBeUndefined();
+      expect(annoMatrix.viewOf).toBe(annoMatrix);
       expect(annoMatrix.rowIndex).toBeDefined();
     });
 
@@ -42,7 +43,7 @@ describe("AnnoMatrix", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).once(serverMocks.annotationsObs(["name_0"]));
 
-      const df = await annoMatrix.fetch("obs", "name_0");
+      const df = await annoMatrix.fetch(Field.obs, "name_0");
       expect(df).toBeInstanceOf(Dataframe);
       expect(df.colIndex.labels()).toEqual(["name_0"]);
       expect(df.dims).toEqual([annoMatrix.nObs, 1]);
@@ -55,7 +56,7 @@ describe("AnnoMatrix", () => {
         .once(serverMocks.annotationsObs(["n_genes"]));
 
       await expect(
-        annoMatrix.fetch("obs", ["name_0", "n_genes"])
+        annoMatrix.fetch(Field.obs, ["name_0", "n_genes"])
       ).resolves.toBeInstanceOf(Dataframe);
     });
 
@@ -72,7 +73,7 @@ describe("AnnoMatrix", () => {
         ).resolves.toBeInstanceOf(Dataframe);
       };
 
-      test("obs", async () => getLastTwo("obs"));
+      test(Field.obs, async () => getLastTwo(Field.obs));
       test("var", async () => getLastTwo("var"));
       test("emb", async () => getLastTwo("emb"));
     });
@@ -81,15 +82,15 @@ describe("AnnoMatrix", () => {
       // single string is a column name
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).once(serverMocks.annotationsObs(["n_genes"]));
-      await expect(annoMatrix.fetch("obs", "n_genes")).resolves.toBeInstanceOf(
-        Dataframe
-      );
+      await expect(
+        annoMatrix.fetch(Field.obs, "n_genes")
+      ).resolves.toBeInstanceOf(Dataframe);
 
       // array of column names, expecting n_genes to be cached.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).once(serverMocks.annotationsObs(["percent_mito"]));
       await expect(
-        annoMatrix.fetch("obs", ["n_genes", "percent_mito"])
+        annoMatrix.fetch(Field.obs, ["n_genes", "percent_mito"])
       ).resolves.toBeInstanceOf(Dataframe);
 
       // more complex value filter query, enumerated
@@ -151,9 +152,9 @@ describe("AnnoMatrix", () => {
 
     test("schema accessors", () => {
       expect(annoMatrix.getMatrixFields()).toEqual(
-        expect.arrayContaining(["X", "obs", "emb", "var"])
+        expect.arrayContaining(["X", Field.obs, "emb", "var"])
       );
-      expect(annoMatrix.getMatrixColumns("obs")).toEqual(
+      expect(annoMatrix.getMatrixColumns(Field.obs)).toEqual(
         expect.arrayContaining(["name_0", "n_genes", "louvain"])
       );
       expect(annoMatrix.getColumnSchema("emb", "umap")).toEqual({
@@ -171,7 +172,7 @@ describe("AnnoMatrix", () => {
   	test the mask & label access to subset via isubset and isubsetMask
   	*/
     test("isubset", async () => {
-      const rowList = [0, 10];
+      const rowList = new Int32Array([0, 10]);
       const rowMask = new Uint8Array(annoMatrix.nObs);
       for (let i = 0; i < rowList.length; i += 1) {
         rowMask[rowList[i]] = 1;
@@ -188,8 +189,8 @@ describe("AnnoMatrix", () => {
       (fetch as any)
         .once(serverMocks.annotationsObs(["n_genes"]))
         .once(serverMocks.annotationsObs(["n_genes"]));
-      const ng1 = (await am1.fetch("obs", "n_genes")) as Dataframe;
-      const ng2 = (await am2.fetch("obs", "n_genes")) as Dataframe;
+      const ng1 = (await am1.fetch(Field.obs, "n_genes")) as Dataframe;
+      const ng2 = (await am2.fetch(Field.obs, "n_genes")) as Dataframe;
       expect(ng1).toBeDefined();
       expect(ng2).toBeDefined();
       expect(ng1).toHaveLength(ng2.length);
@@ -203,10 +204,10 @@ describe("AnnoMatrix", () => {
   describe("add/drop column", () => {
     // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'base' implicitly has an 'any' type.
     async function addDrop(base) {
-      expect(base.getMatrixColumns("obs")).not.toContain("foo");
+      expect(base.getMatrixColumns(Field.obs)).not.toContain("foo");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockRejectOnce(new Error("unknown column name"));
-      await expect(base.fetch("obs", "foo")).rejects.toThrow(
+      await expect(base.fetch(Field.obs, "foo")).rejects.toThrow(
         "unknown column name"
       );
 
@@ -216,9 +217,9 @@ describe("AnnoMatrix", () => {
         Float32Array,
         0
       );
-      expect(base.getMatrixColumns("obs")).not.toContain("foo");
-      expect(am1.getMatrixColumns("obs")).toContain("foo");
-      const foo: Dataframe = await am1.fetch("obs", "foo");
+      expect(base.getMatrixColumns(Field.obs)).not.toContain("foo");
+      expect(am1.getMatrixColumns(Field.obs)).toContain("foo");
+      const foo: Dataframe = await am1.fetch(Field.obs, "foo");
       expect(foo).toBeDefined();
       expect(foo).toBeInstanceOf(Dataframe);
       expect(foo).toHaveLength(am1.nObs);
@@ -228,11 +229,11 @@ describe("AnnoMatrix", () => {
 
       /* drop */
       const am2 = am1.dropObsColumn("foo");
-      expect(base.getMatrixColumns("obs")).not.toContain("foo");
-      expect(am2.getMatrixColumns("obs")).not.toContain("foo");
+      expect(base.getMatrixColumns(Field.obs)).not.toContain("foo");
+      expect(am2.getMatrixColumns(Field.obs)).not.toContain("foo");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockRejectOnce(new Error("unknown column name"));
-      await expect(am2.fetch("obs", "foo")).rejects.toThrow(
+      await expect(am2.fetch(Field.obs, "foo")).rejects.toThrow(
         "unknown column name"
       );
     }
@@ -245,10 +246,10 @@ describe("AnnoMatrix", () => {
       const am1 = clip(annoMatrix, 0.1, 0.9);
       await addDrop(am1);
 
-      const am2 = isubset(am1, [0, 1, 2, 20, 30, 400]);
+      const am2 = isubset(am1, new Int32Array([0, 1, 2, 20, 30, 400]));
       await addDrop(am2);
 
-      const am3 = isubset(annoMatrix, [10, 0, 7, 3]);
+      const am3 = isubset(annoMatrix, new Int32Array([10, 0, 7, 3]));
       await addDrop(am3);
 
       const am4 = clip(am3, 0, 1);
@@ -257,10 +258,10 @@ describe("AnnoMatrix", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockResponse(serverMocks.responder);
 
-      await am1.fetch("obs", am1.getMatrixColumns("obs"));
-      await am2.fetch("obs", am2.getMatrixColumns("obs"));
-      await am3.fetch("obs", am3.getMatrixColumns("obs"));
-      await am4.fetch("obs", am4.getMatrixColumns("obs"));
+      await am1.fetch(Field.obs, am1.getMatrixColumns(Field.obs));
+      await am2.fetch(Field.obs, am2.getMatrixColumns(Field.obs));
+      await am3.fetch(Field.obs, am3.getMatrixColumns(Field.obs));
+      await am4.fetch(Field.obs, am4.getMatrixColumns(Field.obs));
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).resetMocks();
@@ -287,7 +288,7 @@ describe("AnnoMatrix", () => {
         "unassigned"
       );
 
-      const testVal = await am.fetch("obs", "test");
+      const testVal = await am.fetch(Field.obs, "test");
       expect(testVal.col("test").asArray()).toEqual(
         new Array(am.nObs).fill("unassigned")
       );
@@ -295,7 +296,7 @@ describe("AnnoMatrix", () => {
       /* set values in column */
       const whichRows = [1, 2, 10];
       const am1 = await am.setObsColumnValues("test", whichRows, "yo");
-      const testVal1 = await am1.fetch("obs", "test");
+      const testVal1 = await am1.fetch(Field.obs, "test");
       const expt = new Array(am1.nObs).fill("unassigned");
       for (let i = 0; i < whichRows.length; i += 1) {
         const offset = am1.rowIndex.getOffset(whichRows[i]);
@@ -303,8 +304,8 @@ describe("AnnoMatrix", () => {
       }
       expect(testVal1).not.toBe(testVal);
       expect(testVal1.col("test").asArray()).toEqual(expt);
-      expect(am1.getColumnSchema("obs", "test").type).toBe("categorical");
-      expect(am1.getColumnSchema("obs", "test").categories).toEqual(
+      expect(am1.getColumnSchema(Field.obs, "test").type).toBe("categorical");
+      expect(am1.getColumnSchema(Field.obs, "test").categories).toEqual(
         expect.arrayContaining(["unassigned", "red", "green", "yo"])
       );
 
@@ -312,7 +313,7 @@ describe("AnnoMatrix", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockRejectOnce(new Error("unknown column name"));
       am = am1.dropObsColumn("test");
-      await expect(am.fetch("obs", "test")).rejects.toThrow(
+      await expect(am.fetch(Field.obs, "test")).rejects.toThrow(
         "unknown column name"
       );
     }
@@ -325,18 +326,18 @@ describe("AnnoMatrix", () => {
       const am1 = clip(annoMatrix, 0.1, 0.9);
       await addSetDrop(am1);
 
-      const am2 = isubset(am1, [0, 1, 2, 10, 20, 30, 400]);
+      const am2 = isubset(am1, new Int32Array([0, 1, 2, 10, 20, 30, 400]));
       await addSetDrop(am2);
 
-      const am3 = isubset(annoMatrix, [10, 1, 0, 30, 2]);
+      const am3 = isubset(annoMatrix, new Int32Array([10, 1, 0, 30, 2]));
       await addSetDrop(am3);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockResponse(serverMocks.responder);
 
-      await am1.fetch("obs", am1.getMatrixColumns("obs"));
-      await am2.fetch("obs", am2.getMatrixColumns("obs"));
-      await am3.fetch("obs", am3.getMatrixColumns("obs"));
+      await am1.fetch(Field.obs, am1.getMatrixColumns(Field.obs));
+      await am2.fetch(Field.obs, am2.getMatrixColumns(Field.obs));
+      await am3.fetch(Field.obs, am3.getMatrixColumns(Field.obs));
 
       await addSetDrop(am1);
       await addSetDrop(am2);

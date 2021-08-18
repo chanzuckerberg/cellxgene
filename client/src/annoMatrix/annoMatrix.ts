@@ -2,6 +2,9 @@ import {
   Dataframe,
   IdentityInt32Index,
   dataframeMemo,
+  LabelType,
+  DataframeValue,
+  DataframeValueArray,
 } from "../util/dataframe";
 import {
   _getColumnDimensionNames,
@@ -10,45 +13,70 @@ import {
   _getWritableColumns,
 } from "./schema";
 import { indexEntireSchema } from "../util/stateManager/schemaHelpers";
-import { _whereCacheGet, _whereCacheMerge } from "./whereCache";
+import {
+  _whereCacheGet,
+  _whereCacheMerge,
+  WhereCache,
+  WhereCacheColumnLabels,
+} from "./whereCache";
 import _shallowClone from "./clone";
-import { _queryValidate, _queryCacheKey } from "./query";
+import { _queryValidate, _queryCacheKey, Query } from "./query";
+import { GCHints } from "../common/types/entities";
+import {
+  AnnotationColumnSchema,
+  Category,
+  Field,
+  EmbeddingSchema,
+  Schema,
+  ArraySchema,
+  RawSchema,
+} from "../common/types/schema";
+import { LabelArray } from "../util/dataframe/types";
+import { LabelIndexBase } from "../util/dataframe/labelIndex";
 
 const _dataframeCache = dataframeMemo(128);
 
-export default class AnnoMatrix {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  public isView: any;
+interface Cache {
+  [Field.obs]: Dataframe;
+  [Field.var]: Dataframe;
+  [Field.emb]: Dataframe;
+  [Field.X]: Dataframe;
+}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  public nObs: any;
+interface PendingLoad {
+  [Field.obs]: { [key: string]: Promise<void> };
+  [Field.var]: { [key: string]: Promise<void> };
+  [Field.emb]: { [key: string]: Promise<void> };
+  [Field.X]: { [key: string]: Promise<void> };
+}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  public nVar: any;
+export interface UserFlags {
+  isUserSubsetView?: boolean;
+  isEmbSubsetView?: boolean;
+}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  public rowIndex: any;
+export default abstract class AnnoMatrix {
+  public isView: boolean;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  public schema: any;
+  public nObs: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  public userFlags: any;
+  public nVar: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  public viewOf: any;
+  public rowIndex: LabelIndexBase;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  protected _cache: any;
+  public schema: Schema;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  private _pendingLoad: any;
+  public userFlags: UserFlags;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  private _whereCache: any;
+  public viewOf: AnnoMatrix;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  private _gcInfo: any;
+  public _cache: Cache;
+
+  private _pendingLoad: PendingLoad;
+
+  private _whereCache: WhereCache;
+
+  private _gcInfo: Map<string, number>;
 
   /*
   Abstract base class for all AnnoMatrix objects.  This class provides a proxy
@@ -80,16 +108,19 @@ export default class AnnoMatrix {
       subset(annoMatrix, rowLabels) -> annoMatrix
   etc.
   */
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  static fields() {
+  static fields(): Field[] {
     /*
     return the fields present in the AnnoMatrix instance.
     */
-    return ["obs", "var", "emb", "X"];
+    return [Field.obs, Field.var, Field.emb, Field.X];
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  constructor(schema: any, nObs: any, nVar: any, rowIndex = null) {
+  constructor(
+    schema: RawSchema,
+    nObs: number,
+    nVar: number,
+    rowIndex: LabelIndexBase | null = null
+  ) {
     /*
     Private constructor - this is an abstract base class.  Do not use.
     */
@@ -105,7 +136,7 @@ export default class AnnoMatrix {
       * rowIndex - a rowIndex shared by all data on this view (ie, the list of cells).
         The row index labels are as defined by the base dataset from the server.
       * isView - true if this is a view, false if not.
-      * viewOf - pointer to parent annomatrix if a view, undefined/null if not a view.
+      * viewOf - pointer to parent annomatrix if a view, self if not a view.
       * userFlags - container for any additional state a user of this API wants to hang
         off of an annoMatrix, and have propagated by the (shallow) cloning protocol.
     */
@@ -114,7 +145,7 @@ export default class AnnoMatrix {
     this.nVar = nVar;
     this.rowIndex = rowIndex || new IdentityInt32Index(nObs);
     this.isView = false;
-    this.viewOf = undefined;
+    this.viewOf = this;
     this.userFlags = {};
 
     /*
@@ -137,16 +168,14 @@ export default class AnnoMatrix {
       emb: {},
       X: {},
     };
-    this._whereCache = {};
+    this._whereCache = {} as WhereCache;
     this._gcInfo = new Map();
   }
 
   /**
    ** Schema helper/accessors
    **/
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  getMatrixColumns(field) {
+  getMatrixColumns(field: Field): string[] {
     /*
     Return array of column names in the field.  ONLY supported on the
     obs, var and emb fields.  X currently unimplemented and will throw.
@@ -158,8 +187,8 @@ export default class AnnoMatrix {
     return _schemaColumns(this.schema, field);
   }
 
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/explicit-module-boundary-types -- need to be able to call this on instances
-  getMatrixFields() {
+  // eslint-disable-next-line class-methods-use-this -- need to be able to call this on instances
+  getMatrixFields(): Field[] {
     /*
     Return array of fields in this annoMatrix.  Currently hard-wired to
     return:  ["X", "obs", "var", "emb"].
@@ -169,9 +198,7 @@ export default class AnnoMatrix {
     return AnnoMatrix.fields();
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  getColumnSchema(field, col) {
+  getColumnSchema(field: Field, col: LabelType): ArraySchema {
     /*
     Return the schema for the field & column ,eg,
 
@@ -183,9 +210,7 @@ export default class AnnoMatrix {
     return _getColumnSchema(this.schema, field, col);
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  getColumnDimensions(field, col) {
+  getColumnDimensions(field: Field, col: LabelType): LabelArray | undefined {
     /*
     Return the dimensions on this field / column.  For most fields, which are 1D,
     this just return the column name.  Multi-dimensional columns, such as embeddings,
@@ -203,23 +228,19 @@ export default class AnnoMatrix {
   /**
    ** General utility methods
    **/
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  base() {
+  base(): AnnoMatrix {
     /*
     return the base of view, or `this` if not a view.
     */
-    // eslint-disable-next-line @typescript-eslint/no-this-alias --- FIXME: disabled temporarily on migrate to TS.
-    let annoMatrix = this;
-    while (annoMatrix.isView) annoMatrix = annoMatrix.viewOf;
+    let annoMatrix = this._getViewOf();
+    while (annoMatrix.isView) annoMatrix = annoMatrix._getViewOf();
     return annoMatrix;
   }
 
   /**
    ** Load / read interfaces
    **/
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  fetch(field, q): Dataframe {
+  fetch(field: Field, q: Query | Query[]): Promise<Dataframe> {
     /*
 		Return the given query on a single matrix field as a single dataframe.
 		Currently supports ONLY full column query.
@@ -276,9 +297,7 @@ export default class AnnoMatrix {
     return this._fetch(field, q);
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  prefetch(field, q): void {
+  prefetch(field: Field, q: Query): void {
     /*
 		Start a data fetch & cache fill.  Identical to fetch() except it does
 		not return a value.
@@ -307,163 +326,147 @@ export default class AnnoMatrix {
    ** The actual implementation is in the sub-classes, which MUST override these.
    **/
 
-  // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-module-boundary-types -- make sure subclass implements
-  addObsAnnoCategory(col, category) {
-    /*
-    Add a new category value (aka "label") to a writable obs column, and return the new AnnoMatrix.
-    Typical use is to add a new user-created label to a user-created obs categorical
-    annotation.
+  /*
+  Add a new category value (aka "label") to a writable obs column, and return the new AnnoMatrix.
+  Typical use is to add a new user-created label to a user-created obs categorical
+  annotation.
 
-    Will throw column does not exist or is not writable.
+  Will throw column does not exist or is not writable.
 
-    Example:
+  Example:
 
-      addObsAnnoCategory("my cell type", "left toenail") -> AnnoMatrix
+    addObsAnnoCategory("my cell type", "left toenail") -> AnnoMatrix
 
-    */
-    _subclassResponsibility();
-  }
+  */
+  abstract addObsAnnoCategory(col: LabelType, category: string): AnnoMatrix;
 
-  // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-module-boundary-types -- make sure subclass implements
-  async removeObsAnnoCategory(col, category, unassignedCategory) {
-    /*
-    Remove a category value from an obs column, reassign any obs having that value
-    to the 'unassignedCategory' value, and return a promise for a new AnnoMatrix.
-    Typical use is to remove a user-created label from a user-created obs categorical
-    annotation.
+  /*
+  Remove a category value from an obs column, reassign any obs having that value
+  to the 'unassignedCategory' value, and return a promise for a new AnnoMatrix.
+  Typical use is to remove a user-created label from a user-created obs categorical
+  annotation.
 
-    Will throw column does not exist or is not writable.
+  Will throw column does not exist or is not writable.
 
-    An `unassignedCategory` value must be provided, for assignment to any obs/cells
-    that had the now-delete category label as their value.
+  An `unassignedCategory` value must be provided, for assignment to any obs/cells
+  that had the now-delete category label as their value.
 
-    Example:
-      await removeObsAnnoCategory("my-tissue-type", "right earlobe", "unassigned") -> AnnoMatrix
+  Example:
+    await removeObsAnnoCategory("my-tissue-type", "right earlobe", "unassigned") -> AnnoMatrix
 
-    NOTE: method is async as it may need to fetch data to provide the reassignment.
-    */
-    _subclassResponsibility();
-  }
+  NOTE: method is async as it may need to fetch data to provide the reassignment.
+  */
+  abstract removeObsAnnoCategory(
+    col: LabelType,
+    category: Category,
+    unassignedCategory: string
+  ): Promise<AnnoMatrix>;
 
-  // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-module-boundary-types -- make sure subclass implements
-  dropObsColumn(col) {
-    /*
-    Drop an entire writable column, eg a user-created obs annotation.  Typical use
-    is to provide the "Delete Category" implementation.  Returns the new AnnoMatrix.
-    Will throw if not a writable annotation.
+  /*
+  Drop an entire writable column, eg a user-created obs annotation.  Typical use
+  is to provide the "Delete Category" implementation.  Returns the new AnnoMatrix.
+  Will throw if not a writable annotation.
 
-    Will throw column does not exist or is not writable.
+  Will throw column does not exist or is not writable.
 
-    Example:
+  Example:
 
-      dropObsColumn("old annotations") ->  AnnoMatrix
-    */
-    _subclassResponsibility();
-  }
+    dropObsColumn("old annotations") ->  AnnoMatrix
+  */
+  abstract dropObsColumn(col: LabelType): AnnoMatrix;
 
-  // @ts-expect-error ts-migrate(6133) FIXME: 'colSchema' is declared but its value is never rea... Remove this comment to see the full error message
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-module-boundary-types -- make sure subclass implements
-  addObsColumn(colSchema, Ctor, value) {
-    /*
-    Add a new writable OBS annotation column, with the caller-specified schema, initial value
-    type and value.
+  /*
+  Add a new writable OBS annotation column, with the caller-specified schema, initial value
+  type and value.
 
-    Value may be any one of:
-      * an array of values
-      * a primitive type, including null or undefined.
-    If an array, length must be the same as 'this.nObs', and constructor must equal 'Ctor'.
-    If a primitive, 'Ctor' will be used to create the initial value, which will be filled
-    with 'value'.
+  Value may be any one of:
+    * an array of values
+    * a primitive type, including null or undefined.
+  If an array, length must be the same as 'this.nObs', and constructor must equal 'Ctor'.
+  If a primitive, 'Ctor' will be used to create the initial value, which will be filled
+  with 'value'.
 
-    Throws if the name specified in 'colSchema' duplicates an existing obs column.
+  Throws if the name specified in 'colSchema' duplicates an existing obs column.
 
-    Returns a new AnnoMatrix.
+  Returns a new AnnoMatrix.
 
-    Examples:
+  Examples:
 
-      addObsColumn(
-        { name: "foo", type: "categorical", categories: "unassigned" },
-        Array,
-        "unassigned"
-      ) -> AnnoMatrix
+    addObsColumn(
+      { name: "foo", type: "categorical", categories: "unassigned" },
+      Array,
+      "unassigned"
+    ) -> AnnoMatrix
 
-    */
-    _subclassResponsibility();
-  }
+   */
+  abstract addObsColumn<T extends DataframeValueArray>(
+    colSchema: AnnotationColumnSchema,
+    Ctor: new (n: number) => T,
+    value: T
+  ): AnnoMatrix;
 
-  // @ts-expect-error ts-migrate(6133) FIXME: 'oldCol' is declared but its value is never read.
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-module-boundary-types -- make sure subclass implements
-  renameObsColumn(oldCol, newCol) {
-    /*
-    Rename the obs column 'oldCol' to have name 'newCol' and returns new AnnoMatrix.
+  /*
+  Rename the obs column 'oldCol' to have name 'newCol' and returns new AnnoMatrix.
 
-    Will throw column does not exist or is not writable, or if 'newCol' is not unique.
+  Will throw column does not exist or is not writable, or if 'newCol' is not unique.
 
-    Example:
+  Example:
 
-      renameObsColumn('cell type', 'old cell type') -> AnnoMatrix.
+    renameObsColumn('cell type', 'old cell type') -> AnnoMatrix.
 
-    */
-    _subclassResponsibility();
-  }
+  */
+  abstract renameObsColumn(oldCol: LabelType, newCol: LabelType): AnnoMatrix;
 
-  // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-module-boundary-types -- make sure subclass implements
-  async setObsColumnValues(col, obsLabels, value) {
-    /*
-    Set all obs with label in array 'obsLabels' to have 'value'.  Typical use would be
-    to set a group of cells to have a label on a user-created categorical anntoation
-    (eg set all selected cells to have a label).
+  /*
+  Set all obs with label in array 'obsLabels' to have 'value'.  Typical use would be
+  to set a group of cells to have a label on a user-created categorical annotation
+  (eg set all selected cells to have a label).
+  
+  NOTE: async method, as it may need to fetch.
+  
+  Will throw column does not exist or is not writable.
+  
+  Example:
+    await setObsColmnValues("flavor", [383, 400], "tasty") -> AnnoMtarix
+  */
+  abstract setObsColumnValues(
+    col: LabelType,
+    obsLabels: Int32Array,
+    value: DataframeValue
+  ): Promise<AnnoMatrix>;
 
-    NOTE: async method, as it may need to fetch.
+  /*
+  Set by value - all elements in the column with value 'oldValue' are set to 'newValue'.
+  Async method - returns a promise for a new AnnoMatrix.
 
-    Will throw column does not exist or is not writable.
+  Typical use would be to set all labels of one value to another.
 
-    Example:
-      await setObsColmnValues("flavor", [383, 400], "tasty") -> AnnoMtarix
+  Will throw column does not exist or is not writable.
 
-    */
-    _subclassResponsibility();
-  }
-
-  // @ts-expect-error ts-migrate(6133) FIXME: 'col' is declared but its value is never read.
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-module-boundary-types -- make sure subclass implements
-  async resetObsColumnValues(col, oldValue, newValue) {
-    /*
-    Set by value - all elements in the column with value 'oldValue' are set to 'newValue'.
-    Async method - returns a promise for a new AnnoMatrix.
-
-    Typical use would be to set all labels of one value to another.
-
-    Will throw column does not exist or is not writable.
-
-    Example:
-      await resetObsColumnValues("my notes", "good", "not-good") -> AnnoMatrix
+  Example:
+    await resetObsColumnValues("my notes", "good", "not-good") -> AnnoMatrix
 
     */
-    _subclassResponsibility();
-  }
+  abstract resetObsColumnValues<T extends DataframeValue>(
+    col: LabelType,
+    oldValue: T,
+    newValue: T
+  ): Promise<AnnoMatrix>;
 
-  // @ts-expect-error ts-migrate(6133) FIXME: 'colSchema' is declared but its value is never rea... Remove this comment to see the full error message
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-module-boundary-types -- make sure subclass implements
-  addEmbedding(colSchema) {
-    /*
-    Add a new obs embedding to the AnnoMatrix, with provided schema.
-    Returns a new annomatrix.
+  /*
+  Add a new obs embedding to the AnnoMatrix, with provided schema.
+  Returns a new annomatrix.
 
-    Typical use will be to add a re-embedding that the server has calculated.
+  Typical use will be to add a re-embedding that the server has calculated.
 
-    Will throw if the column schema is invalid (eg, duplicate name).
-    */
-    _subclassResponsibility();
-  }
+  Will throw if the column schema is invalid (eg, duplicate name).
+  */
+  abstract addEmbedding(colSchema: EmbeddingSchema): AnnoMatrix;
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  getCacheKeys(field, query) {
+  getCacheKeys(
+    field: Field,
+    query: Query
+  ): WhereCacheColumnLabels | [undefined] {
     /*
 Return cache keys for columns associated with this query.  May return
 [unknown] if no keys are known (ie, nothing is or was cached).
@@ -474,26 +477,20 @@ Return cache keys for columns associated with this query.  May return
   /**
    ** Private interfaces below.
    **/
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  _resolveCachedQueries(field, queries) {
-    return (
-      queries
-        // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'query' implicitly has an 'any' type.
-        .map((query) =>
-          _whereCacheGet(this._whereCache, this.schema, field, query).filter(
-            // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'cacheKey' implicitly has an 'any' type.
-            (cacheKey) =>
-              cacheKey !== undefined && this._cache[field].hasCol(cacheKey)
-          )
+  _resolveCachedQueries(field: Field, queries: Query[]): LabelArray {
+    return queries
+      .map((query: Query) =>
+        // @ts-expect-error --- TODO revisit:
+        // `filter`: This expression is not callable.
+        _whereCacheGet(this._whereCache, this.schema, field, query).filter(
+          (cacheKey?: LabelType) =>
+            cacheKey !== undefined && this._cache[field].hasCol(cacheKey)
         )
-        .flat()
-    );
+      )
+      .flat();
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  async _fetch(field, q): Dataframe {
+  async _fetch(field: Field, q: Query | Query[]): Promise<Dataframe> {
     if (!AnnoMatrix.fields().includes(field)) return Dataframe.empty();
     const queries = Array.isArray(q) ? q : [q];
     queries.forEach(_queryValidate);
@@ -505,8 +502,7 @@ Return cache keys for columns associated with this query.  May return
     /* find any query not already cached */
     const uncachedQueries = queries.filter((query) =>
       _whereCacheGet(this._whereCache, this.schema, field, query).some(
-        // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'cacheKey' implicitly has an 'any' type.
-        (cacheKey) =>
+        (cacheKey?: LabelType) =>
           cacheKey === undefined || !this._cache[field].hasCol(cacheKey)
       )
     );
@@ -515,17 +511,19 @@ Return cache keys for columns associated with this query.  May return
     if (uncachedQueries.length > 0) {
       await Promise.all(
         uncachedQueries.map((query) =>
-          // @ts-expect-error ts-migrate(7006) FIXME: Parameter '_field' implicitly has an 'any' type.
-          this._getPendingLoad(field, query, async (_field, _query) => {
-            /* fetch, then index.  _doLoad is subclass interface */
-            // @ts-expect-error ts-migrate(2488) FIXME: Type 'void' must have a '[Symbol.iterator]()' meth... Remove this comment to see the full error message
-            const [whereCacheUpdate, df] = await this._doLoad(_field, _query);
-            this._cache[_field] = this._cache[_field].withColsFrom(df);
-            this._whereCache = _whereCacheMerge(
-              this._whereCache,
-              whereCacheUpdate
-            );
-          })
+          this._getPendingLoad(
+            field,
+            query,
+            async (_field: Field, _query: Query): Promise<void> => {
+              /* fetch, then index.  _doLoad is subclass interface */
+              const [whereCacheUpdate, df] = await this._doLoad(_field, _query);
+              this._cache[_field] = this._cache[_field].withColsFrom(df);
+              this._whereCache = _whereCacheMerge(
+                this._whereCache,
+                whereCacheUpdate
+              );
+            }
+          )
         )
       );
     }
@@ -539,9 +537,11 @@ Return cache keys for columns associated with this query.  May return
     return response;
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  async _getPendingLoad(field, query, fetchFn) {
+  async _getPendingLoad(
+    field: Field,
+    query: Query,
+    fetchFn: (_field: Field, _query: Query) => Promise<void>
+  ): Promise<void> {
     /*
     Given a query on a field, ensure that we only have a single outstanding
     fetch at any given time.  If multiple requests occur while a fetch is
@@ -562,9 +562,22 @@ Return cache keys for columns associated with this query.  May return
     return this._pendingLoad[field][key];
   }
 
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/explicit-module-boundary-types -- make sure subclass implements
-  async _doLoad() {
-    _subclassResponsibility();
+  abstract _doLoad(
+    field: Field,
+    query: Query
+  ): Promise<[WhereCache | null, Dataframe]>;
+
+  /**
+   * Determines viewOf for this annoMatrix.
+   *
+   * @internal
+   * @returns - parent annoMatrix if this annoMatrix is a view, otherwise this annoMatrix if it's not a view.
+   */
+  _getViewOf(): AnnoMatrix {
+    if (this.isView) {
+      return this.viewOf;
+    }
+    return this;
   }
 
   /**
@@ -596,23 +609,21 @@ Return cache keys for columns associated with this query.  May return
   To be effective, the GC callback needs to be invoked from the undo/redo code,
   as much of the cache is pinned by that data structure.
   */
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  _gcField(field, isHot, pinnedColumns) {
+  _gcField(field: Field, isHot: boolean, pinnedColumns: LabelArray): void {
     const maxColumns = isHot ? 256 : 10;
     const cache = this._cache[field];
     if (cache.colIndex.size() < maxColumns) return; // trivial rejection
 
     const candidates = cache.colIndex
       .labels()
-      // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'col' implicitly has an 'any' type.
-      .filter((col) => !pinnedColumns.includes(col));
+      // @ts-expect-error --- TODO revisit:
+      // `col`: Argument of type 'LabelType' is not assignable to parameter of type 'number'. Type 'string' is not assignable to type 'number'.
+      .filter((col: LabelType) => !pinnedColumns.includes(col));
 
     const excessCount = candidates.length + pinnedColumns.length - maxColumns;
     if (excessCount > 0) {
       const { _gcInfo } = this;
-      // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-      candidates.sort((a, b) => {
+      candidates.sort((a: LabelType, b: LabelType) => {
         let atime = _gcInfo.get(_columnCacheKey(field, a));
         if (atime === undefined) atime = 0;
 
@@ -629,49 +640,49 @@ Return cache keys for columns associated with this query.  May return
       //     ", "
       //   )}]`
       // );
+      // @ts-expect-error --- TODO revisit:
+      // `reduce`: This expression is not callable.
       this._cache[field] = toDrop.reduce(
-        // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'df' implicitly has an 'any' type.
-        (df, col) => df.dropCol(col),
+        (df: Dataframe, col: LabelType) => df.dropCol(col),
         this._cache[field]
       );
-      // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'col' implicitly has an 'any' type.
-      toDrop.forEach((col) => _gcInfo.delete(_columnCacheKey(field, col)));
+      toDrop.forEach((col: LabelType) =>
+        _gcInfo.delete(_columnCacheKey(field, col))
+      );
     }
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  _gcFetchCleanup(field, pinnedColumns) {
+  _gcFetchCleanup(field: Field, pinnedColumns: LabelArray): void {
     /*
     Called during data load/fetch.  By definition, this is 'hot', so we
     only want to gc X.
     */
-    if (field === "X") {
+    if (field === Field.X) {
       this._gcField(
         field,
         true,
+        // @ts-expect-error --- TODO revisit:
+        // Property 'concat' does not exist on type 'LabelArray'.
         pinnedColumns.concat(_getWritableColumns(this.schema, field))
       );
     }
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'hints' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  _gc(hints) {
+  _gc(hints: GCHints): void {
     /*
     Called from middleware, or elsewhere.  isHot is true if we are in the active store, 
     or false if we are in some other context (eg, history state).
     */
     const { isHot } = hints;
-    const candidateFields = isHot ? ["X"] : ["X", "emb", "var", "obs"];
+    const candidateFields = isHot
+      ? [Field.X]
+      : [Field.X, Field.emb, Field.var, Field.obs];
     candidateFields.forEach((field) =>
       this._gcField(field, isHot, _getWritableColumns(this.schema, field))
     );
   }
 
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  _gcUpdateStats(field, dataframe) {
+  _gcUpdateStats(field: Field, dataframe: Dataframe): void {
     /*
     called each time a query is performed, allowing the gc to update any bookkeeping
     information.  Currently, this is just a simple last-fetched timestamp, stored
@@ -680,8 +691,7 @@ Return cache keys for columns associated with this query.  May return
     const cols = dataframe.colIndex.labels();
     const { _gcInfo } = this;
     const now = Date.now();
-    // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
-    cols.forEach((c) => {
+    cols.forEach((c: LabelType) => {
       _gcInfo.set(_columnCacheKey(field, c), now);
     });
   }
@@ -698,9 +708,7 @@ Return cache keys for columns associated with this query.  May return
 
   Do not override _clone();
   **/
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'clone' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  _cloneDeeper(clone) {
+  _cloneDeeper(clone: AnnoMatrix): AnnoMatrix {
     clone._cache = _shallowClone(this._cache);
     clone._gcInfo = new Map();
     clone._pendingLoad = {
@@ -712,8 +720,7 @@ Return cache keys for columns associated with this query.  May return
     return clone;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  _clone() {
+  _clone(): AnnoMatrix {
     const clone = _shallowClone(this);
     this._cloneDeeper(clone);
     Object.seal(clone);
@@ -724,12 +731,6 @@ Return cache keys for columns associated with this query.  May return
 /*
 private utility functions below
 */
-// @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
-function _columnCacheKey(field, column) {
+function _columnCacheKey(field: Field, column: LabelType): string {
   return `${field}/${column}`;
-}
-
-function _subclassResponsibility() {
-  /* protect against bugs in subclass */
-  throw new Error("subclass failed to implement required method");
 }
