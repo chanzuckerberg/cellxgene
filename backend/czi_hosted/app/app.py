@@ -111,12 +111,12 @@ def get_data_adaptor(url_dataroot: str=None, dataset: str=None):
     app_config = current_app.app_config
     dataset_metadata_manager = current_app.dataset_metadata_cache_manager
     matrix_cache_manager = current_app.matrix_data_cache_manager
-    with dataset_metadata_manager.data_adaptor(
+    with dataset_metadata_manager.get(
             cache_key=f"{url_dataroot}/{dataset}",
             create_data_function=get_dataset_metadata_for_explorer_location,
             create_data_args={"app_config": app_config}
     ) as dataset_metadata:
-        return matrix_cache_manager.data_adaptor(
+        return matrix_cache_manager.get(
             cache_key=f"{url_dataroot}/{dataset}",
             create_data_function=MatrixDataLoader(
                 location=dataset_metadata['s3_uri'],

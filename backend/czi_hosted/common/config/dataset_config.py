@@ -148,7 +148,7 @@ class DatasetConfig(BaseConfig):
         # so that we can remove errors early in the process.
         server_config = self.app_config.server_config
         if server_config.single_dataset__datapath and self.user_annotations__local_file_csv__file:
-            with server_config.matrix_data_cache_manager.data_adaptor(
+            with server_config.matrix_data_cache_manager.get(
                     cache_key=server_config.single_dataset__datapath,
                     create_data_function=MatrixDataLoader(
                         location=server_config.single_dataset__datapath,

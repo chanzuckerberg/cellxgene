@@ -97,7 +97,7 @@ def rest_get_data_adaptor(func):
     @wraps(func)
     def wrapped_function(self):
         try:
-            return func(self, current_app.data_adaptor)
+            return func(self, current_app.get)
         except DatasetAccessError as e:
             return common_rest.abort_and_log(
                 e.status_code, f"Invalid dataset: {e.message}", loglevel=logging.INFO, include_exc_info=True
@@ -286,7 +286,7 @@ class Server:
             methods=["GET"],
         )
 
-        self.app.data_adaptor = server_config.data_adaptor
+        self.app.data_adaptor = server_config.get
         self.app.app_config = app_config
 
         auth = server_config.auth

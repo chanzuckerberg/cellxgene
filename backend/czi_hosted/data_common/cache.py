@@ -135,8 +135,8 @@ class CacheManager(object):
         self.timelimit_s = timelimit_s
 
     @contextmanager
-    def data_adaptor(self, cache_key: str, create_data_function: Optional[Callable] = None,
-                     create_data_args: object = {}):
+    def get(self, cache_key: str, create_data_function: Optional[Callable] = None,
+            create_data_args: object = {}):
         """"
         If no data is stored under the given cache_key, pass the create_data_lamba to the CacheItem.get method
         """

@@ -56,11 +56,11 @@ class DatasetConfig(BaseConfig):
 
     def get_data_adaptor(self):
         server_config = self.app_config.server_config
-        if not server_config.data_adaptor:
+        if not server_config.get:
             matrix_data_loader = MatrixDataLoader(server_config.single_dataset__datapath, app_config=self.app_config)
-            server_config.data_adaptor = matrix_data_loader.open(self.app_config)
+            server_config.get = matrix_data_loader.open(self.app_config)
 
-        return server_config.data_adaptor
+        return server_config.get
 
     def handle_app(self):
         self.validate_correct_type_of_configuration_attribute("app__scripts", list)

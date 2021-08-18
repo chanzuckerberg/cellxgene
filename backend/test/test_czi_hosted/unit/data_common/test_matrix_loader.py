@@ -23,7 +23,7 @@ class MatrixCacheTest(unittest.TestCase):
 
     def use_dataset(self, matrix_cache, dirname, app_config, dataset_index):
         dataset_location = os.path.join(dirname, str(dataset_index) + ".cxg")
-        with matrix_cache.data_adaptor(
+        with matrix_cache.get(
                 cache_key=dataset_location,
                 create_data_function=MatrixDataLoader(location=dataset_location, app_config=app_config).validate_and_open,
                 create_data_args={}
@@ -35,7 +35,7 @@ class MatrixCacheTest(unittest.TestCase):
     def use_dataset_with_error(self, matrix_cache, dirname, app_config, dataset_index):
         dataset_location = os.path.join(dirname, str(dataset_index) + ".cxg")
         try:
-            with matrix_cache.data_adaptor(
+            with matrix_cache.get(
                     cache_key=dataset_location,
                     create_data_function=MatrixDataLoader(dataset_location, app_config=app_config).validate_and_open,
                     create_data_args={}):

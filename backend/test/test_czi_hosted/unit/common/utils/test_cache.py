@@ -172,9 +172,9 @@ class CacheManagerTest(unittest.TestCase):
         cache_manager = CacheManager(max_cached=3, timelimit_s=2)
         get_data = MagicMock()
         get_data.return_value = {"cache_key": "cache_key"}
-        with cache_manager.data_adaptor("key_one", lambda x: {x: x}) as cache_item:
+        with cache_manager.get("key_one", lambda x: {x: x}) as cache_item:
             self.assertIsNotNone(cache_item)
-        with cache_manager.data_adaptor("key_one", get_data) as cache_item:
+        with cache_manager.get("key_one", get_data) as cache_item:
             self.assertIsNotNone(cache_item)
             self.assertEqual(get_data.call_count, 0)
 
@@ -182,52 +182,52 @@ class CacheManagerTest(unittest.TestCase):
         cache_manager = CacheManager(max_cached=3, timelimit_s=2)
         get_data = MagicMock()
         get_data.return_value = {"cache_key": "cache_key"}
-        with cache_manager.data_adaptor("key_one", lambda x: {x: x}) as cache_item:
+        with cache_manager.get("key_one", lambda x: {x: x}) as cache_item:
             self.assertIsNotNone(cache_item)
-        with cache_manager.data_adaptor("key_one", get_data) as cache_item:
+        with cache_manager.get("key_one", get_data) as cache_item:
             self.assertIsNotNone(cache_item)
             self.assertEqual(get_data.call_count, 0)
         sleep(3)
-        with cache_manager.data_adaptor("key_one", get_data) as cache_item:
+        with cache_manager.get("key_one", get_data) as cache_item:
             self.assertIsNotNone(cache_item)
             self.assertEqual(get_data.call_count, 1)
         mock_attempt_delete = Mock(spec=cache_manager.data.get("key_one").cache_item.attempt_delete)
         cache_manager.data.get("key_one").cache_item.attempt_delete = mock_attempt_delete
         sleep(3)
-        with cache_manager.data_adaptor("key_two", lambda x: {x: x}) as cache_item_two:
+        with cache_manager.get("key_two", lambda x: {x: x}) as cache_item_two:
             self.assertIsNotNone(cache_item_two)
         self.assertEqual(mock_attempt_delete.call_count, 1)
 
     def test_cache_manager_handles_lru_deletion(self):
         cache_manager = CacheManager(max_cached=3, timelimit_s=2)
 
-        with cache_manager.data_adaptor("key_one", lambda x: {x: x}) as cache_item:
+        with cache_manager.get("key_one", lambda x: {x: x}) as cache_item:
             self.assertIsNotNone(cache_item)
-        with cache_manager.data_adaptor("key_two", lambda x: {x: x}) as cache_item_two:
+        with cache_manager.get("key_two", lambda x: {x: x}) as cache_item_two:
             self.assertIsNotNone(cache_item_two)
-        with cache_manager.data_adaptor("key_three", lambda x: {x: x}) as cache_item_three:
+        with cache_manager.get("key_three", lambda x: {x: x}) as cache_item_three:
             self.assertIsNotNone(cache_item_three)
         get_data = MagicMock()
         get_data.return_value = {"cache_key": "cache_key"}
         # check first item is still cached
-        with cache_manager.data_adaptor("key_one", get_data) as cache_item:
+        with cache_manager.get("key_one", get_data) as cache_item:
             self.assertIsNotNone(cache_item)
             self.assertEqual(get_data.call_count, 0)
         mock_attempt_delete = Mock(spec=cache_manager.data.get("key_two").cache_item.attempt_delete)
         cache_manager.data.get("key_two").cache_item.attempt_delete = mock_attempt_delete
         # add an additional cache item, check that the lru item was deleted
-        with cache_manager.data_adaptor("key_four", lambda x: {x: x}) as cache_item:
+        with cache_manager.get("key_four", lambda x: {x: x}) as cache_item:
             self.assertIsNotNone(cache_item)
         self.assertEqual(mock_attempt_delete.call_count, 1)
         # check it isnt in the cache
-        with cache_manager.data_adaptor("key_two", get_data) as cache_item:
+        with cache_manager.get("key_two", get_data) as cache_item:
             self.assertIsNotNone(cache_item)
             self.assertEqual(get_data.call_count, 1)
 
     def test_cache_manager_sets_and_releases_read_lock(self):
         cache_manager = CacheManager(max_cached=3, timelimit_s=2)
 
-        with cache_manager.data_adaptor("key_one", lambda x: {x: x}) as cache_item:
+        with cache_manager.get("key_one", lambda x: {x: x}) as cache_item:
             self.assertIsNotNone(cache_item)
             self.assertGreater(cache_manager.data.get("key_one").cache_item.data_lock.num_r, 0)
         self.assertEqual(cache_manager.data.get("key_one").cache_item.data_lock.num_r, 0)
@@ -235,11 +235,11 @@ class CacheManagerTest(unittest.TestCase):
     def test_cache_manager_updates_cache_item_info_on_access(self):
         cache_manager = CacheManager(max_cached=3, timelimit_s=2)
 
-        with cache_manager.data_adaptor("key_one", lambda x: {x: x}) as cache_item:
+        with cache_manager.get("key_one", lambda x: {x: x}) as cache_item:
             self.assertIsNotNone(cache_item)
         cache_item_last_access = cache_manager.data.get("key_one").last_access
         cache_item_access_count = cache_manager.data.get("key_one").num_access
-        with cache_manager.data_adaptor("key_one", lambda x: {x: x}) as cache_item:
+        with cache_manager.get("key_one", lambda x: {x: x}) as cache_item:
             self.assertIsNotNone(cache_item)
         updated_cache_item_info = cache_manager.data.get("key_one")
         self.assertGreater(updated_cache_item_info.last_access, cache_item_last_access)
