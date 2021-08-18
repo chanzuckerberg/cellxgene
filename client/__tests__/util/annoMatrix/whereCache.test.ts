@@ -235,7 +235,7 @@ describe("whereCache", () => {
     expect(
       // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-      (wc.where as any).obs.queryField.get("queryColumn").has("queryValue")
+      (wc.where as any)[Field.obs].queryField.get("queryColumn").has("queryValue")
     ).toEqual(true);
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion --- assert wc to be non-null
     expect(_whereCacheGet(wc!, schema, Field.obs, query)).toEqual([0, 1, 2]);
