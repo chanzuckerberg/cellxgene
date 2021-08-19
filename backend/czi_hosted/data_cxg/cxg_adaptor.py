@@ -210,8 +210,7 @@ class CxgAdaptor(DataAdaptor):
         if lfc_cutoff is None:
             lfc_cutoff = self.dataset_config.diffexp__lfc_cutoff
         return diffexp_cxg.diffexp_ttest(
-            adaptor=self, maskA=maskA, maskB=maskB, top_n=top_n, diffexp_lfc_cutoff=lfc_cutoff
-        )
+            adaptor=self, maskA=maskA, maskB=maskB, top_n=top_n, diffexp_lfc_cutoff=lfc_cutoff)
 
     def get_colors(self):
         if self.cxg_version == "0.0":
@@ -358,7 +357,7 @@ class CxgAdaptor(DataAdaptor):
         shape = self.get_shape()
         dtype = self.get_X_array_dtype()
 
-        dataframe = {"nObs": shape[0], "nVar": shape[1], **get_schema_type_hint_from_dtype(dtype)}
+        dataframe = {"nObs": shape[0], "nVar": shape[1], "type": dtype.name}
 
         annotations = {}
         for ax in ("obs", "var"):

@@ -73,14 +73,6 @@ export function _isContinuousType(schema) {
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'colSchema' implicitly has an 'any' type... Remove this comment to see the full error message
 export function _normalizeCategoricalSchema(colSchema, col) {
-  /*
-  Ensure all enum schema types have a categories array, that
-  the categories array contains all unique values in the data
-  array, AND that the array is sorted.
-
-  Note that the back-end will not always set this hint, so we
-  must assume it may be incorrect and/or missing.
-  */
   const { type, writable } = colSchema;
   if (
     type === "string" ||
