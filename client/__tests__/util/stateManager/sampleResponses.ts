@@ -5,7 +5,6 @@ import zip from "lodash.zip";
 import _ from "lodash";
 import { flatbuffers } from "flatbuffers";
 import { NetEncoding } from "../../../src/util/stateManager/matrix_generated";
-import { RawSchema } from "../../../src/common/types/entities";
 
 /*
 test data mocking REST 0.2 API responses.  Used in several tests.
@@ -30,7 +29,7 @@ const aConfigResponse = {
   },
 };
 
-const aSchemaResponse: { schema: RawSchema } = {
+const aSchemaResponse = {
   schema: {
     dataframe: {
       nObs,
@@ -41,30 +40,28 @@ const aSchemaResponse: { schema: RawSchema } = {
       obs: {
         index: "name",
         columns: [
-          { name: "name", type: "string", writable: false },
-          { name: "field1", type: "int32", writable: false },
-          { name: "field2", type: "float32", writable: false },
-          { name: "field3", type: "boolean", writable: false },
+          { name: "name", type: "string" },
+          { name: "field1", type: "int32" },
+          { name: "field2", type: "float32" },
+          { name: "field3", type: "boolean" },
           {
             name: "field4",
             type: "categorical",
             categories: field4Categories,
-            writable: false,
           },
         ],
       },
       var: {
         index: "name",
         columns: [
-          { name: "name", type: "string", writable: false },
-          { name: "fieldA", type: "int32", writable: false },
-          { name: "fieldB", type: "float32", writable: false },
-          { name: "fieldC", type: "boolean", writable: false },
+          { name: "name", type: "string" },
+          { name: "fieldA", type: "int32" },
+          { name: "fieldB", type: "float32" },
+          { name: "fieldC", type: "boolean" },
           {
             name: "fieldD",
             type: "categorical",
             categories: fieldDCategories,
-            writable: false,
           },
         ],
       },
