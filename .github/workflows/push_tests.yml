@@ -40,7 +40,7 @@ jobs:
       - name: Lint src with eslint
         working-directory: ./client
         run: |
-          npx eslint src __tests__
+          make lint
 
   unit-test:
     runs-on: ubuntu-latest
