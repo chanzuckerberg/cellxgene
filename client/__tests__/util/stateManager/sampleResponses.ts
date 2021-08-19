@@ -5,7 +5,7 @@ import zip from "lodash.zip";
 import _ from "lodash";
 import { flatbuffers } from "flatbuffers";
 import { NetEncoding } from "../../../src/util/stateManager/matrix_generated";
-import { RawSchema } from "../../../src/common/types/schema";
+import { RawSchema } from "../../../src/common/types/entities";
 
 /*
 test data mocking REST 0.2 API responses.  Used in several tests.

@@ -11,9 +11,9 @@ import catLabelSort from "../catLabelSort";
 import {
   RawSchema,
   Schema,
-  EmbeddingSchema,
-  AnnotationColumnSchema,
-} from "../../common/types/schema";
+  LayoutColumn,
+  AnnotationColumn,
+} from "../../common/types/entities";
 
 /*
 System wide schema assumptions:
@@ -86,7 +86,7 @@ export function removeObsAnnoColumn(schema: Schema, name: string): Schema {
 export function addObsAnnoColumn(
   schema: Schema,
   _: string,
-  defn: AnnotationColumnSchema
+  defn: AnnotationColumn
 ): Schema {
   const newSchema = _copyObsAnno(schema);
 
@@ -142,7 +142,7 @@ export function addObsAnnoCategory(schema: any, name: any, category: any) {
   return newSchema;
 }
 
-export function addObsLayout(schema: Schema, layout: EmbeddingSchema): Schema {
+export function addObsLayout(schema: Schema, layout: LayoutColumn): Schema {
   /* add or replace a layout */
   const newSchema = _copyObsLayout(schema);
   newSchema.layout.obs.push(layout);
