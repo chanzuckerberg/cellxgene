@@ -26,7 +26,7 @@ Please scroll down the section below for how to release a patch version. Follow 
     -   Write the release title and release notes and add to [release notes document](https://docs.google.com/document/d/1KnHwkYfhyWO5H8BDcMu7y3ogjvq5Yi4OwpmZ8DB6w0Y/edit)
 2.  Create a release branch, eg, `release-version-0.16.0`
 3.  In the release branch, run `make create-release-candidate PART=[major | minor | patch]` where you choose major/minor/patch depending on which part of the version is being bumped (e.g., `0.2.9` -> `0.3.0` is minor version bump). This will bump the version and create a release *candidate* version (i.e. `0.3.0-rc.0`).
-4.  Push the new branch to origin and open a `DO NOT MERGE` PR, this will run tests on your branch.
+4.  Commit and push the new branch. This will trigger tests to ensure that your branch isn't broken.
 5. Upload the release candidate to Test PyPI by running the command `make release-candidate-to-test-pypi`. (Make sure you are registered for PyPI and Test PyPI and you have write access to the cellxgene PyPI package for both).
 6. Verify the release candidate in a fresh virtual environment by running `make install-release-test` which installs the cellxgene build you just uploaded the Test PyPI.
 7. If you find errors with the release candidate, run `make recreate-release-candidate` to increment the release candidate version (i.e. `0.3.0-rc.0` -> `0.3.0-rc.1`). Then go back to Steps 5 and 6 to re-upload and re-test the new release candidate.
