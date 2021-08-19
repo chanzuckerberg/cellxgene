@@ -2,14 +2,14 @@ import { Colors } from "@blueprintjs/core";
 import { dispatchNetworkErrorMessageToUser } from "./util/actionHelpers";
 import ENV_DEFAULT from "../../environment.default.json";
 
-/* overflow category values are created  using this string */
-export const overflowCategoryLabel = ": all other labels";
+/* if a categorical metadata field has more options than this, truncate */
+export const maxCategoricalOptionsToDisplay = 200;
 
 /* default "unassigned" value for user-created categorical metadata */
 export const unassignedCategoryLabel = "unassigned";
 
 /*
-these are default values for configuration the CLI may supply.
+these are default values for configuration  the CLI may supply.
 See the REST API and CLI specs for more info.
 */
 export const configDefaults = {
@@ -20,18 +20,6 @@ export const configDefaults = {
     "diffexp-may-be-slow": false,
   },
   links: {},
-};
-
-/*
-Most configuration is stored in the reducer.  A handful of values
-are global and stored here.  They are typically set by the config
-action handler, which pull the information from the backend/CLI.
-
-All should be set here to their default value.
-*/
-export const globalConfig = {
-  /* if a categorical metadata field has more options than this, truncate */
-  maxCategoricalOptionsToDisplay: 200,
 };
 
 /* colors */

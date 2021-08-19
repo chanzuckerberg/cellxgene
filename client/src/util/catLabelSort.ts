@@ -18,11 +18,15 @@ function caseInsensitiveCompare(a: any, b: any) {
   return textA < textB ? -1 : textA > textB ? 1 : 0;
 }
 
-const catLabelSort = (isUserAnno: boolean, values: any[]): any[] => {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+const catLabelSort = (isUserAnno: any, values: any) => {
   /* this sort could be memoized for perf */
 
-  const strings: string[] = [];
-  const ints: number[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  const strings: any = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  const ints: any = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const unassignedOrNaN: any = [];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
@@ -39,10 +43,11 @@ const catLabelSort = (isUserAnno: boolean, values: any[]): any[] => {
   });
 
   strings.sort(caseInsensitiveCompare);
+  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
   ints.sort((a, b) => +a - +b);
   unassignedOrNaN.sort(caseInsensitiveCompare);
 
-  return (<any>ints).concat(strings, unassignedOrNaN);
+  return ints.concat(strings, unassignedOrNaN);
 };
 
 export default catLabelSort;

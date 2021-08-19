@@ -1,6 +1,6 @@
 import { doBinaryRequest, doFetch } from "./fetchHelpers";
 import { matrixFBSToDataframe } from "../util/stateManager/matrix";
-import { _getColumnSchema } from "./schema";
+import { _getColumnSchema, _normalizeCategoricalSchema } from "./schema";
 import {
   addObsAnnoColumn,
   removeObsAnnoColumn,
@@ -19,10 +19,6 @@ import {
   _urlEncodeComplexQuery,
   _hashStringValues,
 } from "./query";
-import {
-  normalizeResponse,
-  normalizeWritableCategoricalSchema,
-} from "./normalize";
 
 const promiseThrottle = new PromiseLimit(5);
 
@@ -145,7 +141,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     newAnnoMatrix._cache.obs = (this as any)._cache.obs.withCol(colName, data);
-    normalizeWritableCategoricalSchema(
+    _normalizeCategoricalSchema(
       colSchema,
       newAnnoMatrix._cache.obs.col(colName)
     );
@@ -310,10 +306,59 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
       result.colIndex.labels()
     );
 
-    result = normalizeResponse(field, query, this.schema, result);
+    result = _responseTypeNormalization(field, query, this.schema, result);
 
     return [whereCacheUpdate, result];
   }
+}
+
+// @ts-expect-error ts-migrate(7006)
+function _responseTypeNormalization(field, query, schema, response) {
+  /*
+  Schema-driven type normalization - there are a number of assumptions the front-end
+  makes about data typing, eg, that the schema will contain all categories in a categorical
+  column, that booleans are a JS array of true/false, etc.
+
+  The OTA format does not follow precisely the same conventions. This routine implements
+  the front-end conventions given the schema and an OTA data column.
+  */
+  if (field === "obs" || field === "var") {
+    response = _booleanCast(field, query, schema, response);
+  }
+  if (field === "obs") {
+    /* 
+    Note: this must be performed after any possible changes to string, boolean or categorical 
+    columns. This routine relies on having access to any casts or other data transformations
+    made in this routine, above, in order to correctly determine schema updates.
+    */
+    _normalizeCategoricalSchema(
+      schema.annotations.obsByName[query],
+      response.col(query)
+    );
+  }
+  return response;
+}
+
+// @ts-expect-error ts-migrate(7006)
+function _booleanCast(field, query, schema, response) {
+  /*
+  Boolean columns may be transmitted as an int [0/1] or bool [true/false].
+  Force to JS Array of bool.
+  */
+  if (field === "obs" || field === "var") {
+    // @ts-expect-error ts-migrate(7006)
+    response = response.mapColumns((colData, colIdx) => {
+      const colLabel = response.colIndex.getLabel(colIdx);
+      const colSchema = _getColumnSchema(schema, field, colLabel);
+      if (colSchema?.type === "boolean") {
+        const nColData = new Array(colData.length);
+        for (let i = 0; i < colData.length; i += 1) nColData[i] = !!colData[i];
+        return nColData;
+      }
+      return colData;
+    });
+  }
+  return response;
 }
 
 /*
