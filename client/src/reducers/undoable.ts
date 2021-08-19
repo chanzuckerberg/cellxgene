@@ -61,7 +61,6 @@ const filterActionKey = `${historyKeyPrefix}filterAction`;
 const pendingKey = `${historyKeyPrefix}pending`;
 const defaultHistoryLimit = -100;
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 const Undoable = (reducer: any, undoableKeys: any, options = {}) => {
   // @ts-expect-error ts-migrate(2339) FIXME: Property 'debug' does not exist on type '{}'.
   const { debug } = options;
@@ -70,7 +69,6 @@ const Undoable = (reducer: any, undoableKeys: any, options = {}) => {
   if (!historyLimit) historyLimit = defaultHistoryLimit;
   if (historyLimit > 0) historyLimit = -historyLimit;
   const actionFilter =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (options as any).actionFilter || (() => ({ [filterActionKey]: "save" }));
 
   if (!Array.isArray(undoableKeys) || undoableKeys.length === 0)
@@ -80,7 +78,6 @@ const Undoable = (reducer: any, undoableKeys: any, options = {}) => {
   /*
   Undo the current to previous history
   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   function undo(currentState: any) {
     const past = currentState[pastKey];
     const future = currentState[futureKey];
@@ -104,7 +101,6 @@ const Undoable = (reducer: any, undoableKeys: any, options = {}) => {
   /*
   Replay future, previously undone.
   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   function redo(currentState: any) {
     const past = currentState[pastKey] || [];
     const future = currentState[futureKey] || [];
@@ -128,7 +124,6 @@ const Undoable = (reducer: any, undoableKeys: any, options = {}) => {
   /*
   Clear the history state.  No side-effects on current state.
   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   function clear(currentState: any) {
     return {
       ...currentState,
@@ -142,7 +137,6 @@ const Undoable = (reducer: any, undoableKeys: any, options = {}) => {
   /*
   Reduce current action, with no history side-effects
   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   function skip(currentState: any, action: any, filterState: any) {
     const past = currentState[pastKey] || [];
     const future = currentState[futureKey] || [];
@@ -160,7 +154,6 @@ const Undoable = (reducer: any, undoableKeys: any, options = {}) => {
   /*
   Save current state in the history, then reduce action.
   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   function save(currentState: any, action: any, filterState: any) {
     const past = currentState[pastKey] || [];
     const currentUndoableState = Object.entries(currentState).filter((kv) =>
@@ -181,7 +174,6 @@ const Undoable = (reducer: any, undoableKeys: any, options = {}) => {
   /*
   Save current state as pending history change.  No other side effects.
   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   function stashPending(currentState: any) {
     const currentUndoableState = Object.entries(currentState).filter((kv) =>
       undoableKeysSet.has(kv[0])
@@ -195,7 +187,6 @@ const Undoable = (reducer: any, undoableKeys: any, options = {}) => {
   /*
   Cancel pending history state change.  No other side effects.
   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   function cancelPending(currentState: any) {
     return {
       ...currentState,
@@ -206,7 +197,6 @@ const Undoable = (reducer: any, undoableKeys: any, options = {}) => {
   /*
   Push pending state onto the history stack
   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   function applyPending(currentState: any) {
     const past = currentState[pastKey] || [];
     const pendingState = currentState[pendingKey];
@@ -227,7 +217,6 @@ const Undoable = (reducer: any, undoableKeys: any, options = {}) => {
       [filterStateKey]: {},
       [pendingKey]: null,
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     action: any
   ) => {
     if (debug > 1) console.log("---- ACTION", action.type);
@@ -288,7 +277,6 @@ const Undoable = (reducer: any, undoableKeys: any, options = {}) => {
   };
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function push(arr: any, val: any, limit = undefined) {
   /*
   functional array push, with a max length limit to the new array.

@@ -20,7 +20,6 @@ import {
 import { memoize } from "../../../util/dataframe/util";
 import parseBulkGeneString from "../../../util/parseBulkGeneString";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const renderGene = (fuzzySortResult: any, { handleClick, modifiers }: any) => {
   if (!modifiers.matchesPredicate) {
     return null;
@@ -34,7 +33,6 @@ const renderGene = (fuzzySortResult: any, { handleClick, modifiers }: any) => {
       disabled={modifiers.disabled}
       data-testid={`suggest-menu-item-${geneName}`}
       key={geneName}
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       onClick={(g: any /* this fires when user clicks a menu item */) =>
         handleClick(g)
       }
@@ -43,7 +41,6 @@ const renderGene = (fuzzySortResult: any, { handleClick, modifiers }: any) => {
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const filterGenes = (query: any, genes: any) =>
   /* fires on load, once, and then for each character typed into the input */
   fuzzysort.go(query, genes, {
@@ -51,23 +48,17 @@ const filterGenes = (query: any, genes: any) =>
     threshold: -10000, // don't return bad results
   });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 type AddGenesState = any;
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => {
   return {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     annoMatrix: (state as any).annoMatrix,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     userDefinedGenes: (state as any).controls.userDefinedGenes,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     userDefinedGenesLoading: (state as any).controls.userDefinedGenesLoading,
   };
 })
-// eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
 class AddGenes extends React.Component<{}, AddGenesState> {
-  // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
   constructor(props: {}) {
     super(props);
     this.state = {
@@ -79,18 +70,15 @@ class AddGenes extends React.Component<{}, AddGenesState> {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   componentDidMount() {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
     this.updateState();
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
   componentDidUpdate(prevProps: {}) {
     this.updateState(prevProps);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleClick(g: any) {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, userDefinedGenes } = this.props;
@@ -112,7 +100,6 @@ class AddGenes extends React.Component<{}, AddGenesState> {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   _genesToUpper = (listGenes: any) => {
     // Has to be a Map to preserve index
     const upperGenes = new Map();
@@ -123,10 +110,9 @@ class AddGenes extends React.Component<{}, AddGenesState> {
     return upperGenes;
   };
 
-  // eslint-disable-next-line react/sort-comp, @typescript-eslint/no-explicit-any -- memo requires a defined _genesToUpper
+  // eslint-disable-next-line react/sort-comp -- memo requires a defined _genesToUpper
   _memoGenesToUpper = memoize(this._genesToUpper, (arr: any) => arr);
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleBulkAddClick = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, userDefinedGenes } = this.props;
@@ -178,7 +164,6 @@ class AddGenes extends React.Component<{}, AddGenesState> {
     return undefined;
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   async updateState(prevProps: any) {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
     const { annoMatrix } = this.props;
@@ -201,7 +186,6 @@ class AddGenes extends React.Component<{}, AddGenesState> {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   placeholderGeneNames() {
     /*
     return a string containing gene name suggestions for use as a user hint.
@@ -231,7 +215,6 @@ class AddGenes extends React.Component<{}, AddGenesState> {
     return "Apod, Cd74, ...";
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'userDefinedGenesLoading' does not exist ... Remove this comment to see the full error message
     const { userDefinedGenesLoading } = this.props;

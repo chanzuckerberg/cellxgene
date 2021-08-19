@@ -2,7 +2,6 @@ import React from "react";
 import * as globals from "../../globals";
 
 class Layout extends React.Component {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   viewportRef: any;
   /*
     Layout - this react component contains all the layout style and logic for the application once it has loaded.
@@ -15,7 +14,6 @@ class Layout extends React.Component {
     should be.
   */
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   componentDidMount() {
     /*
       This is a bit of a hack. In order for the graph to size correctly, it needs to know the size of the parent
@@ -24,7 +22,6 @@ class Layout extends React.Component {
     this.forceUpdate();
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     const { children } = this.props;
     // @ts-expect-error ts-migrate(2488) FIXME: Type 'ReactNode' must have a '[Symbol.iterator]()'... Remove this comment to see the full error message

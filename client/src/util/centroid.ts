@@ -23,15 +23,10 @@ label -> {
 }
 */
 const getCoordinatesByLabel = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   schema: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   categoryName: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   categoryDf: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   layoutChoice: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   layoutDf: any
 ) => {
   const coordsByCategoryLabel = new Map();
@@ -110,15 +105,10 @@ const getCoordinatesByLabel = (
 */
 
 const calcMedianCentroid = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   schema: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   categoryName: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   categoryDf: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   layoutChoice: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   layoutDf: any
 ) => {
   // generate a map describing the coordinates for each label within the given category
@@ -155,15 +145,10 @@ const calcMedianCentroid = (
 // A simple function to hash the parameters
 const hashMedianCentroid = (
   // @ts-expect-error ts-migrate(6133) FIXME: 'schema' is declared but its value is never read.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   schema: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   categoryName: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   categoryDf: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   layoutChoice: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   layoutDf: any
 ) => {
   const category = categoryDf.col(categoryName);

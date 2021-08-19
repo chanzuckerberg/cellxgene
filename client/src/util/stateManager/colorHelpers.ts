@@ -12,15 +12,10 @@ import { range } from "../range";
 given a color mode & accessor, generate an annoMatrix query that will
 fulfill it
 */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function createColorQuery(
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   colorMode: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   colorByAccessor: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   schema: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   genesets: any
 ) {
   if (!colorMode || !colorByAccessor || !schema || !genesets) return null;
@@ -71,7 +66,6 @@ export function createColorQuery(
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function _defaultColors(nObs: any) {
   const defaultCellColor = parseRGB(globals.defaultCellColor);
   return {
@@ -95,13 +89,9 @@ Returns:
   }
 */
 function _createColorTable(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   colorMode: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   colorByAccessor: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   colorByData: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   schema: any,
   userColors = null
 ) {
@@ -142,7 +132,6 @@ export const createColorTable = memoize(_createColorTable);
  *    - scale: function which given label returns d3 color scale for label
  * Order doesn't matter - everything is keyed by label value.
  */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function loadUserColorConfig(userColors: any) {
   const convertedUserColors = {};
   Object.keys(userColors).forEach((category) => {
@@ -158,7 +147,6 @@ export function loadUserColorConfig(userColors: any) {
       [{}, {}]
     );
     // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const scale = (label: any) => scaleMap[label];
     // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     convertedUserColors[category] = { colors, scale };
@@ -167,13 +155,9 @@ export function loadUserColorConfig(userColors: any) {
 }
 
 function _createUserColors(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   data: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   colorAccessor: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   schema: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   userColors: any
 ) {
   const { colors, scale: scaleByLabel } = userColors[colorAccessor];
@@ -183,9 +167,7 @@ function _createUserColors(
   // See createColorsByCategoricalMetadata() for another example.
   const { categories } = schema.annotations.obsByName[colorAccessor];
   const categoryMap = new Map();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   categories.forEach((label: any, idx: any) => categoryMap.set(idx, label));
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const scale = (idx: any) => scaleByLabel(categoryMap.get(idx));
 
   return { rgb, scale };
@@ -193,11 +175,8 @@ function _createUserColors(
 const createUserColors = memoize(_createUserColors);
 
 function _createColorsByCategoricalMetadata(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   data: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   colorAccessor: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   schema: any
 ) {
   const { categories } = schema.annotations.obsByName[colorAccessor];
@@ -207,7 +186,6 @@ function _createColorsByCategoricalMetadata(
     .domain([0, categories.length]);
 
   /* pre-create colors - much faster than doing it for each obs */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const colors = categories.reduce((acc: any, cat: any, idx: any) => {
     acc[cat] = parseRGB(scale(idx));
     return acc;
@@ -220,7 +198,6 @@ const createColorsByCategoricalMetadata = memoize(
   _createColorsByCategoricalMetadata
 );
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function createRgbArray(data: any, colors: any) {
   const rgb = new Array(data.length);
   for (let i = 0, len = data.length; i < len; i += 1) {
@@ -230,7 +207,6 @@ function createRgbArray(data: any, colors: any) {
   return rgb;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function _createColorsByContinuousMetadata(data: any, min: any, max: any) {
   const colorBins = 100;
   const scale = d3

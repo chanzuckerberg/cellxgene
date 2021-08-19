@@ -5,17 +5,13 @@ import LabelInput from "../../labelInput";
 import parseBulkGeneString from "../../../util/parseBulkGeneString";
 import actions from "../../../actions";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 type State = any;
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   genesetsUI: (state as any).genesetsUI,
 }))
-// eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
 class AddGeneToGenesetDialogue extends React.PureComponent<{}, State> {
-  // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
   constructor(props: {}) {
     super(props);
     this.state = {
@@ -23,7 +19,6 @@ class AddGeneToGenesetDialogue extends React.PureComponent<{}, State> {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   disableAddGeneMode = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
@@ -32,12 +27,10 @@ class AddGeneToGenesetDialogue extends React.PureComponent<{}, State> {
     });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleAddGeneToGeneSet = (e: any) => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'geneset' does not exist on type 'Readonl... Remove this comment to see the full error message
     const { geneset, dispatch } = this.props;
     const { genesToAdd } = this.state;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const genesTmpHardcodedFormat: any = [];
     const genesArrayFromString = parseBulkGeneString(genesToAdd);
     genesArrayFromString.forEach((_gene) => {
@@ -52,12 +45,10 @@ class AddGeneToGenesetDialogue extends React.PureComponent<{}, State> {
     if (e) e.preventDefault();
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleChange = (e: any) => {
     this.setState({ genesToAdd: e });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'geneset' does not exist on type 'Readonl... Remove this comment to see the full error message
     const { geneset, genesetsUI } = this.props;

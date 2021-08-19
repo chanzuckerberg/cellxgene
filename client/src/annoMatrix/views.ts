@@ -9,7 +9,6 @@ import { _whereCacheCreate } from "./whereCache";
 import { _isContinuousType, _getColumnSchema } from "./schema";
 
 class AnnoMatrixView extends AnnoMatrix {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   constructor(viewOf: any, rowIndex = null) {
     // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
     const nObs = rowIndex ? rowIndex.size() : viewOf.nObs;
@@ -18,7 +17,6 @@ class AnnoMatrixView extends AnnoMatrix {
     this.isView = true;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   addObsAnnoCategory(col: any, category: any) {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix.viewOf = this.viewOf.addObsAnnoCategory(col, category);
@@ -27,11 +25,8 @@ class AnnoMatrixView extends AnnoMatrix {
   }
 
   async removeObsAnnoCategory(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     col: any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     category: any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     unassignedCategory: any
   ) {
     const newAnnoMatrix = this._clone();
@@ -44,7 +39,6 @@ class AnnoMatrixView extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   dropObsColumn(col: any) {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix.viewOf = this.viewOf.dropObsColumn(col);
@@ -53,7 +47,6 @@ class AnnoMatrixView extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   addObsColumn(colSchema: any, Ctor: any, value: any) {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix.viewOf = this.viewOf.addObsColumn(colSchema, Ctor, value);
@@ -61,7 +54,6 @@ class AnnoMatrixView extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   renameObsColumn(oldCol: any, newCol: any) {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix.viewOf = this.viewOf.renameObsColumn(oldCol, newCol);
@@ -69,7 +61,6 @@ class AnnoMatrixView extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   async setObsColumnValues(col: any, rowLabels: any, value: any) {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix.viewOf = await this.viewOf.setObsColumnValues(
@@ -82,7 +73,6 @@ class AnnoMatrixView extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   async resetObsColumnValues(col: any, oldValue: any, newValue: any) {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix.viewOf = await this.viewOf.resetObsColumnValues(
@@ -95,7 +85,6 @@ class AnnoMatrixView extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   addEmbedding(colSchema: any) {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix.viewOf = this.viewOf.addEmbedding(colSchema);
@@ -111,7 +100,6 @@ class AnnoMatrixMapView extends AnnoMatrixView {
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'viewOf' implicitly has an 'any' type.
   constructor(viewOf, mapFn) {
     super(viewOf);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (this as any).mapFn = mapFn;
   }
 
@@ -122,7 +110,6 @@ class AnnoMatrixMapView extends AnnoMatrixView {
     const dfMapped = df.mapColumns((colData, colIdx) => {
       const colLabel = df.colIndex.getLabel(colIdx);
       const colSchema = _getColumnSchema(this.schema, field, colLabel);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       return (this as any).mapFn(field, colLabel, colSchema, colData, df);
     });
     const whereCacheUpdate = _whereCacheCreate(
@@ -139,15 +126,12 @@ export class AnnoMatrixClipView extends AnnoMatrixMapView {
 	A view which is a clipped transformation of its parent
 	*/
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'viewOf' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   constructor(viewOf, qmin, qmax) {
     // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'field' implicitly has an 'any' type.
     super(viewOf, (field, colLabel, colSchema, colData, df) =>
       _clipAnnoMatrix(field, colLabel, colSchema, colData, df, qmin, qmax)
     );
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (this as any).isClipped = true;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (this as any).clipRange = [qmin, qmax];
     Object.seal(this);
   }
@@ -158,14 +142,12 @@ export class AnnoMatrixRowSubsetView extends AnnoMatrixView {
 	A view which is a subset of total rows.
 	*/
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'viewOf' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   constructor(viewOf, rowIndex) {
     super(viewOf, rowIndex);
     Object.seal(this);
   }
 
   // @ts-expect-error ts-migrate(2416) FIXME: Property '_doLoad' in type 'AnnoMatrixRowSubsetVie... Remove this comment to see the full error message
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   async _doLoad(field, query) {
     const df = await this.viewOf._fetch(field, query);
 

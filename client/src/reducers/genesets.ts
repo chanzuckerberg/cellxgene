@@ -24,14 +24,12 @@
  */
 import { diffexpPopNamePrefix1, diffexpPopNamePrefix2 } from "../globals";
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 const GeneSets = (
   state = {
     initialized: false,
     lastTid: undefined,
     genesets: new Map(),
   },
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   action: any
 ) => {
   switch (action.type) {
@@ -377,7 +375,6 @@ const GeneSets = (
       const diffExpGeneSets = [];
       for (const polarity of Object.keys(genesetNames)) {
         const genes = new Map(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           data[polarity].map((diffExpGene: any) => [
             diffExpGene[0],
             {

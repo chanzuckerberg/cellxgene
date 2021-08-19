@@ -4,7 +4,6 @@ Private helper functions related to schema
 import catLabelSort from "../util/catLabelSort";
 import { unassignedCategoryLabel } from "../globals";
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function _getColumnSchema(schema: any, field: any, col: any) {
   /* look up the column definition */
   switch (field) {
@@ -27,7 +26,6 @@ export function _getColumnSchema(schema: any, field: any, col: any) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function _getColumnDimensionNames(schema: any, field: any, col: any) {
   /*
 		field/col may be an alias for multiple columns. Currently used to map ND 
@@ -42,7 +40,6 @@ export function _getColumnDimensionNames(schema: any, field: any, col: any) {
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function _schemaColumns(schema, field) {
   switch (field) {
     case "obs":
@@ -57,7 +54,6 @@ export function _schemaColumns(schema, field) {
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function _getWritableColumns(schema, field) {
   if (field !== "obs") return [];
   return (
@@ -70,14 +66,12 @@ export function _getWritableColumns(schema, field) {
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'schema' implicitly has an 'any' type.
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function _isContinuousType(schema) {
   const { type } = schema;
   return !(type === "string" || type === "boolean" || type === "categorical");
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'colSchema' implicitly has an 'any' type... Remove this comment to see the full error message
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function _normalizeCategoricalSchema(colSchema, col) {
   /*
   Ensure all enum schema types have a categories array, that

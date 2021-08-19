@@ -1,10 +1,8 @@
-/* eslint-disable @blueprintjs/classes-constants -- we don't import blueprint here  */
 module.exports = {
   root: true,
   parser: "@typescript-eslint/parser",
   extends: [
     "airbnb-typescript",
-    "plugin:@typescript-eslint/recommended",
     "plugin:eslint-comments/recommended",
     "plugin:@blueprintjs/recommended",
     "plugin:compat/recommended",
@@ -117,4 +115,3 @@ module.exports = {
     },
   ],
 };
-/* eslint-enable @blueprintjs/classes-constants -- we don't import blueprint here  */

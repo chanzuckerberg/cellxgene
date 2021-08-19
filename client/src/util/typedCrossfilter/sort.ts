@@ -10,13 +10,11 @@ import { isTypedArray, isFpTypedArray } from "../typeHelpers";
 /*
 Comparators for float sort.   -Infinity < finite < Infinity < NaN
 */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function lt(a: any, b: any) {
   if (Number.isNaN(b)) return !Number.isNaN(a);
   return a < b;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function gt(a: any, b: any) {
   if (Number.isNaN(a)) return !Number.isNaN(b);
   return a > b;
@@ -26,7 +24,6 @@ function gt(a: any, b: any) {
 insertion sort, used for small arrays (controlled by SMALL_ARRAY constant)
 */
 const SMALL_ARRAY = 32;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function insertionsort(a: any, lo: any, hi: any) {
   for (let i = lo + 1; i < hi + 1; i += 1) {
     const x = a[i];
@@ -39,7 +36,6 @@ function insertionsort(a: any, lo: any, hi: any) {
   return a;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function insertionsortFloats(a: any, lo: any, hi: any) {
   for (let i = lo + 1; i < hi + 1; i += 1) {
     const x = a[i];
@@ -52,7 +48,6 @@ function insertionsortFloats(a: any, lo: any, hi: any) {
   return a;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function insertionsortIndirect(a: any, s: any, lo: any, hi: any) {
   for (let i = lo + 1; i < hi + 1; i += 1) {
     const x = a[i];
@@ -66,7 +61,6 @@ function insertionsortIndirect(a: any, s: any, lo: any, hi: any) {
   return a;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function insertionsortFloatsIndirect(a: any, s: any, lo: any, hi: any) {
   for (let i = lo + 1; i < hi + 1; i += 1) {
     const x = a[i];
@@ -83,7 +77,6 @@ function insertionsortFloatsIndirect(a: any, s: any, lo: any, hi: any) {
 /*
 Quicksort - used for larger arrays
 */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function quicksort(a: any, lo: any, hi: any) {
   if (hi - lo < SMALL_ARRAY) {
     return insertionsort(a, lo, hi);
@@ -114,7 +107,6 @@ function quicksort(a: any, lo: any, hi: any) {
   return a;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function quicksortFloats(a: any, lo: any, hi: any) {
   if (hi - lo < SMALL_ARRAY) {
     return insertionsortFloats(a, lo, hi);
@@ -145,7 +137,6 @@ function quicksortFloats(a: any, lo: any, hi: any) {
   return a;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function quicksortIndirect(a: any, s: any, lo: any, hi: any) {
   if (hi - lo < SMALL_ARRAY) {
     return insertionsortIndirect(a, s, lo, hi);
@@ -177,7 +168,6 @@ function quicksortIndirect(a: any, s: any, lo: any, hi: any) {
   return a;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function quicksortFloatsIndirect(a: any, s: any, lo: any, hi: any) {
   if (hi - lo < SMALL_ARRAY) {
     return insertionsortFloatsIndirect(a, s, lo, hi);
@@ -213,7 +203,6 @@ function quicksortFloatsIndirect(a: any, s: any, lo: any, hi: any) {
 Convenience wrappers, handling optimization paths and default
 handlers for NaN comparisons.  Sorts in place.
 */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function sortArray(arr: any) {
   if (Array.isArray(arr)) {
     return quicksort(arr, 0, arr.length - 1);
@@ -228,7 +217,6 @@ export function sortArray(arr: any) {
   throw new Error("sortArray received unsupported object type");
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function sortIndex(index: any, source: any) {
   if (isFpTypedArray(source))
     return quicksortFloatsIndirect(index, source, 0, index.length - 1);
@@ -247,13 +235,9 @@ export function sortIndex(index: any, source: any) {
 //    Python: bisect.bisect_left()
 //
 function lowerBoundNonFloat(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   valueArray: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   value: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   first: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   last: any
 ) {
   let lfirst = first;
@@ -275,7 +259,6 @@ function lowerBoundNonFloat(
 // If the underlying array is a Float32Array or Float64Array, will enforce
 // the ordering -Infinity < finite < Infinity < NaN.
 //
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function lowerBoundFloat(valueArray: any, value: any, first: any, last: any) {
   let lfirst = first;
   let llast = last;
@@ -291,7 +274,6 @@ function lowerBoundFloat(valueArray: any, value: any, first: any, last: any) {
   return lfirst;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function lowerBound(valueArray: any, value: any, first: any, last: any) {
   if (isFpTypedArray(valueArray)) {
     return lowerBoundFloat(valueArray, value, first, last);
@@ -302,15 +284,10 @@ export function lowerBound(valueArray: any, value: any, first: any, last: any) {
 // Inlined performance optimization - used to indirect through a sort map.
 //
 function lowerBoundNonFloatIndirect(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   valueArray: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   indexArray: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   value: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   first: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   last: any
 ) {
   let lfirst = first;
@@ -328,15 +305,10 @@ function lowerBoundNonFloatIndirect(
 }
 
 function lowerBoundFloatIndirect(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   valueArray: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   indexArray: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   value: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   first: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   last: any
 ) {
   let lfirst = first;
@@ -353,17 +325,11 @@ function lowerBoundFloatIndirect(
   return lfirst;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function lowerBoundIndirect(
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   valueArray: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   indexArray: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   value: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   first: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   last: any
 ) {
   if (isFpTypedArray(valueArray)) {
@@ -384,13 +350,9 @@ export function lowerBoundIndirect(
 //    Python: bisect.bisect_right()
 //
 function upperBoundNonFloat(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   valueArray: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   value: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   first: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   last: any
 ) {
   let lfirst = first;
@@ -407,7 +369,6 @@ function upperBoundNonFloat(
   return lfirst;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function upperBoundFloat(valueArray: any, value: any, first: any, last: any) {
   let lfirst = first;
   let llast = last;
@@ -423,7 +384,6 @@ function upperBoundFloat(valueArray: any, value: any, first: any, last: any) {
   return lfirst;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function upperBound(valueArray: any, value: any, first: any, last: any) {
   if (isFpTypedArray(valueArray)) {
     return upperBoundFloat(valueArray, value, first, last);
@@ -434,15 +394,10 @@ export function upperBound(valueArray: any, value: any, first: any, last: any) {
 // Inline performance optimization
 //
 function upperBoundNonFloatIndirect(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   valueArray: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   indexArray: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   value: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   first: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   last: any
 ) {
   let lfirst = first;
@@ -460,15 +415,10 @@ function upperBoundNonFloatIndirect(
 }
 
 function upperBoundFloatIndirect(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   valueArray: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   indexArray: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   value: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   first: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   last: any
 ) {
   let lfirst = first;
@@ -485,17 +435,11 @@ function upperBoundFloatIndirect(
   return lfirst;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function upperBoundIndirect(
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   valueArray: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   indexArray: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   value: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   first: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   last: any
 ) {
   if (isFpTypedArray(valueArray)) {
@@ -511,15 +455,10 @@ export function upperBoundIndirect(
 // The same semantics/behavior as:
 //    C++: binary_search()
 //
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function binarySearch(
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   valueArray: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   value: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   first: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   last: any
 ) {
   const index = lowerBound(valueArray, value, first, last);

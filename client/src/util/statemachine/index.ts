@@ -43,29 +43,22 @@ Example:
 
 */
 export default class StateMachine {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   events: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   graph: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   onError: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   state: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   states: any;
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   constructor(initState: any, transitions: any, onError: any) {
     this.onError = onError || (() => undefined);
     this.state = initState;
 
     // all states
     this.states = new Set(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       transitions.reduce((names: any, tsn: any) => {
         names.push(tsn.from);
         names.push(tsn.to);
@@ -74,12 +67,10 @@ export default class StateMachine {
     );
 
     // all transition names (aka events)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     this.events = new Set(transitions.map((tsn: any) => tsn.event));
 
     // the transition graph.
     // graph[event][from] -> transition
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     this.graph = transitions.reduce((graph: any, tsn: any) => {
       const { event, from } = tsn;
       if (!graph.has(event)) graph.set(event, new Map());
@@ -89,7 +80,6 @@ export default class StateMachine {
     }, new Map());
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   clone(initState: any) {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
     const fsm = new StateMachine(initState, []);
@@ -100,7 +90,6 @@ export default class StateMachine {
     return fsm;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   next(event: any, data: any) {
     const { graph, state } = this;
     const tsnMap = graph.get(event);

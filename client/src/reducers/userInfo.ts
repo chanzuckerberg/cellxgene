@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 const UserInfo = (state = {}, action: any) => {
   switch (action.type) {
     case "initial data load start":

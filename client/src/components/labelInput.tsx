@@ -3,10 +3,8 @@ import { InputGroup, MenuItem, Keys } from "@blueprintjs/core";
 import { Suggest } from "@blueprintjs/select";
 import fuzzysort from "fuzzysort";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 type State = any;
 
-// eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
 export default class LabelInput extends React.PureComponent<{}, State> {
   /*
   Input widget for text labels, which acts like an InputGroup, but will also 
@@ -30,7 +28,6 @@ export default class LabelInput extends React.PureComponent<{}, State> {
   /* maxinum number of suggestions */
   static QueryResultLimit = 100;
 
-  // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
   constructor(props: {}) {
     super(props);
 
@@ -44,7 +41,6 @@ export default class LabelInput extends React.PureComponent<{}, State> {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleQueryChange = (query: any, event: any) => {
     // https://github.com/palantir/blueprint/issues/2983
     if (!event) return;
@@ -60,7 +56,6 @@ export default class LabelInput extends React.PureComponent<{}, State> {
     if (onChange) onChange(query, event);
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleItemSelect = (item: any, event: any) => {
     /* only report the select if not already reported via onChange() */
     const { target } = item;
@@ -70,7 +65,6 @@ export default class LabelInput extends React.PureComponent<{}, State> {
     if (target !== query && onSelect) onSelect(target, event);
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleKeyDown = (e: any) => {
     /* 
     prevent these events from propagating to containing form/dialog
@@ -86,18 +80,14 @@ export default class LabelInput extends React.PureComponent<{}, State> {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleChange = (e: any) => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'onChange' does not exist on type 'Readon... Remove this comment to see the full error message
     const { onChange } = this.props;
     if (onChange) onChange(e.target.value);
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   renderLabelSuggestion = (
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     queryResult: any,
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     { handleClick, modifiers }: any
   ) => {
     if (queryResult.newLabel) {
@@ -126,7 +116,6 @@ export default class LabelInput extends React.PureComponent<{}, State> {
     );
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   filterLabels(query: any) {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'labelSuggestions' does not exist on type... Remove this comment to see the full error message
     const { labelSuggestions } = this.props;
@@ -134,15 +123,12 @@ export default class LabelInput extends React.PureComponent<{}, State> {
 
     /* empty query is wildcard */
     if (query === "") {
-      return (
-        labelSuggestions
-          .slice(0, LabelInput.QueryResultLimit)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-          .map((l: any) => ({
-            target: l,
-            score: -10000,
-          }))
-      );
+      return labelSuggestions
+        .slice(0, LabelInput.QueryResultLimit)
+        .map((l: any) => ({
+          target: l,
+          score: -10000,
+        }));
     }
 
     /* else, do a fuzzy query */
@@ -159,7 +145,6 @@ export default class LabelInput extends React.PureComponent<{}, State> {
     return queryResults;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     const { props } = this;
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'labelSuggestions' does not exist on type... Remove this comment to see the full error message
@@ -170,7 +155,6 @@ export default class LabelInput extends React.PureComponent<{}, State> {
       return (
         <InputGroup
           autoFocus={autoFocus}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           {...(props as any).inputProps} // eslint-disable-line react/jsx-props-no-spreading --- Allows for modularity
           value={label}
           onChange={this.handleChange}
@@ -180,11 +164,9 @@ export default class LabelInput extends React.PureComponent<{}, State> {
 
     const popoverProps = {
       minimal: true,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       ...(props as any).popoverProps,
     };
     const inputProps = {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       ...(props as any).inputProps,
       autoFocus: false,
     };

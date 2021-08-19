@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 const Differential = (
   state = {
     loading: null,
@@ -6,7 +5,6 @@ const Differential = (
     celllist1: null,
     celllist2: null,
   },
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   action: any
 ) => {
   switch (action.type) {

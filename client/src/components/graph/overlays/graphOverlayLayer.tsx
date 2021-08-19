@@ -3,10 +3,8 @@ import React, { PureComponent, cloneElement } from "react";
 // @ts-expect-error ts-migrate(2307) FIXME: Cannot find module '../graph.css' or its correspon... Remove this comment to see the full error message
 import styles from "../graph.css";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 type State = any;
 
-// eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
 export default class GraphOverlayLayer extends PureComponent<{}, State> {
   /*
     This component takes its children (assumed in the data coordinate space ([0, 1] range, origin in bottom left corner))
@@ -14,7 +12,6 @@ export default class GraphOverlayLayer extends PureComponent<{}, State> {
 
     Children are assigned in the graph component and must implement onDisplayChange()
    */
-  // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
   constructor(props: {}) {
     super(props);
     this.state = {
@@ -22,7 +19,6 @@ export default class GraphOverlayLayer extends PureComponent<{}, State> {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   matrixToTransformString = (m: any) => {
     /* 
       Translates the gl-matrix mat3 to SVG matrix transform style
@@ -35,21 +31,17 @@ export default class GraphOverlayLayer extends PureComponent<{}, State> {
     return `matrix(${m[0]} ${m[1]} ${m[3]} ${m[4]} ${m[6]} ${m[7]})`;
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   reverseMatrixScaleTransformString = (m: any) => {
     return `matrix(${1 / m[0]} 0 0 ${1 / m[4]} 0 0)`;
   };
 
   // This is passed to all children, should be called when an overlay's display state is toggled along with the overlay name and its new display state in boolean form
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   overlaySetShowing = (overlay: any, displaying: any) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     this.setState((state: any) => {
       return { ...state, display: { ...state.display, [overlay]: displaying } };
     });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     const {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'cameraTF' does not exist on type 'Readon... Remove this comment to see the full error message

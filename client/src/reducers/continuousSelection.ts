@@ -1,6 +1,5 @@
 import { makeContinuousDimensionName } from "../util/nameCreators";
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 const ContinuousSelection = (state = {}, action: any) => {
   switch (action.type) {
     case "reset subset":

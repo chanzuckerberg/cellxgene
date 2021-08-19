@@ -1,38 +1,30 @@
 /* eslint-disable no-await-in-loop -- await in loop is needed to emulate sequential user actions */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export function getTestId(id: any) {
   return `[data-testid='${id}']`;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export function getTestClass(className: any) {
   return `[data-testclass='${className}']`;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function waitByID(testId: any, props = {}) {
   return page.waitForSelector(getTestId(testId), props);
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function waitByClass(testClass: any, props = {}) {
   return page.waitForSelector(`[data-testclass='${testClass}']`, props);
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function waitForAllByIds(testIds: any) {
   await Promise.all(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     testIds.map((testId: any) => page.waitForSelector(getTestId(testId)))
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function getAllByClass(testClass: any) {
   return page.$$(`[data-testclass=${testClass}]`);
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function typeInto(testId: any, text: any) {
   // blueprint's  typeahead is treating typing weird, clicking & waiting first solves this
   // only works for text without special characters
@@ -44,7 +36,6 @@ export async function typeInto(testId: any, text: any) {
   await page.type(selector, text);
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function clearInputAndTypeInto(testId: any, text: any) {
   await waitByID(testId);
   const selector = getTestId(testId);
@@ -58,7 +49,6 @@ export async function clearInputAndTypeInto(testId: any, text: any) {
   await page.type(selector, text);
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function clickOn(testId: any, options = {}) {
   await expect(page).toClick(getTestId(testId), options);
 }
@@ -67,7 +57,6 @@ export async function clickOn(testId: any, options = {}) {
  * (thuang): There are times when Puppeteer clicks on a button and the page doesn't respond.
  * So I added clickOnUntil() to retry clicking until a given condition is met.
  */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function clickOnUntil(testId: any, assert: any) {
   const MAX_RETRY = 10;
   const WAIT_FOR_MS = 200;
@@ -92,22 +81,18 @@ export async function clickOnUntil(testId: any, assert: any) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function getOneElementInnerHTML(selector: any, options = {}) {
   await page.waitForSelector(selector, options);
 
   return page.$eval(selector, (el) => el.innerHTML);
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function getOneElementInnerText(selector: any) {
   expect(page).toMatchElement(selector);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   return page.$eval(selector, (el) => (el as any).innerText);
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function getElementCoordinates(testId: any) {
   return page.$eval(getTestId(testId), (elem) => {
     const { left, top } = elem.getBoundingClientRect();
@@ -133,7 +118,6 @@ async function nameNewAnnotation() {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function goToPage(url: any) {
   await page.goto(url, {
     waitUntil: "networkidle0",
@@ -143,7 +127,6 @@ export async function goToPage(url: any) {
   await clickTermsOfService();
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export async function isElementPresent(selector: any, options: any) {
   // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 2.
   return Boolean(await page.$(selector, options));

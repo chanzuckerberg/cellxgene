@@ -1,12 +1,9 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment --- FIXME: disabled temporarily on migrate to TS.
-// @ts-ignore FIXME: 'globalSetup.ts' cannot be compiled under '--isola... Remove this comment to see the full error message
+// @ts-ignore FIXME revisit from ts-migrate
 const {
   SecretsManagerClient,
   GetSecretValueCommand,
-  // eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 } = require("@aws-sdk/client-secrets-manager");
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const { setup } = require("jest-environment-puppeteer");
 
 const client = new SecretsManagerClient({ region: "us-west-2" });

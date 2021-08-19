@@ -10,7 +10,6 @@ import Gene from "./gene";
 import { postUserErrorToast } from "../framework/toasters";
 import actions from "../../actions";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const usePrevious = (value: any) => {
   const ref = useRef();
   useEffect(() => {
@@ -19,7 +18,6 @@ const usePrevious = (value: any) => {
   return ref.current;
 };
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 function QuickGene() {
   const dispatch = useDispatch();
 
@@ -30,11 +28,8 @@ function QuickGene() {
   const { annoMatrix, userDefinedGenes, userDefinedGenesLoading } = useSelector(
     (state) => {
       return {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
         annoMatrix: (state as any).annoMatrix,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
         userDefinedGenes: (state as any).controls.userDefinedGenes,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
         userDefinedGenesLoading: (state as any).controls
           .userDefinedGenesLoading,
       };
@@ -46,7 +41,6 @@ function QuickGene() {
   // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '() => Promise<void>' is not assi... Remove this comment to see the full error message
   useEffect(async () => {
     if (!annoMatrix) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     if (annoMatrix !== (prevProps as any)?.annoMatrix) {
       const { schema } = annoMatrix;
       const varIndex = schema.annotations.var.index;
@@ -66,9 +60,7 @@ function QuickGene() {
   const handleExpand = () => setIsExpanded(!isExpanded);
 
   const renderGene = (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     fuzzySortResult: any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     { handleClick, modifiers }: any
   ) => {
     if (!modifiers.matchesPredicate) {
@@ -83,7 +75,6 @@ function QuickGene() {
         disabled={modifiers.disabled}
         data-testid={`suggest-menu-item-${geneName}`}
         key={geneName}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
         onClick={(g: any /* this fires when user clicks a menu item */) =>
           handleClick(g)
         }
@@ -92,7 +83,6 @@ function QuickGene() {
     );
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const handleClick = (g: any) => {
     if (!g) return;
     const gene = g.target;
@@ -108,7 +98,6 @@ function QuickGene() {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const filterGenes = (query: any, genes: any) =>
     /* fires on load, once, and then for each character typed into the input */
     fuzzysort.go(query, genes, {
@@ -116,13 +105,11 @@ function QuickGene() {
       threshold: -10000, // don't return bad results
     });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const removeGene = (gene: any) => () => {
     dispatch({ type: "clear user defined gene", data: gene });
   };
 
   const QuickGenes = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     return userDefinedGenes.map((gene: any) => {
       return (
         <Gene

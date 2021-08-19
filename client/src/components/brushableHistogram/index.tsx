@@ -38,28 +38,21 @@ const HEIGHT_MINI = 15 - MARGIN_MINI.TOP - MARGIN_MINI.BOTTOM;
     field
   );
   return {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     annoMatrix: (state as any).annoMatrix,
     isScatterplotXXaccessor:
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (state as any).controls.scatterplotXXaccessor === field,
     isScatterplotYYaccessor:
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (state as any).controls.scatterplotYYaccessor === field,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     continuousSelectionRange: (state as any).continuousSelection[myName],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     isColorAccessor: (state as any).colors.colorAccessor === field,
   };
 })
 class HistogramBrush extends React.PureComponent {
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   static watchAsync(props: any, prevProps: any) {
     return !shallowEqual(props.watchProps, prevProps.watchProps);
   }
 
   /* memoized closure to prevent HistogramHeader unecessary repaint */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   handleColorAction = memoize((dispatch) => (field: any, isObs: any) => {
     if (isObs) {
       dispatch({
@@ -72,7 +65,6 @@ class HistogramBrush extends React.PureComponent {
   });
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'selection' is declared but its value is never rea... Remove this comment to see the full error message
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   onBrush = (selection: any, x: any, eventType: any) => {
     const type = `continuous metadata histogram ${eventType}`;
     return () => {
@@ -90,17 +82,13 @@ class HistogramBrush extends React.PureComponent {
       } = this.props;
 
       // ignore programmatically generated events
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       if (!(d3 as any).event.sourceEvent) return;
       // ignore cascading events, which are programmatically generated
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       if ((d3 as any).event.sourceEvent.sourceEvent) return;
 
       const query = this.createQuery();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       const range = (d3 as any).event.selection
-        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-          [x((d3 as any).event.selection[0]), x((d3 as any).event.selection[1])]
+        ? [x((d3 as any).event.selection[0]), x((d3 as any).event.selection[1])]
         : null;
       const otherProps = {
         selection: field,
@@ -117,9 +105,7 @@ class HistogramBrush extends React.PureComponent {
   };
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'selection' is declared but its value is never rea... Remove this comment to see the full error message
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   onBrushEnd = (selection: any, x: any) => {
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
     return () => {
       const {
         // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
@@ -137,38 +123,30 @@ class HistogramBrush extends React.PureComponent {
       const smallAmountToAvoidInfiniteLoop = 0.1;
 
       // ignore programmatically generated events
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       if (!(d3 as any).event.sourceEvent) return;
       // ignore cascading events, which are programmatically generated
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       if ((d3 as any).event.sourceEvent.sourceEvent) return;
 
       let type;
       let range = null;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       if ((d3 as any).event.selection) {
         type = "continuous metadata histogram end";
         if (
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           (d3 as any).event.selection[1] - (d3 as any).event.selection[0] >
           minAllowedBrushSize
         ) {
           range = [
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
             x((d3 as any).event.selection[0]),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
             x((d3 as any).event.selection[1]),
           ];
         } else {
           /* the user selected range is too small and will be hidden #587, so take control of it procedurally */
           /* https://stackoverflow.com/questions/12354729/d3-js-limit-size-of-brush */
           const procedurallyResizedBrushWidth =
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
             (d3 as any).event.selection[0] +
             minAllowedBrushSize +
             smallAmountToAvoidInfiniteLoop; //
           range = [
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
             x((d3 as any).event.selection[0]),
             x(procedurallyResizedBrushWidth),
           ];
@@ -192,7 +170,6 @@ class HistogramBrush extends React.PureComponent {
     };
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleSetGeneAsScatterplotX = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, field } = this.props;
@@ -202,7 +179,6 @@ class HistogramBrush extends React.PureComponent {
     });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleSetGeneAsScatterplotY = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, field } = this.props;
@@ -212,7 +188,6 @@ class HistogramBrush extends React.PureComponent {
     });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   removeHistogram = () => {
     const {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
@@ -249,7 +224,6 @@ class HistogramBrush extends React.PureComponent {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   fetchAsyncProps = async () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
     const { annoMatrix, width } = this.props;
@@ -315,7 +289,7 @@ class HistogramBrush extends React.PureComponent {
     };
   };
 
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- instance method allows for memoization per annotation
+  // eslint-disable-next-line class-methods-use-this -- instance method allows for memoization per annotation
   calcHistogramCache(col: any, newMargin: any, newWidth: any, newHeight: any) {
     /*
      recalculate expensive stuff, notably bins, summaries, etc.
@@ -325,38 +299,28 @@ class HistogramBrush extends React.PureComponent {
     const { min: domainMin, max: domainMax } = summary;
     const numBins = 40;
     const { TOP: topMargin, LEFT: leftMargin } = newMargin;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (histogramCache as any).domain = [domainMin, domainMax];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     /* doesn't change with mini */ (histogramCache as any).x = d3
       .scaleLinear()
       .domain([domainMin, domainMax])
       .range([leftMargin, leftMargin + newWidth]);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (histogramCache as any).bins = col.histogram(numBins, [
       domainMin,
       domainMax,
     ]);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     /* memoized */ (histogramCache as any).binWidth =
       (domainMax - domainMin) / numBins;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (histogramCache as any).binStart = (i: any) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       domainMin + i * (histogramCache as any).binWidth;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (histogramCache as any).binEnd = (i: any) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       domainMin + (i + 1) * (histogramCache as any).binWidth;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const yMax = (histogramCache as any).bins.reduce((l: any, r: any) =>
       l > r ? l : r
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (histogramCache as any).y = d3
       .scaleLinear()
       .domain([0, yMax])
@@ -365,7 +329,6 @@ class HistogramBrush extends React.PureComponent {
     return histogramCache;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   createQuery() {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'isObs' does not exist on type 'Readonly<... Remove this comment to see the full error message
     const { isObs, isGeneSetSummary, field, setGenes, annoMatrix } = this.props;
@@ -403,7 +366,6 @@ class HistogramBrush extends React.PureComponent {
     ];
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     const {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
@@ -463,7 +425,6 @@ class HistogramBrush extends React.PureComponent {
         </Async.Rejected>
         <Async.Fulfilled>
           {(asyncProps) =>
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
             (asyncProps as any).OK2Render ? (
               <div
                 id={`histogram_${fieldForId}`}
@@ -495,14 +456,11 @@ class HistogramBrush extends React.PureComponent {
                 <Histogram
                   field={field}
                   fieldForId={fieldForId}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
                   display={(asyncProps as any).isSingleValue ? "none" : "block"}
                   histogram={
                     mini
-                      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-                        (asyncProps as any).miniHistogram
-                      : // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-                        (asyncProps as any).histogram
+                      ? (asyncProps as any).miniHistogram
+                      : (asyncProps as any).histogram
                   }
                   width={width}
                   height={mini ? HEIGHT_MINI : HEIGHT}
@@ -519,15 +477,10 @@ class HistogramBrush extends React.PureComponent {
                     isGeneSetSummary={isGeneSetSummary}
                     isObs={isObs}
                     displayName={field}
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
                     hideRanges={(asyncProps as any).isSingleValue}
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
                     rangeMin={(asyncProps as any).unclippedRange[0]}
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
                     rangeMax={(asyncProps as any).unclippedRange[1]}
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
                     rangeColorMin={(asyncProps as any).unclippedRangeColor[0]}
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
                     rangeColorMax={(asyncProps as any).unclippedRangeColor[1]}
                   />
                 )}

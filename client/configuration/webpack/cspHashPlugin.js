@@ -1,10 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies -- this file is a devDependency*/
-/* eslint-disable @blueprintjs/classes-constants -- we don't import blueprint here  */
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const cheerio = require("cheerio");
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const crypto = require("crypto");
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 const digest = (str) => {
@@ -54,5 +50,4 @@ class CspHashPlugin {
 }
 
 module.exports = CspHashPlugin;
-/* eslint-enable @blueprintjs/classes-constants -- we don't import blueprint here  */
 /* eslint-enable import/no-extraneous-dependencies -- enable*/

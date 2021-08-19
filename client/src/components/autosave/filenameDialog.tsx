@@ -11,31 +11,22 @@ import {
   Tooltip,
 } from "@blueprintjs/core";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 type State = any;
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
   idhash:
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (state as any).config?.parameters?.["annotations-user-data-idhash"] ?? null,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   annotations: (state as any).annotations,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   auth: (state as any).config?.authentication,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   userInfo: (state as any).userInfo,
   writableCategoriesEnabled:
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (state as any).config?.parameters?.annotations ?? false,
   writableGenesetsEnabled: !(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    ((state as any).config?.parameters?.annotations_genesets_readonly ?? true)
+    (state as any).config?.parameters?.annotations_genesets_readonly ?? true
   ),
 }))
-// eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
 class FilenameDialog extends React.Component<{}, State> {
-  // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
   constructor(props: {}) {
     super(props);
     this.state = {
@@ -43,10 +34,8 @@ class FilenameDialog extends React.Component<{}, State> {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   dismissFilenameDialog = () => {};
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleCreateFilename = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
@@ -57,7 +46,6 @@ class FilenameDialog extends React.Component<{}, State> {
     });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   filenameError = () => {
     const legalNames = /^\w+$/;
     const { filenameText } = this.state;
@@ -78,7 +66,6 @@ class FilenameDialog extends React.Component<{}, State> {
     return err;
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   filenameErrorMessage = () => {
     const err = this.filenameError();
     let markup = null;
@@ -114,7 +101,6 @@ class FilenameDialog extends React.Component<{}, State> {
     return markup;
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     const {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'writableCategoriesEnabled' does not exis... Remove this comment to see the full error message

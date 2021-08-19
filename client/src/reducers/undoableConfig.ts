@@ -125,7 +125,6 @@ See graph definition for the transitions that use each.
 
 Signature:  (fsm, transition, reducerState, reducerAction) => undoableAction
 */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const stashPending = (fsm: any) => ({
   [actionKey]: "stashPending",
   [stateKey]: { fsm },
@@ -156,7 +155,6 @@ StateMachine when it doesn't know what to do.
 
 Signature:  (fsm, event, from) => undoableAction
 */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const onFsmError = (fsm: any, event: any, from: any) => {
   console.error(`FSM error [event: "${event}", state: "${from}"]`, fsm);
   // In production, try to recover gracefully if we have unexpected state
@@ -185,13 +183,9 @@ Basic approach:
   * only implement complex state machines where absolutely required (eg,
     multi-event selection and the like)
 */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const actionFilter = (debug: any) => (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   state: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   action: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   prevFilterState: any
 ) => {
   const actionType = action.type;
@@ -239,7 +233,6 @@ return true if objA and objB are ===, OR if:
   - have same own properties
   - all values are strict equal (===)
 */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function shallowObjectEq(objA: any, objB: any) {
   if (objA === objB) return true;
   if (!objA || !objB) return false;
@@ -252,7 +245,6 @@ function shallowObjectEq(objA: any, objB: any) {
 return true if arrA and arrB contain the same strict-equal values,
 in the same order.
 */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function shallowArrayEq(arrA: any, arrB: any) {
   if (arrA.length !== arrB.length) return false;
   for (let i = 0, l = arrA.length; i < l; i += 1) {

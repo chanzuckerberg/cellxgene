@@ -8,11 +8,8 @@ import { indexEntireSchema } from "../../src/util/stateManager/schemaHelpers";
 import { _normalizeCategoricalSchema } from "../../src/annoMatrix/schema";
 
 describe("centroid", () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   let schema: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   let obsAnnotations: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   let obsLayout: any;
 
   beforeAll(() => {
@@ -47,7 +44,6 @@ describe("centroid", () => {
       quantile([0.5], obsLayout.col("umap_1").asArray())[0],
     ];
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     centroidResult.forEach((coordinate: any) => {
       expect(coordinate).toEqual(expectedResult);
     });
@@ -72,7 +68,6 @@ describe("centroid", () => {
       quantile([0.5], obsLayout.col("umap_1").asArray())[0],
     ];
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     centroidResult.forEach((coordinate: any) => {
       expect(coordinate).toEqual(expectedResult);
     });

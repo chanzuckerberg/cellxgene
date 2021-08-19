@@ -219,16 +219,13 @@ describe("whereCache", () => {
       })
     );
     // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     expect((wc.where as any).field.queryField.has("queryColumn")).toEqual(true);
     expect(
       // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (wc.where as any).field.queryField.get("queryColumn")
     ).toBeInstanceOf(Map);
     expect(
       // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (wc.where as any).field.queryField.get("queryColumn").has("queryValue")
     ).toEqual(true);
     expect(_whereCacheGet(wc, schema, "field", query)).toEqual([0, 1, 2]);

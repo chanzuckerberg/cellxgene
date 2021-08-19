@@ -15,36 +15,28 @@ import * as globals from "../../globals";
 import actions from "../../actions";
 import { getDiscreteCellEmbeddingRowIndex } from "../../util/stateManager/viewStackHelpers";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 type EmbeddingState = any;
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => {
   return {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     layoutChoice: (state as any).layoutChoice,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     schema: (state as any).annoMatrix?.schema,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     crossfilter: (state as any).obsCrossfilter,
   };
 })
-// eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
 class Embedding extends React.PureComponent<{}, EmbeddingState> {
-  // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
   constructor(props: {}) {
     super(props);
     this.state = {};
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleLayoutChoiceChange = (e: any) => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
     dispatch(actions.layoutChoiceAction(e.currentTarget.value));
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'layoutChoice' does not exist on type 'Re... Remove this comment to see the full error message
     const { layoutChoice, schema, crossfilter } = this.props;
@@ -113,10 +105,8 @@ class Embedding extends React.PureComponent<{}, EmbeddingState> {
 
 export default Embedding;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const loadAllEmbeddingCounts = async ({ annoMatrix, available }: any) => {
   const embeddings = await Promise.all(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     available.map((name: any) => annoMatrix.base().fetch("emb", name))
   );
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
@@ -127,7 +117,6 @@ const loadAllEmbeddingCounts = async ({ annoMatrix, available }: any) => {
   }));
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice }: any) => {
   const { available } = layoutChoice;
   const { data, error, isPending } = useAsync({
@@ -144,7 +133,6 @@ const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice }: any) => {
     /* still loading, or errored out - just omit counts (TODO: spinner?) */
     return (
       <RadioGroup onChange={onChange} selectedValue={layoutChoice.current}>
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS. */}
         {layoutChoice.available.map((name: any) => (
           <Radio label={`${name}`} value={name} key={name} />
         ))}
@@ -154,7 +142,6 @@ const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice }: any) => {
   if (data) {
     return (
       <RadioGroup onChange={onChange} selectedValue={layoutChoice.current}>
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS. */}
         {data.map((summary: any) => {
           const { discreteCellIndex, embeddingName } = summary;
           const sizeHint = `${discreteCellIndex.size()} cells`;

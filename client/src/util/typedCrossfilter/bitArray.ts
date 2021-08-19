@@ -17,22 +17,16 @@
 // The underlying data structure uses TypedArrays for performance.
 //
 class BitArray {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   bitarray: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   bitmask: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   dimensionCount: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   length: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   width: any;
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   constructor(length: any) {
     // Initially allocate a 32 bit wide array.  allocDimension() will expand
     // as necessary.
@@ -56,14 +50,12 @@ class BitArray {
   // Return the number of records that are selected, ie, have a one bit in
   // all allocated dimensions.
   //
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   selectionCount() {
     return this.countAllOnes();
   }
 
   // Count all records that have a 'one' bit in allocated dimensions.
   //
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   countAllOnes() {
     let count = 0;
     const { bitarray, length, width } = this;
@@ -94,7 +86,6 @@ class BitArray {
 
   // count trailing zeros - hard to do fast in JS!
   // https://en.wikipedia.org/wiki/Find_first_set#CTZ
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   static ctz(av: any) {
     let c = 32;
     let v = av;
@@ -109,7 +100,6 @@ class BitArray {
   }
 
   // find a free dimension.  Return undefined if none
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   _findFreeDimension() {
     let dim;
     for (let col = 0; col < this.width; col += 1) {
@@ -125,7 +115,6 @@ class BitArray {
 
   // allocate and return the dimension ID (bit position)
   //
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   allocDimension() {
     let dim = this._findFreeDimension();
 
@@ -151,7 +140,6 @@ class BitArray {
   // free a dimension for later use.  MUST deselect the dimension, as other
   // code assume the column will be zero valued.
   //
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   freeDimension(dim: any) {
     // all selection tests assume unallocated dimensions are zero valued.
     this.deselectAll(dim);
@@ -162,7 +150,6 @@ class BitArray {
 
   // return true if this index is selected in ALL dimensions.
   //
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   isSelected(index: any) {
     const { width, length, bitarray } = this;
 
@@ -175,7 +162,6 @@ class BitArray {
 
   // return true if this index is selected in ALL dimensions IGNORING dim
   //
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   isSelectedIgnoringDim(index: any, dim: any) {
     const ignoreOffset = dim >>> 5;
     const ignoreMask = ~(1 << dim % 32);
@@ -200,7 +186,6 @@ class BitArray {
 
   // select index on dimension
   //
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   selectOne(dim: any, index: any) {
     const col = dim >>> 5;
     const before = this.bitarray[col * this.length + index];
@@ -210,7 +195,6 @@ class BitArray {
 
   // deselect index on dimension
   //
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   deselectOne(dim: any, index: any) {
     const col = dim >>> 5;
     const before = this.bitarray[col * this.length + index];
@@ -220,7 +204,6 @@ class BitArray {
 
   // select all indices on dimension.
   //
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   selectAll(dim: any) {
     const col = dim >> 5;
     const one = 1 << dim % 32;
@@ -231,7 +214,6 @@ class BitArray {
 
   // deselect all indices on dimension
   //
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   deselectAll(dim: any) {
     const col = dim >> 5;
     const zero = ~(1 << dim % 32);
@@ -242,7 +224,6 @@ class BitArray {
 
   // select range of indices on a dimension
   //
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   selectFromRange(dim: any, range: any) {
     const col = dim >>> 5;
     const first = range[0];
@@ -257,7 +238,6 @@ class BitArray {
   // select range of indices on a dimension, indirect through a sort map.
   // Indirect functions are used to map between sort and natural order.
   //
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   selectIndirectFromRange(dim: any, indirect: any, range: any) {
     const col = dim >>> 5;
     const first = range[0];
@@ -271,7 +251,6 @@ class BitArray {
 
   // deselect range of indices on a dimension
   //
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   deselectFromRange(dim: any, range: any) {
     const col = dim >>> 5;
     const first = range[0];
@@ -285,7 +264,6 @@ class BitArray {
 
   // deselect range of indices on a dimension, indirect through a sort map.
   //
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   deselectIndirectFromRange(dim: any, indirect: any, range: any) {
     const col = dim >>> 5;
     const first = range[0];
@@ -300,7 +278,6 @@ class BitArray {
   // Fill the array with selected|deselected value based upon the
   // current selection state.
   //
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   fillBySelection(result: any, selectedValue: any, deselectedValue: any) {
     // special case (width === 1) for performance
     if (this.width === 1) {

@@ -39,7 +39,6 @@ import { clip, isubsetMask, isubset } from "../../annoMatrix";
 import { memoize } from "../dataframe/util";
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function _clipAnnoMatrix(annoMatrix, min, max) {
   /*
   clip the annoMatrix.
@@ -50,7 +49,6 @@ export function _clipAnnoMatrix(annoMatrix, min, max) {
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function _userSubsetAnnoMatrix(annoMatrix, mask) {
   /*
   user-requested row subset of annoMatrix, to be added on top of any 
@@ -73,7 +71,6 @@ export function _userSubsetAnnoMatrix(annoMatrix, mask) {
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function _userResetSubsetAnnoMatrix(annoMatrix) {
   /*
   Reset/remove all user-requested subsets.  Do not remove clip or embedding subset.
@@ -100,7 +97,6 @@ export function _userResetSubsetAnnoMatrix(annoMatrix) {
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function _setEmbeddingSubset(annoMatrix, embeddingDf) {
   /*
   Set the embedding subset view.  Only create a subset view for the embedding
@@ -168,7 +164,6 @@ function _getEmbeddingRowOffsets(baseRowIndex, embeddingDf) {
 }
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'embeddingDf' implicitly has an 'any' ty... Remove this comment to see the full error message
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function _getDiscreteCellEmbeddingRowIndex(embeddingDf) {
   const idx = _getEmbeddingRowOffsets(embeddingDf.rowIndex, embeddingDf);
   if (idx === null) return embeddingDf.rowIndex;
@@ -181,7 +176,6 @@ export const getDiscreteCellEmbeddingRowIndex = memoize(
 );
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'annoMatrix' implicitly has an 'any' typ... Remove this comment to see the full error message
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function getEmbSubsetView(annoMatrix) {
   /* if there is an embedding subset in the view stack, return it.  Falsish if not. */
   while (annoMatrix.isView) {

@@ -6,7 +6,6 @@ import scaleRGB from "./scaleRGB";
 //
 const colorCache = {};
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function parseColorName(c: any) {
   if (c[0] !== "#") {
     const _c = c.replace(/[^\d,.]/g, "").split(",");
@@ -23,7 +22,6 @@ function parseColorName(c: any) {
   ];
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export default (c: any) => {
   // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
   let cv = colorCache[c];

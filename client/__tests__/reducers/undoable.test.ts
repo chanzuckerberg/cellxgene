@@ -24,7 +24,6 @@ describe("create", () => {
 describe("undo", () => {
   test("expected state modifications", () => {
     const initialState = { a: 0, b: 1000 };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const reducer = (state: any) => {
       return { a: state.a + 1, b: state.b + 1 };
     };
@@ -45,11 +44,9 @@ describe("undo", () => {
 
 describe("redo", () => {
   const initialState = { a: 0, b: 1000 };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const reducer = (state: any) => {
     return { a: state.a + 1, b: state.b + 1 };
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   let UR: any;
 
   beforeEach(() => {

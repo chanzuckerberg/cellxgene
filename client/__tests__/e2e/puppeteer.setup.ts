@@ -50,7 +50,6 @@ beforeEach(async () => {
         }
         const errorMsgText = await Promise.all(
           // TODO can we do this without internal properties?
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           msg.args().map((arg: any) => arg._remoteObject.description)
         );
         throw new Error(`Console error: ${errorMsgText}`);

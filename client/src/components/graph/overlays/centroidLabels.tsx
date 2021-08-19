@@ -8,28 +8,19 @@ import { createColorQuery } from "../../../util/stateManager/colorHelpers";
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   annoMatrix: (state as any).annoMatrix,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   colors: (state as any).colors,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   layoutChoice: (state as any).layoutChoice,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   dilatedValue: (state as any).pointDilation.categoryField,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   categoricalSelection: (state as any).categoricalSelection,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   showLabels: (state as any).centroidLabels?.showLabels,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   genesets: (state as any).genesets.genesets,
 }))
 export default class CentroidLabels extends PureComponent {
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   static watchAsync(props: any, prevProps: any) {
     return !shallowEqual(props.watchProps, prevProps.watchProps);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   fetchAsyncProps = async (props: any) => {
     const {
       annoMatrix,
@@ -64,7 +55,6 @@ export default class CentroidLabels extends PureComponent {
   };
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'e' is declared but its value is never read.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleMouseEnter = (e: any, colorAccessor: any, label: any) => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
@@ -76,7 +66,6 @@ export default class CentroidLabels extends PureComponent {
   };
 
   // @ts-expect-error ts-migrate(6133) FIXME: 'e' is declared but its value is never read.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleMouseOut = (e: any, colorAccessor: any, label: any) => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
@@ -87,7 +76,6 @@ export default class CentroidLabels extends PureComponent {
     });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   colorByQuery() {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
     const { annoMatrix, colors, genesets } = this.props;
@@ -96,7 +84,6 @@ export default class CentroidLabels extends PureComponent {
     return createColorQuery(colorMode, colorAccessor, schema, genesets);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   async fetchData() {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Read... Remove this comment to see the full error message
     const { annoMatrix, layoutChoice } = this.props;
@@ -114,7 +101,6 @@ export default class CentroidLabels extends PureComponent {
     return Promise.all(promises);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     const {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'inverseTransform' does not exist on type... Remove this comment to see the full error message
@@ -148,12 +134,10 @@ export default class CentroidLabels extends PureComponent {
         <Async.Fulfilled>
           {(asyncProps) => {
             if (!showLabels) return null;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
             const labelSVGS: any = [];
             const deselectOpacity = 0.375;
             // @ts-expect-error ts-migrate(2339) FIXME: Property 'category' does not exist on type 'unknow... Remove this comment to see the full error message
             const { category, colorAccessor, labels } = asyncProps;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
             labels.forEach((coords: any, label: any) => {
               const selected = category.get(label) ?? true;
               // Mirror LSB middle truncation
@@ -197,7 +181,7 @@ const Label = ({
   colorAccessor,
   displayLabel,
   onMouseEnter,
-  onMouseOut, // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  onMouseOut,
 }: any) => {
   /*
   Render a label at a given coordinate.

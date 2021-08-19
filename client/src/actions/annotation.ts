@@ -9,11 +9,8 @@ import { MatrixFBS, AnnotationsHelpers } from "../util/stateManager";
 const { isUserAnnotation } = AnnotationsHelpers;
 
 export const annotationCreateCategoryAction = (
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   newCategoryName: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   categoryToDuplicate: any
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 ) => async (dispatch: any, getState: any) => {
   /*
   Add a new user-created category to the obs annotations.
@@ -92,11 +89,8 @@ export const annotationCreateCategoryAction = (
 };
 
 export const annotationRenameCategoryAction = (
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   oldCategoryName: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   newCategoryName: any
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 ) => (dispatch: any, getState: any) => {
   /*
   Rename a user-created annotation category
@@ -130,11 +124,8 @@ export const annotationRenameCategoryAction = (
   });
 };
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export const annotationDeleteCategoryAction = (categoryName: any) => (
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   dispatch: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   getState: any
 ) => {
   /*
@@ -158,12 +149,9 @@ export const annotationDeleteCategoryAction = (categoryName: any) => (
 };
 
 export const annotationCreateLabelInCategory = (
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   categoryName: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   labelName: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  assignSelected: any // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  assignSelected: any
 ) => async (dispatch: any, getState: any) => {
   /*
   Add a new label to a user-defined category.  If assignSelected is true, assign
@@ -200,10 +188,8 @@ export const annotationCreateLabelInCategory = (
 };
 
 export const annotationDeleteLabelFromCategory = (
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   categoryName: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  labelName: any // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  labelName: any
 ) => async (dispatch: any, getState: any) => {
   /*
   delete a label from a user-defined category
@@ -232,13 +218,9 @@ export const annotationDeleteLabelFromCategory = (
 };
 
 export const annotationRenameLabelInCategory = (
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   categoryName: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   oldLabelName: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   newLabelName: any
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 ) => async (dispatch: any, getState: any) => {
   /*
   label name change
@@ -273,11 +255,8 @@ export const annotationRenameLabelInCategory = (
 };
 
 export const annotationLabelCurrentSelection = (
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   categoryName: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   labelName: any
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 ) => async (dispatch: any, getState: any) => {
   /*
   set the label on all currently selected
@@ -305,22 +284,14 @@ export const annotationLabelCurrentSelection = (
   });
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function writableAnnotations(annoMatrix: any) {
-  return (
-    annoMatrix.schema.annotations.obs.columns
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-      .filter((s: any) => s.writable)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-      .map((s: any) => s.name)
-  );
+  return annoMatrix.schema.annotations.obs.columns
+    .filter((s: any) => s.writable)
+    .map((s: any) => s.name);
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export const needToSaveObsAnnotations = (
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   annoMatrix: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   lastSavedAnnoMatrix: any
 ) => {
   /*
@@ -346,16 +317,12 @@ export const needToSaveObsAnnotations = (
 
   // no schema changes; check for change in contents
   return currentWritable.some(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (col: any) => annoMatrix.col(col) !== lastSavedAnnoMatrix.col(col)
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export const saveObsAnnotationsAction = () => async (
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   dispatch: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   getState: any
 ) => {
   /*
@@ -427,11 +394,8 @@ export const saveObsAnnotationsAction = () => async (
   }
 };
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export const saveGenesetsAction = () => async (
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   dispatch: any,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   getState: any
 ) => {
   const state = getState();

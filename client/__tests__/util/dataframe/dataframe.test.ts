@@ -811,7 +811,6 @@ describe("dataframe factories", () => {
           new Float64Array(3).fill(1.1),
         ]
       );
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       const dfB = dfA.mapColumns((col: any, idx: any) => {
         expect(dfA.icol(idx).asArray()).toBe(col);
         return col;
@@ -870,7 +869,6 @@ describe("dataframe factories", () => {
 });
 
 describe("dataframe col", () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   let df: any = null;
   beforeEach(() => {
     df = new Dataframe.Dataframe(

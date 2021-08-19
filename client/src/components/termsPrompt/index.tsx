@@ -10,22 +10,16 @@ import {
 } from "@blueprintjs/core";
 import { storageGet, storageSet, KEYS } from "../util/localStorage";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 type State = any;
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   tosURL: (state as any).config?.parameters?.about_legal_tos,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   privacyURL: (state as any).config?.parameters?.about_legal_privacy,
 }))
-// eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
 class TermsPrompt extends React.PureComponent<{}, State> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   drawerClose: any;
 
-  // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
   constructor(props: {}) {
     super(props);
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'tosURL' does not exist on type 'Readonly... Remove this comment to see the full error message
@@ -39,7 +33,6 @@ class TermsPrompt extends React.PureComponent<{}, State> {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   componentDidMount() {
     const { hasDecided, isEnabled } = this.state;
     if (isEnabled && !hasDecided) {
@@ -47,7 +40,6 @@ class TermsPrompt extends React.PureComponent<{}, State> {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleOK = () => {
     this.setState({ isOpen: false });
     storageSet(KEYS.COOKIE_DECISION, "yes");
@@ -62,13 +54,11 @@ class TermsPrompt extends React.PureComponent<{}, State> {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleNo = () => {
     this.setState({ isOpen: false });
     storageSet(KEYS.COOKIE_DECISION, "no");
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   renderTos() {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'tosURL' does not exist on type 'Readonly... Remove this comment to see the full error message
     const { tosURL } = this.props;
@@ -93,7 +83,6 @@ class TermsPrompt extends React.PureComponent<{}, State> {
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   renderPrivacy() {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'privacyURL' does not exist on type 'Read... Remove this comment to see the full error message
     const { privacyURL } = this.props;
@@ -117,7 +106,6 @@ class TermsPrompt extends React.PureComponent<{}, State> {
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     const { isOpen, isEnabled } = this.state;
     if (!isEnabled || !isOpen) return null;

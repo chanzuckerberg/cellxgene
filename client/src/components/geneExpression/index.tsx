@@ -7,25 +7,20 @@ import GeneSet from "./geneSet";
 import QuickGene from "./quickGene";
 import CreateGenesetDialogue from "./menus/createGenesetDialogue";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 type State = any;
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => {
   return {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     genesets: (state as any).genesets.genesets,
   };
 })
-// eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
 class GeneExpression extends React.Component<{}, State> {
-  // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
   constructor(props: {}) {
     super(props);
     this.state = { geneSetsExpanded: true };
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   renderGeneSets = () => {
     const sets = [];
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'genesets' does not exist on type 'Readon... Remove this comment to see the full error message
@@ -45,29 +40,24 @@ class GeneExpression extends React.Component<{}, State> {
     return sets;
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleActivateCreateGenesetMode = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
     const { geneSetsExpanded } = this.state;
     dispatch({ type: "geneset: activate add new geneset mode" });
     if (!geneSetsExpanded) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       this.setState((state: any) => {
         return { ...state, geneSetsExpanded: true };
       });
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleExpandGeneSets = () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     this.setState((state: any) => {
       return { ...state, geneSetsExpanded: !state.geneSetsExpanded };
     });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     const { geneSetsExpanded } = this.state;
     return (

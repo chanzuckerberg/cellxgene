@@ -3,7 +3,6 @@ import { Colors } from "@blueprintjs/core";
 
 import { AnnotationsHelpers } from "../../util/stateManager";
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function isLabelErroneous(label: any, metadataField: any, schema: any) {
   /*
     return false if this is a LEGAL/acceptable category name or NULL/empty string,
@@ -36,7 +35,6 @@ const errorMessageMap = {
   "multi-space-run": "Multiple consecutive spaces not allowed",
 };
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function labelPrompt(err: any, prolog: any, epilog: any) {
   let errPrompt = null;
   if (err) {

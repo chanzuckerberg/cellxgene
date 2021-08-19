@@ -17,13 +17,10 @@ import { rangeFill } from "../../../src/util/range";
 enableFetchMocks();
 
 describe("AnnoMatrixCrossfilter", () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   let annoMatrix: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   let crossfilter: any;
 
   beforeEach(async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (fetch as any).resetMocks(); // reset all fetch mocking state
     // reset all fetch mocking state
     annoMatrix = new AnnoMatrixLoader(
@@ -71,7 +68,6 @@ describe("AnnoMatrixCrossfilter", () => {
         crossfilter.obsCrossfilter.hasDimension("obs/louvain")
       ).toBeFalsy();
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).once(
         serverMocks.dataframeResponse(["louvain"], [obsLouvain])
       );
@@ -83,7 +79,6 @@ describe("AnnoMatrixCrossfilter", () => {
       expect(
         newCrossfilter.obsCrossfilter.hasDimension("obs/louvain")
       ).toBeTruthy();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       expect((fetch as any).mock.calls).toHaveLength(1);
 
       newCrossfilter = await crossfilter.select("obs", "louvain", {
@@ -95,7 +90,6 @@ describe("AnnoMatrixCrossfilter", () => {
     test("simple column select", async () => {
       let xfltr;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).once(
         serverMocks.dataframeResponse(["louvain"], [obsLouvain])
       );
@@ -136,12 +130,10 @@ describe("AnnoMatrixCrossfilter", () => {
       const values = df.col("louvain").asArray();
       const selected = xfltr.allSelectedMask();
       values.every(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
         (val: any, idx: any) =>
           !["NK cells", "B cells"].includes(val) !== !selected[idx]
       );
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).once(
         serverMocks.dataframeResponse(["n_genes"], [new Int32Array(obsNGenes)])
       );
@@ -176,7 +168,6 @@ describe("AnnoMatrixCrossfilter", () => {
       const varIndex = annoMatrix.schema.annotations.var.index;
 
       const { nObs } = annoMatrix.schema.dataframe;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).once(
         serverMocks.dataframeResponse(
           ["TEST"],
@@ -214,17 +205,14 @@ describe("AnnoMatrixCrossfilter", () => {
       const values = df.icol(0).asArray();
       const selected = xfltr.allSelectedMask();
       values.every(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
         (val: any, idx: any) => !(val >= 0 && val <= 50) !== !selected[idx]
       );
       expect(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
         selected.reduce((acc: any, val: any) => (val ? acc + 1 : acc), 0)
       ).toEqual(xfltr.countSelected());
     });
 
     test("spatial column select", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).once(
         serverMocks.dataframeResponse(
           ["umap_0", "umap_1"],
@@ -253,7 +241,6 @@ describe("AnnoMatrixCrossfilter", () => {
       let xfltr = new AnnoMatrixObsCrossfilter(annoMatrixSubset);
       expect(xfltr.countSelected()).toEqual(annoMatrixSubset.nObs);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).once(
         serverMocks.dataframeResponse(["louvain"], [obsLouvain])
       );
@@ -269,7 +256,6 @@ describe("AnnoMatrixCrossfilter", () => {
       const values = df.col("louvain").asArray();
       const selected = xfltr.allSelectedMask();
       values.every(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
         (val: any, idx: any) =>
           !["NK cells", "B cells"].includes(val) !== !selected[idx]
       );
@@ -284,7 +270,6 @@ describe("AnnoMatrixCrossfilter", () => {
         "unable to obsSelect upon the var dimension"
       );
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockRejectOnce(new Error("unknown column name"));
       await expect(crossfilter.select("obs", "foo")).rejects.toThrow(
         "unknown column name"
@@ -296,7 +281,6 @@ describe("AnnoMatrixCrossfilter", () => {
     /*
     test the matrix mutators via crossfilter proxy
     */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     async function helperAddTestCol(cf: any, colName: any, colSchema = null) {
       expect(
         cf.annoMatrix.getMatrixColumns("obs").includes(colName)
@@ -317,7 +301,6 @@ describe("AnnoMatrixCrossfilter", () => {
       const xfltr = cf.addObsColumn(colSchema, Array, initValue);
       expect(
         xfltr.annoMatrix.schema.annotations.obs.columns.filter(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           (v: any) => v.name === colName
         )
       ).toHaveLength(1);
@@ -348,7 +331,6 @@ describe("AnnoMatrixCrossfilter", () => {
       });
       expect(
         xfltr.annoMatrix.schema.annotations.obs.columns.filter(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           (v: any) => v.name === "foo"
         )
       ).toHaveLength(1);
@@ -358,7 +340,7 @@ describe("AnnoMatrixCrossfilter", () => {
       expect(
         df
           .col("foo")
-          .asArray() // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+          .asArray()
           .every((v: any) => v === "A")
       ).toBeTruthy();
 
@@ -396,12 +378,10 @@ describe("AnnoMatrixCrossfilter", () => {
       xfltr = xfltr.dropObsColumn("foo");
       expect(
         xfltr.annoMatrix.schema.annotations.obs.columns.filter(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           (v: any) => v.name === "foo"
         )
       ).toHaveLength(0);
       expect(xfltr.annoMatrix.schema.annotations.obsByName.foo).toBeUndefined();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockRejectOnce(new Error("unknown column name"));
       await expect(xfltr.annoMatrix.fetch("obs", "foo")).rejects.toThrow(
         "unknown column name"
@@ -415,7 +395,6 @@ describe("AnnoMatrixCrossfilter", () => {
       });
       xfltr = xfltr.dropObsColumn("bar");
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockRejectOnce(new Error("unknown column name"));
       await expect(xfltr.select("obs", "bar", { mode: "all" })).rejects.toThrow(
         "unknown column name"
@@ -442,7 +421,6 @@ describe("AnnoMatrixCrossfilter", () => {
         type: "categorical",
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockRejectOnce(new Error("unknown column name"));
       await expect(xfltr.annoMatrix.fetch("obs", "foo")).rejects.toThrow(
         "unknown column name"
@@ -458,7 +436,6 @@ describe("AnnoMatrixCrossfilter", () => {
       });
       xfltr = xfltr.renameObsColumn("bar", "xyz");
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockRejectOnce(new Error("unknown column name"));
       await expect(xfltr.select("obs", "bar", { mode: "all" })).rejects.toThrow(
         "unknown column name"
@@ -469,7 +446,6 @@ describe("AnnoMatrixCrossfilter", () => {
     });
 
     test("addObsAnnoCategory", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       let xfltr: any;
 
       // catch unknown or readonly columns
@@ -539,7 +515,7 @@ describe("AnnoMatrixCrossfilter", () => {
       expect(
         (await xfltr.annoMatrix.fetch("obs", "foo"))
           .col("foo")
-          .asArray() // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+          .asArray()
           .every((v: any) => v === "unassigned")
       ).toBeTruthy();
       expect(xfltr.annoMatrix.getColumnSchema("obs", "foo")).toMatchObject({
@@ -558,7 +534,7 @@ describe("AnnoMatrixCrossfilter", () => {
       expect(
         (await xfltr1.annoMatrix.fetch("obs", "foo"))
           .col("foo")
-          .asArray() // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+          .asArray()
           .every((v: any) => v === "unassigned")
       ).toBeTruthy();
       expect(xfltr1.annoMatrix.getColumnSchema("obs", "foo")).toMatchObject({
@@ -581,7 +557,7 @@ describe("AnnoMatrixCrossfilter", () => {
       expect(
         (await xfltr2.annoMatrix.fetch("obs", "foo"))
           .col("foo")
-          .asArray() // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+          .asArray()
           .every((v: any) => v === "red")
       ).toBeTruthy();
       expect(xfltr2.annoMatrix.getColumnSchema("obs", "foo")).toMatchObject({
@@ -617,7 +593,7 @@ describe("AnnoMatrixCrossfilter", () => {
       expect(
         (await xfltr.annoMatrix.fetch("obs", "foo"))
           .col("foo")
-          .asArray() // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+          .asArray()
           .every((v: any) => v === "unassigned")
       ).toBeTruthy();
       const xfltr1 = await xfltr.setObsColumnValues("foo", [0, 10], "purple");
@@ -626,7 +602,6 @@ describe("AnnoMatrixCrossfilter", () => {
           .col("foo")
           .asArray()
           .every(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
             (v: any, i: any) =>
               v === "unassigned" || (v === "purple" && (i === 0 || i === 10))
           )
@@ -685,7 +660,7 @@ describe("AnnoMatrixCrossfilter", () => {
       expect(
         (await xfltr1.annoMatrix.fetch("obs", "foo"))
           .col("foo")
-          .asArray() // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+          .asArray()
           .filter((v: any) => v === "purple")
       ).toHaveLength(2);
 
@@ -693,13 +668,13 @@ describe("AnnoMatrixCrossfilter", () => {
       expect(
         (await xfltr1.annoMatrix.fetch("obs", "foo"))
           .col("foo")
-          .asArray() // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+          .asArray()
           .filter((v: any) => v === "magenta")
       ).toHaveLength(2);
       expect(
         (await xfltr1.annoMatrix.fetch("obs", "foo"))
           .col("foo")
-          .asArray() // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+          .asArray()
           .filter((v: any) => v === "purple")
       ).toHaveLength(0);
       expect(xfltr1.annoMatrix.getColumnSchema("obs", "foo")).toMatchObject({
@@ -720,7 +695,6 @@ describe("AnnoMatrixCrossfilter", () => {
   describe("edge cases", () => {
     test("transition from empty annoMatrix", async () => {
       // select before fetch needs to work
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).once(
         serverMocks.dataframeResponse(["louvain"], [obsLouvain])
       );
@@ -728,7 +702,6 @@ describe("AnnoMatrixCrossfilter", () => {
         mode: "exact",
         values: "B cells",
       });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       expect((fetch as any).mock.calls).toHaveLength(1);
       expect(xfltr.obsCrossfilter.hasDimension("obs/louvain")).toBeTruthy();
       expect(xfltr.obsCrossfilter.all()).toBe(xfltr.annoMatrix._cache.obs);

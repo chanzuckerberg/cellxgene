@@ -11,7 +11,6 @@ Undoable metareducer and the AnnoMatrix private API.  It would be helpful
 to make the Undoable interface better factored.
 */
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 const annoMatrixGC = (store: any) => (next: any) => (action: any) => {
   if (_itIsTimeForGC()) {
     _doGC(store);
@@ -35,7 +34,6 @@ function _itIsTimeForGC() {
   return false;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function _doGC(store: any) {
   const state = store.getState();
 
@@ -45,9 +43,7 @@ function _doGC(store: any) {
   const undoableFuture = state["@@undoable/future"];
   const undoableStack = undoablePast
     .concat(undoableFuture)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     .flatMap((snapshot: any) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       snapshot.filter((v: any) => v[0] === "annoMatrix").map((v: any) => v[1])
     );
   const currentAnnoMatrix = state.annoMatrix;
@@ -57,7 +53,6 @@ function _doGC(store: any) {
   as our current gc algo is more aggressive with those not hot.
   */
   const allAnnoMatrices = new Map(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     undoableStack.map((m: any) => [m, { isHot: false }])
   );
   let am = currentAnnoMatrix;
@@ -66,7 +61,6 @@ function _doGC(store: any) {
     am = am.viewOf;
   }
   allAnnoMatrices.forEach((hints, annoMatrix) =>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (annoMatrix as any)._gc(hints)
   );
 }

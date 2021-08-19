@@ -23,7 +23,6 @@ import {
 const promiseThrottle = new PromiseLimit(5);
 
 export default class AnnoMatrixLoader extends AnnoMatrix {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   baseURL: any;
 
   /*
@@ -36,7 +35,6 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     new AnnoMatrixLoader(serverBaseURL, schema) -> instance
 
   */
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   constructor(baseURL: any, schema: any) {
     const { nObs, nVar } = schema.dataframe;
     super(schema, nObs, nVar);
@@ -52,7 +50,6 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
   /**
    ** Public.  API described in base class.
    **/
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   addObsAnnoCategory(col: any, category: any) {
     /*
     Add a new category (aka label) to the schema for an obs column.
@@ -65,13 +62,9 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   async removeObsAnnoCategory(
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     col: any,
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     category: any,
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     unassignedCategory: any
   ) {
     /*
@@ -93,7 +86,6 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     return newAnnoMatrix;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   dropObsColumn(col: any) {
     /*
 		drop column from field
@@ -102,14 +94,12 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     _writableCheck(colSchema); // throws on error
 
     const newAnnoMatrix = this._clone();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     newAnnoMatrix._cache.obs = (this as any)._cache.obs.dropCol(col);
     newAnnoMatrix.schema = removeObsAnnoColumn(this.schema, col);
     return newAnnoMatrix;
   }
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'colSchema' implicitly has an 'any' type... Remove this comment to see the full error message
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   addObsColumn(colSchema, Ctor, value) {
     /*
 		add a column to field, initializing with value.  Value may 
@@ -122,7 +112,6 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     const colName = colSchema.name;
     if (
       _getColumnSchema(this.schema, "obs", colName) ||
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (this as any)._cache.obs.hasCol(colName)
     ) {
       throw new Error("column already exists");
@@ -139,7 +128,6 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     } else {
       data = new Ctor(this.nObs).fill(value);
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     newAnnoMatrix._cache.obs = (this as any)._cache.obs.withCol(colName, data);
     _normalizeCategoricalSchema(
       colSchema,
@@ -150,17 +138,14 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'oldCol' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   renameObsColumn(oldCol, newCol) {
     /*
     Rename the obs oldColName to newColName.  oldCol must be writable.
     */
     const oldColSchema = _getColumnSchema(this.schema, "obs", oldCol);
     _writableCheck(oldColSchema);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const value = (this as any)._cache.obs.hasCol(oldCol)
-      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-        (this as any)._cache.obs.col(oldCol).asArray()
+      ? (this as any)._cache.obs.col(oldCol).asArray()
       : undefined;
     return this.dropObsColumn(oldCol).addObsColumn(
       {
@@ -173,7 +158,6 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'col' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   async setObsColumnValues(col, rowLabels, value) {
     /*
 		Set all rows identified by rowLabels to value.
@@ -183,12 +167,10 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
 
     // ensure that we have the data in cache before we manipulate it
     await this.fetch("obs", col);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     if (!(this as any)._cache.obs.hasCol(col))
       throw new Error("Internal error - user annotation data missing");
 
     const rowIndices = this.rowIndex.getOffsets(rowLabels);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const data = (this as any)._cache.obs.col(col).asArray().slice();
     for (let i = 0, len = rowIndices.length; i < len; i += 1) {
       const idx = rowIndices[i];
@@ -197,7 +179,6 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     }
 
     const newAnnoMatrix = this._clone();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     newAnnoMatrix._cache.obs = (this as any)._cache.obs.replaceColData(
       col,
       data
@@ -210,7 +191,6 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'col' implicitly has an 'any' type.
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   async resetObsColumnValues(col, oldValue, newValue) {
     /*
     Set all rows with value 'oldValue' to 'newValue'.
@@ -224,18 +204,15 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
 
     // ensure that we have the data in cache before we manipulate it
     await this.fetch("obs", col);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     if (!(this as any)._cache.obs.hasCol(col))
       throw new Error("Internal error - user annotation data missing");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     const data = (this as any)._cache.obs.col(col).asArray().slice();
     for (let i = 0, l = data.length; i < l; i += 1) {
       if (data[i] === oldValue) data[i] = newValue;
     }
 
     const newAnnoMatrix = this._clone();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     newAnnoMatrix._cache.obs = (this as any)._cache.obs.replaceColData(
       col,
       data
@@ -248,7 +225,6 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
   }
 
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'colSchema' implicitly has an 'any' type... Remove this comment to see the full error message
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   addEmbedding(colSchema) {
     /*
     add new layout to the obs embeddings
@@ -267,7 +243,6 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
    ** Private below
    **/
   // @ts-expect-error ts-migrate(2416) FIXME: Property '_doLoad' in type 'AnnoMatrixLoader' is n... Remove this comment to see the full error message
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   async _doLoad(field, query) {
     /*
     _doLoad - evaluates the query against the field. Returns:

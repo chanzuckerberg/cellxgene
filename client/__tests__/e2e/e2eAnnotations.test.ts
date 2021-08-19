@@ -76,7 +76,6 @@ const brushThisGeneGeneset = "brush_this_gene";
 const geneBrushedCellCount = "109";
 const subsetGeneBrushedCellCount = "96";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 async function setup(config: any) {
   await goToPage(appUrlBase);
 
@@ -151,7 +150,6 @@ describe.each([
     await expect(page).toClick(getTestClass("pop-1-geneset-expand"));
 
     await page.waitForFunction(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (selector: any) => !document.querySelector(selector),
       {},
       getTestClass("gene-loading-spinner")
@@ -167,7 +165,6 @@ describe.each([
     await expect(page).toClick(getTestClass("pop-2-geneset-expand"));
 
     await page.waitForFunction(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (selector: any) => !document.querySelector(selector),
       {},
       getTestClass("gene-loading-spinner")
@@ -365,11 +362,9 @@ describe.each([
     expect(actualLabelName).toBe(expectedLabelName);
     expect(actualLabelCount).toBe(expectedLabelCount);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     async function getInnerText(element: any, className: any) {
       return element.$eval(
         getTestClass(className),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
         (node: any) => node?.innerText
       );
     }
@@ -536,7 +531,6 @@ describe.each([
     expect(result).toMatchSnapshot();
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   async function assertCategoryExists(categoryName: any) {
     const handle = await waitByID(`${categoryName}:category-label`);
 
@@ -548,7 +542,6 @@ describe.each([
     return expect(result).toBe(categoryName);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   async function assertLabelExists(categoryName: any, labelName: any) {
     await expect(page).toMatchElement(
       getTestId(`${categoryName}:category-expand`)
@@ -566,7 +559,6 @@ describe.each([
     ).toBe(labelName);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   async function assertLabelDoesNotExist(categoryName: any, labelName: any) {
     await expandCategory(categoryName);
     const result = await page.$(

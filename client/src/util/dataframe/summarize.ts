@@ -13,7 +13,6 @@ import { sortArray } from "../typedCrossfilter/sort";
 // @ts-expect-error ts-migrate(6133) FIXME: 'v' is declared but its value is never read.
 const centileNames = new Array(101).fill(0).map((v, idx) => idx / 100);
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function summarizeContinuous(col: any) {
   let min;
   let max;
@@ -65,7 +64,6 @@ export function summarizeContinuous(col: any) {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function summarizeCategorical(col: any) {
   const categoryCounts = new Map();
   if (col) {

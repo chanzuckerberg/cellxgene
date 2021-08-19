@@ -4,16 +4,13 @@ Private utility code for dataframe
 
 export { isTypedArray, isArrayOrTypedArray } from "../typeHelpers";
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function callOnceLazy(f: any) {
   /*
   call function once, and save the result, regardless of arguments (this is not
   the same as typical memoization).
   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   let value: any;
   let calledOnce = false;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const result = function result(...args: any[]) {
     if (!calledOnce) {
       value = f(...args);
@@ -24,7 +21,6 @@ export function callOnceLazy(f: any) {
   return result;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function memoize(fn: any, hashFn: any, maxResultsCached = -1) {
   /* 
   function memoization, with user-provided hash.  hashFn must return a
@@ -33,7 +29,6 @@ export function memoize(fn: any, hashFn: any, maxResultsCached = -1) {
   https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#Key_equality
   */
   const cache = new Map();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const wrap = function wrap(...args: any[]) {
     const key = hashFn(...args);
     if (cache.has(key)) {
@@ -62,7 +57,6 @@ export function memoize(fn: any, hashFn: any, maxResultsCached = -1) {
 memoization helpers - just a global counter.
 **/
 let __DataframeMemoId__ = 0;
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export function __getMemoId() {
   const id = __DataframeMemoId__;
   __DataframeMemoId__ += 1;

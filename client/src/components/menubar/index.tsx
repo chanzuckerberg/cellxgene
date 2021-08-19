@@ -14,14 +14,12 @@ import UndoRedoReset from "./undoRedo";
 import DiffexpButtons from "./diffexpButtons";
 import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 type State = any;
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => {
   // @ts-expect-error ts-migrate(2339) FIXME: Property 'annoMatrix' does not exist on type 'Defa... Remove this comment to see the full error message
   const { annoMatrix } = state;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const crossfilter = (state as any).obsCrossfilter;
   const selectedCount = crossfilter.countSelected();
 
@@ -35,49 +33,32 @@ type State = any;
   return {
     subsetPossible,
     subsetResetPossible,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     graphInteractionMode: (state as any).controls.graphInteractionMode,
     clipPercentileMin: Math.round(100 * (annoMatrix?.clipRange?.[0] ?? 0)),
     clipPercentileMax: Math.round(100 * (annoMatrix?.clipRange?.[1] ?? 1)),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     userDefinedGenes: (state as any).controls.userDefinedGenes,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     colorAccessor: (state as any).colors.colorAccessor,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     scatterplotXXaccessor: (state as any).controls.scatterplotXXaccessor,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     scatterplotYYaccessor: (state as any).controls.scatterplotYYaccessor,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     libraryVersions: (state as any).config?.library_versions,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     auth: (state as any).config?.authentication,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     userInfo: (state as any).userInfo,
     // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     undoDisabled: state["@@undoable/past"].length === 0,
     // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     redoDisabled: state["@@undoable/future"].length === 0,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     aboutLink: (state as any).config?.links?.["about-dataset"],
     disableDiffexp:
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (state as any).config?.parameters?.["disable-diffexp"] ?? false,
     diffexpMayBeSlow:
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (state as any).config?.parameters?.["diffexp-may-be-slow"] ?? false,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     showCentroidLabels: (state as any).centroidLabels.showLabels,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     tosURL: (state as any).config?.parameters?.about_legal_tos,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     privacyURL: (state as any).config?.parameters?.about_legal_privacy,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     categoricalSelection: (state as any).categoricalSelection,
   };
 })
-// eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
 class MenuBar extends React.PureComponent<{}, State> {
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   static isValidDigitKeyEvent(e: any) {
     /*
     Return true if this event is necessary to enter a percent number input.
@@ -102,7 +83,6 @@ class MenuBar extends React.PureComponent<{}, State> {
     return key >= 0 && key <= 9;
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
   constructor(props: {}) {
     super(props);
     this.state = {
@@ -110,7 +90,6 @@ class MenuBar extends React.PureComponent<{}, State> {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   isClipDisabled = () => {
     /*
     return true if clip button should be disabled.
@@ -135,7 +114,6 @@ class MenuBar extends React.PureComponent<{}, State> {
     return isDisabled;
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleClipOnKeyPress = (e: any) => {
     /*
     allow only numbers, plus other critical keys which
@@ -146,7 +124,6 @@ class MenuBar extends React.PureComponent<{}, State> {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleClipPercentileMinValueChange = (v: any) => {
     /*
     Ignore anything that isn't a legit number
@@ -167,7 +144,6 @@ class MenuBar extends React.PureComponent<{}, State> {
     });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleClipPercentileMaxValueChange = (v: any) => {
     /*
     Ignore anything that isn't a legit number
@@ -189,7 +165,6 @@ class MenuBar extends React.PureComponent<{}, State> {
     });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleClipCommit = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
@@ -200,7 +175,6 @@ class MenuBar extends React.PureComponent<{}, State> {
     dispatch(actions.clipAction(min, max));
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleClipOpening = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'clipPercentileMin' does not exist on typ... Remove this comment to see the full error message
     const { clipPercentileMin, clipPercentileMax } = this.props;
@@ -209,12 +183,10 @@ class MenuBar extends React.PureComponent<{}, State> {
     });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleClipClosing = () => {
     this.setState({ pendingClipPercentiles: null });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleCentroidChange = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, showCentroidLabels } = this.props;
@@ -225,21 +197,18 @@ class MenuBar extends React.PureComponent<{}, State> {
     });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleSubset = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
     dispatch(actions.subsetAction());
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleSubsetReset = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
     dispatch(actions.resetSubsetAction());
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     const {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message

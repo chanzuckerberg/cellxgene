@@ -3,7 +3,6 @@ import { Button } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 const StillLoading = ({ zebra, displayName }: any) => {
   /*
     Render a loading indicator for the field.

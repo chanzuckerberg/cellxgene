@@ -15,7 +15,6 @@ Arguments:
 import { sortArray } from "./typedCrossfilter/sort";
 
 // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'quantArr' implicitly has an 'any' type.
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export default function quantile(quantArr, tarr, sorted = false) {
   /*
 	start with the naive (sort) implementation.  Later, use a faster partition

@@ -15,7 +15,6 @@ paths for:
 const pInf = Number.POSITIVE_INFINITY;
 const nInf = Number.NEGATIVE_INFINITY;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function fillRange(arr: any, start = 0) {
   const larr = arr;
   for (let i = 0, len = larr.length; i < len; i += 1) {
@@ -24,7 +23,6 @@ function fillRange(arr: any, start = 0) {
   return larr;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function fillRand(arr: any) {
   for (let i = 0, len = arr.length; i < len; i += 1) {
     arr[i] = Math.random();
@@ -142,7 +140,6 @@ describe("sortIndex", () => {
         const source1 = Type.from([6, 5, 4, 3, 2, 1, 0]);
         const index1 = fillRange(new Uint32Array(source1.length));
         expect(sortIndex(index1, source1)).toMatchObject(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           index1.sort((a: any, b: any) => source1[a] - source1[b])
         );
 
@@ -150,14 +147,12 @@ describe("sortIndex", () => {
         const source2 = Type.from([6, 5, 4, 3, 2, 1]);
         const index2 = fillRange(new Uint32Array(source2.length));
         expect(sortIndex(index2, source2)).toMatchObject(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           index2.sort((a: any, b: any) => source1[a] - source1[b])
         );
 
         const source3 = fillRand(new Type(1000));
         const index3 = fillRange(new Uint32Array(source3.length));
         expect(sortIndex(index3, source3)).toMatchObject(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           index3.sort((a: any, b: any) => source1[a] - source1[b])
         );
       })

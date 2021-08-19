@@ -33,47 +33,35 @@ const LABEL_WIDTH_ANNO = LABEL_WIDTH - ANNO_BUTTON_WIDTH;
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state, ownProps) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const schema = (state as any).annoMatrix?.schema;
   // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type '{... Remove this comment to see the full error message
   const { metadataField } = ownProps;
   const isUserAnno = schema?.annotations?.obsByName[metadataField]?.writable;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const categoricalSelection = (state as any).categoricalSelection?.[
     metadataField
   ];
   return {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     colors: (state as any).colors,
     categoricalSelection,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     annotations: (state as any).annotations,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     annoMatrix: (state as any).annoMatrix,
     schema,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     crossfilter: (state as any).obsCrossfilter,
     isUserAnno,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     genesets: (state as any).genesets.genesets,
   };
 })
 class Category extends React.PureComponent {
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   static getSelectionState(
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     categoricalSelection: any,
     // @ts-expect-error ts-migrate(6133) FIXME: 'metadataField' is declared but its value is never... Remove this comment to see the full error message
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     metadataField: any,
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     categorySummary: any
   ) {
     // total number of categories in this dimension
     const totalCatCount = categorySummary.numCategoryValues;
     // number of selected options in this category
     const selectedCatCount = categorySummary.categoryValues.reduce(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (res: any, label: any) =>
         categoricalSelection.get(label) ?? true ? res + 1 : res,
       0
@@ -85,14 +73,12 @@ class Category extends React.PureComponent {
       : "some";
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   static watchAsync(props: any, prevProps: any) {
     return !shallowEqual(props.watchProps, prevProps.watchProps);
   }
 
   createCategorySummaryFromDfCol = memoize(createCategorySummaryFromDfCol);
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   getSelectionState(categorySummary: any) {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'categoricalSelection' does not exist on ... Remove this comment to see the full error message
     const { categoricalSelection, metadataField } = this.props;
@@ -103,7 +89,6 @@ class Category extends React.PureComponent {
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleColorChange = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField } = this.props;
@@ -113,7 +98,6 @@ class Category extends React.PureComponent {
     });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleCategoryClick = () => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'annotations' does not exist on type 'Rea... Remove this comment to see the full error message
     const { annotations, metadataField, onExpansionChange } = this.props;
@@ -125,14 +109,12 @@ class Category extends React.PureComponent {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleCategoryKeyPress = (e: any) => {
     if (e.key === "Enter") {
       this.handleCategoryClick();
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleToggleAllClick = (categorySummary: any) => {
     const isChecked = this.getSelectionState(categorySummary);
     if (isChecked === "all") {
@@ -142,7 +124,6 @@ class Category extends React.PureComponent {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   fetchAsyncProps = async (props: any) => {
     const { annoMatrix, metadataField, colors } = props.watchProps;
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'crossfilter' does not exist on type 'Rea... Remove this comment to see the full error message
@@ -165,7 +146,6 @@ class Category extends React.PureComponent {
     };
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   async fetchData(annoMatrix: any, metadataField: any, colors: any) {
     /*
     fetch our data and the color-by data if appropriate, and then build a summary
@@ -200,7 +180,6 @@ class Category extends React.PureComponent {
     return [categoryData, categorySummary, colorData];
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   updateColorTable(colorData: any) {
     // color table, which may be null
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'schema' does not exist on type 'Readonly... Remove this comment to see the full error message
@@ -220,7 +199,6 @@ class Category extends React.PureComponent {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   toggleNone(categorySummary: any) {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField } = this.props;
@@ -234,7 +212,6 @@ class Category extends React.PureComponent {
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   toggleAll(categorySummary: any) {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch, metadataField } = this.props;
@@ -248,7 +225,6 @@ class Category extends React.PureComponent {
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     const {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'metadataField' does not exist on type 'R... Remove this comment to see the full error message
@@ -343,7 +319,6 @@ class Category extends React.PureComponent {
 
 export default Category;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const StillLoading = ({ metadataField, checkboxID }: any) => {
   /*
   We are still loading this category, so render a "busy" signal.
@@ -395,7 +370,6 @@ const StillLoading = ({ metadataField, checkboxID }: any) => {
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const ErrorLoading = ({ metadataField, error }: any) => {
   console.error(error); // log error to console as it is unexpected.
   return (

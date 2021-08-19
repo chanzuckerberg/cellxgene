@@ -10,22 +10,16 @@ import LabelInput from "../labelInput";
 import { labelPrompt } from "./labelUtil";
 import actions from "../../actions";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 type State = any;
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
 @connect((state) => ({
   writableCategoriesEnabled:
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     (state as any).config?.parameters?.annotations ?? false,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   schema: (state as any).annoMatrix?.schema,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   userInfo: (state as any).userInfo,
 }))
-// eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
 class Categories extends React.Component<{}, State> {
-  // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
   constructor(props: {}) {
     super(props);
     this.state = {
@@ -36,7 +30,6 @@ class Categories extends React.Component<{}, State> {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleCreateUserAnno = (e: any) => {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'dispatch' does not exist on type 'Readon... Remove this comment to see the full error message
     const { dispatch } = this.props;
@@ -55,12 +48,10 @@ class Categories extends React.Component<{}, State> {
     e.preventDefault();
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleEnableAnnoMode = () => {
     this.setState({ createAnnoModeActive: true });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleDisableAnnoMode = () => {
     this.setState({
       createAnnoModeActive: false,
@@ -69,12 +60,10 @@ class Categories extends React.Component<{}, State> {
     });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleModalDuplicateCategorySelection = (d: any) => {
     this.setState({ categoryToDuplicate: d });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   categoryNameError = (name: any) => {
     /*
         return false if this is a LEGAL/acceptable category name or NULL/empty string,
@@ -89,7 +78,6 @@ class Categories extends React.Component<{}, State> {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'schema' does not exist on type 'Readonly... Remove this comment to see the full error message
     const { schema } = this.props;
     const allCategoryNames = schema.annotations.obs.columns.map(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (c: any) => c.name
     );
     /* check category name syntax */
@@ -105,17 +93,14 @@ class Categories extends React.Component<{}, State> {
     return false;
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleChange = (name: any) => {
     this.setState({ newCategoryText: name });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleSelect = (name: any) => {
     this.setState({ newCategoryText: name });
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   instruction = (name: any) => {
     return labelPrompt(
       this.categoryNameError(name),
@@ -124,7 +109,6 @@ class Categories extends React.Component<{}, State> {
     );
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   onExpansionChange = (catName: any) => {
     const { expandedCats } = this.state;
     if (expandedCats.has(catName)) {
@@ -138,7 +122,6 @@ class Categories extends React.Component<{}, State> {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {
     const {
       createAnnoModeActive,
@@ -197,6 +180,7 @@ class Categories extends React.Component<{}, State> {
             />
           }
         />
+
         {writableCategoriesEnabled ? (
           <div style={{ marginBottom: 10 }}>
             <Tooltip
@@ -225,9 +209,9 @@ class Categories extends React.Component<{}, State> {
             </Tooltip>
           </div>
         ) : null}
+
         {/* READ ONLY CATEGORICAL FIELDS */}
         {/* this is duplicative but flat, could be abstracted */}
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS */}
         {allCategoryNames.map((catName: any) =>
           !schema.annotations.obsByName[catName].writable &&
           (schema.annotations.obsByName[catName].categories?.length > 1 ||
@@ -243,7 +227,6 @@ class Categories extends React.Component<{}, State> {
           ) : null
         )}
         {/* WRITEABLE FIELDS */}
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS */}
         {allCategoryNames.map((catName: any) =>
           schema.annotations.obsByName[catName].writable ? (
             <Category

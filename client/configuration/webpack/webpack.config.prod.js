@@ -1,31 +1,18 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const path = require("path");
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const webpack = require("webpack");
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const TerserJSPlugin = require("terser-webpack-plugin");
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const CleanCss = require("clean-css");
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const { merge } = require("webpack-merge");
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const babelOptions = require("../babel/babel.prod");
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const CspHashPlugin = require("./cspHashPlugin");
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const sharedConfig = require("./webpack.config.shared");
 
 const fonts = path.resolve("src/fonts");
