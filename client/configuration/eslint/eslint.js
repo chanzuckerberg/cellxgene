@@ -8,11 +8,7 @@ module.exports = {
     "plugin:eslint-comments/recommended",
     "plugin:@blueprintjs/recommended",
     "plugin:compat/recommended",
-    "plugin:jsx-a11y/recommended",
-    // (thuang) disable eslint formatting rules, so prettier can do its job
-    // Do not use `plugin:prettier/recommended` per doc below:
-    // https://prettier.io/docs/en/integrating-with-linters.html
-    "prettier",
+    "plugin:prettier/recommended",
   ],
   settings: {
     // AbortController is not supported in iOS Safari 10.3, Chrome 61

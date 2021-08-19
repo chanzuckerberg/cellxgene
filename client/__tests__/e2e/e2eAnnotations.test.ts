@@ -504,9 +504,11 @@ describe.each([
     const labels = await getAllByClass("categorical-row");
 
     const result = await Promise.all(
-      labels.map((label) =>
-        page.evaluate((element) => element.outerHTML, label)
-      )
+      labels.map((label) => {
+        return page.evaluate((element) => {
+          return element.outerHTML;
+        }, label);
+      })
     );
 
     expect(result).toMatchSnapshot();

@@ -23,7 +23,9 @@ export function _fetchResult(promise: any) {
     }
   );
 
-  res.status = () => _status;
+  res.status = () => {
+    return _status;
+  };
 
   return res;
 }

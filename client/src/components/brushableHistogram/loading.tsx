@@ -4,38 +4,41 @@ import { Button } from "@blueprintjs/core";
 import * as globals from "../../globals";
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-const StillLoading = ({ zebra, displayName }: any) => (
+const StillLoading = ({ zebra, displayName }: any) => {
   /*
     Render a loading indicator for the field.
     */
-  <div
-    data-testclass="gene-loading-spinner"
-    style={{
-      padding: globals.leftSidebarSectionPadding,
-      backgroundColor: zebra ? globals.lightestGrey : "white",
-    }}
-  >
+  return (
     <div
+      data-testclass="gene-loading-spinner"
       style={{
-        display: "flex",
-        justifyContent: "space-between",
-        justifyItems: "center",
-        alignItems: "center",
+        padding: globals.leftSidebarSectionPadding,
+        backgroundColor: zebra ? globals.lightestGrey : "white",
       }}
     >
-      <div style={{ minWidth: 30 }} />
-      <div style={{ display: "flex", alignSelf: "center" }}>
-        <span style={{ fontStyle: "italic" }}>{displayName}</span>
-      </div>
       <div
         style={{
           display: "flex",
-          justifyContent: "flex-end",
+          justifyContent: "space-between",
+          justifyItems: "center",
+          alignItems: "center",
         }}
       >
-        <Button minimal loading intent="primary" />
+        <div style={{ minWidth: 30 }} />
+        <div style={{ display: "flex", alignSelf: "center" }}>
+          <span style={{ fontStyle: "italic" }}>{displayName}</span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <Button minimal loading intent="primary" />
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
+
 export default StillLoading;

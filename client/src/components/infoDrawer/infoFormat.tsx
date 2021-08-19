@@ -100,14 +100,16 @@ const renderDatasetMetadata = (
           </tr>
         </thead>
         <tbody>
-          {Object.entries(corporaMetadata).map(([key, value]) => (
-            <tr {...{ key }}>
-              <td>{`${key}:`}</td>
-              {/* @ts-expect-error ts-migrate(2322) FIXME: Type 'unknown' is not assignable to type 'ReactNod... Remove this comment to see the full error message */}
-              <td>{value}</td>
-              <td />
-            </tr>
-          ))}
+          {Object.entries(corporaMetadata).map(([key, value]) => {
+            return (
+              <tr {...{ key }}>
+                <td>{`${key}:`}</td>
+                {/* @ts-expect-error ts-migrate(2322) FIXME: Type 'unknown' is not assignable to type 'ReactNod... Remove this comment to see the full error message */}
+                <td>{value}</td>
+                <td />
+              </tr>
+            );
+          })}
           {Array.from(singleValueCategories).reduce((elems, pair) => {
             // @ts-expect-error ts-migrate(2488) FIXME: Type 'unknown' must have a '[Symbol.iterator]()' m... Remove this comment to see the full error message
             const [category, value] = pair;

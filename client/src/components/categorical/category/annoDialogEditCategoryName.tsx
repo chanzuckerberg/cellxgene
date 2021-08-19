@@ -105,12 +105,13 @@ class AnnoDialogEditCategoryName extends React.PureComponent<{}, State> {
   };
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  instruction = (name: any) =>
-    labelPrompt(
+  instruction = (name: any) => {
+    return labelPrompt(
       this.editedCategoryNameError(name),
       "New, unique category name",
       ":"
     );
+  };
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   allCategoryNames() {

@@ -35,16 +35,18 @@ class DuplicateCategorySelect extends React.PureComponent<{}, State> {
             [] /* this is a placeholder, could be  a subcomponent to avoid this */
           }
           filterable={false}
-          itemRenderer={(d, { handleClick }) => (
-            <MenuItem
-              data-testclass="duplicate-category-dropdown-option"
-              onClick={handleClick}
-              // @ts-expect-error ts-migrate(2322) FIXME: Type 'unknown' is not assignable to type 'Key | nu... Remove this comment to see the full error message
-              key={d}
-              // @ts-expect-error ts-migrate(2322) FIXME: Type 'unknown' is not assignable to type 'ReactNod... Remove this comment to see the full error message
-              text={d}
-            />
-          )}
+          itemRenderer={(d, { handleClick }) => {
+            return (
+              <MenuItem
+                data-testclass="duplicate-category-dropdown-option"
+                onClick={handleClick}
+                // @ts-expect-error ts-migrate(2322) FIXME: Type 'unknown' is not assignable to type 'Key | nu... Remove this comment to see the full error message
+                key={d}
+                // @ts-expect-error ts-migrate(2322) FIXME: Type 'unknown' is not assignable to type 'ReactNod... Remove this comment to see the full error message
+                text={d}
+              />
+            );
+          }}
           noResults={<MenuItem disabled text="No results." />}
           onItemSelect={(d) => {
             handleModalDuplicateCategorySelection(d);

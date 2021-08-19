@@ -66,7 +66,9 @@ class RenameGeneset extends React.PureComponent<{}, State> {
   };
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  genesetNameError = () => false;
+  genesetNameError = () => {
+    return false;
+  };
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   handleChange = (e: any) => {
@@ -79,11 +81,14 @@ class RenameGeneset extends React.PureComponent<{}, State> {
   };
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  validate = (genesetName: any, genesets: any) =>
-    !genesets.has(genesetName) &&
-    // eslint-disable-next-line no-control-regex -- unicode 0-31 127-65535
-    genesetName.match(/^\s|[\u0000-\u001F\u007F-\uFFFF]|[ ]{2,}|^$|\s$/g)
-      ?.length;
+  validate = (genesetName: any, genesets: any) => {
+    return (
+      !genesets.has(genesetName) &&
+      // eslint-disable-next-line no-control-regex -- unicode 0-31 127-65535
+      genesetName.match(/^\s|[\u0000-\u001F\u007F-\uFFFF]|[ ]{2,}|^$|\s$/g)
+        ?.length
+    );
+  };
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   render() {

@@ -251,10 +251,12 @@ class Scatterplot extends React.PureComponent<{}, State> {
   };
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
-  getViewportDimensions = () => ({
-    height: window.innerHeight,
-    width: window.innerWidth,
-  });
+  getViewportDimensions = () => {
+    return {
+      height: window.innerHeight,
+      width: window.innerWidth,
+    };
+  };
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleResize = () => {

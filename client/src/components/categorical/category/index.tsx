@@ -342,54 +342,57 @@ class Category extends React.PureComponent {
 export default Category;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-const StillLoading = ({ metadataField, checkboxID }: any) => (
+const StillLoading = ({ metadataField, checkboxID }: any) => {
   /*
   We are still loading this category, so render a "busy" signal.
   */
-  <div
-    style={{
-      maxWidth: globals.maxControlsWidth,
-    }}
-  >
+  return (
     <div
       style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "baseline",
+        maxWidth: globals.maxControlsWidth,
       }}
     >
       <div
         style={{
           display: "flex",
-          justifyContent: "flex-start",
-          alignItems: "flex-start",
+          justifyContent: "space-between",
+          alignItems: "baseline",
         }}
       >
-        <label
-          htmlFor={checkboxID}
-          className={`${Classes.CONTROL} ${Classes.CHECKBOX}`}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-start",
+            alignItems: "flex-start",
+          }}
         >
-          <input disabled id={checkboxID} checked type="checkbox" />
-          <span className={Classes.CONTROL_INDICATOR} />
-        </label>
-        <Truncate>
-          <span
-            style={{
-              cursor: "pointer",
-              display: "inline-block",
-              width: LABEL_WIDTH,
-            }}
+          <label
+            htmlFor={checkboxID}
+            className={`${Classes.CONTROL} ${Classes.CHECKBOX}`}
           >
-            {metadataField}
-          </span>
-        </Truncate>
-      </div>
-      <div>
-        <Button minimal loading intent="primary" />
+            <input disabled id={checkboxID} checked type="checkbox" />
+            <span className={Classes.CONTROL_INDICATOR} />
+          </label>
+          <Truncate>
+            <span
+              style={{
+                cursor: "pointer",
+                display: "inline-block",
+                width: LABEL_WIDTH,
+              }}
+            >
+              {metadataField}
+            </span>
+          </Truncate>
+        </div>
+        <div>
+          <Button minimal loading intent="primary" />
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const ErrorLoading = ({ metadataField, error }: any) => {
   console.error(error); // log error to console as it is unexpected.

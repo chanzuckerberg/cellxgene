@@ -11,10 +11,12 @@ import CreateGenesetDialogue from "./menus/createGenesetDialogue";
 type State = any;
 
 // @ts-expect-error ts-migrate(1238) FIXME: Unable to resolve signature of class decorator whe... Remove this comment to see the full error message
-@connect((state) => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-  genesets: (state as any).genesets.genesets,
-}))
+@connect((state) => {
+  return {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+    genesets: (state as any).genesets.genesets,
+  };
+})
 // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
 class GeneExpression extends React.Component<{}, State> {
   // eslint-disable-next-line @typescript-eslint/ban-types --- FIXME: disabled temporarily on migrate to TS.
@@ -51,17 +53,18 @@ class GeneExpression extends React.Component<{}, State> {
     dispatch({ type: "geneset: activate add new geneset mode" });
     if (!geneSetsExpanded) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-      this.setState((state: any) => ({ ...state, geneSetsExpanded: true }));
+      this.setState((state: any) => {
+        return { ...state, geneSetsExpanded: true };
+      });
     }
   };
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
   handleExpandGeneSets = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    this.setState((state: any) => ({
-      ...state,
-      geneSetsExpanded: !state.geneSetsExpanded,
-    }));
+    this.setState((state: any) => {
+      return { ...state, geneSetsExpanded: !state.geneSetsExpanded };
+    });
   };
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.

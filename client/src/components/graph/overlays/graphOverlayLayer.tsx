@@ -23,7 +23,7 @@ export default class GraphOverlayLayer extends PureComponent<{}, State> {
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  matrixToTransformString = (m: any) =>
+  matrixToTransformString = (m: any) => {
     /* 
       Translates the gl-matrix mat3 to SVG matrix transform style
 
@@ -32,20 +32,21 @@ export default class GraphOverlayLayer extends PureComponent<{}, State> {
         b  d  f / [a, b, 0, c, d, 0, e, f, 1] =>  matrix(a, b, c, d, e, f) / matrix(sx, 0, 0, sy, tx, ty) / matrix(m[0] m[3] m[1] m[4] m[6] m[7])
         0  0  1      
     */
-    `matrix(${m[0]} ${m[1]} ${m[3]} ${m[4]} ${m[6]} ${m[7]})`;
+    return `matrix(${m[0]} ${m[1]} ${m[3]} ${m[4]} ${m[6]} ${m[7]})`;
+  };
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  reverseMatrixScaleTransformString = (m: any) =>
-    `matrix(${1 / m[0]} 0 0 ${1 / m[4]} 0 0)`;
+  reverseMatrixScaleTransformString = (m: any) => {
+    return `matrix(${1 / m[0]} 0 0 ${1 / m[4]} 0 0)`;
+  };
 
   // This is passed to all children, should be called when an overlay's display state is toggled along with the overlay name and its new display state in boolean form
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   overlaySetShowing = (overlay: any, displaying: any) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    this.setState((state: any) => ({
-      ...state,
-      display: { ...state.display, [overlay]: displaying },
-    }));
+    this.setState((state: any) => {
+      return { ...state, display: { ...state.display, [overlay]: displaying } };
+    });
   };
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
