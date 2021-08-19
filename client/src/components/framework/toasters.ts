@@ -26,10 +26,8 @@ export const keepAroundErrorToast = (message: any) =>
 /*
 a hard network error
 */
-export const postNetworkErrorToast = (
-  message: string,
-  key: string | undefined = undefined
-): string =>
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+export const postNetworkErrorToast = (message: any, key = undefined) =>
   ToastTopCenter.show(
     {
       message,

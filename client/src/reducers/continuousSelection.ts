@@ -1,23 +1,7 @@
-import type { Action } from "redux";
-
 import { makeContinuousDimensionName } from "../util/nameCreators";
 
-import type { ContinuousNamespace } from "../util/nameCreators";
-
-export interface ContinuousSelectionAction extends Action<string> {
-  continuousNamespace: ContinuousNamespace;
-  selection: string;
-  range: [number, number];
-}
-
-export interface ContinuousSelectionState {
-  [name: string]: [number, number];
-}
-
-const ContinuousSelection = (
-  state: ContinuousSelectionState = {},
-  action: ContinuousSelectionAction
-): ContinuousSelectionState => {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+const ContinuousSelection = (state = {}, action: any) => {
   switch (action.type) {
     case "reset subset":
     case "subset to selection":
@@ -41,6 +25,7 @@ const ContinuousSelection = (
         action.continuousNamespace,
         action.selection
       );
+      // @ts-expect-error ts-migrate(2537) FIXME: Type '{}' has no matching index signature for type... Remove this comment to see the full error message
       const { [name]: deletedField, ...newState } = state;
       return newState;
     }

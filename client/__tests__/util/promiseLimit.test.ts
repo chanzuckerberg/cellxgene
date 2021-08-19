@@ -52,7 +52,9 @@ describe("PromiseLimit", () => {
       running -= 1;
     };
 
-    await Promise.all(range(10).map(() => plimit.add(() => callback())));
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 1.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+    await Promise.all(range(10).map((i: any) => plimit.add(() => callback(i))));
 
     expect(maxRunning).toEqual(2);
   });

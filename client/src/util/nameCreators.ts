@@ -13,40 +13,43 @@ anno matrix namespaces. It is still used by the component tier.
 
 */
 
-const makeDimensionName = (namespace: string, key: string): string =>
-  `${namespace}_${key}`;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+const makeDimensionName = (namespace: any, key: any) => `${namespace}_${key}`;
 
-export const layoutDimensionName = (key: string): string =>
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+export const layoutDimensionName = (key: any) =>
   makeDimensionName("layout", key);
-
-export const obsAnnoDimensionName = (key: string): string =>
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+export const obsAnnoDimensionName = (key: any) =>
   makeDimensionName("obsAnno", key);
-
-export const diffexpDimensionName = (key: string): string =>
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+export const diffexpDimensionName = (key: any) =>
   makeDimensionName("varData_diffexp", key);
-
-export const userDefinedDimensionName = (key: string): string =>
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+export const userDefinedDimensionName = (key: any) =>
   makeDimensionName("varData_userDefined", key);
-
-export const geneSetSummaryDimensionName = (key: string): string =>
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+export const geneSetSummaryDimensionName = (key: any) =>
   makeDimensionName("geneSetSummary", key);
 
-export interface ContinuousNamespace {
-  isObs?: boolean;
-  isDiffExp?: boolean;
-  isUserDefined?: boolean;
-  isGeneSetSummary?: boolean;
-}
-
 /*
+    continuousNamespace = {
+    isObs: true,
+    isDiffExp: false,
+    isUserDefined: false,
+    isGeneSet: false,
+  }
 
   ie., makeContinuousDimensionName(continuousNamespace = {isObs: true}, "total_reads")
   see: histogram brush, as it doesn't know what type of continuous it was with only field
 */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export const makeContinuousDimensionName = (
-  continuousNamespace: ContinuousNamespace,
-  key: string
-): string => {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  continuousNamespace: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  key: any
+) => {
   let name;
   if (continuousNamespace.isObs) {
     name = obsAnnoDimensionName(key);

@@ -6,11 +6,8 @@ If undefined or empty array, or array contains only non-finite numbers,
 will return [undefined, undefined]
 */
 
-import type { TypedArray } from "../common/types/arraytypes";
-
-function finiteExtent(
-  tarr: TypedArray
-): [number, number] | [undefined, undefined] {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+function finiteExtent(tarr: any) {
   let min;
   let max;
   let i;
@@ -24,17 +21,14 @@ function finiteExtent(
       break;
     }
   }
-  if (min !== undefined && max !== undefined) {
-    for (; i < tarr.length; i += 1) {
-      const val = tarr[i];
-      if (Number.isFinite(val)) {
-        if (min > val) min = val;
-        if (max < val) max = val;
-      }
+  for (; i < tarr.length; i += 1) {
+    const val = tarr[i];
+    if (Number.isFinite(val)) {
+      if (min > val) min = val;
+      if (max < val) max = val;
     }
-    return [min, max];
   }
-  return [undefined, undefined];
+  return [min, max];
 }
 
 export default finiteExtent;

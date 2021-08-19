@@ -1,14 +1,15 @@
 import sortBy from "lodash.sortby";
 /* XXX: cough, cough, ... */
 import { postNetworkErrorToast } from "../components/framework/toasters";
-import type { AppDispatch, RootState } from "../reducers";
 
 /*
 dispatch an action error to the user.   Currently we use
 async toasts.
 */
-let networkErrorToastKey: string | null = null;
-export const dispatchNetworkErrorMessageToUser = (message: string): void => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+let networkErrorToastKey: any = null;
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+export const dispatchNetworkErrorMessageToUser = (message: any) => {
   if (!networkErrorToastKey) {
     networkErrorToastKey = postNetworkErrorToast(message);
   } else {
@@ -19,12 +20,12 @@ export const dispatchNetworkErrorMessageToUser = (message: string): void => {
 /*
 Catch unexpected errors and make sure we don't lose them!
 */
-export function catchErrorsWrap(
-  fn: (dispatch: AppDispatch, getState: () => RootState) => Promise<void>,
-  dispatchToUser = false
-) {
-  return (dispatch: AppDispatch, getState: () => RootState): void => {
-    fn(dispatch, getState).catch((error: Error) => {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+export function catchErrorsWrap(fn: any, dispatchToUser = false) {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  return (dispatch: any, getState: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+    fn(dispatch, getState).catch((error: any) => {
       console.error(error);
       if (dispatchToUser) {
         dispatchNetworkErrorMessageToUser(error.message);
@@ -38,10 +39,8 @@ export function catchErrorsWrap(
  * Wrapper to perform async fetch with some modest error handling
  * and decoding.  Arguments are identical to standard fetch.
  */
-export const doFetch = async (
-  url: string,
-  init?: RequestInit
-): Promise<Response> => {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+export const doFetch = async (url: any, init = {}) => {
   try {
     // add defaults to the fetch init param.
     init = {
@@ -49,11 +48,13 @@ export const doFetch = async (
       credentials: "include",
       ...init,
     };
-    const acceptType = (init.headers as Headers)?.get("Accept");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+    const acceptType = (init as any).headers?.get("Accept");
     const res = await fetch(url, init);
     if (
       res.ok &&
-      (!acceptType || res.headers?.get("Content-Type")?.includes(acceptType))
+      // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
+      (!acceptType || res.headers.get("Content-Type").includes(acceptType))
     ) {
       return res;
     }
@@ -73,10 +74,8 @@ export const doFetch = async (
 /*
 Wrapper to perform an async fetch and JSON decode response.
 */
-export const doJsonRequest = async <T = unknown>(
-  url: string,
-  init?: RequestInit
-): Promise<T> => {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+export const doJsonRequest = async (url: any, init = {}) => {
   const res = await doFetch(url, {
     ...init,
     headers: new Headers({ Accept: "application/json" }),
@@ -87,10 +86,8 @@ export const doJsonRequest = async <T = unknown>(
 /*
 Wrapper to perform an async fetch for binary data.
 */
-export const doBinaryRequest = async (
-  url: string,
-  init?: RequestInit
-): Promise<ArrayBuffer> => {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+export const doBinaryRequest = async (url: any, init = {}) => {
   const res = await doFetch(url, {
     ...init,
     headers: new Headers({ Accept: "application/octet-stream" }),
@@ -113,11 +110,13 @@ Parameters:
 
 So [1, 2, 3, 4, 10, 11, 14] -> [ [1, 4], [10, 11], 14]
 */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export const rangeEncodeIndices = (
-  indices: Array<number>,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  indices: any,
   minRangeLength = 3,
   sorted = false
-): Array<number | [number, number]> => {
+) => {
   if (indices.length === 0) {
     return indices;
   }

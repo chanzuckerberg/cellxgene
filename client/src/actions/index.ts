@@ -1,4 +1,3 @@
-import type { Config } from "../globals";
 import * as globals from "../globals";
 import { AnnoMatrixLoader, AnnoMatrixObsCrossfilter } from "../annoMatrix";
 import {
@@ -12,9 +11,6 @@ import * as annoActions from "./annotation";
 import * as viewActions from "./viewStack";
 import * as embActions from "./embedding";
 import * as genesetActions from "./geneset";
-import { AppDispatch, RootState } from "../reducers";
-import { EmbeddingSchema, Schema } from "../common/types/schema";
-import { UserInfoPayload } from "../reducers/userInfo";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function setGlobalConfig(config: any) {
@@ -40,34 +36,35 @@ async function userColorsFetchAndLoad(dispatch: any) {
   );
 }
 
-async function schemaFetch(): Promise<{ schema: Schema }> {
-  return fetchJson<{ schema: Schema }>("schema");
+async function schemaFetch() {
+  return fetchJson("schema");
 }
 
-async function configFetch(dispatch: AppDispatch): Promise<Config> {
-  const response = await fetchJson<{ config: globals.Config }>("config");
-  const config = { ...globals.configDefaults, ...response.config };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+async function configFetch(dispatch: any) {
+  return fetchJson("config").then((response) => {
+    const config = { ...globals.configDefaults, ...response.config };
 
-  setGlobalConfig(config);
+    setGlobalConfig(config);
 
-  dispatch({
-    type: "configuration load complete",
-    config,
+    dispatch({
+      type: "configuration load complete",
+      config,
+    });
+    return config;
   });
-  return config;
 }
 
-async function userInfoFetch(dispatch: AppDispatch): Promise<UserInfoPayload> {
-  return fetchJson<{ userinfo: UserInfoPayload }>("userinfo").then(
-    (response) => {
-      const { userinfo: userInfo } = response || {};
-      dispatch({
-        type: "userInfo load complete",
-        userInfo,
-      });
-      return userInfo;
-    }
-  );
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+async function userInfoFetch(dispatch: any) {
+  return fetchJson("userinfo").then((response) => {
+    const { userinfo: userInfo } = response || {};
+    dispatch({
+      type: "userInfo load complete",
+      userInfo,
+    });
+    return userInfo;
+  });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
@@ -107,17 +104,17 @@ function prefetchEmbeddings(annoMatrix: any) {
 /*
 Application bootstrap
 */
-const doInitialDataLoad = (): ((
-  dispatch: AppDispatch,
-  getState: () => RootState
-) => void) =>
-  catchErrorsWrap(async (dispatch: AppDispatch) => {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
+const doInitialDataLoad = () =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  catchErrorsWrap(async (dispatch: any) => {
     dispatch({ type: "initial data load start" });
 
     try {
       const [config, schema] = await Promise.all([
         configFetch(dispatch),
-        schemaFetch(),
+        // @ts-expect-error ts-migrate(2554) FIXME: Expected 0 arguments, but got 1.
+        schemaFetch(dispatch),
         userColorsFetchAndLoad(dispatch),
         userInfoFetch(dispatch),
       ]);
@@ -140,7 +137,8 @@ const doInitialDataLoad = (): ((
       const layoutSchema = schema?.schema?.layout?.obs ?? [];
       if (
         defaultEmbedding &&
-        layoutSchema.some((s: EmbeddingSchema) => s.name === defaultEmbedding)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+        layoutSchema.some((s: any) => s.name === defaultEmbedding)
       ) {
         dispatch(embActions.layoutChoiceAction(defaultEmbedding));
       }
@@ -190,89 +188,87 @@ const dispatchDiffExpErrors = (dispatch: any, response: any) => {
   }
 };
 
-const requestDifferentialExpression =
-  (
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-    set1: any,
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-    set2: any,
-    num_genes = 50
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  ) =>
+const requestDifferentialExpression = (
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  async (dispatch: any, getState: any) => {
-    dispatch({ type: "request differential expression started" });
-    try {
-      /*
+  set1: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  set2: any,
+  num_genes = 50
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+) => async (dispatch: any, getState: any) => {
+  dispatch({ type: "request differential expression started" });
+  try {
+    /*
     Steps:
     1. get the most differentially expressed genes
     2. get expression data for each
     */
-      const { annoMatrix } = getState();
-      const varIndexName = annoMatrix.schema.annotations.var.index;
+    const { annoMatrix } = getState();
+    const varIndexName = annoMatrix.schema.annotations.var.index;
 
-      // Legal values are null, Array or TypedArray.  Null is initial state.
-      if (!set1) set1 = [];
-      if (!set2) set2 = [];
+    // Legal values are null, Array or TypedArray.  Null is initial state.
+    if (!set1) set1 = [];
+    if (!set2) set2 = [];
 
-      // These lines ensure that we convert any TypedArray to an Array.
-      // This is necessary because JSON.stringify() does some very strange
-      // things with TypedArrays (they are marshalled to JSON objects, rather
-      // than being marshalled as a JSON array).
-      set1 = Array.isArray(set1) ? set1 : Array.from(set1);
-      set2 = Array.isArray(set2) ? set2 : Array.from(set2);
+    // These lines ensure that we convert any TypedArray to an Array.
+    // This is necessary because JSON.stringify() does some very strange
+    // things with TypedArrays (they are marshalled to JSON objects, rather
+    // than being marshalled as a JSON array).
+    set1 = Array.isArray(set1) ? set1 : Array.from(set1);
+    set2 = Array.isArray(set2) ? set2 : Array.from(set2);
 
-      const res = await fetch(
-        `${globals.API.prefix}${globals.API.version}diffexp/obs`,
-        {
-          method: "POST",
-          headers: new Headers({
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          }),
-          body: JSON.stringify({
-            mode: "topN",
-            count: num_genes,
-            set1: { filter: { obs: { index: set1 } } },
-            set2: { filter: { obs: { index: set2 } } },
-          }),
-          credentials: "include",
-        }
-      );
-
-      if (!res.ok || res.headers.get("Content-Type") !== "application/json") {
-        return dispatchDiffExpErrors(dispatch, res);
+    const res = await fetch(
+      `${globals.API.prefix}${globals.API.version}diffexp/obs`,
+      {
+        method: "POST",
+        headers: new Headers({
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({
+          mode: "topN",
+          count: num_genes,
+          set1: { filter: { obs: { index: set1 } } },
+          set2: { filter: { obs: { index: set2 } } },
+        }),
+        credentials: "include",
       }
+    );
 
-      const response = await res.json();
-      const varIndex = await annoMatrix.fetch("var", varIndexName);
-      const diffexpLists = { negative: [], positive: [] };
-      for (const polarity of Object.keys(diffexpLists)) {
-        // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-        diffexpLists[polarity] = response[polarity].map((v: any) => [
-          varIndex.at(v[0], varIndexName),
-          ...v.slice(1),
-        ]);
-      }
-
-      /* then send the success case action through */
-      return dispatch({
-        type: "request differential expression success",
-        data: diffexpLists,
-      });
-    } catch (error) {
-      return dispatch({
-        type: "request differential expression error",
-        error,
-      });
+    if (!res.ok || res.headers.get("Content-Type") !== "application/json") {
+      return dispatchDiffExpErrors(dispatch, res);
     }
-  };
 
-function fetchJson<T>(pathAndQuery: string): Promise<T> {
-  return doJsonRequest<T>(
+    const response = await res.json();
+    const varIndex = await annoMatrix.fetch("var", varIndexName);
+    const diffexpLists = { negative: [], positive: [] };
+    for (const polarity of Object.keys(diffexpLists)) {
+      // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+      diffexpLists[polarity] = response[polarity].map((v: any) => [
+        varIndex.at(v[0], varIndexName),
+        ...v.slice(1),
+      ]);
+    }
+
+    /* then send the success case action through */
+    return dispatch({
+      type: "request differential expression success",
+      data: diffexpLists,
+    });
+  } catch (error) {
+    return dispatch({
+      type: "request differential expression error",
+      error,
+    });
+  }
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+function fetchJson(pathAndQuery: any) {
+  return doJsonRequest(
     `${globals.API.prefix}${globals.API.version}${pathAndQuery}`
-  ) as Promise<T>;
+  );
 }
 
 export default {
