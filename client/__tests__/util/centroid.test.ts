@@ -5,7 +5,7 @@ import quantile from "../../src/util/quantile";
 import { matrixFBSToDataframe } from "../../src/util/stateManager/matrix";
 import * as REST from "./stateManager/sampleResponses";
 import { indexEntireSchema } from "../../src/util/stateManager/schemaHelpers";
-import { normalizeWritableCategoricalSchema } from "../../src/annoMatrix/normalize";
+import { _normalizeCategoricalSchema } from "../../src/annoMatrix/schema";
 
 describe("centroid", () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
@@ -20,7 +20,7 @@ describe("centroid", () => {
     obsAnnotations = matrixFBSToDataframe(REST.annotationsObs);
     obsLayout = matrixFBSToDataframe(REST.layoutObs);
 
-    normalizeWritableCategoricalSchema(
+    _normalizeCategoricalSchema(
       schema.annotations.obsByName.field3,
       obsAnnotations.col("field3")
     );
