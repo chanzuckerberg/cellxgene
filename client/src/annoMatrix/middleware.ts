@@ -11,24 +11,17 @@ Undoable metareducer and the AnnoMatrix private API.  It would be helpful
 to make the Undoable interface better factored.
 */
 
-import { Action, Dispatch, MiddlewareAPI } from "redux";
-import AnnoMatrix from "./annoMatrix";
-import { GCHints } from "../common/types/entities";
-
-const annoMatrixGC =
-  (store: MiddlewareAPI) =>
-  // GC middleware doesn't add any extra types to dispatch; it just executes GC and continues.
-  (next: Dispatch) =>
-  (action: Action): Action => {
-    if (_itIsTimeForGC()) {
-      _doGC(store);
-    }
-    return next(action);
-  };
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+const annoMatrixGC = (store: any) => (next: any) => (action: any) => {
+  if (_itIsTimeForGC()) {
+    _doGC(store);
+  }
+  return next(action);
+};
 
 let lastGCTime = 0;
 const InterGCDelayMS = 30 * 1000; // 30 seconds
-function _itIsTimeForGC(): boolean {
+function _itIsTimeForGC() {
   /*
   we don't want to run GC on every dispatch, so throttle it a bit.
 
@@ -42,22 +35,20 @@ function _itIsTimeForGC(): boolean {
   return false;
 }
 
-function _doGC(store: MiddlewareAPI): void {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+function _doGC(store: any) {
   const state = store.getState();
 
   // these should probably be a function imported from undoable.js, etc, as
-  // they have overly intimate knowledge of our reducers.
+  // they have overly intimiate knowledge of our reducers.
   const undoablePast = state["@@undoable/past"];
   const undoableFuture = state["@@undoable/future"];
   const undoableStack = undoablePast
     .concat(undoableFuture)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- TODO revisit: waiting for typings from /reducers
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     .flatMap((snapshot: any) =>
-      snapshot
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- TODO revisit: waiting for typings from /reducers
-        .filter((v: any) => v[0] === "annoMatrix")
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any --- TODO revisit: waiting for typings from /reducers
-        .map((v: any) => v[1])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+      snapshot.filter((v: any) => v[0] === "annoMatrix").map((v: any) => v[1])
     );
   const currentAnnoMatrix = state.annoMatrix;
 
@@ -65,16 +56,18 @@ function _doGC(store: MiddlewareAPI): void {
   We want to identify those matrixes currently "hot", ie, linked from the current annoMatrix,
   as our current gc algo is more aggressive with those not hot.
   */
-  const allAnnoMatrices = new Map<AnnoMatrix, GCHints>(
-    undoableStack.map((m: AnnoMatrix) => [m, { isHot: false }])
+  const allAnnoMatrices = new Map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+    undoableStack.map((m: any) => [m, { isHot: false }])
   );
   let am = currentAnnoMatrix;
-  while (am?.isView) {
+  while (am) {
     allAnnoMatrices.set(am, { isHot: true });
     am = am.viewOf;
   }
-  allAnnoMatrices.forEach((hints, annoMatrix: AnnoMatrix) =>
-    annoMatrix._gc(hints)
+  allAnnoMatrices.forEach((hints, annoMatrix) =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+    (annoMatrix as any)._gc(hints)
   );
 }
 

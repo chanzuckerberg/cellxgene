@@ -7,7 +7,6 @@ import { ThunkAction } from "redux-thunk";
 import { AnnoMatrixObsCrossfilter } from "../annoMatrix";
 import type { AppDispatch, RootState } from "../reducers";
 import { _setEmbeddingSubset } from "../util/stateManager/viewStackHelpers";
-import { Field } from "../common/types/schema";
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
 export async function _switchEmbedding(
@@ -27,7 +26,7 @@ export async function _switchEmbedding(
   const obsCrossfilter = await new AnnoMatrixObsCrossfilter(
     annoMatrix,
     prevCrossfilter.obsCrossfilter
-  ).select(Field.emb, newEmbeddingName, {
+  ).select("emb", newEmbeddingName, {
     mode: "all",
   });
   return [annoMatrix, obsCrossfilter];
@@ -42,19 +41,17 @@ export const layoutChoiceAction: ActionCreator<
   On layout choice, make sure we have selected all on the previous layout, AND the new
   layout.
   */
-  const {
-    annoMatrix: prevAnnoMatrix,
-    obsCrossfilter: prevCrossfilter,
-  } = getState();
-  const [annoMatrix, obsCrossfilter] = await _switchEmbedding(
-    prevAnnoMatrix,
-    prevCrossfilter,
-    newLayoutChoice
-  );
-  dispatch({
-    type: "set layout choice",
-    layoutChoice: newLayoutChoice,
-    obsCrossfilter,
-    annoMatrix,
-  });
-};
+    const { annoMatrix: prevAnnoMatrix, obsCrossfilter: prevCrossfilter } =
+      getState();
+    const [annoMatrix, obsCrossfilter] = await _switchEmbedding(
+      prevAnnoMatrix,
+      prevCrossfilter,
+      newLayoutChoice
+    );
+    dispatch({
+      type: "set layout choice",
+      layoutChoice: newLayoutChoice,
+      obsCrossfilter,
+      annoMatrix,
+    });
+  };

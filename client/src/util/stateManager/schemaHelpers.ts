@@ -14,7 +14,6 @@ import {
   EmbeddingSchema,
   AnnotationColumnSchema,
 } from "../../common/types/schema";
-import { LabelType } from "../dataframe/types";
 
 /*
 System wide schema assumptions:
@@ -76,7 +75,7 @@ function _reindexObsLayout(schema: Schema) {
   return schema;
 }
 
-export function removeObsAnnoColumn(schema: Schema, name: LabelType): Schema {
+export function removeObsAnnoColumn(schema: Schema, name: string): Schema {
   const newSchema = _copyObsAnno(schema);
   newSchema.annotations.obs.columns = schema.annotations.obs.columns.filter(
     (v) => v.name !== name
@@ -98,7 +97,7 @@ export function addObsAnnoColumn(
 
 export function removeObsAnnoCategory(
   schema: Schema,
-  name: LabelType,
+  name: string,
   category: string
 ): Schema {
   /* remove a category from a categorical annotation */

@@ -4,34 +4,13 @@ import {
   _whereCacheCreate,
   _whereCacheMerge,
 } from "../../../src/annoMatrix/whereCache";
-import { Field, Schema } from "../../../src/common/types/schema";
-import { Query } from "../../../src/annoMatrix/query";
 
-const schema = {} as Schema;
+const schema = {};
 
 describe("whereCache", () => {
   test("whereCacheGet - where query, missing cache values", () => {
     expect(
-      _whereCacheGet({}, schema, Field.X, {
-        where: {
-          field: Field.var,
-          column: "foo",
-          value: "bar",
-        },
-      })
-    ).toEqual([undefined]);
-    expect(
-      _whereCacheGet({}, schema, Field.X, {
-        summarize: {
-          method: "mean",
-          field: Field.var,
-          column: "foo",
-          values: ["bar"],
-        },
-      })
-    ).toEqual([undefined]);
-    expect(
-      _whereCacheGet({ where: { X: {} } }, schema, Field.X, {
+      _whereCacheGet({}, schema, "X", {
         where: {
           field: "var",
           column: "foo",
@@ -40,7 +19,25 @@ describe("whereCache", () => {
       })
     ).toEqual([undefined]);
     expect(
-      _whereCacheGet({ where: { X: { var: new Map() } } }, schema, Field.X, {
+      _whereCacheGet({}, schema, "X", {
+        summarize: {
+          field: "var",
+          column: "foo",
+          values: ["bar"],
+        },
+      })
+    ).toEqual([undefined]);
+    expect(
+      _whereCacheGet({ where: { X: {} } }, schema, "X", {
+        where: {
+          field: "var",
+          column: "foo",
+          value: "bar",
+        },
+      })
+    ).toEqual([undefined]);
+    expect(
+      _whereCacheGet({ where: { X: { var: new Map() } } }, schema, "X", {
         where: {
           field: "var",
           column: "foo",
@@ -52,7 +49,7 @@ describe("whereCache", () => {
       _whereCacheGet(
         { where: { X: { var: new Map([["foo", new Map()]]) } } },
         schema,
-        Field.X,
+        "X",
         {
           where: {
             field: "var",
@@ -66,7 +63,7 @@ describe("whereCache", () => {
 
   test("whereCacheGet - summarize query, missing cache values", () => {
     expect(
-      _whereCacheGet({}, schema, Field.X, {
+      _whereCacheGet({}, schema, "X", {
         summarize: {
           method: "mean",
           field: "var",
@@ -79,7 +76,7 @@ describe("whereCache", () => {
       _whereCacheGet(
         { summarize: { X: { mean: { var: new Map() } } } },
         schema,
-        Field.X,
+        "X",
         {
           summarize: {
             method: "mean",
@@ -125,7 +122,7 @@ describe("whereCache", () => {
     };
 
     expect(
-      _whereCacheGet(whereCache, schema, Field.X, {
+      _whereCacheGet(whereCache, schema, "X", {
         where: {
           field: "var",
           column: "foo",
@@ -134,7 +131,7 @@ describe("whereCache", () => {
       })
     ).toEqual([0]);
     expect(
-      _whereCacheGet(whereCache, schema, Field.X, {
+      _whereCacheGet(whereCache, schema, "X", {
         summarize: {
           method: "mean",
           field: "var",
@@ -144,7 +141,7 @@ describe("whereCache", () => {
       })
     ).toEqual([0]);
     expect(
-      _whereCacheGet(whereCache, schema, Field.X, {
+      _whereCacheGet(whereCache, schema, "X", {
         where: {
           field: "var",
           column: "foo",
@@ -153,7 +150,7 @@ describe("whereCache", () => {
       })
     ).toEqual([1, 2]);
     expect(
-      _whereCacheGet(whereCache, schema, Field.X, {
+      _whereCacheGet(whereCache, schema, "X", {
         summarize: {
           method: "mean",
           field: "var",
@@ -162,12 +159,9 @@ describe("whereCache", () => {
         },
       })
     ).toEqual([1, 2]);
+    expect(_whereCacheGet(whereCache, schema, "Y", {})).toEqual([undefined]);
     expect(
-      // Force invalid field value Y
-      _whereCacheGet(whereCache, schema, "Y" as Field, {} as Query)
-    ).toEqual([undefined]);
-    expect(
-      _whereCacheGet(whereCache, schema, Field.X, {
+      _whereCacheGet(whereCache, schema, "X", {
         where: {
           field: "whoknows",
           column: "whatever",
@@ -176,7 +170,7 @@ describe("whereCache", () => {
       })
     ).toEqual([undefined]);
     expect(
-      _whereCacheGet(whereCache, schema, Field.X, {
+      _whereCacheGet(whereCache, schema, "X", {
         where: {
           field: "var",
           column: "whatever",
@@ -185,7 +179,7 @@ describe("whereCache", () => {
       })
     ).toEqual([undefined]);
     expect(
-      _whereCacheGet(whereCache, schema, Field.X, {
+      _whereCacheGet(whereCache, schema, "X", {
         where: {
           field: "var",
           column: "foo",
@@ -204,7 +198,7 @@ describe("whereCache", () => {
       },
     };
     const wc = _whereCacheCreate(
-      Field.obs,
+      "field",
       {
         where: {
           field: "queryField",
@@ -218,7 +212,7 @@ describe("whereCache", () => {
     expect(wc).toEqual(
       expect.objectContaining({
         where: {
-          [Field.obs]: {
+          field: {
             queryField: expect.any(Map),
           },
         },
@@ -226,19 +220,18 @@ describe("whereCache", () => {
     );
     // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    expect((wc.where as any)[Field.obs].queryField.has("queryColumn")).toEqual(true);
+    expect((wc.where as any).field.queryField.has("queryColumn")).toEqual(true);
     expect(
       // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-      (wc.where as any)[Field.obs].queryField.get("queryColumn")
+      (wc.where as any).field.queryField.get("queryColumn")
     ).toBeInstanceOf(Map);
     expect(
       // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-      (wc.where as any)[Field.obs].queryField.get("queryColumn").has("queryValue")
+      (wc.where as any).field.queryField.get("queryColumn").has("queryValue")
     ).toEqual(true);
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion --- assert wc to be non-null
-    expect(_whereCacheGet(wc!, schema, Field.obs, query)).toEqual([0, 1, 2]);
+    expect(_whereCacheGet(wc, schema, "field", query)).toEqual([0, 1, 2]);
   });
 
   test("whereCacheCreate, summarize query", () => {
@@ -250,14 +243,12 @@ describe("whereCache", () => {
         values: ["queryValue"],
       },
     };
-    const wc = _whereCacheCreate(Field.obs, query, [0, 1, 2]);
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion --- assert wc to be non-null
-    expect(_whereCacheGet(wc!, schema, Field.obs, query)).toEqual([0, 1, 2]);
+    const wc = _whereCacheCreate("field", query, [0, 1, 2]);
+    expect(_whereCacheGet(wc, schema, "field", query)).toEqual([0, 1, 2]);
   });
 
   test("whereCacheCreate, unknown query type", () => {
-    // @ts-expect-error --- force invalid query {foobar: true}
-    expect(_whereCacheCreate(Field.obs, { foobar: true }, [1])).toEqual({});
+    expect(_whereCacheCreate("field", { foobar: true }, [1])).toEqual({});
   });
 
   test("whereCacheMerge, where queries", () => {
@@ -265,20 +256,19 @@ describe("whereCache", () => {
 
     // remember, will mutate dst
     const src = _whereCacheCreate(
-      Field.obs,
+      "field",
       { where: { field: "queryField", column: "queryColumn", value: "foo" } },
       ["foo"]
     );
 
     const dst1 = _whereCacheCreate(
-      Field.obs,
+      "field",
       { where: { field: "queryField", column: "queryColumn", value: "bar" } },
       ["dst1"]
     );
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion --- assert dst1 and src to be non-null
-    wc = _whereCacheMerge(dst1!, src!);
+    wc = _whereCacheMerge(dst1, src);
     expect(
-      _whereCacheGet(wc, schema, Field.obs, {
+      _whereCacheGet(wc, schema, "field", {
         where: {
           field: "queryField",
           column: "queryColumn",
@@ -287,7 +277,7 @@ describe("whereCache", () => {
       })
     ).toEqual(["foo"]);
     expect(
-      _whereCacheGet(wc, schema, Field.obs, {
+      _whereCacheGet(wc, schema, "field", {
         where: {
           field: "queryField",
           column: "queryColumn",
@@ -297,14 +287,13 @@ describe("whereCache", () => {
     ).toEqual(["dst1"]);
 
     const dst2 = _whereCacheCreate(
-      Field.obs,
+      "field",
       { where: { field: "queryField", column: "queryColumn", value: "bar" } },
       ["dst2"]
     );
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion --- assert dst2m, dst1 and src to be non-null
-    wc = _whereCacheMerge(dst2!, dst1!, src!);
+    wc = _whereCacheMerge(dst2, dst1, src);
     expect(
-      _whereCacheGet(wc, schema, Field.obs, {
+      _whereCacheGet(wc, schema, "field", {
         where: {
           field: "queryField",
           column: "queryColumn",
@@ -313,7 +302,7 @@ describe("whereCache", () => {
       })
     ).toEqual(["foo"]);
     expect(
-      _whereCacheGet(wc, schema, Field.obs, {
+      _whereCacheGet(wc, schema, "field", {
         where: {
           field: "queryField",
           column: "queryColumn",
@@ -322,20 +311,17 @@ describe("whereCache", () => {
       })
     ).toEqual(["dst1"]);
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion --- assert src to be non-null
-    wc = _whereCacheMerge({}, src!);
+    wc = _whereCacheMerge({}, src);
     expect(wc).toEqual(src);
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion --- assert src to be non-null
-    wc = _whereCacheMerge({ where: { obs: { queryField: new Map() } } }, src!);
+    wc = _whereCacheMerge({ where: { field: { queryField: new Map() } } }, src);
     expect(wc).toEqual(src);
   });
 
   test("whereCacheMerge, mixed queries", () => {
     const wc = _whereCacheMerge(
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion --- assert wc to be non-null
       _whereCacheCreate(
-        Field.obs,
+        "field",
         {
           where: {
             field: "queryField",
@@ -344,10 +330,9 @@ describe("whereCache", () => {
           },
         },
         ["a"]
-      )!,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion --- assert wc to be non-null
+      ),
       _whereCacheCreate(
-        Field.obs,
+        "field",
         {
           summarize: {
             method: "mean",
@@ -357,11 +342,11 @@ describe("whereCache", () => {
           },
         },
         ["b"]
-      )!
+      )
     );
 
     expect(
-      _whereCacheGet(wc, schema, Field.obs, {
+      _whereCacheGet(wc, schema, "field", {
         where: {
           field: "queryField",
           column: "queryColumn",
@@ -371,7 +356,7 @@ describe("whereCache", () => {
     ).toEqual(["a"]);
 
     expect(
-      _whereCacheGet(wc, schema, Field.obs, {
+      _whereCacheGet(wc, schema, "field", {
         summarize: {
           method: "mean",
           field: "queryField",
@@ -382,7 +367,7 @@ describe("whereCache", () => {
     ).toEqual(["b"]);
 
     expect(
-      _whereCacheGet(wc, schema, Field.obs, {
+      _whereCacheGet(wc, schema, "field", {
         where: {
           field: "queryField",
           column: "queryColumn",
@@ -392,7 +377,7 @@ describe("whereCache", () => {
     ).toEqual([undefined]);
 
     expect(
-      _whereCacheGet(wc, schema, Field.obs, {
+      _whereCacheGet(wc, schema, "field", {
         summarize: {
           method: "no-such-method",
           field: "queryField",

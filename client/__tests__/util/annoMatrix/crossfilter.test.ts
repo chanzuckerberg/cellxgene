@@ -14,7 +14,6 @@ import {
 } from "../../../src/annoMatrix";
 import { Dataframe } from "../../../src/util/dataframe";
 import { rangeFill } from "../../../src/util/range";
-import { Field, Schema } from "../../../src/common/types/schema";
 
 enableFetchMocks();
 
@@ -30,7 +29,7 @@ describe("AnnoMatrixCrossfilter", () => {
     // reset all fetch mocking state
     annoMatrix = new AnnoMatrixLoader(
       serverMocks.baseDataURL,
-      serverMocks.schema.schema as Schema
+      serverMocks.schema.schema
     );
     crossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
   });
@@ -77,7 +76,7 @@ describe("AnnoMatrixCrossfilter", () => {
       (fetch as any).once(
         serverMocks.dataframeResponse(["louvain"], [obsLouvain])
       );
-      let newCrossfilter = await crossfilter.select(Field.obs, "louvain", {
+      let newCrossfilter = await crossfilter.select("obs", "louvain", {
         mode: "none",
       });
 
@@ -88,7 +87,7 @@ describe("AnnoMatrixCrossfilter", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       expect((fetch as any).mock.calls).toHaveLength(1);
 
-      newCrossfilter = await crossfilter.select(Field.obs, "louvain", {
+      newCrossfilter = await crossfilter.select("obs", "louvain", {
         mode: "all",
       });
       expect(newCrossfilter.countSelected()).toEqual(annoMatrix.nObs);
@@ -101,7 +100,7 @@ describe("AnnoMatrixCrossfilter", () => {
       (fetch as any).once(
         serverMocks.dataframeResponse(["louvain"], [obsLouvain])
       );
-      xfltr = await crossfilter.select(Field.obs, "louvain", {
+      xfltr = await crossfilter.select("obs", "louvain", {
         mode: "exact",
         values: ["NK cells", "B cells"],
       });
@@ -134,7 +133,7 @@ describe("AnnoMatrixCrossfilter", () => {
         )
       );
 
-      const df: Dataframe = await annoMatrix.fetch(Field.obs, "louvain");
+      const df: Dataframe = await annoMatrix.fetch("obs", "louvain");
       const values = df.col("louvain").asArray();
       const selected = xfltr.allSelectedMask();
       values.every(
@@ -147,7 +146,7 @@ describe("AnnoMatrixCrossfilter", () => {
       (fetch as any).once(
         serverMocks.dataframeResponse(["n_genes"], [new Int32Array(obsNGenes)])
       );
-      xfltr = await xfltr.select(Field.obs, "n_genes", {
+      xfltr = await xfltr.select("obs", "n_genes", {
         mode: "range",
         lo: 0,
         hi: 500,
@@ -259,7 +258,7 @@ describe("AnnoMatrixCrossfilter", () => {
       (fetch as any).once(
         serverMocks.dataframeResponse(["louvain"], [obsLouvain])
       );
-      xfltr = await xfltr.select(Field.obs, "louvain", {
+      xfltr = await xfltr.select("obs", "louvain", {
         mode: "exact",
         values: ["NK cells", "B cells"],
       });
@@ -268,7 +267,7 @@ describe("AnnoMatrixCrossfilter", () => {
       expect(xfltr.countSelected()).toEqual(240);
 
       const df: Dataframe = (await annoMatrixSubset.fetch(
-        Field.obs,
+        "obs",
         "louvain"
       )) as Dataframe;
       expect(df).toBeDefined();
@@ -292,7 +291,7 @@ describe("AnnoMatrixCrossfilter", () => {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockRejectOnce(new Error("unknown column name"));
-      await expect(crossfilter.select(Field.obs, "foo")).rejects.toThrow(
+      await expect(crossfilter.select("obs", "foo")).rejects.toThrow(
         "unknown column name"
       );
     });
@@ -305,7 +304,7 @@ describe("AnnoMatrixCrossfilter", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
     async function helperAddTestCol(cf: any, colName: any, colSchema = null) {
       expect(
-        cf.annoMatrix.getMatrixColumns(Field.obs).includes(colName)
+        cf.annoMatrix.getMatrixColumns("obs").includes(colName)
       ).toBeFalsy();
 
       if (colSchema === null) {
@@ -327,7 +326,7 @@ describe("AnnoMatrixCrossfilter", () => {
           (v: any) => v.name === colName
         )
       ).toHaveLength(1);
-      const df = await xfltr.annoMatrix.fetch(Field.obs, colName);
+      const df = await xfltr.annoMatrix.fetch("obs", colName);
       expect(df.hasCol(colName)).toBeTruthy();
       return xfltr;
     }
@@ -335,7 +334,7 @@ describe("AnnoMatrixCrossfilter", () => {
     test("addObsColumn", async () => {
       expect(crossfilter.countSelected()).toBe(annoMatrix.nObs);
       expect(
-        crossfilter.annoMatrix.getMatrixColumns(Field.obs).includes("foo")
+        crossfilter.annoMatrix.getMatrixColumns("obs").includes("foo")
       ).toBeFalsy();
       const xfltr = crossfilter.addObsColumn(
         { name: "foo", type: "categorical", categories: ["A"] },
@@ -346,7 +345,7 @@ describe("AnnoMatrixCrossfilter", () => {
       // check schema updates correctly.
       expect(xfltr.countSelected()).toBe(annoMatrix.nObs);
       expect(
-        xfltr.annoMatrix.getMatrixColumns(Field.obs).includes("foo")
+        xfltr.annoMatrix.getMatrixColumns("obs").includes("foo")
       ).toBeTruthy();
       expect(xfltr.annoMatrix.schema.annotations.obsByName.foo).toMatchObject({
         name: "foo",
@@ -360,7 +359,7 @@ describe("AnnoMatrixCrossfilter", () => {
       ).toHaveLength(1);
 
       // check data update.
-      const df: Dataframe = await xfltr.annoMatrix.fetch(Field.obs, "foo");
+      const df: Dataframe = await xfltr.annoMatrix.fetch("obs", "foo");
       expect(
         df
           .col("foo")
@@ -409,13 +408,13 @@ describe("AnnoMatrixCrossfilter", () => {
       expect(xfltr.annoMatrix.schema.annotations.obsByName.foo).toBeUndefined();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockRejectOnce(new Error("unknown column name"));
-      await expect(xfltr.annoMatrix.fetch(Field.obs, "foo")).rejects.toThrow(
+      await expect(xfltr.annoMatrix.fetch("obs", "foo")).rejects.toThrow(
         "unknown column name"
       );
 
       // now same, but ensure we have built an index before doing the drop
       xfltr = await helperAddTestCol(crossfilter, "bar");
-      xfltr = await xfltr.select(Field.obs, "bar", {
+      xfltr = await xfltr.select("obs", "bar", {
         mode: "exact",
         values: "whatever",
       });
@@ -423,9 +422,9 @@ describe("AnnoMatrixCrossfilter", () => {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockRejectOnce(new Error("unknown column name"));
-      await expect(
-        xfltr.select(Field.obs, "bar", { mode: "all" })
-      ).rejects.toThrow("unknown column name");
+      await expect(xfltr.select("obs", "bar", { mode: "all" })).rejects.toThrow(
+        "unknown column name"
+      );
     });
 
     test("renameObsColumn", async () => {
@@ -442,25 +441,23 @@ describe("AnnoMatrixCrossfilter", () => {
       // add a column, then rename it.
       xfltr = await helperAddTestCol(crossfilter, "foo");
       xfltr = xfltr.renameObsColumn("foo", "bar");
-      expect(
-        xfltr.annoMatrix.getColumnSchema(Field.obs, "foo")
-      ).toBeUndefined();
-      expect(xfltr.annoMatrix.getColumnSchema(Field.obs, "bar")).toMatchObject({
+      expect(xfltr.annoMatrix.getColumnSchema("obs", "foo")).toBeUndefined();
+      expect(xfltr.annoMatrix.getColumnSchema("obs", "bar")).toMatchObject({
         name: "bar",
         type: "categorical",
       });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockRejectOnce(new Error("unknown column name"));
-      await expect(xfltr.annoMatrix.fetch(Field.obs, "foo")).rejects.toThrow(
+      await expect(xfltr.annoMatrix.fetch("obs", "foo")).rejects.toThrow(
         "unknown column name"
       );
-      const df = await xfltr.annoMatrix.fetch(Field.obs, "bar");
+      const df = await xfltr.annoMatrix.fetch("obs", "bar");
       expect(df.hasCol("bar")).toBeTruthy();
 
       // now same, but ensure we have built an index before doing the rename
       xfltr = await helperAddTestCol(crossfilter, "bar");
-      xfltr = await xfltr.select(Field.obs, "bar", {
+      xfltr = await xfltr.select("obs", "bar", {
         mode: "exact",
         values: "whatever",
       });
@@ -468,11 +465,11 @@ describe("AnnoMatrixCrossfilter", () => {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       (fetch as any).mockRejectOnce(new Error("unknown column name"));
+      await expect(xfltr.select("obs", "bar", { mode: "all" })).rejects.toThrow(
+        "unknown column name"
+      );
       await expect(
-        xfltr.select(Field.obs, "bar", { mode: "all" })
-      ).rejects.toThrow("unknown column name");
-      await expect(
-        xfltr.select(Field.obs, "xyz", { mode: "none" })
+        xfltr.select("obs", "xyz", { mode: "none" })
       ).resolves.toBeInstanceOf(AnnoMatrixObsCrossfilter);
     });
 
@@ -496,7 +493,7 @@ describe("AnnoMatrixCrossfilter", () => {
         categories: ["unassigned"],
       });
       xfltr = xfltr.addObsAnnoCategory("foo", "a-new-label");
-      expect(xfltr.annoMatrix.getColumnSchema(Field.obs, "foo")).toMatchObject({
+      expect(xfltr.annoMatrix.getColumnSchema("obs", "foo")).toMatchObject({
         name: "foo",
         type: "categorical",
         categories: expect.arrayContaining(["a-new-label", "unassigned"]),
@@ -514,12 +511,12 @@ describe("AnnoMatrixCrossfilter", () => {
         type: "categorical",
         categories: ["unassigned"],
       });
-      xfltr = await xfltr.select(Field.obs, "bar", {
+      xfltr = await xfltr.select("obs", "bar", {
         mode: "exact",
         values: "something",
       });
       xfltr = xfltr.addObsAnnoCategory("bar", "a-new-label");
-      expect(xfltr.annoMatrix.getColumnSchema(Field.obs, "bar")).toMatchObject({
+      expect(xfltr.annoMatrix.getColumnSchema("obs", "bar")).toMatchObject({
         name: "bar",
         type: "categorical",
         categories: expect.arrayContaining(["a-new-label", "unassigned"]),
@@ -543,14 +540,14 @@ describe("AnnoMatrixCrossfilter", () => {
         type: "categorical",
         categories: ["unassigned", "red", "green", "blue"],
       });
-      xfltr = await xfltr.select(Field.obs, "foo", { mode: "all" });
+      xfltr = await xfltr.select("obs", "foo", { mode: "all" });
       expect(
-        (await xfltr.annoMatrix.fetch(Field.obs, "foo"))
+        (await xfltr.annoMatrix.fetch("obs", "foo"))
           .col("foo")
           .asArray() // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           .every((v: any) => v === "unassigned")
       ).toBeTruthy();
-      expect(xfltr.annoMatrix.getColumnSchema(Field.obs, "foo")).toMatchObject({
+      expect(xfltr.annoMatrix.getColumnSchema("obs", "foo")).toMatchObject({
         name: "foo",
         type: "categorical",
         categories: expect.arrayContaining([
@@ -564,23 +561,21 @@ describe("AnnoMatrixCrossfilter", () => {
       // remove an unused category
       const xfltr1 = await xfltr.removeObsAnnoCategory("foo", "red", "mumble");
       expect(
-        (await xfltr1.annoMatrix.fetch(Field.obs, "foo"))
+        (await xfltr1.annoMatrix.fetch("obs", "foo"))
           .col("foo")
           .asArray() // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           .every((v: any) => v === "unassigned")
       ).toBeTruthy();
-      expect(xfltr1.annoMatrix.getColumnSchema(Field.obs, "foo")).toMatchObject(
-        {
-          name: "foo",
-          type: "categorical",
-          categories: expect.arrayContaining([
-            "unassigned",
-            "green",
-            "blue",
-            "mumble",
-          ]),
-        }
-      );
+      expect(xfltr1.annoMatrix.getColumnSchema("obs", "foo")).toMatchObject({
+        name: "foo",
+        type: "categorical",
+        categories: expect.arrayContaining([
+          "unassigned",
+          "green",
+          "blue",
+          "mumble",
+        ]),
+      });
 
       // remove a used category
       const xfltr2 = await xfltr.removeObsAnnoCategory(
@@ -589,18 +584,16 @@ describe("AnnoMatrixCrossfilter", () => {
         "red"
       );
       expect(
-        (await xfltr2.annoMatrix.fetch(Field.obs, "foo"))
+        (await xfltr2.annoMatrix.fetch("obs", "foo"))
           .col("foo")
           .asArray() // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           .every((v: any) => v === "red")
       ).toBeTruthy();
-      expect(xfltr2.annoMatrix.getColumnSchema(Field.obs, "foo")).toMatchObject(
-        {
-          name: "foo",
-          type: "categorical",
-          categories: expect.arrayContaining(["green", "blue", "red"]),
-        }
-      );
+      expect(xfltr2.annoMatrix.getColumnSchema("obs", "foo")).toMatchObject({
+        name: "foo",
+        type: "categorical",
+        categories: expect.arrayContaining(["green", "blue", "red"]),
+      });
     });
 
     test("setObsColumnValues", async () => {
@@ -618,7 +611,7 @@ describe("AnnoMatrixCrossfilter", () => {
         type: "categorical",
         categories: ["unassigned", "red", "green", "blue"],
       });
-      xfltr = await xfltr.select(Field.obs, "foo", { mode: "all" });
+      xfltr = await xfltr.select("obs", "foo", { mode: "all" });
 
       // catch unknown row label
       await expect(() =>
@@ -627,14 +620,14 @@ describe("AnnoMatrixCrossfilter", () => {
 
       // set a few rows
       expect(
-        (await xfltr.annoMatrix.fetch(Field.obs, "foo"))
+        (await xfltr.annoMatrix.fetch("obs", "foo"))
           .col("foo")
           .asArray() // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           .every((v: any) => v === "unassigned")
       ).toBeTruthy();
       const xfltr1 = await xfltr.setObsColumnValues("foo", [0, 10], "purple");
       expect(
-        (await xfltr1.annoMatrix.fetch(Field.obs, "foo"))
+        (await xfltr1.annoMatrix.fetch("obs", "foo"))
           .col("foo")
           .asArray()
           .every(
@@ -643,22 +636,20 @@ describe("AnnoMatrixCrossfilter", () => {
               v === "unassigned" || (v === "purple" && (i === 0 || i === 10))
           )
       ).toBeTruthy();
-      expect(xfltr1.annoMatrix.getColumnSchema(Field.obs, "foo")).toMatchObject(
-        {
-          name: "foo",
-          type: "categorical",
-          categories: expect.arrayContaining([
-            "unassigned",
-            "red",
-            "green",
-            "blue",
-            "purple",
-          ]),
-        }
-      );
+      expect(xfltr1.annoMatrix.getColumnSchema("obs", "foo")).toMatchObject({
+        name: "foo",
+        type: "categorical",
+        categories: expect.arrayContaining([
+          "unassigned",
+          "red",
+          "green",
+          "blue",
+          "purple",
+        ]),
+      });
 
       expect(xfltr1.countSelected()).toEqual(xfltr1.annoMatrix.nObs);
-      const xfltr2 = await xfltr1.select(Field.obs, "foo", {
+      const xfltr2 = await xfltr1.select("obs", "foo", {
         mode: "exact",
         values: ["purple"],
       });
@@ -681,7 +672,7 @@ describe("AnnoMatrixCrossfilter", () => {
         type: "categorical",
         categories: ["unassigned", "red", "green", "blue"],
       });
-      xfltr = await xfltr.select(Field.obs, "foo", {
+      xfltr = await xfltr.select("obs", "foo", {
         mode: "exact",
         values: "red",
       });
@@ -692,12 +683,12 @@ describe("AnnoMatrixCrossfilter", () => {
       ).rejects.toThrow("unknown category");
 
       let xfltr1 = await xfltr.setObsColumnValues("foo", [0, 10], "purple");
-      xfltr1 = await xfltr1.select(Field.obs, "foo", {
+      xfltr1 = await xfltr1.select("obs", "foo", {
         mode: "exact",
         values: "purple",
       });
       expect(
-        (await xfltr1.annoMatrix.fetch(Field.obs, "foo"))
+        (await xfltr1.annoMatrix.fetch("obs", "foo"))
           .col("foo")
           .asArray() // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           .filter((v: any) => v === "purple")
@@ -705,31 +696,29 @@ describe("AnnoMatrixCrossfilter", () => {
 
       xfltr1 = await xfltr1.resetObsColumnValues("foo", "purple", "magenta");
       expect(
-        (await xfltr1.annoMatrix.fetch(Field.obs, "foo"))
+        (await xfltr1.annoMatrix.fetch("obs", "foo"))
           .col("foo")
           .asArray() // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           .filter((v: any) => v === "magenta")
       ).toHaveLength(2);
       expect(
-        (await xfltr1.annoMatrix.fetch(Field.obs, "foo"))
+        (await xfltr1.annoMatrix.fetch("obs", "foo"))
           .col("foo")
           .asArray() // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
           .filter((v: any) => v === "purple")
       ).toHaveLength(0);
-      expect(xfltr1.annoMatrix.getColumnSchema(Field.obs, "foo")).toMatchObject(
-        {
-          name: "foo",
-          type: "categorical",
-          categories: expect.arrayContaining([
-            "unassigned",
-            "red",
-            "green",
-            "blue",
-            "purple",
-            "magenta",
-          ]),
-        }
-      );
+      expect(xfltr1.annoMatrix.getColumnSchema("obs", "foo")).toMatchObject({
+        name: "foo",
+        type: "categorical",
+        categories: expect.arrayContaining([
+          "unassigned",
+          "red",
+          "green",
+          "blue",
+          "purple",
+          "magenta",
+        ]),
+      });
     });
   });
 
@@ -740,7 +729,7 @@ describe("AnnoMatrixCrossfilter", () => {
       (fetch as any).once(
         serverMocks.dataframeResponse(["louvain"], [obsLouvain])
       );
-      const xfltr = await crossfilter.select(Field.obs, "louvain", {
+      const xfltr = await crossfilter.select("obs", "louvain", {
         mode: "exact",
         values: "B cells",
       });
