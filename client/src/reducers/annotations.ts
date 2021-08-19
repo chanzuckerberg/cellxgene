@@ -1,7 +1,7 @@
 /*
 Reducers for annotation UI-state.
 */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
+
 const Annotations = (
   state = {
     /*
@@ -29,8 +29,19 @@ const Annotations = (
     labelEditable: { category: null, label: null },
     promptForFilename: true,
   },
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  action: any
+  action: {
+    type: string;
+    data: string;
+    metadataField: string;
+    categoryIndex: number;
+    config: {
+      parameters: {
+        "annotations-data-collection-name": string;
+        user_annotation_collection_name_enabled: boolean;
+        annotations_genesets_name_is_read_only: boolean /* FIXME typescript  */;
+      };
+    };
+  }
 ) => {
   switch (action.type) {
     case "configuration load complete": {
@@ -38,7 +49,7 @@ const Annotations = (
         action.config.parameters?.["annotations-data-collection-name"] ?? null;
       const dataCollectionNameIsReadOnly =
         (action.config.parameters?.[
-          "annotations-data-collection-is-read-only"
+          "annotations-data-collection-is-read-only" /* FIXME typescript */
         ] ??
           false) &&
         (action.config.parameters?.annotations_genesets_name_is_read_only ??
