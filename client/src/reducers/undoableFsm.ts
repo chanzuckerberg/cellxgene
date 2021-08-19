@@ -18,16 +18,22 @@ b) compound actions that should be collapsed into a single history change.
 
 */
 
-import { StateMachine, FsmTransition, FsmActionFn } from "../util/statemachine";
-
-const createFsmTransitions = <ActionReturnType>(
-  stashPending: FsmActionFn<ActionReturnType>,
-  cancelPending: FsmActionFn<ActionReturnType>,
-  applyPending: FsmActionFn<ActionReturnType>,
-  skip: FsmActionFn<ActionReturnType>,
-  _clear: FsmActionFn<ActionReturnType>,
-  save: FsmActionFn<ActionReturnType>
-): FsmTransition<ActionReturnType>[] => [
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
+const createFsmTransitions = (
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  stashPending: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  cancelPending: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  applyPending: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  skip: any,
+  // @ts-expect-error ts-migrate(6133) FIXME: 'clear' is declared but its value is never read.
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  clear: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  save: any
+) => [
   /* graph selection brushing */
   {
     event: "graph brush start",
@@ -46,14 +52,12 @@ const createFsmTransitions = <ActionReturnType>(
     from: "graph brush in progress",
     to: "done",
     /* if current selection is all, cancelPending.  Else, applyPending */
-    action: (
-      fsm: StateMachine<ActionReturnType>,
-      transition: FsmTransition<ActionReturnType>,
-      data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS. Requires state typing.
-    ) =>
+    // @ts-expect-error ts-migrate(6133) FIXME: 'fsm' is declared but its value is never read.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+    action: (fsm: any, transition: any, data: any) =>
       data.state.graphSelection.selection.mode === "all"
-        ? cancelPending(fsm, transition, data)
-        : applyPending(fsm, transition, data),
+        ? cancelPending()
+        : applyPending(),
   },
   {
     event: "graph brush end",
@@ -80,14 +84,12 @@ const createFsmTransitions = <ActionReturnType>(
     from: "graph lasso in progress",
     to: "done",
     /* if current selection is all, cancelPending.  Else, applyPending */
-    action: (
-      fsm: StateMachine<ActionReturnType>,
-      transition: FsmTransition<ActionReturnType>,
-      data: any // eslint-disable-line @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS. Requires state typing.
-    ) =>
+    // @ts-expect-error ts-migrate(6133) FIXME: 'fsm' is declared but its value is never read.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+    action: (fsm: any, transition: any, data: any) =>
       data.state.graphSelection.selection.mode === "all"
-        ? cancelPending(fsm, transition, data)
-        : applyPending(fsm, transition, data),
+        ? cancelPending()
+        : applyPending(),
   },
   {
     event: "graph lasso end",

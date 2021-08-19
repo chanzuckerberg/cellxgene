@@ -1,12 +1,10 @@
-import { Reducer } from "redux";
 import undoable from "../../src/reducers/undoable";
 
 describe("create", () => {
   test("no keys", () => {
-    expect(() =>
-      undoable(() => {}, undefined as unknown as string[])
-    ).toThrow();
-    expect(() => undoable(() => {}, null as unknown as string[])).toThrow();
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 2-3 arguments, but got 1.
+    expect(() => undoable(() => {})).toThrow();
+    expect(() => undoable(() => {}, null)).toThrow();
     expect(() => undoable(() => {}, [])).toThrow();
     expect(() => undoable(() => {}, [], {})).toThrow();
   });
@@ -26,7 +24,8 @@ describe("create", () => {
 describe("undo", () => {
   test("expected state modifications", () => {
     const initialState = { a: 0, b: 1000 };
-    const reducer: Reducer = (state) => ({ a: state.a + 1, b: state.b + 1 });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+    const reducer = (state: any) => ({ a: state.a + 1, b: state.b + 1 });
     const undoableReducer = undoable(reducer, ["a"]);
 
     const s1 = undoableReducer(initialState, { type: "test" });
@@ -44,8 +43,10 @@ describe("undo", () => {
 
 describe("redo", () => {
   const initialState = { a: 0, b: 1000 };
-  const reducer: Reducer = (state) => ({ a: state.a + 1, b: state.b + 1 });
-  let UR: Reducer;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  const reducer = (state: any) => ({ a: state.a + 1, b: state.b + 1 });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  let UR: any;
 
   beforeEach(() => {
     UR = undoable(reducer, ["a"]);
