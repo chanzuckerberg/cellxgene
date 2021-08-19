@@ -444,7 +444,7 @@ class EndPointsCxg(EndPoints):
                     {'genes': [], 'geneset_description': '', 'geneset_name': 'geneset_to_delete'},
                     {'genes': [], 'geneset_description': '', 'geneset_name': 'geneset_to_edit'},
                     {
-                        'genes': [],
+                        'genes': [{'gene_description': '', 'gene_symbol': 'RER1'}],
                         'geneset_description': '',
                         'geneset_name': 'fill_this_geneset'
                     },
@@ -485,7 +485,7 @@ summary test,,F5,\r
 summary test,,PIGU,\r
 geneset_to_delete,,,\r
 geneset_to_edit,,,\r
-fill_this_geneset,,,\r
+fill_this_geneset,,RER1,\r
 empty_this_geneset,,SIK1,\r
 brush_this_gene,,SIK1,\r
 """

@@ -12,7 +12,6 @@ import {
   getTestId,
   getTestClass,
   getAllByClass,
-  clickOnUntil,
   getOneElementInnerHTML,
 } from "./puppeteerUtils";
 
@@ -76,11 +75,6 @@ const geneToBrushAndColorBy = "SIK1";
 const brushThisGeneGeneset = "brush_this_gene";
 const geneBrushedCellCount = "109";
 const subsetGeneBrushedCellCount = "96";
-
-const genesetDescriptionID =
-  "geneset-description-tooltip-fourth_gene_set: fourth description";
-const genesetDescriptionString = "fourth_gene_set: fourth description";
-const genesetToCheckForDescription = "fourth_gene_set";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 async function setup(config: any) {
@@ -183,7 +177,7 @@ describe.each([
 
     expect(genesHTML).toMatchSnapshot();
   });
-  test("create a new geneset and undo/redo", async () => {
+  test("create a new geneset", async () => {
     if (config.withSubset) return;
 
     await setup(config);
@@ -193,45 +187,19 @@ describe.each([
     await createGeneset(genesetName);
     /* note: as of June 2021, the aria label is in the truncate component which clones the element */
     await assertGenesetExists(genesetName);
-    await clickOn("undo");
-    await assertGenesetDoesNotExist(genesetName);
-    await clickOn("redo");
-    await assertGenesetExists(genesetName);
   });
-  test("edit geneset name and undo/redo", async () => {
+  test("edit geneset name", async () => {
     await setup(config);
 
     await editGenesetName(editableGenesetName, editText);
     await assertGenesetExists(newGenesetName);
-    await clickOn("undo");
-    await assertGenesetExists(editableGenesetName);
-    await clickOn("redo");
-    await assertGenesetExists(newGenesetName);
   });
-  test("delete a geneset and undo/redo", async () => {
+  test("delete a geneset", async () => {
     if (config.withSubset) return;
 
     await setup(config);
 
     await deleteGeneset(genesetToDeleteName);
-    await clickOn("undo");
-    await assertGenesetExists(genesetToDeleteName);
-    await clickOn("redo");
-    await assertGenesetDoesNotExist(genesetToDeleteName);
-  });
-  test("geneset description", async () => {
-    if (config.withSubset) return;
-
-    await setup(config);
-
-    await clickOnUntil(
-      `${genesetToCheckForDescription}:geneset-expand`,
-      async () => {
-        expect(page).toMatchElement(getTestId(genesetDescriptionID), {
-          text: genesetDescriptionString,
-        });
-      }
-    );
   });
 });
 
@@ -239,15 +207,11 @@ describe.each([
   { withSubset: true, tag: "subset" },
   { withSubset: false, tag: "whole" },
 ])("GENE crud operations and interactions", (config) => {
-  test("add a gene to geneset and undo/redo", async () => {
+  test("add a gene to geneset", async () => {
     await setup(config);
 
     await addGeneToSet(setToAddGeneTo, geneToAddToSet);
     await expandGeneset(setToAddGeneTo);
-    await assertGeneExistsInGeneset(geneToAddToSet);
-    await clickOn("undo");
-    await assertGeneDoesNotExist(geneToAddToSet);
-    await clickOn("redo");
     await assertGeneExistsInGeneset(geneToAddToSet);
   });
   test("expand gene and brush", async () => {
@@ -279,7 +243,7 @@ describe.each([
     await colorByGene(geneToBrushAndColorBy);
     await assertColorLegendLabel(geneToBrushAndColorBy);
   });
-  test("delete gene from geneset and undo/redo", async () => {
+  test("delete gene from geneset", async () => {
     // We've already deleted the gene
     if (config.withSubset) return;
 
@@ -287,10 +251,6 @@ describe.each([
 
     await expandGeneset(setToRemoveFrom);
     await removeGene(geneToRemove);
-    await assertGeneDoesNotExist(geneToRemove);
-    await clickOn("undo");
-    await assertGeneExistsInGeneset(geneToRemove);
-    await clickOn("redo");
     await assertGeneDoesNotExist(geneToRemove);
   });
 });
