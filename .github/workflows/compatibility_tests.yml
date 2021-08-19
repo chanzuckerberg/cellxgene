@@ -28,8 +28,8 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]
-        anndata-version: [0.7.6]
+        python-version: [3.6, 3.7] # As of Oct 2020 Anndata is not compatible with 3.8
+        anndata-version: [0.7.0, 0.7.1, 0.7.2, 0.7.3, 0.7.4, 0.7.5]
         test-suite: [smoke-test, smoke-test-annotations]
     steps:
     - uses: actions/checkout@v2
@@ -47,6 +47,8 @@ jobs:
         make pydist install-dist
         # 3. install anndata
         pip install anndata==${{ matrix.anndata-version }}
+        # workaround for anndata 0.6.22.post1 bug
+        [[ "0.6.22.post1" = "${{ matrix.anndata-version }}" ]] && pip install h5py==2.9.0 || true
     - name: Tests
       run: make unit-test ${{ matrix.test-suite }}
 
