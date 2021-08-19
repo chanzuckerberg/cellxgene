@@ -7,7 +7,7 @@ from scipy import sparse
 from server_timing import Timing as ServerTiming
 
 from backend.czi_hosted.common.config.app_config import AppConfig
-from backend.common.constants import Axis, XApproximateDistribution
+from backend.common.constants import Axis, XApproxDistribution
 from backend.common.errors import (
     FilterError,
     JSONEncodingValueError,
@@ -84,7 +84,7 @@ class DataAdaptor(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_X_approximate_distribution(self) -> XApproximateDistribution:
+    def get_X_approx_distribution(self) -> XApproxDistribution:
         """return the approximate distribution of the X matrix."""
         pass
 

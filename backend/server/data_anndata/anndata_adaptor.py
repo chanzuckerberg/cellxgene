@@ -9,7 +9,7 @@ from scipy import sparse
 import backend.common.compute.diffexp_generic as diffexp_generic
 import backend.common.compute.estimate_distribution as estimate_distribution
 from backend.common.colors import convert_anndata_category_colors_to_cxg_category_colors
-from backend.common.constants import Axis, MAX_LAYOUTS, XApproximateDistribution
+from backend.common.constants import Axis, MAX_LAYOUTS, XApproxDistribution
 from backend.server.common.corpora import corpora_get_props_from_anndata
 from backend.common.errors import PrepareError, DatasetAccessError
 from backend.common.utils.type_conversion_utils import get_schema_type_hint_of_array
@@ -29,7 +29,7 @@ class AnndataAdaptor(DataAdaptor):
     def __init__(self, data_locator, app_config=None, dataset_config=None):
         super().__init__(data_locator, app_config, dataset_config)
         self.data = None
-        self.X_approximate_distribution = None
+        self.X_approx_distribution = None
         self._load_data(data_locator)
         self._validate_and_initialize()
 
@@ -192,12 +192,12 @@ class AnndataAdaptor(DataAdaptor):
         self.gene_count = self.data.shape[1]
         self._create_schema()
 
-        if self.dataset_config.X_approximate_distribution == "auto":
+        if self.dataset_config.X_approx_distribution == "auto":
             """Lazy evaluate the heuristic if we are backed."""
             if not self.data.isbacked:
-                self.X_approximate_distribution = estimate_distribution.estimate_approximate_distribution(self.data.X)
+                self.X_approx_distribution = estimate_distribution.estimate_approximate_distribution(self.data.X)
         else:
-            self.X_approximate_distribution = self.dataset_config.X_approximate_distribution
+            self.X_approx_distribution = self.dataset_config.X_approx_distribution
 
         # heuristic
         n_values = self.data.shape[0] * self.data.shape[1]
@@ -331,15 +331,15 @@ class AnndataAdaptor(DataAdaptor):
         X = self.data.X[obs_mask, var_mask]
         return X
 
-    def get_X_approximate_distribution(self) -> XApproximateDistribution:
+    def get_X_approx_distribution(self) -> XApproxDistribution:
         """return the approximate distribution of the X matrix."""
-        if self.X_approximate_distribution is None:
+        if self.X_approx_distribution is None:
             """Not yet evaluated."""
-            assert(self.dataset_config.X_approximate_distribution == "auto")
+            assert(self.dataset_config.X_approx_distribution == "auto")
             self.data = self.data.to_memory()  # loads data
-            self.X_approximate_distribution = estimate_distribution.estimate_approximate_distribution(self.data.X)
+            self.X_approx_distribution = estimate_distribution.estimate_approximate_distribution(self.data.X)
 
-        return self.X_approximate_distribution
+        return self.X_approx_distribution
 
     def get_shape(self):
         return self.data.shape
