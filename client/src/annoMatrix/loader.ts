@@ -8,7 +8,7 @@ import {
   removeObsAnnoCategory,
   addObsLayout,
 } from "../util/stateManager/schemaHelpers";
-import { isAnyArray } from "../common/types/arraytypes";
+import { isArrayOrTypedArray } from "../util/typeHelpers";
 import { _whereCacheCreate } from "./whereCache";
 import AnnoMatrix from "./annoMatrix";
 import PromiseLimit from "../util/promiseLimit";
@@ -134,7 +134,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
 
     const newAnnoMatrix = this._clone();
     let data;
-    if (isAnyArray(value)) {
+    if (isArrayOrTypedArray(value)) {
       if (value.constructor !== Ctor)
         throw new Error("Mismatched value array type");
       if (value.length !== this.nObs)

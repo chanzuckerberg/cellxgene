@@ -1,7 +1,12 @@
 import { IdentityInt32Index, isLabelIndex } from "./labelIndex";
 // weird cross-dependency that we should clean up someday...
-import { callOnceLazy, memoize, __getMemoId } from "./util";
-import { isTypedArray, isAnyArray } from "../../common/types/arraytypes";
+import {
+  isTypedArray,
+  isArrayOrTypedArray,
+  callOnceLazy,
+  memoize,
+  __getMemoId,
+} from "./util";
 import {
   summarizeContinuous,
   summarizeCategorical as _summarizeCategorical,
@@ -158,7 +163,7 @@ class Dataframe {
     if (!Array.isArray(columnarData)) {
       throw new TypeError("Dataframe constructor requires array of columns");
     }
-    if (!columnarData.every((c) => isAnyArray(c))) {
+    if (!columnarData.every((c) => isArrayOrTypedArray(c))) {
       throw new TypeError("Dataframe columns must all be Array or TypedArray");
     }
     if (!isLabelIndex(rowIndex)) {

@@ -1,4 +1,4 @@
-import { isTypedArray, isFloatTypedArray } from "../../common/types/arraytypes";
+import { isTypedArray, isFpTypedArray } from "../typeHelpers";
 
 /* eslint-disable no-bitwise -- code relies on bitwise ops */
 
@@ -219,7 +219,7 @@ export function sortArray(arr: any) {
     return quicksort(arr, 0, arr.length - 1);
   }
   if (isTypedArray(arr)) {
-    if (isFloatTypedArray(arr)) {
+    if (isFpTypedArray(arr)) {
       return quicksortFloats(arr, 0, arr.length - 1);
     }
     return quicksort(arr, 0, arr.length - 1);
@@ -230,7 +230,7 @@ export function sortArray(arr: any) {
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function sortIndex(index: any, source: any) {
-  if (isFloatTypedArray(source))
+  if (isFpTypedArray(source))
     return quicksortFloatsIndirect(index, source, 0, index.length - 1);
   return quicksortIndirect(index, source, 0, index.length - 1);
 }
@@ -293,7 +293,7 @@ function lowerBoundFloat(valueArray: any, value: any, first: any, last: any) {
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function lowerBound(valueArray: any, value: any, first: any, last: any) {
-  if (isFloatTypedArray(valueArray)) {
+  if (isFpTypedArray(valueArray)) {
     return lowerBoundFloat(valueArray, value, first, last);
   }
   return lowerBoundNonFloat(valueArray, value, first, last);
@@ -366,7 +366,7 @@ export function lowerBoundIndirect(
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   last: any
 ) {
-  if (isFloatTypedArray(valueArray)) {
+  if (isFpTypedArray(valueArray)) {
     return lowerBoundFloatIndirect(valueArray, indexArray, value, first, last);
   }
   return lowerBoundNonFloatIndirect(valueArray, indexArray, value, first, last);
@@ -425,7 +425,7 @@ function upperBoundFloat(valueArray: any, value: any, first: any, last: any) {
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function upperBound(valueArray: any, value: any, first: any, last: any) {
-  if (isFloatTypedArray(valueArray)) {
+  if (isFpTypedArray(valueArray)) {
     return upperBoundFloat(valueArray, value, first, last);
   }
   return upperBoundNonFloat(valueArray, value, first, last);
@@ -498,7 +498,7 @@ export function upperBoundIndirect(
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
   last: any
 ) {
-  if (isFloatTypedArray(valueArray)) {
+  if (isFpTypedArray(valueArray)) {
     return upperBoundFloatIndirect(valueArray, indexArray, value, first, last);
   }
   return upperBoundNonFloatIndirect(valueArray, indexArray, value, first, last);

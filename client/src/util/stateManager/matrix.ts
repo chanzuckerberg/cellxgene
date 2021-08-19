@@ -1,6 +1,6 @@
 import { flatbuffers } from "flatbuffers";
 import { NetEncoding } from "./matrix_generated";
-import { isTypedArray, isFloatTypedArray } from "../../common/types/arraytypes";
+import { isTypedArray, isFpTypedArray } from "../typeHelpers";
 import {
   Dataframe,
   IdentityInt32Index,
@@ -188,7 +188,7 @@ function promoteTypedArray(o: any) {
   TODO - future optimization: not all int32/uint32 data series require
   promotion to float64.  We COULD simply look at the data to decide.
   */
-  if (isFloatTypedArray(o) || Array.isArray(o)) return o;
+  if (isFpTypedArray(o) || Array.isArray(o)) return o;
 
   let TypedArrayCtor;
   switch (o.constructor) {
@@ -246,7 +246,7 @@ export function matrixFBSToDataframe(arrayBuffers: any) {
     .map((fb: any) =>
       // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
       fb.columns.map((c: any) => {
-        if (isFloatTypedArray(c) || Array.isArray(c)) return c;
+        if (isFpTypedArray(c) || Array.isArray(c)) return c;
         return promoteTypedArray(c);
       })
     )
