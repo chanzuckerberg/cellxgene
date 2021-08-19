@@ -6,8 +6,7 @@ describe("dataframe constructor", () => {
     expect(df).toBeDefined();
     expect(df.dims).toEqual([0, 0]);
     expect(df).toHaveLength(0);
-    expect(df.ihasCol(0)).toBeFalsy();
-    expect(() => df.icol(0)).toThrow(RangeError);
+    expect(df.icol(0)).not.toBeDefined();
   });
 
   test("create with default indices", () => {
@@ -24,19 +23,13 @@ describe("dataframe constructor", () => {
     expect(df.at(2, 1)).toEqual(1);
     expect(df.iat(0, 0)).toEqual(0);
     expect(df.iat(2, 1)).toEqual(1);
-
-    expect(Array.from(df.rowIndex.labels())).toEqual(
-      df.rowIndex.getLabels(df.rowIndex.getOffsets(df.rowIndex.labels()))
-    );
-    expect(Array.from(df.colIndex.labels())).toEqual(
-      df.colIndex.getLabels(df.colIndex.getOffsets(df.colIndex.labels()))
-    );
   });
 
   test("create with labelled indices", () => {
     const df = new Dataframe.Dataframe(
       [3, 2],
       [new Int32Array([0, 1, 2]), new Int32Array([3, 4, 5])],
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'DenseInt32Index' is not assignab... Remove this comment to see the full error message
       new Dataframe.DenseInt32Index([2, 1, 0]),
       new Dataframe.KeyIndex(["A", "B"])
     );
@@ -63,6 +56,7 @@ describe("simple data access", () => {
       new Float64Array([0.0, Number.NaN, Number.POSITIVE_INFINITY, 3.14159]),
       ["red", "blue", "green", "nan"],
     ],
+    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'DenseInt32Index' is not assignab... Remove this comment to see the full error message
     new Dataframe.DenseInt32Index([3, 2, 1, 0]),
     new Dataframe.KeyIndex(["numbers", "colors"])
   );
@@ -129,9 +123,7 @@ describe("simple data access", () => {
     expect(df.has(3, "foo")).toBeFalsy();
     expect(df.has(-1, "numbers")).toBeFalsy();
     expect(df.has(-1, -1)).toBeFalsy();
-    expect(
-      df.has(null as unknown as number, null as unknown as number)
-    ).toBeFalsy();
+    expect(df.has(null, null)).toBeFalsy();
     expect(df.has(0, "foo")).toBeFalsy();
     expect(df.has(99, "numbers")).toBeFalsy();
     expect(df.has(99, "foo")).toBeFalsy();
@@ -149,10 +141,12 @@ describe("dataframe subsetting", () => {
         ["red", "green", "blue"],
       ],
       null, // identity index
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex(["int32", "string", "float32", "colors"])
     );
 
     test("all rows, one column", () => {
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
       const dfA = sourceDf.subset(null, ["colors"]);
       expect(dfA).toBeDefined();
       expect(dfA.dims).toEqual([3, 1]);
@@ -168,6 +162,7 @@ describe("dataframe subsetting", () => {
     });
 
     test("all rows, two columns", () => {
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
       const dfB = sourceDf.subset(null, ["float32", "colors"]);
       expect(dfB).toBeDefined();
       expect(dfB.dims).toEqual([3, 2]);
@@ -237,6 +232,7 @@ describe("dataframe subsetting", () => {
     });
 
     test("two rows, two colums", () => {
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
       const dfF = sourceDf.subset([0, 2], ["int32", "float32"]);
       expect(dfF).toBeDefined();
       expect(dfF.dims).toEqual([2, 2]);
@@ -246,6 +242,7 @@ describe("dataframe subsetting", () => {
       expect(dfF.colIndex.labels()).toEqual(["int32", "float32"]);
 
       // reverse the row and column order
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
       const dfFr = sourceDf.subset([2, 0], ["float32", "int32"]);
       expect(dfFr).toBeDefined();
       expect(dfFr.dims).toEqual([2, 2]);
@@ -258,23 +255,26 @@ describe("dataframe subsetting", () => {
     test("withRowIndex", () => {
       const df = sourceDf.subset(
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
         ["int32", "float32"],
-        new Dataframe.DenseInt32Index([2, 1])
+        new Dataframe.DenseInt32Index([3, 2, 1])
       );
-      expect(df.dims).toEqual([2, 2]);
       expect(df.colIndex).toBeInstanceOf(Dataframe.KeyIndex);
       expect(df.rowIndex).toBeInstanceOf(Dataframe.DenseInt32Index);
-      expect(df.at(2, "int32")).toEqual(df.iat(0, 0));
+      expect(df.at(3, "int32")).toEqual(df.iat(0, 0));
     });
 
     test("withRowIndex error checks", () => {
       expect(() =>
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
         sourceDf.subset(null, ["red"], new Dataframe.IdentityInt32Index(1))
       ).toThrow(RangeError);
       expect(() =>
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
         sourceDf.subset(null, ["red"], new Dataframe.DenseInt32Index([0, 1]))
       ).toThrow(RangeError);
       expect(() =>
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
         sourceDf.subset(null, ["red"], new Dataframe.KeyIndex([0, 1, 2, 3]))
       ).toThrow(RangeError);
     });
@@ -289,12 +289,14 @@ describe("dataframe subsetting", () => {
         new Float32Array([4.4, 5.5, 6.6]),
         ["red", "green", "blue"],
       ],
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'DenseInt32Index' is not assignab... Remove this comment to see the full error message
       new Dataframe.DenseInt32Index([2, 4, 6]),
       new Dataframe.KeyIndex(["int32", "string", "float32", "colors"])
     );
 
     const dfA = sourceDf.isubsetMask(
       new Uint8Array([0, 1, 1]),
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'Uint8Array' is not assignable to... Remove this comment to see the full error message
       new Uint8Array([1, 0, 0, 1])
     );
     expect(dfA.dims).toEqual([2, 2]);
@@ -314,6 +316,7 @@ describe("dataframe subsetting", () => {
         ["red", "green", "blue"],
       ],
       null, // identity index
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex(["int32", "string", "float32", "colors"])
     );
 
@@ -327,6 +330,7 @@ describe("dataframe subsetting", () => {
     });
 
     test("all rows, two cols", () => {
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'number[]' is not assignable to p... Remove this comment to see the full error message
       const dfA = sourceDf.isubset(null, [1, 2]);
       expect(dfA.dims).toEqual([3, 2]);
       expect(dfA.icol(0).asArray()).toEqual(["A", "B", "C"]);
@@ -372,6 +376,7 @@ describe("dataframe factories", () => {
     const dfA = new Dataframe.Dataframe(
       [3, 2],
       [new Int32Array([0, 1, 2]), new Int32Array([3, 4, 5])],
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'DenseInt32Index' is not assignab... Remove this comment to see the full error message
       new Dataframe.DenseInt32Index([2, 1, 0]),
       new Dataframe.KeyIndex(["A", "B"])
     );
@@ -396,6 +401,7 @@ describe("dataframe factories", () => {
           [true, false],
         ],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["colors", "bools"])
       );
       const dfA = df.withCol("numbers", [1, 0]);
@@ -419,6 +425,7 @@ describe("dataframe factories", () => {
           [true, false],
         ],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'DenseInt32Index' is not assignab... Remove this comment to see the full error message
         new Dataframe.DenseInt32Index([74, 75])
       );
       const dfA = df.withCol(72, [1, 0]);
@@ -444,6 +451,7 @@ describe("dataframe factories", () => {
           [true, false],
         ],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'DenseInt32Index' is not assignab... Remove this comment to see the full error message
         new Dataframe.DenseInt32Index([74, 75])
       );
       const dfA = df.withCol(999, [1, 0]);
@@ -552,6 +560,7 @@ describe("dataframe factories", () => {
           [1, 0],
         ],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["colors", "bools", "numbers"])
       );
 
@@ -560,11 +569,14 @@ describe("dataframe factories", () => {
         [3, 1],
         [["red", "blue", "green"]],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["colorsA"])
       );
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
       expect(() => dfA.withColsFrom(dfB)).toThrow(RangeError);
 
       /* duplicate labels should throw an error */
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
       expect(() => dfA.withColsFrom(dfA)).toThrow(Error);
     });
 
@@ -575,15 +587,18 @@ describe("dataframe factories", () => {
         [2, 1],
         [["red", "blue"]],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["colors"])
       );
       const dfB = new Dataframe.Dataframe(
         [2, 1],
         [[true, false]],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["bools"])
       );
 
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
       const dfLikeA = dfEmpty.withColsFrom(dfA);
       expect(dfLikeA).toBeDefined();
       expect(dfLikeA.dims).toEqual(dfA.dims);
@@ -592,6 +607,7 @@ describe("dataframe factories", () => {
       expect(dfLikeA.rowIndex.labels()).toEqual(dfA.rowIndex.labels());
       expect(dfLikeA.icol(0).asArray()).toEqual(dfA.icol(0).asArray());
 
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
       const dfAlsoLikeA = dfA.withColsFrom(dfEmpty);
       expect(dfAlsoLikeA).toBeDefined();
       expect(dfAlsoLikeA.dims).toEqual(dfA.dims);
@@ -600,6 +616,7 @@ describe("dataframe factories", () => {
       expect(dfAlsoLikeA.rowIndex.labels()).toEqual(dfA.rowIndex.labels());
       expect(dfAlsoLikeA.icol(0).asArray()).toEqual(dfA.icol(0).asArray());
 
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
       const dfC = dfA.withColsFrom(dfB);
       expect(dfC).toBeDefined();
       expect(dfC.dims).toEqual([2, 2]);
@@ -616,6 +633,7 @@ describe("dataframe factories", () => {
         [2, 1],
         [["red", "blue"]],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["colors"])
       );
       const dfB = new Dataframe.Dataframe(
@@ -626,6 +644,7 @@ describe("dataframe factories", () => {
           [1, 0],
         ],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["colors", "bools", "numbers"])
       );
 
@@ -658,6 +677,7 @@ describe("dataframe factories", () => {
         [2, 1],
         [["red", "blue"]],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["colors"])
       );
       const dfB = new Dataframe.Dataframe(
@@ -668,6 +688,7 @@ describe("dataframe factories", () => {
           [1, 0],
         ],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["colors", "bools", "numbers"])
       );
 
@@ -691,6 +712,7 @@ describe("dataframe factories", () => {
           [1, 0],
         ],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["colors", "bools", "numbers"])
       );
       const dfA = df.dropCol("colors");
@@ -762,6 +784,7 @@ describe("dataframe factories", () => {
           [1, 0],
         ],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'DenseInt32Index' is not assignab... Remove this comment to see the full error message
         new Dataframe.DenseInt32Index([102, 101, 100])
       );
       const dfA = df.dropCol(101);
@@ -788,7 +811,8 @@ describe("dataframe factories", () => {
           new Float64Array(3).fill(1.1),
         ]
       );
-      const dfB = dfA.mapColumns((col, idx) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+      const dfB = dfA.mapColumns((col: any, idx: any) => {
         expect(dfA.icol(idx).asArray()).toBe(col);
         return col;
       });
@@ -831,6 +855,7 @@ describe("dataframe factories", () => {
           [1, 0],
         ],
         null,
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
         new Dataframe.KeyIndex(["A", "B"])
       );
       const dfB = dfA.renameCol("B", "C");
@@ -843,7 +868,8 @@ describe("dataframe factories", () => {
 });
 
 describe("dataframe col", () => {
-  let df: Dataframe.Dataframe;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  let df: any = null;
   beforeEach(() => {
     df = new Dataframe.Dataframe(
       [2, 2],
@@ -852,6 +878,7 @@ describe("dataframe col", () => {
         [1, 0],
       ],
       null,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex(["A", "B"])
     );
   });
@@ -860,8 +887,8 @@ describe("dataframe col", () => {
     expect(df).toBeDefined();
     expect(df.col("A")).toBe(df.icol(0));
     expect(df.col("B")).toBe(df.icol(1));
-    expect(() => df.col("undefined")).toThrow(RangeError);
-    expect(() => df.icol("undefined" as unknown as number)).toThrow(RangeError);
+    expect(df.col("undefined")).toBeUndefined();
+    expect(df.icol("undefined")).toBeUndefined();
 
     const colA = df.col("A");
     expect(colA).toBeInstanceOf(Function);
@@ -915,13 +942,13 @@ describe("dataframe col", () => {
     expect(df.col("A").indexOf(true)).toEqual(0);
     expect(df.col("A").indexOf(false)).toEqual(1);
     expect(df.col("A").indexOf(99)).toBeUndefined();
-    expect(df.col("A").indexOf(undefined as unknown as number)).toBeUndefined();
+    expect(df.col("A").indexOf(undefined)).toBeUndefined();
     expect(df.col("A").indexOf(1)).toBeUndefined();
 
     expect(df.col("B").indexOf(1)).toEqual(0);
     expect(df.col("B").indexOf(0)).toEqual(1);
     expect(df.col("B").indexOf(99)).toBeUndefined();
-    expect(df.col("B").indexOf(undefined as unknown as number)).toBeUndefined();
+    expect(df.col("B").indexOf(undefined)).toBeUndefined();
     expect(df.col("B").indexOf(true)).toBeUndefined();
   });
 });
@@ -964,7 +991,7 @@ describe("label indexing", () => {
 
     test("offsets", () => {
       expect(idx.getOffset(1)).toEqual(1);
-      expect(idx.getOffsets([1, 3])).toEqual(new Int32Array([1, 3]));
+      expect(idx.getOffsets([1, 3])).toEqual([1, 3]);
     });
 
     test("subset", () => {
@@ -1042,7 +1069,7 @@ describe("label indexing", () => {
             false,
           ])
           .labels()
-      ).toEqual([]);
+      ).toEqual(new Int32Array([]));
       expect(
         idx
           .isubsetMask([
@@ -1136,14 +1163,16 @@ describe("label indexing", () => {
       expect(idx.labels()).toEqual(new Int32Array([99, 1002, 48, 0, 22]));
       expect(idx.size()).toEqual(5);
       expect(idx.getLabel(0)).toEqual(99);
-      expect(idx.getLabels(new Int32Array([2, 4]))).toEqual([48, 22]);
+      expect(idx.getLabels(new Int32Array([2, 4]))).toEqual(
+        new Int32Array([48, 22])
+      );
       expect(idx.getLabels([2, 4])).toEqual([48, 22]);
     });
 
     test("offsets", () => {
       expect(idx.getOffset(1002)).toEqual(1);
       expect(idx.getOffset(0)).toEqual(3);
-      expect(idx.getOffsets([0, 48])).toEqual(new Int32Array([3, 2]));
+      expect(idx.getOffsets([0, 48])).toEqual([3, 2]);
     });
 
     test("subset", () => {
@@ -1170,7 +1199,7 @@ describe("label indexing", () => {
       );
       expect(
         idx.isubsetMask([false, false, false, false, false]).labels()
-      ).toEqual([]);
+      ).toEqual(new Int32Array([]));
       expect(idx.isubsetMask([true, true, false, true, true]).labels()).toEqual(
         new Int32Array([99, 1002, 0, 22])
       );
@@ -1272,67 +1301,59 @@ describe("corner cases", () => {
     const idx = new Dataframe.IdentityInt32Index(10);
     expect(idx.getOffset(0)).toBe(0);
     expect(idx.getOffset(9)).toBe(9);
-    expect(idx.getOffset(10)).toBe(-1);
-    expect(idx.getOffset(-1)).toBe(-1);
-    expect(idx.getOffset("sort")).toBe(-1);
-    expect(idx.getOffset("length")).toBe(-1);
-    expect(idx.getOffset(true as unknown as string)).toBe(-1);
-    expect(idx.getOffset(0.001)).toBe(-1);
-    expect(idx.getOffset({} as unknown as string)).toBe(-1);
-    expect(idx.getOffset([] as unknown as string)).toBe(-1);
-    expect(idx.getOffset(new Float32Array() as unknown as string)).toBe(-1);
-    expect(idx.getOffset("__proto__")).toBe(-1);
+    expect(idx.getOffset(10)).toBeUndefined();
+    expect(idx.getOffset(-1)).toBeUndefined();
+    expect(idx.getOffset("sort")).toBeUndefined();
+    expect(idx.getOffset("length")).toBeUndefined();
+    expect(idx.getOffset(true)).toBeUndefined();
+    expect(idx.getOffset(0.001)).toBeUndefined();
+    expect(idx.getOffset({})).toBeUndefined();
+    expect(idx.getOffset([])).toBeUndefined();
+    expect(idx.getOffset(new Float32Array())).toBeUndefined();
+    expect(idx.getOffset("__proto__")).toBeUndefined();
 
     expect(idx.getLabel(0)).toBe(0);
     expect(idx.getLabel(9)).toBe(9);
     expect(idx.getLabel(10)).toBeUndefined();
     expect(idx.getLabel(-1)).toBeUndefined();
-    expect(idx.getLabel("sort" as unknown as number)).toBeUndefined();
-    expect(idx.getLabel("length" as unknown as number)).toBeUndefined();
-    expect(idx.getLabel(true as unknown as number)).toBeUndefined();
+    expect(idx.getLabel("sort")).toBeUndefined();
+    expect(idx.getLabel("length")).toBeUndefined();
+    expect(idx.getLabel(true)).toBeUndefined();
     expect(idx.getLabel(0.001)).toBeUndefined();
-    expect(idx.getLabel({} as unknown as number)).toBeUndefined();
-    expect(idx.getLabel([] as unknown as number)).toBeUndefined();
-    expect(
-      idx.getLabel(new Float32Array() as unknown as number)
-    ).toBeUndefined();
-    expect(idx.getLabel("__proto__" as unknown as number)).toBeUndefined();
+    expect(idx.getLabel({})).toBeUndefined();
+    expect(idx.getLabel([])).toBeUndefined();
+    expect(idx.getLabel(new Float32Array())).toBeUndefined();
+    expect(idx.getLabel("__proto__")).toBeUndefined();
   });
 
   test("dense integer index rejects non-integer labels", () => {
     const idx = new Dataframe.DenseInt32Index([-10, 0, 3, 9, 10]);
-    expect(idx.getOffset(-10)).toBe(0);
     expect(idx.getOffset(0)).toBe(1);
-    expect(idx.getOffset(3)).toBe(2);
     expect(idx.getOffset(9)).toBe(3);
-    expect(idx.getOffset(10)).toBe(4);
-
-    expect(idx.getOffset(1)).toBe(-1);
-    expect(idx.getOffset(11)).toBe(-1);
-    expect(idx.getOffset(-1)).toBe(-1);
-    expect(idx.getOffset("sort")).toBe(-1);
-    expect(idx.getOffset("length")).toBe(-1);
-    expect(idx.getOffset(true as unknown as string)).toBe(-1);
-    expect(idx.getOffset(0.001)).toBe(-1);
-    expect(idx.getOffset({} as unknown as string)).toBe(-1);
-    expect(idx.getOffset([] as unknown as string)).toBe(-1);
-    expect(idx.getOffset(new Float32Array() as unknown as string)).toBe(-1);
-    expect(idx.getOffset("__proto__")).toBe(-1);
+    expect(idx.getOffset(1)).toBeUndefined();
+    expect(idx.getOffset(11)).toBeUndefined();
+    expect(idx.getOffset(-1)).toBeUndefined();
+    expect(idx.getOffset("sort")).toBeUndefined();
+    expect(idx.getOffset("length")).toBeUndefined();
+    expect(idx.getOffset(true)).toBeUndefined();
+    expect(idx.getOffset(0.001)).toBeUndefined();
+    expect(idx.getOffset({})).toBeUndefined();
+    expect(idx.getOffset([])).toBeUndefined();
+    expect(idx.getOffset(new Float32Array())).toBeUndefined();
+    expect(idx.getOffset("__proto__")).toBeUndefined();
 
     expect(idx.getLabel(0)).toBe(-10);
     expect(idx.getLabel(4)).toBe(10);
     expect(idx.getLabel(10)).toBeUndefined();
     expect(idx.getLabel(-1)).toBeUndefined();
-    expect(idx.getLabel("sort" as unknown as number)).toBeUndefined();
-    expect(idx.getLabel("length" as unknown as number)).toBeUndefined();
-    expect(idx.getLabel(true as unknown as number)).toBeUndefined();
+    expect(idx.getLabel("sort")).toBeUndefined();
+    expect(idx.getLabel("length")).toBeUndefined();
+    expect(idx.getLabel(true)).toBeUndefined();
     expect(idx.getLabel(0.001)).toBeUndefined();
-    expect(idx.getLabel({} as unknown as number)).toBeUndefined();
-    expect(idx.getLabel([] as unknown as number)).toBeUndefined();
-    expect(
-      idx.getLabel(new Float32Array() as unknown as number)
-    ).toBeUndefined();
-    expect(idx.getLabel("__proto__" as unknown as number)).toBeUndefined();
+    expect(idx.getLabel({})).toBeUndefined();
+    expect(idx.getLabel([])).toBeUndefined();
+    expect(idx.getLabel(new Float32Array())).toBeUndefined();
+    expect(idx.getLabel("__proto__")).toBeUndefined();
   });
 
   test("Empty dataframe rejects bogus labels", () => {
@@ -1340,55 +1361,39 @@ describe("corner cases", () => {
 
     expect(df.hasCol("sort")).toBeFalsy();
     expect(df.hasCol(0)).toBeFalsy();
-    expect(df.hasCol(true as unknown as number)).toBeFalsy();
-    expect(df.hasCol(false as unknown as number)).toBeFalsy();
-    expect(df.hasCol([] as unknown as number)).toBeFalsy();
-    expect(df.hasCol({} as unknown as number)).toBeFalsy();
-    expect(df.hasCol(null as unknown as number)).toBeFalsy();
-    expect(df.hasCol(undefined as unknown as number)).toBeFalsy();
+    expect(df.hasCol(true)).toBeFalsy();
+    expect(df.hasCol(false)).toBeFalsy();
+    expect(df.hasCol([])).toBeFalsy();
+    expect(df.hasCol({})).toBeFalsy();
+    expect(df.hasCol(null)).toBeFalsy();
+    expect(df.hasCol(undefined)).toBeFalsy();
 
-    expect(() => df.col("sort")).toThrow(RangeError);
-    expect(() => df.col(0)).toThrow(RangeError);
-    expect(() => df.col(true as unknown as string)).toThrow(RangeError);
-    expect(() => df.col(false as unknown as string)).toThrow(RangeError);
-    expect(() => df.col([] as unknown as string)).toThrow(RangeError);
-    expect(() => df.col({} as unknown as string)).toThrow(RangeError);
-    expect(() => df.col(null as unknown as string)).toThrow(RangeError);
-    expect(() => df.col(undefined as unknown as string)).toThrow(RangeError);
+    expect(df.col("sort")).toBeUndefined();
+    expect(df.col(0)).toBeUndefined();
+    expect(df.col(true)).toBeUndefined();
+    expect(df.col(false)).toBeUndefined();
+    expect(df.col([])).toBeUndefined();
+    expect(df.col({})).toBeUndefined();
+    expect(df.col(null)).toBeUndefined();
+    expect(df.col(undefined)).toBeUndefined();
 
-    expect(() => df.icol("sort" as unknown as number)).toThrow(RangeError);
-    expect(() => df.icol(0)).toThrow(RangeError);
-    expect(() => df.icol(true as unknown as number)).toThrow(RangeError);
-    expect(() => df.icol(false as unknown as number)).toThrow(RangeError);
-    expect(() => df.icol([] as unknown as number)).toThrow(RangeError);
-    expect(() => df.icol({} as unknown as number)).toThrow(RangeError);
-    expect(() => df.icol(null as unknown as number)).toThrow(RangeError);
-    expect(() => df.icol(undefined as unknown as number)).toThrow(RangeError);
+    expect(df.icol("sort")).toBeUndefined();
+    expect(df.icol(0)).toBeUndefined();
+    expect(df.icol(true)).toBeUndefined();
+    expect(df.icol(false)).toBeUndefined();
+    expect(df.icol([])).toBeUndefined();
+    expect(df.icol({})).toBeUndefined();
+    expect(df.icol(null)).toBeUndefined();
+    expect(df.icol(undefined)).toBeUndefined();
 
-    expect(
-      df.ihas("sort" as unknown as number, "length" as unknown as number)
-    ).toBeFalsy();
-    expect(
-      df.ihas("0" as unknown as number, "0" as unknown as number)
-    ).toBeFalsy();
-    expect(
-      df.ihas("" as unknown as number, "" as unknown as number)
-    ).toBeFalsy();
-    expect(
-      df.ihas(null as unknown as number, null as unknown as number)
-    ).toBeFalsy();
-    expect(
-      df.ihas(undefined as unknown as number, undefined as unknown as number)
-    ).toBeFalsy();
-    expect(
-      df.ihas(true as unknown as number, true as unknown as number)
-    ).toBeFalsy();
-    expect(
-      df.ihas([] as unknown as number, [] as unknown as number)
-    ).toBeFalsy();
-    expect(
-      df.ihas({} as unknown as number, {} as unknown as number)
-    ).toBeFalsy();
+    expect(df.ihas("sort", "length")).toBeFalsy();
+    expect(df.ihas("0", "0")).toBeFalsy();
+    expect(df.ihas("", "")).toBeFalsy();
+    expect(df.ihas(null, null)).toBeFalsy();
+    expect(df.ihas(undefined, undefined)).toBeFalsy();
+    expect(df.ihas(true, true)).toBeFalsy();
+    expect(df.ihas([], [])).toBeFalsy();
+    expect(df.ihas({}, {})).toBeFalsy();
   });
 
   test("Dataframe rejects bogus labels", () => {
@@ -1399,64 +1404,58 @@ describe("corner cases", () => {
         [1, 0],
       ],
       null,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex(["A", "B"])
     );
 
     expect(df.hasCol("sort")).toBeFalsy();
     expect(df.hasCol("__proto__")).toBeFalsy();
     expect(df.hasCol(0)).toBeFalsy();
-    expect(df.hasCol(true as unknown as string)).toBeFalsy();
-    expect(df.hasCol(false as unknown as string)).toBeFalsy();
-    expect(df.hasCol([] as unknown as string)).toBeFalsy();
-    expect(df.hasCol({} as unknown as string)).toBeFalsy();
-    expect(df.hasCol(null as unknown as string)).toBeFalsy();
-    expect(df.hasCol(undefined as unknown as string)).toBeFalsy();
+    expect(df.hasCol(true)).toBeFalsy();
+    expect(df.hasCol(false)).toBeFalsy();
+    expect(df.hasCol([])).toBeFalsy();
+    expect(df.hasCol({})).toBeFalsy();
+    expect(df.hasCol(null)).toBeFalsy();
+    expect(df.hasCol(undefined)).toBeFalsy();
 
-    expect(() => df.col("sort")).toThrow(RangeError);
-    expect(() => df.col("__proto__")).toThrow(RangeError);
-    expect(() => df.col(0)).toThrow(RangeError);
-    expect(() => df.col(true as unknown as string)).toThrow(RangeError);
-    expect(() => df.col(false as unknown as string)).toThrow(RangeError);
-    expect(() => df.col([] as unknown as string)).toThrow(RangeError);
-    expect(() => df.col({} as unknown as string)).toThrow(RangeError);
-    expect(() => df.col(null as unknown as string)).toThrow(RangeError);
-    expect(() => df.col(undefined as unknown as string)).toThrow(RangeError);
+    expect(df.col("sort")).toBeUndefined();
+    expect(df.col("__proto__")).toBeUndefined();
+    expect(df.col(0)).toBeUndefined();
+    expect(df.col(true)).toBeUndefined();
+    expect(df.col(false)).toBeUndefined();
+    expect(df.col([])).toBeUndefined();
+    expect(df.col({})).toBeUndefined();
+    expect(df.col(null)).toBeUndefined();
+    expect(df.col(undefined)).toBeUndefined();
 
-    expect(() => df.icol("sort" as unknown as number)).toThrow(RangeError);
-    expect(() => df.icol("__proto__" as unknown as number)).toThrow(RangeError);
-    expect(() => df.icol(-1)).toThrow(RangeError);
-    expect(() => df.icol(true as unknown as number)).toThrow(RangeError);
-    expect(() => df.icol(false as unknown as number)).toThrow(RangeError);
-    expect(() => df.icol([] as unknown as number)).toThrow(RangeError);
-    expect(() => df.icol({} as unknown as number)).toThrow(RangeError);
-    expect(() => df.icol(null as unknown as number)).toThrow(RangeError);
-    expect(() => df.icol(undefined as unknown as number)).toThrow(RangeError);
+    expect(df.icol("sort")).toBeUndefined();
+    expect(df.icol("__proto__")).toBeUndefined();
+    expect(df.icol(-1)).toBeUndefined();
+    expect(df.icol(true)).toBeUndefined();
+    expect(df.icol(false)).toBeUndefined();
+    expect(df.icol([])).toBeUndefined();
+    expect(df.icol({})).toBeUndefined();
+    expect(df.icol(null)).toBeUndefined();
+    expect(df.icol(undefined)).toBeUndefined();
 
-    expect(
-      df.ihas("sort" as unknown as number, "length" as unknown as number)
-    ).toBeFalsy();
-    expect(
-      df.ihas(
-        "__proto__" as unknown as number,
-        "__proto__" as unknown as number
-      )
-    ).toBeFalsy();
+    expect(df.ihas("sort", "length")).toBeFalsy();
+    expect(df.ihas("__proto__", "__proto__")).toBeFalsy();
 
     expect(df.ihas(-1, 0)).toBeFalsy();
-    expect(df.ihas("0" as unknown as number, 0)).toBeFalsy();
-    expect(df.ihas("" as unknown as number, 0)).toBeFalsy();
-    expect(df.ihas(null as unknown as number, 0)).toBeFalsy();
-    expect(df.ihas(undefined as unknown as number, 0)).toBeFalsy();
-    expect(df.ihas([] as unknown as number, 0)).toBeFalsy();
-    expect(df.ihas({} as unknown as number, 0)).toBeFalsy();
+    expect(df.ihas("0", 0)).toBeFalsy();
+    expect(df.ihas("", 0)).toBeFalsy();
+    expect(df.ihas(null, 0)).toBeFalsy();
+    expect(df.ihas(undefined, 0)).toBeFalsy();
+    expect(df.ihas([], 0)).toBeFalsy();
+    expect(df.ihas({}, 0)).toBeFalsy();
 
     expect(df.ihas(0, -1)).toBeFalsy();
-    expect(df.ihas(0, "0" as unknown as number)).toBeFalsy();
-    expect(df.ihas(0, "" as unknown as number)).toBeFalsy();
-    expect(df.ihas(0, null as unknown as number)).toBeFalsy();
-    expect(df.ihas(0, undefined as unknown as number)).toBeFalsy();
-    expect(df.ihas(0, [] as unknown as number)).toBeFalsy();
-    expect(df.ihas(0, {} as unknown as number)).toBeFalsy();
+    expect(df.ihas(0, "0")).toBeFalsy();
+    expect(df.ihas(0, "")).toBeFalsy();
+    expect(df.ihas(0, null)).toBeFalsy();
+    expect(df.ihas(0, undefined)).toBeFalsy();
+    expect(df.ihas(0, [])).toBeFalsy();
+    expect(df.ihas(0, {})).toBeFalsy();
 
     expect(df.has("sort", "length")).toBeFalsy();
     expect(df.has("length", "sort")).toBeFalsy();
@@ -1465,17 +1464,17 @@ describe("corner cases", () => {
     expect(df.has(-1, "A")).toBeFalsy();
     expect(df.has("0", "A")).toBeFalsy();
     expect(df.has("", "A")).toBeFalsy();
-    expect(df.has(null as unknown as string, "A")).toBeFalsy();
-    expect(df.has(undefined as unknown as string, "A")).toBeFalsy();
-    expect(df.has([] as unknown as string, "A")).toBeFalsy();
-    expect(df.has({} as unknown as string, "A")).toBeFalsy();
+    expect(df.has(null, "A")).toBeFalsy();
+    expect(df.has(undefined, "A")).toBeFalsy();
+    expect(df.has([], "A")).toBeFalsy();
+    expect(df.has({}, "A")).toBeFalsy();
 
     expect(df.has(0, -1)).toBeFalsy();
     expect(df.has(0, "0")).toBeFalsy();
     expect(df.has(0, "")).toBeFalsy();
-    expect(df.has(0, null as unknown as string)).toBeFalsy();
-    expect(df.has(0, undefined as unknown as string)).toBeFalsy();
-    expect(df.has(0, [] as unknown as string)).toBeFalsy();
-    expect(df.has(0, {} as unknown as string)).toBeFalsy();
+    expect(df.has(0, null)).toBeFalsy();
+    expect(df.has(0, undefined)).toBeFalsy();
+    expect(df.has(0, [])).toBeFalsy();
+    expect(df.has(0, {})).toBeFalsy();
   });
 });

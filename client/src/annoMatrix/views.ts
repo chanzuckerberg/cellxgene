@@ -197,7 +197,7 @@ function _clipAnnoMatrix(field, colLabel, colSchema, colData, df, qmin, qmax) {
   if (qmax > 1) qmax = 1;
   if (qmin === 0 && qmax === 1) return colData;
 
-  const quantiles = df.col(colLabel).summarizeContinuous().percentiles;
+  const quantiles = df.col(colLabel).summarize().percentiles;
   const lower = quantiles[100 * qmin];
   const upper = quantiles[100 * qmax];
   const clippedData = clip(colData.slice(), lower, upper, Number.NaN);

@@ -25,7 +25,6 @@ import actions from "../../../actions";
 import MiniHistogram from "../../miniHistogram";
 import MiniStackedBar from "../../miniStackedBar";
 import { CategoryCrossfilterContext } from "../categoryContext";
-import { Dataframe, ContinuousHistogram } from "../../../util/dataframe";
 
 const STACKED_BAR_HEIGHT = 11;
 const STACKED_BAR_WIDTH = 100;
@@ -328,11 +327,13 @@ class CategoryValue extends React.Component<{}, State> {
   createHistogramBins = (
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     metadataField: any,
-    categoryData: Dataframe,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+    categoryData: any,
     // @ts-expect-error ts-migrate(6133) FIXME: 'colorAccessor' is declared but its value is never... Remove this comment to see the full error message
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     colorAccessor: any,
-    colorData: Dataframe,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+    colorData: any,
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     categoryValue: any,
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
@@ -347,17 +348,17 @@ class CategoryValue extends React.Component<{}, State> {
     */
     const groupBy = categoryData.col(metadataField);
     const col = colorData.icol(0);
-    const range = col.summarizeContinuous();
+    const range = col.summarize();
 
-    const histogramMap = col.histogramContinuousBy(
+    const histogramMap = col.histogram(
       50,
       [range.min, range.max],
       groupBy
-    ); 
+    ); /* Because the signature changes we really need different names for histogram to differentiate signatures  */
 
     const bins = histogramMap.has(categoryValue)
-      ? histogramMap.get(categoryValue) as ContinuousHistogram
-      : new Array<number>(50).fill(0);
+      ? histogramMap.get(categoryValue)
+      : new Array(50).fill(0);
 
     const xScale = d3.scaleLinear().domain([0, bins.length]).range([0, width]);
 
@@ -376,10 +377,12 @@ class CategoryValue extends React.Component<{}, State> {
   createStackedGraphBins = (
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     metadataField: any,
-    categoryData: Dataframe,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+    categoryData: any,
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     colorAccessor: any,
-    colorData: Dataframe,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+    colorData: any,
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
     categoryValue: any,
     // @ts-expect-error ts-migrate(6133) FIXME: 'colorTable' is declared but its value is never re... Remove this comment to see the full error message
@@ -398,7 +401,7 @@ class CategoryValue extends React.Component<{}, State> {
     const groupBy = categoryData.col(metadataField);
     const occupancyMap = colorData
       .col(colorAccessor)
-      .histogramCategoricalBy(groupBy);
+      .histogramCategorical(groupBy);
 
     const occupancy = occupancyMap.get(categoryValue);
 

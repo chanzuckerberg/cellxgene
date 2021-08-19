@@ -6,10 +6,11 @@ describe("Dataframe column histogram", () => {
       [3, 3],
       [["n1", "n2", "n3"], ["c1", "c2", "c3"], new Int32Array([0, 1, 2])],
       null,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex(["name", "cat", "value"])
     );
 
-    const h1 = df.col("cat").histogramCategoricalBy(df.col("name"));
+    const h1 = df.col("cat").histogram(df.col("name"));
     expect(h1).toMatchObject(
       new Map([
         ["n1", new Map([["c1", 1]])],
@@ -18,9 +19,7 @@ describe("Dataframe column histogram", () => {
       ])
     );
     // memoized?
-    expect(df.col("cat").histogramCategoricalBy(df.col("name"))).toMatchObject(
-      h1
-    );
+    expect(df.col("cat").histogram(df.col("name"))).toMatchObject(h1);
   });
 
   test("continuous by categorical", () => {
@@ -28,10 +27,11 @@ describe("Dataframe column histogram", () => {
       [3, 3],
       [["n1", "n2", "n3"], ["c1", "c2", "c3"], new Int32Array([0, 1, 2])],
       null,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex(["name", "cat", "value"])
     );
 
-    const h1 = df.col("value").histogramContinuousBy(3, [0, 2], df.col("name"));
+    const h1 = df.col("value").histogram(3, [0, 2], df.col("name"));
     expect(h1).toMatchObject(
       new Map([
         ["n1", [1, 0, 0]],
@@ -40,9 +40,9 @@ describe("Dataframe column histogram", () => {
       ])
     );
     // memoized?
-    expect(
-      df.col("value").histogramContinuousBy(3, [0, 2], df.col("name"))
-    ).toMatchObject(h1);
+    expect(df.col("value").histogram(3, [0, 2], df.col("name"))).toMatchObject(
+      h1
+    );
   });
 
   test("categorical", () => {
@@ -50,10 +50,11 @@ describe("Dataframe column histogram", () => {
       [3, 3],
       [["n1", "n2", "n3"], ["c1", "c2", "c3"], new Int32Array([0, 1, 2])],
       null,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex(["name", "cat", "value"])
     );
 
-    const h1 = df.col("cat").histogramCategorical();
+    const h1 = df.col("cat").histogram();
     expect(h1).toMatchObject(
       new Map([
         ["c1", 1],
@@ -62,7 +63,7 @@ describe("Dataframe column histogram", () => {
       ])
     );
     // memoized?
-    expect(df.col("cat").histogramCategorical()).toMatchObject(h1);
+    expect(df.col("value").histogram(3, [0, 2])).toMatchObject(h1);
   });
 
   test("continuous", () => {
@@ -70,13 +71,14 @@ describe("Dataframe column histogram", () => {
       [3, 3],
       [["n1", "n2", "n3"], ["c1", "c2", "c3"], new Int32Array([0, 1, 2])],
       null,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex(["name", "cat", "value"])
     );
 
-    const h1 = df.col("value").histogramContinuous(3, [0, 2]);
+    const h1 = df.col("value").histogram(3, [0, 2]);
     expect(h1).toMatchObject([1, 1, 1]);
     // memoized?
-    expect(df.col("value").histogramContinuous(3, [0, 2])).toMatchObject(h1);
+    expect(df.col("value").histogram(3, [0, 2])).toMatchObject(h1);
   });
 
   test("continuous thesholds correct", () => {
@@ -86,11 +88,20 @@ describe("Dataframe column histogram", () => {
       [new Int32Array(vals), new Float32Array(vals)]
     );
 
-    expect(df.col(0).histogramContinuous(5, [0, 100])).toEqual([5, 1, 0, 0, 2]);
-    expect(df.col(1).histogramContinuous(5, [0, 100])).toEqual([5, 1, 0, 0, 2]);
-    expect(df.col(0).histogramContinuous(2, [0, 10])).toEqual([2, 2]);
-    expect(df.col(0).histogramContinuous(10, [0, 100])).toEqual([
-      3, 2, 1, 0, 0, 0, 0, 0, 0, 2,
+    expect(df.col(0).histogram(5, [0, 100])).toEqual([5, 1, 0, 0, 2]);
+    expect(df.col(1).histogram(5, [0, 100])).toEqual([5, 1, 0, 0, 2]);
+    expect(df.col(0).histogram(2, [0, 10])).toEqual([2, 2]);
+    expect(df.col(0).histogram(10, [0, 100])).toEqual([
+      3,
+      2,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      2,
     ]);
   });
 });

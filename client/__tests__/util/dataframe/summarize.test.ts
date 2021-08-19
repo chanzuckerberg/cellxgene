@@ -8,7 +8,7 @@ function float32Conversion(f: any) {
 describe("Dataframe column summary", () => {
   test("empty column test", () => {
     const df = Dataframe.Dataframe.create([0, 1], [[]]);
-    const summary = df.icol(0).summarizeCategorical();
+    const summary = df.icol(0).summarize();
     expect(summary).toEqual(
       expect.objectContaining({
         categorical: true,
@@ -31,6 +31,7 @@ describe("Dataframe column summary", () => {
         [1],
       ],
       null,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex([
         "name",
         "nameString",
@@ -41,7 +42,7 @@ describe("Dataframe column summary", () => {
       ])
     );
 
-    expect(df.icol(0).summarizeCategorical()).toEqual(
+    expect(df.icol(0).summarize()).toEqual(
       expect.objectContaining({
         categorical: true,
         categories: ["n1"],
@@ -49,7 +50,7 @@ describe("Dataframe column summary", () => {
         numCategories: 1,
       })
     );
-    expect(df.icol(1).summarizeCategorical()).toEqual(
+    expect(df.icol(1).summarize()).toEqual(
       expect.objectContaining({
         categorical: true,
         categories: ["hi"],
@@ -57,7 +58,7 @@ describe("Dataframe column summary", () => {
         numCategories: 1,
       })
     );
-    expect(df.icol(2).summarizeCategorical()).toEqual(
+    expect(df.icol(2).summarize()).toEqual(
       expect.objectContaining({
         categorical: true,
         categories: [true],
@@ -65,7 +66,7 @@ describe("Dataframe column summary", () => {
         numCategories: 1,
       })
     );
-    expect(df.icol(3).summarizeContinuous()).toEqual(
+    expect(df.icol(3).summarize()).toEqual(
       expect.objectContaining({
         categorical: false,
         min: float32Conversion(39.3),
@@ -75,7 +76,7 @@ describe("Dataframe column summary", () => {
         pinf: 0,
       })
     );
-    expect(df.icol(4).summarizeContinuous()).toEqual(
+    expect(df.icol(4).summarize()).toEqual(
       expect.objectContaining({
         categorical: false,
         min: 99,
@@ -85,7 +86,7 @@ describe("Dataframe column summary", () => {
         pinf: 0,
       })
     );
-    expect(df.icol(5).summarizeCategorical()).toEqual(
+    expect(df.icol(5).summarize()).toEqual(
       expect.objectContaining({
         categorical: true,
         categories: [1],
@@ -107,6 +108,7 @@ describe("Dataframe column summary", () => {
         [1, false, "0"],
       ],
       null,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex([
         "name",
         "nameString",
@@ -117,7 +119,7 @@ describe("Dataframe column summary", () => {
       ])
     );
 
-    expect(df.icol(0).summarizeCategorical()).toEqual(
+    expect(df.icol(0).summarize()).toEqual(
       expect.objectContaining({
         categorical: true,
         categories: expect.arrayContaining(["n0", "n1", "n2"]),
@@ -129,7 +131,7 @@ describe("Dataframe column summary", () => {
         numCategories: 3,
       })
     );
-    expect(df.icol(1).summarizeCategorical()).toEqual(
+    expect(df.icol(1).summarize()).toEqual(
       expect.objectContaining({
         categorical: true,
         categories: expect.arrayContaining(["hi", "bye"]),
@@ -140,7 +142,7 @@ describe("Dataframe column summary", () => {
         numCategories: 2,
       })
     );
-    expect(df.icol(2).summarizeCategorical()).toEqual(
+    expect(df.icol(2).summarize()).toEqual(
       expect.objectContaining({
         categorical: true,
         categories: expect.arrayContaining([true, false]),
@@ -151,7 +153,7 @@ describe("Dataframe column summary", () => {
         numCategories: 2,
       })
     );
-    expect(df.icol(3).summarizeContinuous()).toEqual(
+    expect(df.icol(3).summarize()).toEqual(
       expect.objectContaining({
         categorical: false,
         min: 0,
@@ -161,7 +163,7 @@ describe("Dataframe column summary", () => {
         pinf: 0,
       })
     );
-    expect(df.icol(4).summarizeContinuous()).toEqual(
+    expect(df.icol(4).summarize()).toEqual(
       expect.objectContaining({
         categorical: false,
         min: 99,
@@ -171,7 +173,7 @@ describe("Dataframe column summary", () => {
         pinf: 0,
       })
     );
-    expect(df.icol(5).summarizeCategorical()).toEqual(
+    expect(df.icol(5).summarize()).toEqual(
       expect.objectContaining({
         categorical: true,
         categories: expect.arrayContaining([1, false, "0"]),
@@ -203,6 +205,7 @@ describe("Dataframe column summary", () => {
         [1, false, "0", "0"],
       ],
       null,
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'KeyIndex' is not assignable to p... Remove this comment to see the full error message
       new Dataframe.KeyIndex([
         "name",
         "nameString",
@@ -213,7 +216,7 @@ describe("Dataframe column summary", () => {
       ])
     );
 
-    expect(df.icol(0).summarizeCategorical()).toEqual(
+    expect(df.icol(0).summarize()).toEqual(
       expect.objectContaining({
         categorical: true,
         categories: expect.arrayContaining(["n0", "n1", "n2"]),
@@ -225,7 +228,7 @@ describe("Dataframe column summary", () => {
         numCategories: 3,
       })
     );
-    expect(df.icol(1).summarizeCategorical()).toEqual(
+    expect(df.icol(1).summarize()).toEqual(
       expect.objectContaining({
         categorical: true,
         categories: expect.arrayContaining(["hi", "bye"]),
@@ -236,7 +239,7 @@ describe("Dataframe column summary", () => {
         numCategories: 2,
       })
     );
-    expect(df.icol(2).summarizeCategorical()).toEqual(
+    expect(df.icol(2).summarize()).toEqual(
       expect.objectContaining({
         categorical: true,
         categories: expect.arrayContaining([true, false]),
@@ -247,7 +250,7 @@ describe("Dataframe column summary", () => {
         numCategories: 2,
       })
     );
-    expect(df.icol(3).summarizeContinuous()).toEqual(
+    expect(df.icol(3).summarize()).toEqual(
       expect.objectContaining({
         categorical: false,
         min: float32Conversion(39.3),
@@ -257,7 +260,7 @@ describe("Dataframe column summary", () => {
         pinf: 1,
       })
     );
-    expect(df.icol(4).summarizeContinuous()).toEqual(
+    expect(df.icol(4).summarize()).toEqual(
       expect.objectContaining({
         categorical: false,
         min: 99,
@@ -267,7 +270,7 @@ describe("Dataframe column summary", () => {
         pinf: 0,
       })
     );
-    expect(df.icol(5).summarizeCategorical()).toEqual(
+    expect(df.icol(5).summarize()).toEqual(
       expect.objectContaining({
         categorical: true,
         categories: expect.arrayContaining([1, false, "0"]),

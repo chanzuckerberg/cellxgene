@@ -7,7 +7,6 @@ import memoize from "memoize-one";
 import * as globals from "../../globals";
 import parseRGB from "../parseRGB";
 import { range } from "../range";
-import { Dataframe, LabelType } from "../dataframe";
 
 /*
 given a color mode & accessor, generate an annoMatrix query that will
@@ -96,19 +95,18 @@ Returns:
   }
 */
 function _createColorTable(
-  colorMode: string | null,
-  colorByAccessor: LabelType | null,
-  colorByData: Dataframe | null,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  colorMode: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  colorByAccessor: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  colorByData: any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   schema: any,
   userColors = null
 ) {
-  if (colorMode === null || colorByData === null)
-    return defaultColors(schema.dataframe.nObs);
-
   switch (colorMode) {
     case "color by categorical metadata": {
-      if (colorByAccessor === null) return defaultColors(schema.dataframe.nObs);
       const data = colorByData.col(colorByAccessor).asArray();
       // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
       if (userColors && colorByAccessor in userColors) {
@@ -117,19 +115,18 @@ function _createColorTable(
       return createColorsByCategoricalMetadata(data, colorByAccessor, schema);
     }
     case "color by continuous metadata": {
-      if (colorByAccessor === null) return defaultColors(schema.dataframe.nObs);
       const col = colorByData.col(colorByAccessor);
-      const { min, max } = col.summarizeContinuous();
+      const { min, max } = col.summarize();
       return createColorsByContinuousMetadata(col.asArray(), min, max);
     }
     case "color by expression": {
       const col = colorByData.icol(0);
-      const { min, max } = col.summarizeContinuous();
+      const { min, max } = col.summarize();
       return createColorsByContinuousMetadata(col.asArray(), min, max);
     }
     case "color by geneset mean expression": {
       const col = colorByData.icol(0);
-      const { min, max } = col.summarizeContinuous();
+      const { min, max } = col.summarize();
       return createColorsByContinuousMetadata(col.asArray(), min, max);
     }
     default: {

@@ -26,7 +26,6 @@ import {
   createColorQuery,
 } from "../../../util/stateManager/colorHelpers";
 import actions from "../../../actions";
-import { Dataframe } from "../../../util/dataframe";
 
 const LABEL_WIDTH = globals.leftSidebarWidth - 100;
 const ANNO_BUTTON_WIDTH = 50;
@@ -166,20 +165,8 @@ class Category extends React.PureComponent {
     };
   };
 
-  async fetchData(
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-    annoMatrix: any,
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-    metadataField: any,
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-    colors: any
-  ): Promise<
-    [
-      Dataframe,
-      ReturnType<typeof createCategorySummaryFromDfCol>,
-      Dataframe | null
-    ]
-  > {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  async fetchData(annoMatrix: any, metadataField: any, colors: any) {
     /*
     fetch our data and the color-by data if appropriate, and then build a summary
     of our category and a color table for the color-by annotation.
@@ -188,7 +175,7 @@ class Category extends React.PureComponent {
     const { colorAccessor, colorMode } = colors;
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'genesets' does not exist on type 'Readon... Remove this comment to see the full error message
     const { genesets } = this.props;
-    let colorDataPromise: Promise<Dataframe | null> = Promise.resolve(null);
+    let colorDataPromise = Promise.resolve(null);
     if (colorAccessor) {
       const query = createColorQuery(
         colorMode,
@@ -198,10 +185,10 @@ class Category extends React.PureComponent {
       );
       if (query) colorDataPromise = annoMatrix.fetch(...query);
     }
-    const [categoryData, colorData] = await Promise.all<
-      Dataframe,
-      Dataframe | null
-    >([annoMatrix.fetch("obs", metadataField), colorDataPromise]);
+    const [categoryData, colorData] = await Promise.all([
+      annoMatrix.fetch("obs", metadataField),
+      colorDataPromise,
+    ]);
 
     // our data
     const column = categoryData.icol(0);
@@ -213,8 +200,8 @@ class Category extends React.PureComponent {
     return [categoryData, categorySummary, colorData];
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types -- - FIXME: disabled temporarily on migrate to TS.
-  updateColorTable(colorData: Dataframe|null) {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+  updateColorTable(colorData: any) {
     // color table, which may be null
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'schema' does not exist on type 'Readonly... Remove this comment to see the full error message
     const { schema, colors, metadataField } = this.props;

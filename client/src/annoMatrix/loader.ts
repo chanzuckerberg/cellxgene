@@ -196,7 +196,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     const data = (this as any)._cache.obs.col(col).asArray().slice();
     for (let i = 0, len = rowIndices.length; i < len; i += 1) {
       const idx = rowIndices[i];
-      if (idx === -1) throw new Error("Unknown row label");
+      if (idx === undefined) throw new Error("Unknown row label");
       data[idx] = value;
     }
 
@@ -299,8 +299,8 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
       default:
         throw new Error("Unknown field name");
     }
+
     const buffer = await promiseThrottle.priorityAdd(priority, doRequest);
-    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'unknown' is not assignable to parameter of type 'ArrayBuffer | ArrayBuffer[]'.... Remove this comment to see the full error message
     let result = matrixFBSToDataframe(buffer);
     if (!result || result.isEmpty()) throw Error("Unknown field/col");
 

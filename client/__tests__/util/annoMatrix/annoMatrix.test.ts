@@ -188,10 +188,8 @@ describe("AnnoMatrix", () => {
       (fetch as any)
         .once(serverMocks.annotationsObs(["n_genes"]))
         .once(serverMocks.annotationsObs(["n_genes"]));
-      const ng1 = (await am1.fetch("obs", "n_genes")) as Dataframe;
-      const ng2 = (await am2.fetch("obs", "n_genes")) as Dataframe;
-      expect(ng1).toBeDefined();
-      expect(ng2).toBeDefined();
+      const ng1 = await am1.fetch("obs", "n_genes");
+      const ng2 = await am2.fetch("obs", "n_genes");
       expect(ng1).toHaveLength(ng2.length);
       expect(ng1.colIndex.labels()).toEqual(ng2.colIndex.labels());
       expect(ng1.col("n_genes").asArray()).toEqual(
@@ -218,7 +216,7 @@ describe("AnnoMatrix", () => {
       );
       expect(base.getMatrixColumns("obs")).not.toContain("foo");
       expect(am1.getMatrixColumns("obs")).toContain("foo");
-      const foo: Dataframe = await am1.fetch("obs", "foo");
+      const foo = await am1.fetch("obs", "foo");
       expect(foo).toBeDefined();
       expect(foo).toBeInstanceOf(Dataframe);
       expect(foo).toHaveLength(am1.nObs);

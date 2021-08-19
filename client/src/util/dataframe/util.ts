@@ -2,19 +2,19 @@
 Private utility code for dataframe
 */
 
-export function callOnceLazy<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- a legitimate use of any.
-  T extends (...args: any[]) => any = (...args: any[]) => any
->(fn: T): (...args: Parameters<T>) => ReturnType<T> {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+export function callOnceLazy(f: any) {
   /*
   call function once, and save the result, regardless of arguments (this is not
   the same as typical memoization).
   */
-  let value: ReturnType<T>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  let value: any;
   let calledOnce = false;
-  const result = function result(...args: Parameters<T>): ReturnType<T> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  const result = function result(...args: any[]) {
     if (!calledOnce) {
-      value = fn(...args);
+      value = f(...args);
       calledOnce = true;
     }
     return value;
@@ -22,14 +22,8 @@ export function callOnceLazy<
   return result;
 }
 
-export function memoize<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- a legitimate use of any.
-  T extends (...args: any[]) => any = (...args: any[]) => any
->(
-  fn: T,
-  hashFn: (...args: Parameters<T>) => string,
-  maxResultsCached = -1
-): (...args: Parameters<T>) => ReturnType<T> {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
+export function memoize(fn: any, hashFn: any, maxResultsCached = -1) {
   /* 
   function memoization, with user-provided hash.  hashFn must return a
   key which will be unique as a Map key (ie, obeys "sameValueZero" algorithm
@@ -37,7 +31,8 @@ export function memoize<
   https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#Key_equality
   */
   const cache = new Map();
-  const wrap = function wrap(...args: Parameters<T>): ReturnType<T> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
+  const wrap = function wrap(...args: any[]) {
     const key = hashFn(...args);
     if (cache.has(key)) {
       return cache.get(key);
@@ -62,11 +57,12 @@ export function memoize<
 }
 
 /**
- *memoization helpers - just a global counter.
- */
+memoization helpers - just a global counter.
+**/
 let __DataframeMemoId__ = 0;
-export function __getMemoId(): string {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
+export function __getMemoId() {
   const id = __DataframeMemoId__;
   __DataframeMemoId__ += 1;
-  return id.toString();
+  return id;
 }

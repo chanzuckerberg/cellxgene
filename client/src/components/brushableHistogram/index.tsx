@@ -11,7 +11,6 @@ import Histogram from "./histogram";
 import HistogramFooter from "./footer";
 import StillLoading from "./loading";
 import ErrorLoading from "./error";
-import { Dataframe } from "../../util/dataframe";
 
 const MARGIN = {
   LEFT: 10, // Space for 0 tick label on X axis
@@ -117,12 +116,9 @@ class HistogramBrush extends React.PureComponent {
     };
   };
 
+  // @ts-expect-error ts-migrate(6133) FIXME: 'selection' is declared but its value is never rea... Remove this comment to see the full error message
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-  onBrushEnd =
-    (
-      _selection: any, // eslint-disable-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-      x: any // eslint-disable-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-    ) =>
+  onBrushEnd = (selection: any, x: any) =>
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types --- FIXME: disabled temporarily on migrate to TS.
     () => {
       const {
@@ -261,18 +257,18 @@ class HistogramBrush extends React.PureComponent {
 
     const query = this.createQuery();
     // @ts-expect-error ts-migrate(2488) FIXME: Type 'any[] | null' must have a '[Symbol.iterator]... Remove this comment to see the full error message
-    const df: Dataframe = await annoMatrix.fetch(...query);
+    const df = await annoMatrix.fetch(...query);
     const column = df.icol(0);
 
     // if we are clipped, fetch both our value and our unclipped value,
     // as we need the absolute min/max range, not just the clipped min/max.
-    const summary = column.summarizeContinuous();
+    const summary = column.summarize();
     const range = [summary.min, summary.max];
 
     let unclippedRange = [...range];
     if (isClipped) {
-      const parent: Dataframe = await annoMatrix.viewOf.fetch(...query);
-      const { min, max } = parent.icol(0).summarizeContinuous();
+      const parent = await annoMatrix.viewOf.fetch(...query);
+      const { min, max } = parent.icol(0).summarize();
       unclippedRange = [min, max];
     }
 
@@ -324,8 +320,7 @@ class HistogramBrush extends React.PureComponent {
      recalculate expensive stuff, notably bins, summaries, etc.
     */
     const histogramCache = {}; /* maybe change this so that it computes ... */
-    const summary =
-      col.summarizeContinuous(); /* this is memoized, so it's free the second time you call it */
+    const summary = col.summarize(); /* this is memoized, so it's free the second time you call it */
     const { min: domainMin, max: domainMax } = summary;
     const numBins = 40;
     const { TOP: topMargin, LEFT: leftMargin } = newMargin;
@@ -338,7 +333,7 @@ class HistogramBrush extends React.PureComponent {
       .range([leftMargin, leftMargin + newWidth]);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
-    (histogramCache as any).bins = col.histogramContinuous(numBins, [
+    (histogramCache as any).bins = col.histogram(numBins, [
       domainMin,
       domainMax,
     ]);

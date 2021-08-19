@@ -9,7 +9,6 @@ import Gene from "./gene";
 
 import { postUserErrorToast } from "../framework/toasters";
 import actions from "../../actions";
-import { Dataframe, DataframeValue } from "../../util/dataframe";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const usePrevious = (value: any) => {
@@ -25,7 +24,7 @@ function QuickGene() {
   const dispatch = useDispatch();
 
   const [isExpanded, setIsExpanded] = useState(true);
-  const [geneNames, setGeneNames] = useState([] as DataframeValue[]);
+  const [geneNames, setGeneNames] = useState([]);
   const [, setStatus] = useState("pending");
 
   const { annoMatrix, userDefinedGenes, userDefinedGenesLoading } = useSelector(
@@ -51,9 +50,9 @@ function QuickGene() {
 
       setStatus("pending");
       try {
-        const df: Dataframe = await annoMatrix.fetch("var", varIndex);
+        const df = await annoMatrix.fetch("var", varIndex);
         setStatus("success");
-        setGeneNames(df.col(varIndex).asArray() as DataframeValue[]);
+        setGeneNames(df.col(varIndex).asArray());
       } catch (error) {
         setStatus("error");
         throw error;
@@ -96,6 +95,7 @@ function QuickGene() {
     const gene = g.target;
     if (userDefinedGenes.indexOf(gene) !== -1) {
       postUserErrorToast("That gene already exists");
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     } else if (geneNames.indexOf(gene) === undefined) {
       postUserErrorToast("That doesn't appear to be a valid gene name.");
     } else {
