@@ -18,13 +18,11 @@ function caseInsensitiveCompare(a: any, b: any) {
   return textA < textB ? -1 : textA > textB ? 1 : 0;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 const catLabelSort = (isUserAnno: boolean, values: any[]): any[] => {
   /* this sort could be memoized for perf */
 
   const strings: string[] = [];
   const ints: number[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   const unassignedOrNaN: any = [];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
@@ -44,7 +42,6 @@ const catLabelSort = (isUserAnno: boolean, values: any[]): any[] => {
   ints.sort((a, b) => +a - +b);
   unassignedOrNaN.sort(caseInsensitiveCompare);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
   return (<any>ints).concat(strings, unassignedOrNaN);
 };
 

@@ -1,7 +1,6 @@
 /*
 Private helper functions related to schema
 */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
 export function _getColumnSchema(schema: any, field: any, col: any) {
   /* look up the column definition */
   switch (field) {
@@ -24,13 +23,11 @@ export function _getColumnSchema(schema: any, field: any, col: any) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any -- - FIXME: disabled temporarily on migrate to TS.
-export function _isIndex(schema: any, field: any, col: any): boolean {
+export function _isIndex(schema: any, field: any, col: any): bool {
   const index = schema.annotations?.[field].index;
   return index && index === col;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 export function _getColumnDimensionNames(schema: any, field: any, col: any) {
   /*
 		field/col may be an alias for multiple columns. Currently used to map ND 

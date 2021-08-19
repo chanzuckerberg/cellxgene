@@ -12,7 +12,6 @@ import * as viewActions from "./viewStack";
 import * as embActions from "./embedding";
 import * as genesetActions from "./geneset";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any --- FIXME: disabled temporarily on migrate to TS.
 function setGlobalConfig(config: any) {
   /**
    * Set any global run-time config not _exclusively_ managed by the config reducer.
