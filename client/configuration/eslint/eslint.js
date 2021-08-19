@@ -37,10 +37,7 @@ module.exports = {
       jsx: true,
       generators: true,
     },
-    // (thuang): Pairing with `tsconfigRootDir`, which points to the directory
-    // of eslint.js
-    project: "../../tsconfig.json",
-    tsconfigRootDir: __dirname,
+    project: "./tsconfig.json",
   },
   rules: {
     "react/jsx-no-target-blank": "off",
