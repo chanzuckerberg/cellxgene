@@ -88,16 +88,7 @@ describe("Dataframe column histogram", () => {
     expect(df.col(1).histogram(5, [0, 100])).toEqual([5, 1, 0, 0, 2]);
     expect(df.col(0).histogram(2, [0, 10])).toEqual([2, 2]);
     expect(df.col(0).histogram(10, [0, 100])).toEqual([
-      3,
-      2,
-      1,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      2,
+      3, 2, 1, 0, 0, 0, 0, 0, 0, 2,
     ]);
   });
 });
