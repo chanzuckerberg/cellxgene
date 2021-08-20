@@ -5,7 +5,6 @@ import {
   overflowCategoryLabel,
   globalConfig,
 } from "../globals";
-import { Dataframe } from "../util/dataframe";
 
 export function normalizeResponse(field, query, schema, response) {
   /**

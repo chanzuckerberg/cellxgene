@@ -126,15 +126,10 @@ class Categories extends React.Component {
       newCategoryText,
       expandedCats,
     } = this.state;
-    const {
-      writableCategoriesEnabled,
-      schema,
-      userInfo,
-    } = this.props;
+    const { writableCategoriesEnabled, schema, userInfo } = this.props;
     /* all names, sorted in display order.  Will be rendered in this order */
-    const allCategoryNames = ControlsHelpers.selectableCategoryNames(
-      schema
-    ).sort();
+    const allCategoryNames =
+      ControlsHelpers.selectableCategoryNames(schema).sort();
 
     return (
       <div

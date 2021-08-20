@@ -62,7 +62,7 @@ export function createCategorySummaryFromDfCol(dfCol, colSchema) {
   if they are not actively used in the current annoMatrix view.
   */
   const summary = dfCol.summarizeCategorical();
-  const { categories } = colSchema;
+  const { categories: allCategoryValues } = colSchema;
   const categoryValues = allCategoryValues;
   const categoryValueCounts = allCategoryValues.map(
     (cat) => summary.categoryCounts.get(cat) ?? 0
