@@ -5,7 +5,7 @@ import quantile from "../../src/util/quantile";
 import { matrixFBSToDataframe } from "../../src/util/stateManager/matrix";
 import * as REST from "./stateManager/sampleResponses";
 import { indexEntireSchema } from "../../src/util/stateManager/schemaHelpers";
-import { _normalizeCategoricalSchema } from "../../src/annoMatrix/schema";
+import { normalizeWritableCategoricalSchema } from "../../src/annoMatrix/normalize";
 
 describe("centroid", () => {
   let schema;
@@ -17,7 +17,7 @@ describe("centroid", () => {
     obsAnnotations = matrixFBSToDataframe(REST.annotationsObs);
     obsLayout = matrixFBSToDataframe(REST.layoutObs);
 
-    _normalizeCategoricalSchema(
+    normalizeWritableCategoricalSchema(
       schema.annotations.obsByName.field3,
       obsAnnotations.col("field3")
     );

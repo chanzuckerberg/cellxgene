@@ -73,10 +73,13 @@ export function summarizeCategorical(col) {
       categoryCounts.set(val, curCount + 1);
     }
   }
+  const sortedCategoryByCounts = new Map(
+    [...categoryCounts.entries()].sort((a, b) => b[1] - a[1])
+  );
   return {
     categorical: true,
-    categories: [...categoryCounts.keys()],
-    categoryCounts,
-    numCategories: categoryCounts.size,
+    categories: [...sortedCategoryByCounts.keys()],
+    categoryCounts: sortedCategoryByCounts,
+    numCategories: sortedCategoryByCounts.size,
   };
 }
