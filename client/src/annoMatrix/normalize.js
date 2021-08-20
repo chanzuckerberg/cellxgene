@@ -70,7 +70,7 @@ function castColumnToBoolean(df, label) {
 export function normalizeWritableCategoricalSchema(colSchema, col) {
   /*
   Ensure all enum writable / categorical schema have a categories array, that
-  the categories array contains all unique values in the data array, AND that 
+  the categories array contains all unique values in the data array, AND that
   the array is UI sorted.
   */
   const categorySet = new Set(
