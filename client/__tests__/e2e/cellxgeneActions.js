@@ -61,11 +61,7 @@ export async function getAllHistograms(testclass, testIds) {
   const allHistograms = await getAllByClass(testclass);
 
   const testIDs = await Promise.all(
-    allHistograms.map((hist) => {
-      return page.evaluate((elem) => {
-        return elem.dataset.testid;
-      }, hist);
-    })
+    allHistograms.map((hist) => page.evaluate((elem) => elem.dataset.testid, hist))
   );
 
   return testIDs.map((id) => id.replace(/^histogram-/, ""));
@@ -193,9 +189,7 @@ export async function colorByGene(gene) {
 export async function assertColorLegendLabel(label) {
   const handle = await waitByID("continuous_legend_color_by_label");
 
-  const result = await handle.evaluate((node) => {
-    return node.getAttribute("aria-label");
-  });
+  const result = await handle.evaluate((node) => node.getAttribute("aria-label"));
 
   return expect(result).toBe(label);
 }
@@ -252,9 +246,7 @@ export async function assertGenesetDoesNotExist(genesetName) {
 export async function assertGenesetExists(genesetName) {
   const handle = await waitByID(`${genesetName}:geneset-name`);
 
-  const result = await handle.evaluate((node) => {
-    return node.getAttribute("aria-label");
-  });
+  const result = await handle.evaluate((node) => node.getAttribute("aria-label"));
 
   return expect(result).toBe(genesetName);
 }
@@ -284,9 +276,7 @@ export async function removeGene(geneSymbol) {
 export async function assertGeneExistsInGeneset(geneSymbol) {
   const handle = await waitByID(`${geneSymbol}:gene-label`);
 
-  const result = await handle.evaluate((node) => {
-    return node.getAttribute("aria-label");
-  });
+  const result = await handle.evaluate((node) => node.getAttribute("aria-label"));
 
   return expect(result).toBe(geneSymbol);
 }

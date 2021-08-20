@@ -89,8 +89,7 @@ class HistogramBrush extends React.PureComponent {
     };
   };
 
-  onBrushEnd = (selection, x) => {
-    return () => {
+  onBrushEnd = (selection, x) => () => {
       const { dispatch, field, isObs, isUserDefined, isGeneSetSummary } =
         this.props;
       const minAllowedBrushSize = 10;
@@ -138,7 +137,6 @@ class HistogramBrush extends React.PureComponent {
         actions.selectContinuousMetadataAction(type, query, range, otherProps)
       );
     };
-  };
 
   handleSetGeneAsScatterplotX = () => {
     const { dispatch, field } = this.props;

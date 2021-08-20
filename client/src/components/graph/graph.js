@@ -317,9 +317,7 @@ class Graph extends React.Component {
     if (e.type !== "wheel") e.preventDefault();
     if (camera.handleEvent(e, projectionTF)) {
       this.renderCanvas();
-      this.setState((state) => {
-        return { ...state, updateOverlay: !state.updateOverlay };
-      });
+      this.setState((state) => ({ ...state, updateOverlay: !state.updateOverlay }));
     }
   };
 
@@ -953,11 +951,11 @@ const ErrorLoading = ({ displayName, error, width, height }) => {
   );
 };
 
-const StillLoading = ({ displayName, width, height }) => {
+const StillLoading = ({ displayName, width, height }) => 
   /*
   Render a busy/loading indicator
   */
-  return (
+   (
     <div
       style={{
         position: "fixed",
@@ -978,7 +976,7 @@ const StillLoading = ({ displayName, width, height }) => {
         <span style={{ fontStyle: "italic" }}>Loading {displayName}</span>
       </div>
     </div>
-  );
-};
+  )
+;
 
 export default Graph;

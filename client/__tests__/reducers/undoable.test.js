@@ -23,9 +23,7 @@ describe("create", () => {
 describe("undo", () => {
   test("expected state modifications", () => {
     const initialState = { a: 0, b: 1000 };
-    const reducer = (state) => {
-      return { a: state.a + 1, b: state.b + 1 };
-    };
+    const reducer = (state) => ({ a: state.a + 1, b: state.b + 1 });
     const undoableReducer = undoable(reducer, ["a"]);
 
     const s1 = undoableReducer(initialState, { type: "test" });
@@ -43,9 +41,7 @@ describe("undo", () => {
 
 describe("redo", () => {
   const initialState = { a: 0, b: 1000 };
-  const reducer = (state) => {
-    return { a: state.a + 1, b: state.b + 1 };
-  };
+  const reducer = (state) => ({ a: state.a + 1, b: state.b + 1 });
   let UR;
 
   beforeEach(() => {
