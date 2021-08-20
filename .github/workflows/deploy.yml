@@ -1,0 +1,13 @@
+name: Deploy via single cell infra repo
+
+on:
+  push:
+    branches: main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: repository dispatch
+        run: |
+          curl -XPOST -u czi-sci-single-cell-eng:${{secrets.SCI_GITHUB_TOKEN}} -H "Accept: application/vnd.github.everest-preview+json"  -H "Content-Type: application/json" https://api.github.com/repos/chanzuckerberg/single-cell-infra/dispatches --data '{"event_type": "cellxgene-hook"}'

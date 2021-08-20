@@ -151,8 +151,8 @@ def dataset_args(func):
         help="URL providing more information about the dataset (hint: must be a fully specified absolute URL).",
     )
     @click.option(
-        "--X-approximate-distribution",
-        default=DEFAULT_CONFIG.dataset_config.X_approximate_distribution,
+        "--X-approx-distribution",
+        default=DEFAULT_CONFIG.dataset_config.X_approx_distribution,
         show_default=True,
         type=click.Choice(["auto", "normal", "count"], case_sensitive=False),
         help="Specify the approximate distribution of X matrix values. 'auto' will use a heuristic "
@@ -326,7 +326,7 @@ def launch(
     disable_diffexp,
     config_file,
     dump_default_config,
-    x_approximate_distribution,
+    x_approx_distribution,
 ):
     """Launch the cellxgene data viewer.
     This web app lets you explore single-cell expression data.
@@ -385,7 +385,7 @@ def launch(
             embeddings__names=embedding,
             diffexp__enable=not disable_diffexp,
             diffexp__lfc_cutoff=diffexp_lfc_cutoff,
-            X_approximate_distribution=x_approximate_distribution,
+            X_approx_distribution=x_approx_distribution,
         )
 
         diff = cli_config.server_config.changes_from_default()

@@ -79,10 +79,10 @@ See [developer guidelines](developer_guidelines.md)
 
    ```ts
    {
-     "e2e": "jest --config __tests__/e2e/e2eJestConfig.json e2e/e2e.test.ts",
+     "e2e": "jest --config __tests__/e2e/e2eJestConfig.json e2e/e2e.test.js",
    }
    ```
 
-   which tells `jest` to use `e2eJestConfig.json` as the config file to run e2e test file `e2e.test.ts`
+   which tells `jest` to use `e2eJestConfig.json` as the config file to run e2e test file `e2e.test.js`
 
 1. [puppeteer.setup.js](../client/__tests__/e2e/puppeteer.setup.js) is for configuring `jest`, `browser`, and `page` objects at runtime

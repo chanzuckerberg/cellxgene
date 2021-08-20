@@ -77,7 +77,7 @@ dataset:
     lfc_cutoff: 0.01
     top_n: 10
 
-  X_approximate_distribution: auto
+  X_approx_distribution: auto
 
 external:
   # You can retrieve configuration parameters from this config file, the environment,

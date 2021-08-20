@@ -8,14 +8,13 @@
     "build": "npm run clean && webpack --config",
     "clean": "rimraf build",
     "dev": "npm run build -- configuration/webpack/webpack.config.dev.js",
-    "e2e": "jest --config __tests__/e2e/e2eJestConfig.json e2e/e2e.test.ts",
-    "e2e-annotations": "jest --config __tests__/e2e/e2eJestConfig.json e2e/e2eAnnotations.test.ts",
-    "e2e-prod": "CXG_URL_BASE='https://cellxgene.cziscience.com/d/pbmc3k.cxg/' jest --config __tests__/e2e/e2eJestConfig.json e2e/e2e.test.ts",
+    "e2e": "jest --config __tests__/e2e/e2eJestConfig.json e2e/e2e.test.js",
+    "e2e-annotations": "jest --config __tests__/e2e/e2eJestConfig.json e2e/e2eAnnotations.test.js",
+    "e2e-prod": "CXG_URL_BASE='https://cellxgene.cziscience.com/d/pbmc3k.cxg/' jest --config __tests__/e2e/e2eJestConfig.json e2e/e2e.test.js",
     "fmt": "eslint --fix src __tests__",
-    "lint": "eslint src __tests__ & npm run type-check",
+    "lint": "eslint --fix src __tests__",
     "prod": "npm run build -- configuration/webpack/webpack.config.prod.js",
-    "test": "jest --testPathIgnorePatterns e2e",
-    "type-check": "tsc --noEmit"
+    "test": "jest --testPathIgnorePatterns e2e"
   },
   "engineStrict": true,
   "engines": {
@@ -65,9 +64,11 @@
     "react": "^17.0.2",
     "react-async": "^10.0.1",
     "react-dom": "^17.0.2",
+    "react-easy-emoji": "^1.4.0",
     "react-flip-toolkit": "^7.0.12",
     "react-helmet": "^6.1.0",
     "react-icons": "^4.2.0",
+    "react-popper": "^2.2.4",
     "react-redux": "^7.2.0",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
@@ -89,38 +90,10 @@
     "@babel/plugin-transform-runtime": "^7.13.15",
     "@babel/preset-env": "^7.13.15",
     "@babel/preset-react": "^7.13.13",
-    "@babel/preset-typescript": "^7.14.5",
     "@babel/register": "^7.13.16",
     "@babel/runtime": "^7.13.16",
     "@blueprintjs/eslint-plugin": "^0.3.0",
     "@sentry/webpack-plugin": "^1.15.0",
-    "@types/d3": "^7.0.0",
-    "@types/d3-scale-chromatic": "^3.0.0",
-    "@types/expect-puppeteer": "^4.4.6",
-    "@types/flatbuffers": "^1.10.0",
-    "@types/is-number": "^7.0.1",
-    "@types/jest": "^26.0.24",
-    "@types/jest-environment-puppeteer": "^4.4.1",
-    "@types/lodash.clonedeep": "^4.5.6",
-    "@types/lodash.difference": "^4.5.6",
-    "@types/lodash.every": "^4.6.6",
-    "@types/lodash.filter": "^4.6.6",
-    "@types/lodash.foreach": "^4.5.6",
-    "@types/lodash.isnumber": "^3.0.6",
-    "@types/lodash.map": "^4.6.13",
-    "@types/lodash.pull": "^4.1.6",
-    "@types/lodash.sortby": "^4.7.6",
-    "@types/lodash.uniq": "^4.5.6",
-    "@types/lodash.zip": "^4.2.6",
-    "@types/pako": "^1.0.2",
-    "@types/puppeteer": "^5.4.4",
-    "@types/react": "^17.0.14",
-    "@types/react-dom": "^17.0.9",
-    "@types/react-helmet": "^6.1.2",
-    "@types/react-redux": "^7.1.18",
-    "@types/sha1": "^1.1.3",
-    "@typescript-eslint/eslint-plugin": "^4.28.4",
-    "@typescript-eslint/parser": "^4.28.4",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^26.1.0",
     "babel-loader": "^8.1.0",
@@ -130,9 +103,10 @@
     "clean-css": "^5.1.2",
     "clean-webpack-plugin": "^4.0.0-alpha.0",
     "codecov": "^3.7.1",
+    "connect-history-api-fallback": "^1.6.0",
     "css-loader": "^5.2.4",
     "eslint": "^7.24.0",
-    "eslint-config-airbnb-typescript": "^12.3.1",
+    "eslint-config-airbnb": "^18.2.0",
     "eslint-config-prettier": "^8.2.0",
     "eslint-loader": "^4.0.2",
     "eslint-plugin-compat": "^3.8.0",
@@ -141,11 +115,12 @@
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-jest": "^24.3.5",
     "eslint-plugin-jsx-a11y": "^6.3.1",
+    "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-react": "^7.23.2",
     "eslint-plugin-react-hooks": "^4.0.8",
     "expect-puppeteer": "^5.0.0",
     "express": "^4.17.1",
-    "favicons": "^6.2.2",
+    "favicons": "^6.2.1",
     "favicons-webpack-plugin": "^5.0.2",
     "file-loader": "^6.0.0",
     "html-webpack-plugin": "^5.3.1",
@@ -171,8 +146,10 @@
     "rimraf": "^3.0.2",
     "script-ext-html-webpack-plugin": "^2.1.4",
     "serve-favicon": "^2.5.0",
+    "style-loader": "^2.0.0",
+    "sw-precache-webpack-plugin": "^1.0.0",
     "terser-webpack-plugin": "^5.1.1",
-    "typescript": "^4.3.5",
+    "url-loader": "^4.1.0",
     "webpack": "^5.34.0",
     "webpack-cli": "^4.6.0",
     "webpack-dev-middleware": "^4.1.0",
@@ -180,10 +157,10 @@
   },
   "jest": {
     "testMatch": [
-      "**/__tests__/**/?(*.)(spec|test).ts?(x)"
+      "**/__tests__/**/?(*.)(spec|test).js?(x)"
     ],
     "setupFiles": [
-      "./__tests__/setupMissingGlobals.ts"
+      "./__tests__/setupMissingGlobals.js"
     ],
     "coverageDirectory": "./coverage/",
     "collectCoverage": true
@@ -193,8 +170,7 @@
       "test": {
         "presets": [
           "@babel/preset-env",
-          "@babel/preset-react",
-          "@babel/preset-typescript"
+          "@babel/preset-react"
         ],
         "plugins": [
           "@babel/plugin-proposal-function-bind",
@@ -206,12 +182,6 @@
           ],
           [
             "@babel/plugin-proposal-class-properties",
-            {
-              "loose": true
-            }
-          ],
-          [
-            "@babel/plugin-proposal-private-methods",
             {
               "loose": true
             }
