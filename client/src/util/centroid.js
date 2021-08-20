@@ -45,11 +45,8 @@ const getCoordinatesByLabel = (
     schema.annotations.obsByName[categoryName]
   );
 
-  const {
-    isUserAnno,
-    categoryValueIndices,
-    categoryValueCounts,
-  } = categorySummary;
+  const { isUserAnno, categoryValueIndices, categoryValueCounts } =
+    categorySummary;
 
   // Iterate over all cells
   for (let i = 0, len = categoryArray.length; i < len; i += 1) {

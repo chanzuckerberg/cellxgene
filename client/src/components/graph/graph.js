@@ -256,11 +256,8 @@ class Graph extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const {
-      selectionTool,
-      currentSelection,
-      graphInteractionMode,
-    } = this.props;
+    const { selectionTool, currentSelection, graphInteractionMode } =
+      this.props;
     const { toolSVG, viewport } = this.state;
     const hasResized =
       prevState.viewport.height !== viewport.height ||
@@ -498,7 +495,11 @@ class Graph extends React.Component {
       handleCancel = this.handleLassoCancel.bind(this);
     }
 
-    const { svg: newToolSVG, tool, container } = setupSVGandBrushElements(
+    const {
+      svg: newToolSVG,
+      tool,
+      container,
+    } = setupSVGandBrushElements(
       selectionTool,
       handleStart,
       handleDrag,

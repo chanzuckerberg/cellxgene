@@ -242,17 +242,13 @@ class Scatterplot extends React.PureComponent {
       pointDilation,
     } = props.watchProps;
 
-    const [
-      expressionXDf,
-      expressionYDf,
-      colorDf,
-      pointDilationDf,
-    ] = await this.fetchData(
-      scatterplotXXaccessor,
-      scatterplotYYaccessor,
-      colorsProp,
-      pointDilation
-    );
+    const [expressionXDf, expressionYDf, colorDf, pointDilationDf] =
+      await this.fetchData(
+        scatterplotXXaccessor,
+        scatterplotYYaccessor,
+        colorsProp,
+        pointDilation
+      );
     const colorTable = this.updateColorTable(colorsProp, colorDf);
 
     const xCol = expressionXDf.icol(0);

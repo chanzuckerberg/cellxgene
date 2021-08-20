@@ -50,12 +50,8 @@ export default class MiniHistogram extends React.PureComponent {
   };
 
   render() {
-    const {
-      domainLabel,
-      obsOrVarContinuousFieldDisplayName,
-      width,
-      height,
-    } = this.props;
+    const { domainLabel, obsOrVarContinuousFieldDisplayName, width, height } =
+      this.props;
 
     return (
       <Popover

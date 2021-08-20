@@ -45,11 +45,8 @@ class Autosave extends React.Component {
   }
 
   tick = () => {
-    const {
-      dispatch,
-      obsAnnotationSaveInProgress,
-      genesetSaveInProgress,
-    } = this.props;
+    const { dispatch, obsAnnotationSaveInProgress, genesetSaveInProgress } =
+      this.props;
     if (!obsAnnotationSaveInProgress && this.needToSaveObsAnnotations()) {
       dispatch(actions.saveObsAnnotationsAction());
     }

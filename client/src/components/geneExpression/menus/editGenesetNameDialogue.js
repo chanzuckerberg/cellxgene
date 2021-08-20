@@ -72,12 +72,8 @@ class RenameGeneset extends React.PureComponent {
 
   render() {
     const { newGenesetName, newGenesetDescription } = this.state;
-    const {
-      genesetsUI,
-      parentGeneset,
-      parentGenesetDescription,
-      genesets,
-    } = this.props;
+    const { genesetsUI, parentGeneset, parentGenesetDescription, genesets } =
+      this.props;
 
     return (
       <>
