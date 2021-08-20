@@ -42,10 +42,8 @@ export const subsetAction = () => (dispatch, getState) => {
   By convention, a clip view is ALWAYS the top view, so if present, pop
   off and re-apply
   */
-  const {
-    annoMatrix: prevAnnoMatrix,
-    obsCrossfilter: prevObsCrossfilter,
-  } = getState();
+  const { annoMatrix: prevAnnoMatrix, obsCrossfilter: prevObsCrossfilter } =
+    getState();
   const annoMatrix = _userSubsetAnnoMatrix(
     prevAnnoMatrix,
     prevObsCrossfilter.allSelectedMask()

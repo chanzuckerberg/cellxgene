@@ -11,18 +11,14 @@ describe("rangeEncodeIndices", () => {
 
   test("sorted flag", () => {
     expect(rangeEncodeIndices([1, 9, 432], 10, true)).toMatchObject([
-      1,
-      9,
-      432,
+      1, 9, 432,
     ]);
     expect(rangeEncodeIndices([1, 9, 432], 10, false)).toMatchObject([
-      1,
-      9,
-      432,
+      1, 9, 432,
     ]);
-    expect(
-      rangeEncodeIndices([0, 1, 2, 3, 9, 10, 432], 2, true)
-    ).toMatchObject([[0, 3], [9, 10], 432]);
+    expect(rangeEncodeIndices([0, 1, 2, 3, 9, 10, 432], 2, true)).toMatchObject(
+      [[0, 3], [9, 10], 432]
+    );
     expect(
       rangeEncodeIndices([0, 1, 2, 3, 9, 10, 432], 2, false)
     ).toMatchObject([[0, 3], [9, 10], 432]);

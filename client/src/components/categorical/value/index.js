@@ -150,12 +150,8 @@ class CategoryValue extends React.Component {
   };
 
   toggleOff = () => {
-    const {
-      dispatch,
-      metadataField,
-      categoryIndex,
-      categorySummary,
-    } = this.props;
+    const { dispatch, metadataField, categoryIndex, categorySummary } =
+      this.props;
     const label = categorySummary.categoryValues[categoryIndex];
     dispatch(
       actions.selectCategoricalMetadataAction(
@@ -220,12 +216,8 @@ class CategoryValue extends React.Component {
   };
 
   toggleOn = () => {
-    const {
-      dispatch,
-      metadataField,
-      categoryIndex,
-      categorySummary,
-    } = this.props;
+    const { dispatch, metadataField, categoryIndex, categorySummary } =
+      this.props;
     const label = categorySummary.categoryValues[categoryIndex];
     dispatch(
       actions.selectCategoricalMetadataAction(

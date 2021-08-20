@@ -22,12 +22,8 @@ class Occupancy extends React.PureComponent {
       createHistogram fetches the continous data in relation to the cells releveant to the catagory value.
       It then seperates that data into 50 bins for drawing the mini-histogram
     */
-    const {
-      metadataField,
-      categoryData,
-      colorData,
-      categoryValue,
-    } = this.props;
+    const { metadataField, categoryData, colorData, categoryValue } =
+      this.props;
 
     if (!this.canvas) return;
 

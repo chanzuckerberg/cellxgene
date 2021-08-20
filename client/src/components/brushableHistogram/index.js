@@ -63,13 +63,8 @@ class HistogramBrush extends React.PureComponent {
   onBrush = (selection, x, eventType) => {
     const type = `continuous metadata histogram ${eventType}`;
     return () => {
-      const {
-        dispatch,
-        field,
-        isObs,
-        isUserDefined,
-        isGeneSetSummary,
-      } = this.props;
+      const { dispatch, field, isObs, isUserDefined, isGeneSetSummary } =
+        this.props;
 
       // ignore programmatically generated events
       if (!d3.event.sourceEvent) return;
@@ -96,13 +91,8 @@ class HistogramBrush extends React.PureComponent {
 
   onBrushEnd = (selection, x) => {
     return () => {
-      const {
-        dispatch,
-        field,
-        isObs,
-        isUserDefined,
-        isGeneSetSummary,
-      } = this.props;
+      const { dispatch, field, isObs, isUserDefined, isGeneSetSummary } =
+        this.props;
       const minAllowedBrushSize = 10;
       const smallAmountToAvoidInfiniteLoop = 0.1;
 
@@ -266,13 +256,12 @@ class HistogramBrush extends React.PureComponent {
      recalculate expensive stuff, notably bins, summaries, etc.
     */
     const histogramCache = {}; /* maybe change this so that it computes ... */
-    const summary = col.summarize(); /* this is memoized, so it's free the second time you call it */
+    const summary =
+      col.summarize(); /* this is memoized, so it's free the second time you call it */
     const { min: domainMin, max: domainMax } = summary;
     const numBins = 40;
-    const {
-      TOP: topMargin,
-      LEFT: leftMargin,
-    } = newMargin; /* changes with mini */
+    const { TOP: topMargin, LEFT: leftMargin } =
+      newMargin; /* changes with mini */
 
     histogramCache.domain = [
       domainMin,
@@ -306,13 +295,7 @@ class HistogramBrush extends React.PureComponent {
   }
 
   createQuery() {
-    const {
-      isObs,
-      isGeneSetSummary,
-      field,
-      setGenes,
-      annoMatrix,
-    } = this.props;
+    const { isObs, isGeneSetSummary, field, setGenes, annoMatrix } = this.props;
     const { schema } = annoMatrix;
     if (isObs) {
       return ["obs", field];

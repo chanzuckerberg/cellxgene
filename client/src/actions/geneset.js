@@ -40,58 +40,59 @@ export const genesetDelete = (genesetName) => (dispatch, getState) => {
   });
 };
 
-export const genesetAddGenes = (genesetName, genes) => async (
-  dispatch,
-  getState
-) => {
-  const state = getState();
-  const { obsCrossfilter: prevObsCrossfilter, annoMatrix } = state;
-  const { schema } = annoMatrix;
-  const varIndex = schema.annotations.var.index;
-  const df = await annoMatrix.fetch("var", varIndex);
-  const geneNames = df.col(varIndex).asArray();
-  genes = genes.reduce((acc, gene) => {
-    if (geneNames.indexOf(gene.geneSymbol) === -1) {
-      postUserErrorToast(
-        `${gene.geneSymbol} doesn't appear to be a valid gene name.`
-      );
-    } else acc.push(gene);
-    return acc;
-  }, []);
+export const genesetAddGenes =
+  (genesetName, genes) => async (dispatch, getState) => {
+    const state = getState();
+    const { obsCrossfilter: prevObsCrossfilter, annoMatrix } = state;
+    const { schema } = annoMatrix;
+    const varIndex = schema.annotations.var.index;
+    const df = await annoMatrix.fetch("var", varIndex);
+    const geneNames = df.col(varIndex).asArray();
+    genes = genes.reduce((acc, gene) => {
+      if (geneNames.indexOf(gene.geneSymbol) === -1) {
+        postUserErrorToast(
+          `${gene.geneSymbol} doesn't appear to be a valid gene name.`
+        );
+      } else acc.push(gene);
+      return acc;
+    }, []);
 
-  const obsCrossfilter = dropGenesetSummaryDimension(
-    prevObsCrossfilter,
-    state,
-    genesetName
-  );
-  dispatch({
-    type: "continuous metadata histogram cancel",
-    continuousNamespace: { isGeneSetSummary: true },
-    selection: genesetName,
-  });
-  return dispatch({
-    type: "geneset: add genes",
-    genesetName,
-    genes,
-    obsCrossfilter,
-    annoMatrix: obsCrossfilter.annoMatrix,
-  });
-};
+    const obsCrossfilter = dropGenesetSummaryDimension(
+      prevObsCrossfilter,
+      state,
+      genesetName
+    );
+    dispatch({
+      type: "continuous metadata histogram cancel",
+      continuousNamespace: { isGeneSetSummary: true },
+      selection: genesetName,
+    });
+    return dispatch({
+      type: "geneset: add genes",
+      genesetName,
+      genes,
+      obsCrossfilter,
+      annoMatrix: obsCrossfilter.annoMatrix,
+    });
+  };
 
-export const genesetDeleteGenes = (genesetName, geneSymbols) => (
-  dispatch,
-  getState
-) => {
-  const state = getState();
-  const obsCrossfilter = dropGeneset(dispatch, state, genesetName, geneSymbols);
-  return dispatch({
-    type: "geneset: delete genes",
-    genesetName,
-    geneSymbols,
-    obsCrossfilter,
-    annoMatrix: obsCrossfilter.annoMatrix,
-  });
-};
+export const genesetDeleteGenes =
+  (genesetName, geneSymbols) => (dispatch, getState) => {
+    const state = getState();
+    const obsCrossfilter = dropGeneset(
+      dispatch,
+      state,
+      genesetName,
+      geneSymbols
+    );
+    return dispatch({
+      type: "geneset: delete genes",
+      genesetName,
+      geneSymbols,
+      obsCrossfilter,
+      annoMatrix: obsCrossfilter.annoMatrix,
+    });
+  };
 
 /*
 Private

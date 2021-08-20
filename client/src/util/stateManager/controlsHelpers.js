@@ -94,11 +94,8 @@ export function createCategorySummaryFromDfCol(dfCol, colSchema) {
   if they are not actively used in the current annoMatrix view.
   */
   const summary = dfCol.summarizeCategorical();
-  const [
-    allCategoryValues,
-    categoryValues,
-    categoryValueCounts,
-  ] = topNCategories(colSchema, summary, N);
+  const [allCategoryValues, categoryValues, categoryValueCounts] =
+    topNCategories(colSchema, summary, N);
   const categoryValueIndices = new Map(categoryValues.map((v, i) => [v, i]));
   const numCategoryValues = categoryValueIndices.size;
   const isTruncated = categoryValues.length < summary.numCategories;
