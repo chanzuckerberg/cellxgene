@@ -1,11 +1,7 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const PuppeteerEnvironment = require("jest-environment-puppeteer");
 require("jest-circus");
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const ENV_DEFAULT = require("../../../environment.default.json");
 
-// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'takeScreen... Remove this comment to see the full error message
-// eslint-disable-next-line @typescript-eslint/no-var-requires --- FIXME: disabled temporarily on migrate to TS.
 const takeScreenshot = require("./takeScreenshot");
 
 class ScreenshotEnvironment extends PuppeteerEnvironment {

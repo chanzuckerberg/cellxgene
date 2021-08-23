@@ -648,9 +648,9 @@ NetEncoding.Column.getRootAsColumn = function (bb, obj) {
 NetEncoding.Column.prototype.uType = function () {
   var offset = this.bb.__offset(this.bb_pos, 4);
   return offset
-    ? /** @type {NetEncoding.TypedArray} */ (this.bb.readUint8(
-        this.bb_pos + offset
-      ))
+    ? /** @type {NetEncoding.TypedArray} */ (
+        this.bb.readUint8(this.bb_pos + offset)
+      )
     : NetEncoding.TypedArray.NONE;
 };
 
@@ -778,9 +778,9 @@ NetEncoding.Matrix.prototype.columnsLength = function () {
 NetEncoding.Matrix.prototype.colIndexType = function () {
   var offset = this.bb.__offset(this.bb_pos, 10);
   return offset
-    ? /** @type {NetEncoding.TypedArray} */ (this.bb.readUint8(
-        this.bb_pos + offset
-      ))
+    ? /** @type {NetEncoding.TypedArray} */ (
+        this.bb.readUint8(this.bb_pos + offset)
+      )
     : NetEncoding.TypedArray.NONE;
 };
 
@@ -799,9 +799,9 @@ NetEncoding.Matrix.prototype.colIndex = function (obj) {
 NetEncoding.Matrix.prototype.rowIndexType = function () {
   var offset = this.bb.__offset(this.bb_pos, 14);
   return offset
-    ? /** @type {NetEncoding.TypedArray} */ (this.bb.readUint8(
-        this.bb_pos + offset
-      ))
+    ? /** @type {NetEncoding.TypedArray} */ (
+        this.bb.readUint8(this.bb_pos + offset)
+      )
     : NetEncoding.TypedArray.NONE;
 };
 
