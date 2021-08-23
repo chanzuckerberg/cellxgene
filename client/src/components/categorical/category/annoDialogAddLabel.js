@@ -60,9 +60,7 @@ class Category extends React.PureComponent {
     return isLabelErroneous(name, metadataField, schema);
   };
 
-  instruction = (label) => {
-    return labelPrompt(this.labelNameError(label), "New, unique label", ":");
-  };
+  instruction = (label) => labelPrompt(this.labelNameError(label), "New, unique label", ":");
 
   handleChangeOrSelect = (label) => {
     this.setState({ newLabelText: label });

@@ -122,9 +122,7 @@ class CategoryValue extends React.Component {
     return isLabelErroneous(name, metadataField, schema);
   };
 
-  instruction = (label) => {
-    return labelPrompt(this.labelNameError(label), "New, unique label", ":");
-  };
+  instruction = (label) => labelPrompt(this.labelNameError(label), "New, unique label", ":");
 
   activateEditLabelMode = () => {
     const { dispatch, metadataField, categoryIndex, label } = this.props;

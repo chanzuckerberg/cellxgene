@@ -1,8 +1,7 @@
 import React from "react";
 import * as globals from "../../globals";
 
-const ErrorLoading = ({ displayName, zebra }) => {
-  return (
+const ErrorLoading = ({ displayName, zebra }) => (
     <div
       style={{
         backgroundColor: zebra ? globals.lightestGrey : "white",
@@ -12,6 +11,5 @@ const ErrorLoading = ({ displayName, zebra }) => {
       <span>{`Failure loading ${displayName}`}</span>
     </div>
   );
-};
 
 export default ErrorLoading;

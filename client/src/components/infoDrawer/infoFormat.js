@@ -89,15 +89,13 @@ const renderDatasetMetadata = (singleValueCategories, corporaMetadata) => {
           </tr>
         </thead>
         <tbody>
-          {Object.entries(corporaMetadata).map(([key, value]) => {
-            return (
+          {Object.entries(corporaMetadata).map(([key, value]) => (
               <tr {...{ key }}>
                 <td>{`${key}:`}</td>
                 <td>{value}</td>
                 <td />
               </tr>
-            );
-          })}
+            ))}
           {Array.from(singleValueCategories).reduce((elems, pair) => {
             const [category, value] = pair;
             // If the value is empty skip it

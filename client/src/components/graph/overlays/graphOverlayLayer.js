@@ -16,7 +16,7 @@ export default class GraphOverlayLayer extends PureComponent {
     };
   }
 
-  matrixToTransformString = (m) => {
+  matrixToTransformString = (m) => 
     /* 
       Translates the gl-matrix mat3 to SVG matrix transform style
 
@@ -25,18 +25,14 @@ export default class GraphOverlayLayer extends PureComponent {
         b  d  f / [a, b, 0, c, d, 0, e, f, 1] =>  matrix(a, b, c, d, e, f) / matrix(sx, 0, 0, sy, tx, ty) / matrix(m[0] m[3] m[1] m[4] m[6] m[7])
         0  0  1      
     */
-    return `matrix(${m[0]} ${m[1]} ${m[3]} ${m[4]} ${m[6]} ${m[7]})`;
-  };
+     `matrix(${m[0]} ${m[1]} ${m[3]} ${m[4]} ${m[6]} ${m[7]})`
+  ;
 
-  reverseMatrixScaleTransformString = (m) => {
-    return `matrix(${1 / m[0]} 0 0 ${1 / m[4]} 0 0)`;
-  };
+  reverseMatrixScaleTransformString = (m) => `matrix(${1 / m[0]} 0 0 ${1 / m[4]} 0 0)`;
 
   // This is passed to all children, should be called when an overlay's display state is toggled along with the overlay name and its new display state in boolean form
   overlaySetShowing = (overlay, displaying) => {
-    this.setState((state) => {
-      return { ...state, display: { ...state.display, [overlay]: displaying } };
-    });
+    this.setState((state) => ({ ...state, display: { ...state.display, [overlay]: displaying } }));
   };
 
   render() {
