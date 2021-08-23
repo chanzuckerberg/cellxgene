@@ -74,9 +74,7 @@ class CreateGenesetDialogue extends React.PureComponent {
     e.preventDefault();
   };
 
-  genesetNameError = () => {
-    return false;
-  };
+  genesetNameError = () => false;
 
   handleChange = (e) => {
     const { genesets } = this.props;
@@ -92,11 +90,9 @@ class CreateGenesetDialogue extends React.PureComponent {
     this.setState({ genesetDescription: e });
   };
 
-  instruction = (genesetName, genesets) => {
-    return genesets.has(genesetName)
+  instruction = (genesetName, genesets) => genesets.has(genesetName)
       ? "Gene set name must be unique."
       : "New, unique gene set name";
-  };
 
   validate = (genesetName, genesets) => {
     if (genesets.has(genesetName)) {

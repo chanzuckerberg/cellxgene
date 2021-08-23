@@ -25,8 +25,7 @@ const createFsmTransitions = (
   skip,
   clear,
   save
-) => {
-  return [
+) => [
     /* graph selection brushing */
     {
       event: "graph brush start",
@@ -193,6 +192,5 @@ const createFsmTransitions = (
       action: save,
     },
   ];
-};
 
 export default createFsmTransitions;

@@ -19,9 +19,7 @@ export function _fetchResult(promise) {
     }
   );
 
-  res.status = () => {
-    return _status;
-  };
+  res.status = () => _status;
 
   return res;
 }

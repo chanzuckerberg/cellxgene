@@ -26,16 +26,14 @@ class DuplicateCategorySelect extends React.PureComponent {
             [] /* this is a placeholder, could be  a subcomponent to avoid this */
           }
           filterable={false}
-          itemRenderer={(d, { handleClick }) => {
-            return (
+          itemRenderer={(d, { handleClick }) => (
               <MenuItem
                 data-testclass="duplicate-category-dropdown-option"
                 onClick={handleClick}
                 key={d}
                 text={d}
               />
-            );
-          }}
+            )}
           noResults={<MenuItem disabled text="No results." />}
           onItemSelect={(d) => {
             handleModalDuplicateCategorySelection(d);
