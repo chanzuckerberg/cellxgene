@@ -98,13 +98,11 @@ class Categories extends React.Component {
     this.setState({ newCategoryText: name });
   };
 
-  instruction = (name) => {
-    return labelPrompt(
+  instruction = (name) => labelPrompt(
       this.categoryNameError(name),
       "New, unique category name",
       ":"
     );
-  };
 
   onExpansionChange = (catName) => {
     const { expandedCats } = this.state;

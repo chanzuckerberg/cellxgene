@@ -49,13 +49,11 @@ const filterGenes = (query, genes) =>
     threshold: -10000, // don't return bad results
   });
 
-@connect((state) => {
-  return {
+@connect((state) => ({
     annoMatrix: state.annoMatrix,
     userDefinedGenes: state.controls.userDefinedGenes,
     userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
-  };
-})
+  }))
 class AddGenes extends React.Component {
   constructor(props) {
     super(props);
@@ -266,9 +264,7 @@ class AddGenes extends React.Component {
               }}
               initialContent={<MenuItem disabled text="Enter a gene…" />}
               inputProps={{ "data-testid": "gene-search" }}
-              inputValueRenderer={() => {
-                return "";
-              }}
+              inputValueRenderer={() => ""}
               itemListPredicate={filterGenes}
               onActiveItemChange={(item) => this.setState({ activeItem: item })}
               itemRenderer={renderGene}

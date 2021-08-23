@@ -15,13 +15,11 @@ import * as globals from "../../globals";
 import actions from "../../actions";
 import { getDiscreteCellEmbeddingRowIndex } from "../../util/stateManager/viewStackHelpers";
 
-@connect((state) => {
-  return {
+@connect((state) => ({
     layoutChoice: state.layoutChoice, // TODO: really should clean up naming, s/layout/embedding/g
     schema: state.annoMatrix?.schema,
     crossfilter: state.obsCrossfilter,
-  };
-})
+  }))
 class Embedding extends React.PureComponent {
   constructor(props) {
     super(props);

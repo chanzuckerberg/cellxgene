@@ -26,13 +26,11 @@ function QuickGene() {
   const [, setStatus] = useState("pending");
 
   const { annoMatrix, userDefinedGenes, userDefinedGenesLoading } = useSelector(
-    (state) => {
-      return {
+    (state) => ({
         annoMatrix: state.annoMatrix,
         userDefinedGenes: state.controls.userDefinedGenes,
         userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
-      };
-    }
+      })
   );
 
   const prevProps = usePrevious({ annoMatrix });
@@ -104,18 +102,14 @@ function QuickGene() {
     dispatch({ type: "clear user defined gene", data: gene });
   };
 
-  const QuickGenes = useMemo(() => {
-    return userDefinedGenes.map((gene) => {
-      return (
+  const QuickGenes = useMemo(() => userDefinedGenes.map((gene) => (
         <Gene
           key={`quick=${gene}`}
           gene={gene}
           removeGene={removeGene}
           quickGene
         />
-      );
-    });
-  }, [userDefinedGenes]);
+      )), [userDefinedGenes]);
 
   return (
     <div style={{ width: "100%", marginBottom: "16px" }}>
@@ -156,9 +150,7 @@ function QuickGene() {
                 leftIcon: IconNames.SEARCH,
                 fill: true,
               }}
-              inputValueRenderer={() => {
-                return "";
-              }}
+              inputValueRenderer={() => ""}
               itemListPredicate={filterGenes}
               itemRenderer={renderGene}
               items={geneNames || ["No genes"]}

@@ -217,12 +217,10 @@ class Scatterplot extends React.PureComponent {
     }
   };
 
-  getViewportDimensions = () => {
-    return {
+  getViewportDimensions = () => ({
       height: window.innerHeight,
       width: window.innerWidth,
-    };
-  };
+    });
 
   handleResize = () => {
     const { state } = this.state;

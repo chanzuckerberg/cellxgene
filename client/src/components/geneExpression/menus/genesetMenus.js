@@ -17,12 +17,10 @@ import * as globals from "../../../globals";
 import actions from "../../../actions";
 import AddGeneToGenesetDialogue from "./addGeneToGenesetDialogue";
 
-@connect((state) => {
-  return {
+@connect((state) => ({
     genesetsUI: state.genesetsUI,
     colorAccessor: state.colors.colorAccessor,
-  };
-})
+  }))
 class GenesetMenus extends React.PureComponent {
   constructor(props) {
     super(props);

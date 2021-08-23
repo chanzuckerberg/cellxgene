@@ -258,14 +258,12 @@ class Category extends React.PureComponent {
                 isColorAccessor,
                 handleCategoryToggleAllClick,
               } = asyncProps;
-              const isTruncated = !!categorySummary?.isTruncated;
               const selectionState = this.getSelectionState(categorySummary);
               return (
                 <CategoryRender
                   metadataField={metadataField}
                   checkboxID={checkboxID}
                   isUserAnno={isUserAnno}
-                  isTruncated={isTruncated}
                   isExpanded={isExpanded}
                   isColorAccessor={isColorAccessor}
                   selectionState={selectionState}
@@ -290,11 +288,11 @@ class Category extends React.PureComponent {
 
 export default Category;
 
-const StillLoading = ({ metadataField, checkboxID }) => {
+const StillLoading = ({ metadataField, checkboxID }) => 
   /*
   We are still loading this category, so render a "busy" signal.
   */
-  return (
+   (
     <div
       style={{
         maxWidth: globals.maxControlsWidth,
@@ -338,8 +336,8 @@ const StillLoading = ({ metadataField, checkboxID }) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+;
 
 const ErrorLoading = ({ metadataField, error }) => {
   console.error(error); // log error to console as it is unexpected.
@@ -364,7 +362,6 @@ const CategoryHeader = React.memo(
     metadataField,
     checkboxID,
     isUserAnno,
-    isTruncated,
     isColorAccessor,
     isExpanded,
     selectionState,
@@ -453,11 +450,7 @@ const CategoryHeader = React.memo(
           />
 
           <Tooltip
-            content={
-              isTruncated
-                ? `Coloring by ${metadataField} is disabled, as it exceeds the limit of ${globals.maxCategoricalOptionsToDisplay} labels`
-                : "Use as color scale"
-            }
+            content="Use as color scale"
             position={Position.LEFT}
             usePortal
             hoverOpenDelay={globals.tooltipHoverOpenDelay}
@@ -472,7 +465,6 @@ const CategoryHeader = React.memo(
               onClick={onColorChangeClick}
               active={isColorAccessor}
               intent={isColorAccessor ? "primary" : "none"}
-              disabled={isTruncated}
               icon="tint"
             />
           </Tooltip>
@@ -487,7 +479,6 @@ const CategoryRender = React.memo(
     metadataField,
     checkboxID,
     isUserAnno,
-    isTruncated,
     isColorAccessor,
     isExpanded,
     selectionState,
@@ -536,7 +527,6 @@ const CategoryRender = React.memo(
             metadataField={metadataField}
             checkboxID={checkboxID}
             isUserAnno={isUserAnno}
-            isTruncated={isTruncated}
             isExpanded={isExpanded}
             isColorAccessor={isColorAccessor}
             selectionState={selectionState}
@@ -561,11 +551,6 @@ const CategoryRender = React.memo(
               />
             ) : null
           }
-        </div>
-        <div>
-          {isExpanded && isTruncated ? (
-            <p style={{ paddingLeft: 15 }}>... truncated list ...</p>
-          ) : null}
         </div>
       </div>
     );

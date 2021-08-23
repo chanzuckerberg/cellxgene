@@ -182,9 +182,7 @@ export default class AnnoMatrixObsCrossfilter {
 		*/
     const { annoMatrix } = this;
     const currentDims = this.obsCrossfilter.dimensionNames();
-    const obsCrossfilter = currentDims.reduce((xfltr, dim) => {
-      return xfltr.select(dim, { mode: "all" });
-    }, this.obsCrossfilter);
+    const obsCrossfilter = currentDims.reduce((xfltr, dim) => xfltr.select(dim, { mode: "all" }), this.obsCrossfilter);
     return new AnnoMatrixObsCrossfilter(annoMatrix, obsCrossfilter);
   }
 

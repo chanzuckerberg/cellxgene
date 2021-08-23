@@ -49,9 +49,7 @@ class RenameGeneset extends React.PureComponent {
     e.preventDefault();
   };
 
-  genesetNameError = () => {
-    return false;
-  };
+  genesetNameError = () => false;
 
   handleChange = (e) => {
     this.setState({ newGenesetName: e });
@@ -61,14 +59,12 @@ class RenameGeneset extends React.PureComponent {
     this.setState({ newGenesetDescription: e });
   };
 
-  validate = (genesetName, genesets) => {
-    return (
+  validate = (genesetName, genesets) => (
       !genesets.has(genesetName) &&
       // eslint-disable-next-line no-control-regex -- unicode 0-31 127-65535
       genesetName.match(/^\s|[\u0000-\u001F\u007F-\uFFFF]|[ ]{2,}|^$|\s$/g)
         ?.length
     );
-  };
 
   render() {
     const { newGenesetName, newGenesetDescription } = this.state;

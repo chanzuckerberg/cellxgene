@@ -10,7 +10,7 @@ const HistogramFooter = React.memo(
     rangeColorMax,
     isObs,
     isGeneSetSummary,
-  }) => {
+  }) => 
     /*
     Footer of each histogram.  Will render range and title.
 
@@ -20,7 +20,7 @@ const HistogramFooter = React.memo(
       * range - length two array, [min, max], containing the range values to display
       * rangeColor - length two array, [mincolor, maxcolor], each a CSS color
     */
-    return (
+     (
       <div>
         <div
           style={{
@@ -56,8 +56,8 @@ const HistogramFooter = React.memo(
           </span>
         </div>
       </div>
-    );
-  }
+    )
+  
 );
 
 export default HistogramFooter;

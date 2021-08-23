@@ -5,15 +5,13 @@ import { Drawer } from "@blueprintjs/core";
 import InfoFormat from "./infoFormat";
 import { selectableCategoryNames } from "../../util/stateManager/controlsHelpers";
 
-@connect((state) => {
-  return {
+@connect((state) => ({
     schema: state.annoMatrix.schema,
     datasetTitle: state.config?.displayNames?.dataset ?? "",
     aboutURL: state.config?.links?.["about-dataset"],
     isOpen: state.controls.datasetDrawer,
     dataPortalProps: state.config?.corpora_props,
-  };
-})
+  }))
 class InfoDrawer extends PureComponent {
   handleClose = () => {
     const { dispatch } = this.props;

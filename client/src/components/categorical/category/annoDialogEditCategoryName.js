@@ -89,13 +89,11 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
     return false;
   };
 
-  instruction = (name) => {
-    return labelPrompt(
+  instruction = (name) => labelPrompt(
       this.editedCategoryNameError(name),
       "New, unique category name",
       ":"
     );
-  };
 
   allCategoryNames() {
     const { schema } = this.props;
