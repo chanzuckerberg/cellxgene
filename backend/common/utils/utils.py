@@ -65,7 +65,7 @@ def path_join(base, *urls):
     return btpl._replace(path=path).geturl()
 
 
-class Float32JSONEncoder(json.JSONEncoder):
+class FloatJSONEncoder(json.JSONEncoder):
     def __init__(self, *args, **kwargs):
         """
         NaN/Infinities are illegal in standard JSON.  Python extends JSON with
@@ -78,9 +78,9 @@ class Float32JSONEncoder(json.JSONEncoder):
         super().__init__(*args, **kwargs)
 
     def default(self, obj):
-        if isinstance(obj, np.float32):
+        if np.issubdtype(obj, np.floating) and not isinstance(obj, np.float16):
             return float(obj)
-        elif isinstance(obj, np.integer):
+        if np.issubdtype(obj, np.integer):
             return int(obj)
         return json.JSONEncoder.default(self, obj)
 
@@ -90,7 +90,7 @@ def custom_format_warning(msg, *args, **kwargs):
 
 
 def jsonify_numpy(data):
-    return json.dumps(data, cls=Float32JSONEncoder, allow_nan=False)
+    return json.dumps(data, cls=FloatJSONEncoder, allow_nan=False)
 
 
 def import_plugins(plugin_module):
