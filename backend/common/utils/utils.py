@@ -78,9 +78,9 @@ class FloatJSONEncoder(json.JSONEncoder):
         super().__init__(*args, **kwargs)
 
     def default(self, obj):
-        if np.issubdtype(obj, np.floating) and not isinstance(obj, np.float16):
+        if isinstance(obj, np.floating):
             return float(obj)
-        if np.issubdtype(obj, np.integer):
+        if isinstance(obj, np.integer):
             return int(obj)
         return json.JSONEncoder.default(self, obj)
 

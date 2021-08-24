@@ -53,13 +53,16 @@ def min_max_numpy(arr: np.ndarray) -> Tuple[float, float]:
 
 
 def numba_has_support_for_scalar_type(arr: np.ndarray) -> bool:
-    """Numba does not support half-floats or non-scalars."""
-    if np.issubdtype(arr.dtype, np.floating) and arr.dtype != np.float16:
+    """Numba does not support half-floats, 128 bit floats, ints > 64 bit or non-scalars."""
+    if arr.dtype == np.float32 or arr.dtype == np.float64:
         return True
-    if np.issubdtype(arr.dtype, np.integer):
+
+    if np.issubdtype(arr.dtype, np.integer) and arr.dtype <= np.int64:
         return True
+
     if arr.dtype == np.bool_:
         return True
+
     return False
 
 
