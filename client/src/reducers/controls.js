@@ -79,6 +79,24 @@ const Controls = (
         userDefinedGenesLoading: false,
       };
     }
+    case "request geneset summary started": {
+      return {
+        ...state,
+        genesetSummaryLoading: action.data, // geneset field
+      };
+    }
+    case "request geneset summary success": {
+      return {
+        ...state,
+        genesetSummaryLoading: null, // geneset field
+      };
+    }
+    case "request geneset summary error": {
+      return {
+        ...state,
+        genesetSummaryLoading: null,
+      };
+    }
     case "clear user defined gene": {
       const { userDefinedGenes } = state;
       const newUserDefinedGenes = filter(

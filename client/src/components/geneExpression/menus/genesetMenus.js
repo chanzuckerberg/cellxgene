@@ -18,9 +18,10 @@ import actions from "../../../actions";
 import AddGeneToGenesetDialogue from "./addGeneToGenesetDialogue";
 
 @connect((state) => ({
-    genesetsUI: state.genesetsUI,
-    colorAccessor: state.colors.colorAccessor,
-  }))
+  genesetsUI: state.genesetsUI,
+  colorAccessor: state.colors.colorAccessor,
+  genesetSummaryLoading: state.controls.genesetSummaryLoading,
+}))
 class GenesetMenus extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -59,7 +60,13 @@ class GenesetMenus extends React.PureComponent {
   };
 
   render() {
-    const { geneset, genesetsEditable, createText, colorAccessor } = this.props;
+    const {
+      geneset,
+      genesetsEditable,
+      createText,
+      colorAccessor,
+      genesetSummaryLoading,
+    } = this.props;
 
     const isColorBy = geneset === colorAccessor;
 
@@ -123,7 +130,12 @@ class GenesetMenus extends React.PureComponent {
             >
               <AnchorButton
                 active={isColorBy}
-                intent={isColorBy ? "primary" : "none"}
+                loading={genesetSummaryLoading === geneset}
+                intent={
+                  isColorBy && !genesetSummaryLoading === geneset
+                    ? "primary"
+                    : "none"
+                }
                 style={{ marginLeft: 0 }}
                 onClick={this.handleColorByEntireGeneset}
                 data-testclass="colorby-entire-geneset"
