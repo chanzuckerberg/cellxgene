@@ -10,6 +10,7 @@ const Controls = (
     // all of the data + selection state
     userDefinedGenes: [],
     userDefinedGenesLoading: false,
+    genesetSummaryLoading: null, // color by geneset triggers a color mode change and graph to load, but we want a spinner on the geneset
 
     resettingInterface: false,
     graphInteractionMode: "select",
