@@ -1,4 +1,4 @@
-from typing import Tuple 
+from typing import Tuple
 import numba
 import concurrent.futures
 import numpy as np
@@ -53,9 +53,12 @@ def min_max_numpy(arr: np.ndarray) -> Tuple[float, float]:
 
 
 def numba_has_support_for_scalar_type(arr: np.ndarray) -> bool:
-    if not hasattr(arr, "dtype"):
-        return False
-    if isinstance(arr.dtype, (numba.types.Float, numba.types.Integer, numba.types.Boolean)):
+    """Numba does not support half-floats or non-scalars."""
+    if np.issubdtype(arr.dtype, np.floating) and arr.dtype != np.float16:
+        return True
+    if np.issubdtype(arr.dtype, np.integer):
+        return True
+    if arr.dtype == np.bool_:
         return True
     return False
 
