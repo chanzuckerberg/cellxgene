@@ -17,7 +17,7 @@ from flask_restful import Api, Resource
 import backend.server.common.rest as common_rest
 from backend.common.errors import DatasetAccessError, RequestException
 from backend.server.common.health import health_check
-from backend.common.utils.utils import FloatJSONEncoder
+from backend.common.utils.utils import StrictJSONEncoder
 
 webbp = Blueprint("webapp", "backend.server.common.web", template_folder="templates")
 
@@ -257,7 +257,7 @@ class Server:
     def __init__(self, app_config):
         self.app = Flask(__name__, static_folder=None)
         self._before_adding_routes(self.app, app_config)
-        self.app.json_encoder = FloatJSONEncoder
+        self.app.json_encoder = StrictJSONEncoder
         server_config = app_config.server_config
 
         # enable session data

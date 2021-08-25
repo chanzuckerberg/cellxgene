@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from os.path import basename, splitext
+import json
 import numpy as np
 import pandas as pd
 from scipy import sparse
@@ -8,7 +9,7 @@ from server_timing import Timing as ServerTiming
 from backend.server.common.config.app_config import AppConfig
 from backend.common.constants import Axis, XApproximateDistribution
 from backend.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError, UnsupportedSummaryMethod
-from backend.common.utils.utils import jsonify_numpy
+from backend.common.utils.utils import jsonify_strict
 from backend.common.fbs.matrix import encode_matrix_fbs
 from backend.common.genesets import validate_gene_sets
 
@@ -331,7 +332,7 @@ class DataAdaptor(metaclass=ABCMeta):
         )
 
         try:
-            return jsonify_numpy(result)
+            return jsonify_strict(result)
         except ValueError:
             raise JSONEncodingValueError("Error encoding differential expression to JSON")
 

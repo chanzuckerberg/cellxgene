@@ -24,7 +24,7 @@ import backend.czi_hosted.common.rest as common_rest
 from backend.common.utils.data_locator import DataLocator
 from backend.common.errors import DatasetAccessError, RequestException
 from backend.czi_hosted.common.health import health_check
-from backend.common.utils.utils import path_join, FloatJSONEncoder
+from backend.common.utils.utils import path_join, StrictJSONEncoder
 from backend.czi_hosted.data_common.matrix_loader import MatrixDataLoader
 
 webbp = Blueprint("webapp", "backend.czi_hosted.common.web", template_folder="templates")
@@ -396,7 +396,7 @@ class Server:
         self.app = Flask(__name__, static_folder=None)
         handle_api_base_url(self.app, app_config)
         self._before_adding_routes(self.app, app_config)
-        self.app.json_encoder = FloatJSONEncoder
+        self.app.json_encoder = StrictJSONEncoder
         server_config = app_config.server_config
         if server_config.app__server_timing_headers:
             ServerTiming(self.app, force_debug=True)
