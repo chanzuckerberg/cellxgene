@@ -842,6 +842,7 @@ class Graph extends React.Component {
       layoutChoice,
       pointDilation,
       crossfilter,
+      dispatch,
     } = this.props;
     const { modelTF, projectionTF, camera, viewport, regl } = this.state;
     const cameraTF = camera?.view()?.slice();
@@ -922,17 +923,27 @@ class Graph extends React.Component {
             />
           </Async.Pending>
           <Async.Rejected>
-            {(error) => (
-              <ErrorLoading
-                displayName={layoutChoice.current}
-                error={error}
-                width={viewport.width}
-                height={viewport.height}
-              />
-            )}
+            {(error) => {
+              /* graph loaded a geneset mean, notify success for spinners */
+              if (colors.colorMode === "color by geneset mean expression") {
+                dispatch({ type: "request geneset summary error" });
+              }
+              return (
+                <ErrorLoading
+                  displayName={layoutChoice.current}
+                  error={error}
+                  width={viewport.width}
+                  height={viewport.height}
+                />
+              );
+            }}
           </Async.Rejected>
           <Async.Fulfilled>
             {(asyncProps) => {
+              /* graph loaded a geneset mean, notify success for spinners */
+              if (colors.colorMode === "color by geneset mean expression") {
+                dispatch({ type: "request geneset summary success" });
+              }
               if (regl && !shallowEqual(asyncProps, this.cachedAsyncProps)) {
                 this.updateReglAndRender(asyncProps, this.cachedAsyncProps);
               }
