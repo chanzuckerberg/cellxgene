@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 from os.path import basename, splitext
-import json
 import numpy as np
 import pandas as pd
 from scipy import sparse
