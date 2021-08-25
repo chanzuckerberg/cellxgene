@@ -68,8 +68,8 @@ def path_join(base, *urls):
 class StrictJSONEncoder(json.JSONEncoder):
     """
     Custom JSON encoder set-up performing two tasks:
-    1. Strict JSON conformance with non-finite flaots (NaN, +/-Inf) via allow_nan=False
-    2. Convert various numpy types into python types so the encoder will correctly encode.
+    1. Strict JSON conformance with non-finite floats (NaN, +/-Inf) via allow_nan=False
+    2. Convert various Numpy types into python types so the encoder will correctly encode.
     """
 
     def __init__(self, *args, **kwargs):
