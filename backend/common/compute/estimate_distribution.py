@@ -1,3 +1,4 @@
+from typing import Tuple
 import numba
 import concurrent.futures
 import numpy as np
@@ -6,7 +7,7 @@ from backend.common.constants import XApproximateDistribution
 
 
 @numba.njit(error_model="numpy", nogil=True)
-def min_max(arr: np.ndarray):
+def min_max_fast(arr: np.ndarray) -> Tuple[float, float]:
     """Return (min, max) values for the ndarray."""
 
     # initialize to first finite value in array.  Normally,
@@ -47,6 +48,24 @@ def min_max(arr: np.ndarray):
     return min_val, max_val
 
 
+def min_max_numpy(arr: np.ndarray) -> Tuple[float, float]:
+    return arr.min(), arr.max()
+
+
+def numba_has_support_for_scalar_type(arr: np.ndarray) -> bool:
+    """Numba does not support half-floats, 128 bit floats, ints > 64 bit or non-scalars."""
+    if arr.dtype == np.float32 or arr.dtype == np.float64:
+        return True
+
+    if np.issubdtype(arr.dtype, np.integer) and arr.dtype <= np.int64:
+        return True
+
+    if arr.dtype == np.bool_:
+        return True
+
+    return False
+
+
 def estimate_approximate_distribution(X) -> XApproximateDistribution:
     """
     Estimate the distribution (normal, count) of the X matrix.
@@ -71,6 +90,8 @@ def estimate_approximate_distribution(X) -> XApproximateDistribution:
         )
     else:
         raise TypeError(f"Unsupported matrix format: {str(type(X))}")
+
+    min_max = min_max_fast if numba_has_support_for_scalar_type(Xdata) else min_max_numpy
 
     CHUNKSIZE = 1 << 24
     if Xdata.size > CHUNKSIZE:

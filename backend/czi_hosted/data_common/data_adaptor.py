@@ -15,7 +15,7 @@ from backend.common.errors import (
     UnsupportedSummaryMethod,
     DatasetAccessError,
 )
-from backend.common.utils.utils import jsonify_numpy
+from backend.common.utils.utils import jsonify_strict
 from backend.common.fbs.matrix import encode_matrix_fbs
 
 
@@ -336,7 +336,7 @@ class DataAdaptor(metaclass=ABCMeta):
         )
 
         try:
-            return jsonify_numpy(result)
+            return jsonify_strict(result)
         except ValueError:
             raise JSONEncodingValueError("Error encoding differential expression to JSON")
 

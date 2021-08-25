@@ -65,7 +65,13 @@ def path_join(base, *urls):
     return btpl._replace(path=path).geturl()
 
 
-class Float32JSONEncoder(json.JSONEncoder):
+class StrictJSONEncoder(json.JSONEncoder):
+    """
+    Custom JSON encoder set-up performing two tasks:
+    1. Strict JSON conformance with non-finite floats (NaN, +/-Inf) via allow_nan=False
+    2. Convert various Numpy types into python types so the encoder will correctly encode.
+    """
+
     def __init__(self, *args, **kwargs):
         """
         NaN/Infinities are illegal in standard JSON.  Python extends JSON with
@@ -78,9 +84,11 @@ class Float32JSONEncoder(json.JSONEncoder):
         super().__init__(*args, **kwargs)
 
     def default(self, obj):
-        if isinstance(obj, np.float32):
+        """This helps us convert types not supported by the native JSON encoder into
+        standard python types, eg, np.int64."""
+        if isinstance(obj, np.floating):
             return float(obj)
-        elif isinstance(obj, np.integer):
+        if isinstance(obj, np.integer):
             return int(obj)
         return json.JSONEncoder.default(self, obj)
 
@@ -89,8 +97,8 @@ def custom_format_warning(msg, *args, **kwargs):
     return f"[cellxgene] Warning: {msg} \n"
 
 
-def jsonify_numpy(data):
-    return json.dumps(data, cls=Float32JSONEncoder, allow_nan=False)
+def jsonify_strict(data):
+    return json.dumps(data, cls=StrictJSONEncoder, allow_nan=False)
 
 
 def import_plugins(plugin_module):

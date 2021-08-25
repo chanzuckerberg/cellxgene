@@ -232,7 +232,7 @@ class AnndataAdaptor(DataAdaptor):
                 "Anndata data matrix is sparse, but not a CSC (columnar) matrix.  "
                 "Performance may be improved by using CSC."
             )
-        if self.data.X.dtype != "float32":
+        if self.data.X.dtype > np.dtype(np.float32):
             warnings.warn(
                 f"Anndata data matrix is in {self.data.X.dtype} format not float32. " f"Precision may be truncated."
             )
