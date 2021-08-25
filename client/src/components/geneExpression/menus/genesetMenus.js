@@ -131,11 +131,7 @@ class GenesetMenus extends React.PureComponent {
               <AnchorButton
                 active={isColorBy}
                 loading={genesetSummaryLoading === geneset}
-                intent={
-                  isColorBy && !genesetSummaryLoading === geneset
-                    ? "primary"
-                    : "none"
-                }
+                intent={isColorBy ? "primary" : "none"}
                 style={{ marginLeft: 0 }}
                 onClick={this.handleColorByEntireGeneset}
                 data-testclass="colorby-entire-geneset"
