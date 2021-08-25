@@ -256,8 +256,11 @@ class Graph extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const { selectionTool, currentSelection, graphInteractionMode } =
-      this.props;
+    const {
+      selectionTool,
+      currentSelection,
+      graphInteractionMode,
+    } = this.props;
     const { toolSVG, viewport } = this.state;
     const hasResized =
       prevState.viewport.height !== viewport.height ||
@@ -317,7 +320,10 @@ class Graph extends React.Component {
     if (e.type !== "wheel") e.preventDefault();
     if (camera.handleEvent(e, projectionTF)) {
       this.renderCanvas();
-      this.setState((state) => ({ ...state, updateOverlay: !state.updateOverlay }));
+      this.setState((state) => ({
+        ...state,
+        updateOverlay: !state.updateOverlay,
+      }));
     }
   };
 
@@ -493,11 +499,7 @@ class Graph extends React.Component {
       handleCancel = this.handleLassoCancel.bind(this);
     }
 
-    const {
-      svg: newToolSVG,
-      tool,
-      container,
-    } = setupSVGandBrushElements(
+    const { svg: newToolSVG, tool, container } = setupSVGandBrushElements(
       selectionTool,
       handleStart,
       handleDrag,
@@ -569,12 +571,20 @@ class Graph extends React.Component {
       - the point dilation dataframe
     */
     const { metadataField: pointDilationAccessor } = pointDilation;
+    const { dispatch } = this.props;
 
     const promises = [];
     // layout
     promises.push(annoMatrix.fetch("emb", layoutChoice.current));
 
-    // color
+    /* It's not ideal that graph knows about the type of colorby */
+    if (colors.colorMode === "color by geneset mean expression") {
+      // color
+      dispatch({
+        type: "request geneset summary started",
+        data: colors.colorAccessor,
+      });
+    }
     const query = this.createColorByQuery(colors);
     if (query) {
       promises.push(annoMatrix.fetch(...query));
@@ -951,32 +961,29 @@ const ErrorLoading = ({ displayName, error, width, height }) => {
   );
 };
 
-const StillLoading = ({ displayName, width, height }) => 
+const StillLoading = ({ displayName, width, height }) => (
   /*
   Render a busy/loading indicator
   */
-   (
+  <div
+    style={{
+      position: "fixed",
+      fontWeight: 500,
+      top: height / 2,
+      width,
+    }}
+  >
     <div
       style={{
-        position: "fixed",
-        fontWeight: 500,
-        top: height / 2,
-        width,
+        display: "flex",
+        justifyContent: "center",
+        justifyItems: "center",
+        alignItems: "center",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          justifyItems: "center",
-          alignItems: "center",
-        }}
-      >
-        <Button minimal loading intent="primary" />
-        <span style={{ fontStyle: "italic" }}>Loading {displayName}</span>
-      </div>
+      <Button minimal loading intent="primary" />
+      <span style={{ fontStyle: "italic" }}>Loading {displayName}</span>
     </div>
-  )
-;
-
+  </div>
+);
 export default Graph;

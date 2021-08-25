@@ -10,6 +10,7 @@ const Controls = (
     // all of the data + selection state
     userDefinedGenes: [],
     userDefinedGenesLoading: false,
+    genesetSummaryLoading: null, // color by geneset triggers a color mode change and graph to load, but we want a spinner on the geneset
 
     resettingInterface: false,
     graphInteractionMode: "select",
@@ -76,6 +77,24 @@ const Controls = (
         ...state,
         userDefinedGenes: _userDefinedGenes,
         userDefinedGenesLoading: false,
+      };
+    }
+    case "request geneset summary started": {
+      return {
+        ...state,
+        genesetSummaryLoading: action.data, // geneset field
+      };
+    }
+    case "request geneset summary success": {
+      return {
+        ...state,
+        genesetSummaryLoading: null, // geneset field
+      };
+    }
+    case "request geneset summary error": {
+      return {
+        ...state,
+        genesetSummaryLoading: null,
       };
     }
     case "clear user defined gene": {
