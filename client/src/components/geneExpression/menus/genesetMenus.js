@@ -13,19 +13,31 @@ import {
   PopoverInteractionKind,
 } from "@blueprintjs/core";
 
+import { createColorQuery } from "../../../util/stateManager/colorHelpers";
+
 import * as globals from "../../../globals";
 import actions from "../../../actions";
 import AddGeneToGenesetDialogue from "./addGeneToGenesetDialogue";
 
 @connect((state) => ({
-    genesetsUI: state.genesetsUI,
-    colorAccessor: state.colors.colorAccessor,
-  }))
+  annoMatrix: state.annoMatrix,
+  schema: state.annoMatrix?.schema,
+  genesetsUI: state.genesetsUI,
+  colorAccessor: state.colors.colorAccessor,
+  genesets: state.genesets.genesets,
+}))
 class GenesetMenus extends React.PureComponent {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      dataIsFetching: false,
+    };
   }
+
+  componentDidMount = () => {
+    /* fetch the summary on load, also pops a spinner */
+    this.preFetchGenesetMean();
+  };
 
   activateAddGeneToGenesetMode = () => {
     const { dispatch, geneset } = this.props;
@@ -44,13 +56,43 @@ class GenesetMenus extends React.PureComponent {
     });
   };
 
+  preFetchGenesetMean = () => {
+    const { geneset, schema, annoMatrix, genesets } = this.props;
+
+    this.setState({ dataIsFetching: true });
+
+    annoMatrix
+      .fetch(
+        createColorQuery(
+          "color by geneset mean expression",
+          geneset,
+          schema,
+          genesets
+        )
+      )
+      .then(() => this.setState({ dataIsFetching: false }));
+  };
+
   handleColorByEntireGeneset = () => {
-    const { dispatch, geneset } = this.props;
+    const { dispatch, geneset, schema, annoMatrix, genesets } = this.props;
 
     dispatch({
       type: "color by geneset mean expression",
       geneset,
     });
+
+    this.setState({ dataIsFetching: true });
+
+    annoMatrix
+      .fetch(
+        createColorQuery(
+          "color by geneset mean expression",
+          geneset,
+          schema,
+          genesets
+        )
+      )
+      .then(() => this.setState({ dataIsFetching: false }));
   };
 
   handleDeleteGeneset = () => {
@@ -60,8 +102,11 @@ class GenesetMenus extends React.PureComponent {
 
   render() {
     const { geneset, genesetsEditable, createText, colorAccessor } = this.props;
+    const { dataIsFetching } = this.state;
 
     const isColorBy = geneset === colorAccessor;
+
+    console.log("dataisfetching", dataIsFetching);
 
     return (
       <>
@@ -123,6 +168,7 @@ class GenesetMenus extends React.PureComponent {
             >
               <AnchorButton
                 active={isColorBy}
+                loading={dataIsFetching}
                 intent={isColorBy ? "primary" : "none"}
                 style={{ marginLeft: 0 }}
                 onClick={this.handleColorByEntireGeneset}
