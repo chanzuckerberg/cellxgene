@@ -1,6 +1,6 @@
 module.exports = {
   root: true,
-  parser: "babel-eslint",
+  parser: "@babel/eslint-parser",
   extends: [
     "airbnb",
     "plugin:eslint-comments/recommended",
