@@ -288,57 +288,54 @@ class Category extends React.PureComponent {
 
 export default Category;
 
-const StillLoading = ({ metadataField, checkboxID }) => 
+const StillLoading = ({ metadataField, checkboxID }) => (
   /*
   We are still loading this category, so render a "busy" signal.
   */
-   (
+  <div
+    style={{
+      maxWidth: globals.maxControlsWidth,
+    }}
+  >
     <div
       style={{
-        maxWidth: globals.maxControlsWidth,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "baseline",
       }}
     >
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "baseline",
+          justifyContent: "flex-start",
+          alignItems: "flex-start",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-start",
-            alignItems: "flex-start",
-          }}
+        <label
+          htmlFor={checkboxID}
+          className={`${Classes.CONTROL} ${Classes.CHECKBOX}`}
         >
-          <label
-            htmlFor={checkboxID}
-            className={`${Classes.CONTROL} ${Classes.CHECKBOX}`}
+          <input disabled id={checkboxID} checked type="checkbox" />
+          <span className={Classes.CONTROL_INDICATOR} />
+        </label>
+        <Truncate>
+          <span
+            style={{
+              cursor: "pointer",
+              display: "inline-block",
+              width: LABEL_WIDTH,
+            }}
           >
-            <input disabled id={checkboxID} checked type="checkbox" />
-            <span className={Classes.CONTROL_INDICATOR} />
-          </label>
-          <Truncate>
-            <span
-              style={{
-                cursor: "pointer",
-                display: "inline-block",
-                width: LABEL_WIDTH,
-              }}
-            >
-              {metadataField}
-            </span>
-          </Truncate>
-        </div>
-        <div>
-          <Button minimal loading intent="primary" />
-        </div>
+            {metadataField}
+          </span>
+        </Truncate>
+      </div>
+      <div>
+        <Button minimal loading intent="primary" />
       </div>
     </div>
-  )
-;
-
+  </div>
+);
 const ErrorLoading = ({ metadataField, error }) => {
   console.error(error); // log error to console as it is unexpected.
   return (
@@ -438,8 +435,8 @@ const CategoryHeader = React.memo(
             )}
           </span>
         </div>
-        {<AnnoDialogEditCategoryName metadataField={metadataField} />}
-        {<AnnoDialogAddLabel metadataField={metadataField} />}
+        <AnnoDialogEditCategoryName metadataField={metadataField} />
+        <AnnoDialogAddLabel metadataField={metadataField} />
         <div>
           <AnnoMenu
             metadataField={metadataField}
