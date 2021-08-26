@@ -1,6 +1,6 @@
 module.exports = {
   root: true,
-  parser: "babel-eslint",
+
   extends: [
     "airbnb",
     "plugin:eslint-comments/recommended",
@@ -28,12 +28,16 @@ module.exports = {
     context: true,
     beforeEach: true,
   },
+  parser: "@babel/eslint-parser",
   parserOptions: {
     ecmaVersion: 2017,
     sourceType: "module",
     ecmaFeatures: {
       jsx: true,
       generators: true,
+    },
+    babelOptions: {
+      configFile: "./configuration/babel/babel.prod.js",
     },
   },
   rules: {
