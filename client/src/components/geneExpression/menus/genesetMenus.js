@@ -36,7 +36,8 @@ class GenesetMenus extends React.PureComponent {
 
   componentDidMount = () => {
     /* fetch the summary on load, also pops a spinner */
-    this.preFetchGenesetMean();
+    this.setState({ dataIsFetching: true });
+    this.handleColorByEntireGeneset();
   };
 
   activateAddGeneToGenesetMode = () => {
@@ -56,23 +57,6 @@ class GenesetMenus extends React.PureComponent {
     });
   };
 
-  preFetchGenesetMean = () => {
-    const { geneset, schema, annoMatrix, genesets } = this.props;
-
-    this.setState({ dataIsFetching: true });
-
-    annoMatrix
-      .fetch(
-        createColorQuery(
-          "color by geneset mean expression",
-          geneset,
-          schema,
-          genesets
-        )
-      )
-      .then(() => this.setState({ dataIsFetching: false }));
-  };
-
   handleColorByEntireGeneset = () => {
     const { dispatch, geneset, schema, annoMatrix, genesets } = this.props;
 
@@ -80,8 +64,6 @@ class GenesetMenus extends React.PureComponent {
       type: "color by geneset mean expression",
       geneset,
     });
-
-    this.setState({ dataIsFetching: true });
 
     annoMatrix
       .fetch(
@@ -105,8 +87,6 @@ class GenesetMenus extends React.PureComponent {
     const { dataIsFetching } = this.state;
 
     const isColorBy = geneset === colorAccessor;
-
-    console.log("dataisfetching", dataIsFetching);
 
     return (
       <>
