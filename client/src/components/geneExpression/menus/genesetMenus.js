@@ -54,10 +54,6 @@ class GenesetMenus extends React.PureComponent {
       .then(() => this.setState({ dataIsFetching: false }));
   };
 
-  componentDidMount = () => {
-    this.fetchOurData();
-  };
-
   activateAddGeneToGenesetMode = () => {
     const { dispatch, geneset } = this.props;
     dispatch({
