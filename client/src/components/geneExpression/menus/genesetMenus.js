@@ -34,10 +34,28 @@ class GenesetMenus extends React.PureComponent {
     };
   }
 
-  componentDidMount = () => {
-    /* fetch the summary on load, also pops a spinner */
+  fetchOurData = () => {
+    /* 
+    fetch our data. serves two purposes:  a) preload upon initial render, 
+    and b) set busy/loading indicator on any controls that require the data
+    to be present, such as the color-by component.
+    */
+    const { geneset, schema, annoMatrix, genesets } = this.props;
     this.setState({ dataIsFetching: true });
-    this.handleColorByEntireGeneset();
+    annoMatrix
+      .fetch(
+        createColorQuery(
+          "color by geneset mean expression",
+          geneset,
+          schema,
+          genesets
+        )
+      )
+      .then(() => this.setState({ dataIsFetching: false }));
+  };
+
+  componentDidMount = () => {
+    this.fetchOurData();
   };
 
   activateAddGeneToGenesetMode = () => {
@@ -58,23 +76,12 @@ class GenesetMenus extends React.PureComponent {
   };
 
   handleColorByEntireGeneset = () => {
-    const { dispatch, geneset, schema, annoMatrix, genesets } = this.props;
-
+    const { dispatch, geneset } = this.props;
+    this.fetchOurData(); // just in case data was flushed from cache
     dispatch({
       type: "color by geneset mean expression",
       geneset,
     });
-
-    annoMatrix
-      .fetch(
-        createColorQuery(
-          "color by geneset mean expression",
-          geneset,
-          schema,
-          genesets
-        )
-      )
-      .then(() => this.setState({ dataIsFetching: false }));
   };
 
   handleDeleteGeneset = () => {
