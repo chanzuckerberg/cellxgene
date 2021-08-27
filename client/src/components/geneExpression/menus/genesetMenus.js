@@ -13,19 +13,46 @@ import {
   PopoverInteractionKind,
 } from "@blueprintjs/core";
 
+import { createColorQuery } from "../../../util/stateManager/colorHelpers";
+
 import * as globals from "../../../globals";
 import actions from "../../../actions";
 import AddGeneToGenesetDialogue from "./addGeneToGenesetDialogue";
 
 @connect((state) => ({
-    genesetsUI: state.genesetsUI,
-    colorAccessor: state.colors.colorAccessor,
-  }))
+  annoMatrix: state.annoMatrix,
+  schema: state.annoMatrix?.schema,
+  genesetsUI: state.genesetsUI,
+  colorAccessor: state.colors.colorAccessor,
+  genesets: state.genesets.genesets,
+}))
 class GenesetMenus extends React.PureComponent {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      dataIsFetching: false,
+    };
   }
+
+  fetchOurData = () => {
+    /* 
+    fetch our data. serves two purposes:  a) preload upon initial render, 
+    and b) set busy/loading indicator on any controls that require the data
+    to be present, such as the color-by component.
+    */
+    const { geneset, schema, annoMatrix, genesets } = this.props;
+    this.setState({ dataIsFetching: true });
+    annoMatrix
+      .fetch(
+        ...createColorQuery(
+          "color by geneset mean expression",
+          geneset,
+          schema,
+          genesets
+        )
+      )
+      .then(() => this.setState({ dataIsFetching: false }));
+  };
 
   activateAddGeneToGenesetMode = () => {
     const { dispatch, geneset } = this.props;
@@ -46,7 +73,7 @@ class GenesetMenus extends React.PureComponent {
 
   handleColorByEntireGeneset = () => {
     const { dispatch, geneset } = this.props;
-
+    this.fetchOurData(); // just in case data was flushed from cache
     dispatch({
       type: "color by geneset mean expression",
       geneset,
@@ -60,6 +87,7 @@ class GenesetMenus extends React.PureComponent {
 
   render() {
     const { geneset, genesetsEditable, createText, colorAccessor } = this.props;
+    const { dataIsFetching } = this.state;
 
     const isColorBy = geneset === colorAccessor;
 
@@ -123,6 +151,7 @@ class GenesetMenus extends React.PureComponent {
             >
               <AnchorButton
                 active={isColorBy}
+                loading={dataIsFetching}
                 intent={isColorBy ? "primary" : "none"}
                 style={{ marginLeft: 0 }}
                 onClick={this.handleColorByEntireGeneset}
