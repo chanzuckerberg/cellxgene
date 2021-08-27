@@ -44,7 +44,7 @@ class GenesetMenus extends React.PureComponent {
     this.setState({ dataIsFetching: true });
     annoMatrix
       .fetch(
-        createColorQuery(
+        ...createColorQuery(
           "color by geneset mean expression",
           geneset,
           schema,
