@@ -2,7 +2,7 @@ import logging
 import sys
 from backend.common.utils.utils import import_plugins
 
-__version__ = "0.18.0-rc.0"
+__version__ = "0.18.0"
 display_version = "cellxgene v" + __version__
 
 try:
