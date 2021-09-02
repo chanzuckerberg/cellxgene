@@ -1,7 +1,0 @@
-recursive-include backend/czi_hosted/common/web/templates *
-recursive-include backend/czi_hosted/common/web/static *
-
-include backend/czi_hosted/requirements.txt
-include backend/czi_hosted/requirements-prepare.txt
-include backend/czi_hosted/converters/schema/hgnc_complete_set.txt.gz
-include backend/czi_hosted/converters/schema/schema_definitions/*
