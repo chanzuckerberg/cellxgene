@@ -4,7 +4,6 @@ import thunk from "redux-thunk";
 import cascadeReducers from "./cascade";
 import undoable from "./undoable";
 import config from "./config";
-import userInfo from "./userInfo";
 import annoMatrix from "./annoMatrix";
 import obsCrossfilter from "./obsCrossfilter";
 import categoricalSelection from "./categoricalSelection";
@@ -42,7 +41,6 @@ const Reducer = undoable(
     ["centroidLabels", centroidLabels],
     ["pointDilation", pointDialation],
     ["autosave", autosave],
-    ["userInfo", userInfo],
   ]),
   [
     "annoMatrix",

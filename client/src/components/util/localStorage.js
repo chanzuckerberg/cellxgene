@@ -1,6 +1,5 @@
 export const KEYS = {
   COOKIE_DECISION: "cxg.cookieDecision",
-  LOGIN_PROMPT: "cxg.LOGIN_PROMPT",
 };
 
 export function storageGet(key, defaultValue = null) {

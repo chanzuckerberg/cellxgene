@@ -52,17 +52,6 @@ async function configFetch(dispatch) {
   });
 }
 
-async function userInfoFetch(dispatch) {
-  return fetchJson("userinfo").then((response) => {
-    const { userinfo: userInfo } = response || {};
-    dispatch({
-      type: "userInfo load complete",
-      userInfo,
-    });
-    return userInfo;
-  });
-}
-
 async function genesetsFetch(dispatch, config) {
   /* request genesets ONLY if the backend supports the feature */
   const defaultResponse = {
@@ -105,7 +94,6 @@ const doInitialDataLoad = () =>
         configFetch(dispatch),
         schemaFetch(dispatch),
         userColorsFetchAndLoad(dispatch),
-        userInfoFetch(dispatch),
       ]);
 
       genesetsFetch(dispatch, config);
