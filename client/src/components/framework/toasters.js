@@ -1,12 +1,14 @@
 import { Position, Toaster, Intent } from "@blueprintjs/core";
 
 /** Singleton toaster instance. Create separate instances for different options. */
-
-const ToastTopCenter = Toaster.create({
-  className: "recipe-toaster",
-  position: Position.TOP,
-  maxToasts: 4,
-});
+let ToastTopCenter;
+if (typeof document !== "undefined") {
+  ToastTopCenter = Toaster.create({
+    className: "recipe-toaster",
+    position: Position.TOP,
+    maxToasts: 4,
+  });
+}
 
 /*
 A "user" error - eg, bad input
