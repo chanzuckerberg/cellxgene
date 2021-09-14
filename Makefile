@@ -40,16 +40,12 @@ build: clean build-client
 
 # If you are actively developing in the server folder use this, dirties the source tree
 .PHONY: build-for-server-dev
-build-for-server-dev: clean-server build-client
-	$(call copy_client_assets,client/build,server)
+build-for-server-dev: clean-server build-client copy-client-assets
 
 .PHONY: copy-client-assets
 copy-client-assets:
 	$(call copy_client_assets,client/build,server)
 
-.PHONY: copy-client-assets-czi-hosted
-copy-client-assets-czi-hosted:
-	$(call copy_client_assets,client/build)
 
 # TESTING
 .PHONY: test
