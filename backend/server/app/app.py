@@ -1,7 +1,6 @@
 import datetime
 import logging
 from functools import wraps
-from http import HTTPStatus
 
 from flask import (
     Flask,
