@@ -8,9 +8,6 @@ f"""server:
     force_https: {force_https}
     flask_secret_key: {flask_secret_key}
     generate_cache_control_headers: {generate_cache_control_headers}
-  authentication:
-    type: {auth_type}
-    insecure_test_environment: {insecure_test_environment}
 
   single_dataset:
     datapath: {dataset_datapath}

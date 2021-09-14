@@ -12,13 +12,6 @@ server:
     flask_secret_key: null
     generate_cache_control_headers: false
 
-  authentication:
-    # The authentication types may be "none" or "session"
-    # none:  No authentication support, features like user_annotations must not be enabled.
-    # session:  A session based userid is automatically generated. (no params needed)
-    type: session
-    insecure_test_environment: false
-
   single_dataset:
     # If datapath is set, then cellxgene with serve a single dataset located at datapath.
     datapath: null
@@ -51,9 +44,6 @@ dataset:
     scripts: []
     # Inline scripts are a list of file names, where the contents of the file will be injected into the index.
     inline_scripts: []
-
-    # allow authentication support
-    authentication_enable: true
 
   presentation:
     max_categories: 1000
@@ -117,14 +107,6 @@ external:
   #        required: true
   #      - key: db_uri
   #        path: [dataset, user_annotations, db_uri]
-  #        required: true
-  #    - name:  my_auth_secret
-  #      values:
-  #      - key: client_secret
-  #        path: [server, authentication, client_secret]
-  #        required: true
-  #      - key: client_id
-  #        path: [server, authentication, client_id]
   #        required: true
 
   aws_secrets_manager:

@@ -22,13 +22,13 @@ class BaseConfig(object):
     def create_mapping(self, config):
         """
         Create a dictionary where the keys are the name of attributes (using double underscore convention)
-        For example: authentication__type
+        For example: app__host
 
         The values are a tuple,
         - the first item of the tuple is a tuple of path elements (location in config 'tree')
         - the second item is the value of the config parameter
 
-        For example: (('authentication', 'type'), 'session'))
+        For example: (("app", "host"), "session"))
         """
         config_copy = copy.deepcopy(config)
         mapping = {}
