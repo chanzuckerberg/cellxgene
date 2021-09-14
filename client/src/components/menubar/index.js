@@ -7,7 +7,6 @@ import styles from "./menubar.css";
 import actions from "../../actions";
 import Clip from "./clip";
 
-import AuthButtons from "./authButtons";
 import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
 import DiffexpButtons from "./diffexpButtons";
@@ -36,8 +35,6 @@ import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
     scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
     scatterplotYYaccessor: state.controls.scatterplotYYaccessor,
     libraryVersions: state.config?.library_versions,
-    auth: state.config?.authentication,
-    userInfo: state.userInfo,
     undoDisabled: state["@@undoable/past"].length === 0,
     redoDisabled: state["@@undoable/future"].length === 0,
     aboutLink: state.config?.links?.["about-dataset"],
@@ -209,8 +206,6 @@ class MenuBar extends React.PureComponent {
       colorAccessor,
       subsetPossible,
       subsetResetPossible,
-      userInfo,
-      auth,
     } = this.props;
     const { pendingClipPercentiles } = this.state;
 
@@ -236,7 +231,6 @@ class MenuBar extends React.PureComponent {
           zIndex: 3,
         }}
       >
-        <AuthButtons {...{ auth, userInfo }} />
         <UndoRedoReset
           dispatch={dispatch}
           undoDisabled={undoDisabled}

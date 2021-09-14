@@ -39,14 +39,6 @@ app.use(
 
 app.use(favicon("./favicon.png"));
 
-app.get("/login", async (req, res) => {
-  try {
-    res.redirect(`${API.prefix}login?dataset=http://localhost:${CLIENT_PORT}`);
-  } catch (err) {
-    console.error(err);
-  }
-});
-
 app.get("/logout", async (req, res) => {
   try {
     res.redirect(`${API.prefix}logout?dataset=http://localhost:${CLIENT_PORT}`);

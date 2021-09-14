@@ -13,7 +13,6 @@ import actions from "../../actions";
 @connect((state) => ({
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
   schema: state.annoMatrix?.schema,
-  userInfo: state.userInfo,
 }))
 class Categories extends React.Component {
   constructor(props) {
@@ -98,11 +97,8 @@ class Categories extends React.Component {
     this.setState({ newCategoryText: name });
   };
 
-  instruction = (name) => labelPrompt(
-      this.categoryNameError(name),
-      "New, unique category name",
-      ":"
-    );
+  instruction = (name) =>
+    labelPrompt(this.categoryNameError(name), "New, unique category name", ":");
 
   onExpansionChange = (catName) => {
     const { expandedCats } = this.state;
@@ -124,7 +120,7 @@ class Categories extends React.Component {
       newCategoryText,
       expandedCats,
     } = this.state;
-    const { writableCategoriesEnabled, schema, userInfo } = this.props;
+    const { writableCategoriesEnabled, schema } = this.props;
     /* all names, sorted in display order.  Will be rendered in this order */
     const allCategoryNames =
       ControlsHelpers.selectableCategoryNames(schema).sort();
@@ -174,11 +170,7 @@ class Categories extends React.Component {
         {writableCategoriesEnabled ? (
           <div style={{ marginBottom: 10 }}>
             <Tooltip
-              content={
-                userInfo.is_authenticated
-                  ? "Create a new category"
-                  : "You must be logged in to create new categorical fields"
-              }
+              content="Create a new category"
               position={Position.RIGHT}
               boundary="viewport"
               hoverOpenDelay={globals.tooltipHoverOpenDelay}
@@ -192,7 +184,6 @@ class Categories extends React.Component {
                 data-testid="open-annotation-dialog"
                 onClick={this.handleEnableAnnoMode}
                 intent="primary"
-                disabled={!userInfo.is_authenticated}
               >
                 Create new <strong>category</strong>
               </AnchorButton>

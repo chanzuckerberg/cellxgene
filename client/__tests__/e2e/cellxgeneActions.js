@@ -13,10 +13,7 @@ import {
   getTestClass,
   getTestId,
   isElementPresent,
-  goToPage,
 } from "./puppeteerUtils";
-
-import { appUrlBase, TEST_EMAIL, TEST_PASSWORD } from "./config";
 
 export async function drag(testId, start, end, lasso = false) {
   const layout = await waitByID(testId);
@@ -61,7 +58,9 @@ export async function getAllHistograms(testclass, testIds) {
   const allHistograms = await getAllByClass(testclass);
 
   const testIDs = await Promise.all(
-    allHistograms.map((hist) => page.evaluate((elem) => elem.dataset.testid, hist))
+    allHistograms.map((hist) =>
+      page.evaluate((elem) => elem.dataset.testid, hist)
+    )
   );
 
   return testIDs.map((id) => id.replace(/^histogram-/, ""));
@@ -172,9 +171,9 @@ export async function createCategory(categoryName) {
   await clickOn("submit-category");
 }
 
-/* 
+/*
 
-  GENESET 
+  GENESET
 
 */
 
@@ -189,7 +188,9 @@ export async function colorByGene(gene) {
 export async function assertColorLegendLabel(label) {
   const handle = await waitByID("continuous_legend_color_by_label");
 
-  const result = await handle.evaluate((node) => node.getAttribute("aria-label"));
+  const result = await handle.evaluate((node) =>
+    node.getAttribute("aria-label")
+  );
 
   return expect(result).toBe(label);
 }
@@ -246,12 +247,14 @@ export async function assertGenesetDoesNotExist(genesetName) {
 export async function assertGenesetExists(genesetName) {
   const handle = await waitByID(`${genesetName}:geneset-name`);
 
-  const result = await handle.evaluate((node) => node.getAttribute("aria-label"));
+  const result = await handle.evaluate((node) =>
+    node.getAttribute("aria-label")
+  );
 
   return expect(result).toBe(genesetName);
 }
 
-/* 
+/*
 
   GENE
 
@@ -276,7 +279,9 @@ export async function removeGene(geneSymbol) {
 export async function assertGeneExistsInGeneset(geneSymbol) {
   const handle = await waitByID(`${geneSymbol}:gene-label`);
 
-  const result = await handle.evaluate((node) => node.getAttribute("aria-label"));
+  const result = await handle.evaluate((node) =>
+    node.getAttribute("aria-label")
+  );
 
   return expect(result).toBe(geneSymbol);
 }
@@ -291,9 +296,9 @@ export async function expandGene(geneSymbol) {
   await clickOn(`maximize-${geneSymbol}`);
 }
 
-/* 
+/*
 
-  CATEGORY 
+  CATEGORY
 
 */
 
@@ -437,70 +442,4 @@ export async function assertCategoryDoesNotExist(categoryName) {
   await expect(result).toBe(false);
 }
 
-export async function login() {
-  await goToPage(appUrlBase);
-
-  await clickOn("log-in");
-
-  // (thuang): Auth0 form is unstable and unsafe for input until verified
-  await waitUntilFormFieldStable('[name="email"]');
-
-  await expect(page).toFillForm("form", {
-    email: TEST_EMAIL,
-    password: TEST_PASSWORD,
-  });
-
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: "networkidle0" }),
-    expect(page).toClick('[name="submit"]'),
-  ]);
-
-  expect(page.url()).toContain(appUrlBase);
-}
-
-export async function logout() {
-  await clickOnUntil("user-info", async () => {
-    await waitByID("log-out");
-    await Promise.all([
-      page.waitForNavigation({ waitUntil: "networkidle0" }),
-      clickOn("log-out"),
-    ]);
-  });
-
-  await waitByID("log-in");
-}
-
-async function waitUntilFormFieldStable(selector) {
-  const MAX_RETRY = 10;
-  const WAIT_FOR_MS = 200;
-
-  const EXPECTED_VALUE = "aaa";
-
-  let retry = 0;
-
-  while (retry < MAX_RETRY) {
-    try {
-      await expect(page).toFill(selector, EXPECTED_VALUE);
-
-      const fieldHandle = await expect(page).toMatchElement(selector);
-
-      const fieldValue = await page.evaluate(
-        (input) => input.value,
-        fieldHandle
-      );
-
-      expect(fieldValue).toBe(EXPECTED_VALUE);
-
-      break;
-    } catch (error) {
-      retry += 1;
-
-      await page.waitForTimeout(WAIT_FOR_MS);
-    }
-  }
-
-  if (retry === MAX_RETRY) {
-    throw Error("clickOnUntil() assertion failed!");
-  }
-}
 /* eslint-enable no-await-in-loop -- await in loop is needed to emulate sequential user actions */
