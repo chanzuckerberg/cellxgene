@@ -42,7 +42,7 @@ class AnnoDialog extends React.PureComponent {
               <p
                 style={{
                   marginTop: 7,
-                  visibility: validationError ? "visible" : "hidden",
+                  visibility: errorMessage !== "" ? "visible" : "hidden",
                   color: Colors.ORANGE3,
                 }}
               >
