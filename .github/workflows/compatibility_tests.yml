@@ -47,7 +47,7 @@ jobs:
         exclude:
           # macos+py3.9 fails to install `tables` py pkg (a `scanpy` dependency)
           - os: [macos-latest, macos-11]
-          - python-version: 3.9
+            python-version: 3.9
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
