@@ -51,9 +51,11 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        # 1. only install the dev requirements on top of what is in the cellxgene pip package
-        # TODO: do we need an equiv hdf5 lib on macos?
-        if [[ ${{ matrix.os }} != macos* ]]; then sudo apt-get update && sudo apt-get install -y libhdf5-serial-dev; fi
+        # 1. only install the dev requirements on top of what is in the
+        # cellxgene pip package
+        # TODO: Can use github actions `if` for os-conditional cmds: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsif
+        if [[ ${{ matrix.os }} == macos* ]]; then brew install hdf5; fi
+        if [[ ${{ matrix.os }} == ubuntu* ]]; then sudo apt-get update && sudo apt-get install -y libhdf5-serial-dev; fi
         sed -i'' -e 's/-r requirements.txt//' backend/server/requirements-dev.txt
         pip install -r backend/server/requirements-dev.txt
         # 2. install cellxgene
@@ -115,8 +117,8 @@ jobs:
 #      - name: Install dependencies
 #        run: |
 #          cd cellxgene
-#          sed -i -E 's/^anndata[>=]=[0-9]+.[0-9]+.[0-9]+$/anndata/g' backend/server/requirements.txt
-#          make pydist install-dist dev-env
 #          pip install git+https://github.com/theislab/anndata
+#          sed -i -E 's/^anndata[>=]=[0-9]+.[0-9]+.[0-9]+$//g' backend/server/requirements.txt
+#          make pydist install-dist dev-env
 #      - name: Tests
 #        run: cd cellxgene && make unit-test ${{ matrix.test-suite }}
