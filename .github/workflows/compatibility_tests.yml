@@ -53,7 +53,7 @@ jobs:
         # 1. only install the dev requirements on top of what is in the cellxgene pip package
         # TODO: do we need an equiv hdf5 lib on macos?
         if [[ ${{ matrix.os }} != macos* ]]; then sudo apt-get update && sudo apt-get install -y libhdf5-serial-dev; fi
-        sed -i 's/-r requirements.txt//' backend/server/requirements-dev.txt
+        sed -i '' -e 's/-r requirements.txt//' backend/server/requirements-dev.txt
         pip install -r backend/server/requirements-dev.txt
         # 2. install cellxgene
         make pydist install-dist
