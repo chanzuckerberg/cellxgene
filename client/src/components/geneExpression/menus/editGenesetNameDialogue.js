@@ -87,14 +87,14 @@ class RenameGeneset extends React.PureComponent {
       });
       return true;
     }
+    this.setState({
+      nameErrorMessage: "",
+    });
     if (
       originalGenesetName === newGenesetName &&
       originalGenesetDescription === newGenesetDescription
     )
       return true;
-    this.setState({
-      nameErrorMessage: "",
-    });
     return false;
   };
 
