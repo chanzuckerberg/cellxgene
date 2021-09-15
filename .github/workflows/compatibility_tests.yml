@@ -39,14 +39,18 @@ jobs:
       matrix:
         # note: The `macos-latest` is latest Catalina version, and not Big Sur. So we explicitly ask for Big Sur (`macos-11`)
         os: [ubuntu-latest, macos-latest, macos-11]
-        python-version: [3.8]
+        # python-version: [3.8]
         # TODO: Reinstate before merge to main
-        # # 3.6 no longer avail on ubuntu
-        # python-version: [3.7, 3.8, 3.9]
-        include:
+        python-version: [3.6, 3.7, 3.8, 3.9]
+        exclude:
+          # 3.6 no longer avail on Big Sur (`macos-11`)
+          - os: macos-11
+            python-version: 3.6
           # macos+py3.9 fails to install `tables` py pkg (a `scanpy`
           # dependency), so we add py3.9 only for ubuntu
-          - os: ubuntu-latest
+          - os: macos-11
+            python-version: 3.9
+          - os: macos-latest
             python-version: 3.9
     steps:
     - uses: actions/checkout@v2
@@ -65,8 +69,8 @@ jobs:
         pip install -r backend/server/requirements-dev.txt
         # 2. install cellxgene
         make pydist install-dist
-    - name: Tests
-      run: make test
+    # - name: Tests
+    #   run: make test
 
 # TODO: Reinstate before merge to main. These currently pass.
 #  cellxgene-release-with-anndata-master:
