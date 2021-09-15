@@ -119,7 +119,11 @@ class RenameGeneset extends React.PureComponent {
             "data-testid": `${genesetsUI.isEditingGenesetName}:submit-geneset`,
           }}
           title="Edit gene set name and description"
-          instruction={`Rename ${genesetsUI.isEditingGenesetName}`}
+          instruction={
+            <>
+              Rename <b>{genesetsUI.isEditingGenesetName}</b>
+            </>
+          }
           cancelTooltipContent="Close this dialog without renaming the gene set."
           primaryButtonText="Edit gene set name and description"
           text={newGenesetName}
