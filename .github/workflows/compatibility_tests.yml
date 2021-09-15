@@ -31,17 +31,18 @@ jobs:
       - name: Build docker image
         run: docker build .
 
-  cellxgene-main-with-python-and-anndata-versions:
-    name: python versions x anndata versions
+  cellxgene-main-with-python-and-os-versions
+    name: python versions ⨯ os versions
     runs-on: ${{ matrix.os }}
     continue-on-error: true
     strategy:
       matrix:
         # note: The `macos-latest` is latest Catalina version, and not Big Sur. So we explicitly ask for Big Sur (`macos-11`)
         os: [ubuntu-latest, macos-latest, macos-11]
-        # 3.6 no longer avail on ubuntu
-        python-version: [3.7, 3.8, 3.9]
-        anndata-version: [0.7.6]
+        python-version: [3.9]
+        # TODO: Reinstate before merge to main
+        # # 3.6 no longer avail on ubuntu
+        # python-version: [3.7, 3.8, 3.9]
         test-suite: [smoke-test, smoke-test-annotations]
     steps:
     - uses: actions/checkout@v2
@@ -60,12 +61,8 @@ jobs:
         pip install -r backend/server/requirements-dev.txt
         # 2. install cellxgene
         make pydist install-dist
-        # 3. install anndata
-        pip install anndata==${{ matrix.anndata-version }}
     - name: Tests
-      # TODO: reinstate
-      # run: make unit-test ${{ matrix.test-suite }}
-      run: echo Would have run tests here!
+      run: make unit-test ${{ matrix.test-suite }}
 
 # TODO: Reinstate before merge to main. These currently pass.
 #  cellxgene-release-with-anndata-master:
