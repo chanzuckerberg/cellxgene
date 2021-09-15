@@ -33,7 +33,7 @@ jobs:
 
   cellxgene-main-with-python-and-anndata-versions:
     name: python versions x anndata versions
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     continue-on-error: true
     strategy:
       matrix:
