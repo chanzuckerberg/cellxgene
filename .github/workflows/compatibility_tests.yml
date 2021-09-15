@@ -32,7 +32,7 @@ jobs:
         run: docker build .
 
   cellxgene-main-with-python-and-os-versions
-    name: python versions ⨯ os versions
+    name: python versions X os versions
     runs-on: ${{ matrix.os }}
     continue-on-error: true
     strategy:
