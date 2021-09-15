@@ -1,11 +1,19 @@
 name: Compatibility Tests
 
+# TODO: Reinstate before merge to main
+#on:
+#  schedule:
+#    - cron: '0 8 7 * 2'
+#  push:
+#    branches:
+#      - main
+
+# TEMPORARY
+# TODO: Remove before merge to main
 on:
-  schedule:
-    - cron: '0 8 7 * 2'
   push:
     branches:
-      - main
+      - atolopko/2410-update-compatibility-test-matrix
 
 env:
   JEST_ENV: prod
@@ -29,7 +37,9 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]
+        # note: The `macos-latest` is latest Catalina version, and not Big Sur. So we explicitly ask for Big Sur (`macos-11`)
+        os: [ubuntu-latest, macos-latest, macos-11]
+        python-version: [3.6, 3.7, 3.8, 3.9]
         anndata-version: [0.7.6]
         test-suite: [smoke-test, smoke-test-annotations]
     steps:
@@ -59,10 +69,10 @@ jobs:
         test-suite: [smoke-test, smoke-test-annotations]
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.7
+      - name: Set up Python 3.9
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.9
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -89,10 +99,10 @@ jobs:
         test-suite: [smoke-test, smoke-test-annotations]
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.7
+      - name: Set up Python 3.9
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.9
       - name: Checkout
         uses: actions/checkout@v2
         with:
