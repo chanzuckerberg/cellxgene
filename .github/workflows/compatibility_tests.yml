@@ -43,11 +43,13 @@ jobs:
         # TODO: Reinstate before merge to main
         # # 3.6 no longer avail on ubuntu
         # python-version: [3.7, 3.8, 3.9]
+        # test-suite: [smoke-test, smoke-test-annotations]
         test-suite: [smoke-test, smoke-test-annotations]
-        exclude:
-          # macos+py3.9 fails to install `tables` py pkg (a `scanpy` dependency)
-          - os: [macos-latest, macos-11]
-            python-version: 3.9
+        # exclude:
+        #   # macos+py3.9 fails to install `tables` py pkg (a `scanpy` dependency)
+        #   - os: [macos-latest, macos-11]
+        #     python-version: 3.9
+        #     test-suite: [smoke-test, smoke-test-annotations]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
@@ -59,7 +61,7 @@ jobs:
         # 1. only install the dev requirements on top of what is in the
         # cellxgene pip package
         # TODO: Can use github actions `if` for os-conditional cmds: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsif
-        if [[ ${{ matrix.os }} == macos* ]]; then brew install hdf5; fi
+        if [[ ${{ matrix.os }} == macos* ]]; then brew install hdf5 c-blosc; fi
         if [[ ${{ matrix.os }} == ubuntu* ]]; then sudo apt-get update && sudo apt-get install -y libhdf5-serial-dev; fi
         sed -i'' -e 's/-r requirements.txt//' backend/server/requirements-dev.txt
         pip install -r backend/server/requirements-dev.txt
