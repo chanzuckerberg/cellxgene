@@ -56,7 +56,7 @@ jobs:
         # TODO: Can use github actions `if` for os-conditional cmds: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsif
         if [[ ${{ matrix.os }} == macos* ]]; then brew install hdf5; fi
         if [[ ${{ matrix.os }} == ubuntu* ]]; then sudo apt-get update && sudo apt-get install -y libhdf5-serial-dev; fi
-        sed -i'' -e 's/-r requirements.txt//' backend/server/requirements-dev.txt
+        sed -i'' -e 's/-r requirements.*\.txt//' backend/server/requirements-dev.txt
         pip install -r backend/server/requirements-dev.txt
         # 2. install cellxgene
         make pydist install-dist
