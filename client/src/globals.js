@@ -102,7 +102,7 @@ const CXG_SERVER_PORT =
 
 let _API;
 
-if (window.CELLXGENE && window.CELLXGENE.API) {
+if (typeof window !== "undefined" && window.CELLXGENE && window.CELLXGENE.API) {
   _API = window.CELLXGENE.API;
 } else {
   if (CXG_SERVER_PORT === undefined) {
