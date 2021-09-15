@@ -125,8 +125,8 @@ class GeneSet extends React.Component {
         )}
         {isOpen && !genesetIsEmpty && this.renderGenes()}
         <EditGenesetNameDialogue
-          parentGeneset={setName}
-          parentGenesetDescription={genesetDescription}
+          originalGenesetName={setName}
+          originalGenesetDescription={genesetDescription}
         />
       </div>
     );
