@@ -31,25 +31,25 @@ jobs:
       - name: Build docker image
         run: docker build .
 
-  cellxgene-main-with-python-and-os-versions:
-    name: python versions ⨯ os versions
+  compatibility test:
+    name: cxg:${{ cellxgene_build }} os:${{ matrix.os }} py:${{ python-version }} anndata:${{ anndata_version }}
     runs-on: ${{ matrix.os }}
     continue-on-error: true
     strategy:
       matrix:
         # note: The `macos-latest` is latest Catalina version, and not Big Sur. So we explicitly ask for Big Sur (`macos-11`)
         os: [ubuntu-latest, macos-latest, macos-11]
-        # python-version: [3.8]
-        # TODO: Reinstate before merge to main
         python-version: [3.6, 3.7, 3.8, 3.9]
         cellxgene_build: [main, release]
+        # '' implies latest anndata release
         anndata_version: ['==0.7.6', '']
         exclude:
           # 3.6 no longer avail on Big Sur (`macos-11`)
           - os: macos-11
             python-version: 3.6
-          # macos+py3.9 fails to install `tables` py pkg (a `scanpy`
-          # dependency), so we add py3.9 only for ubuntu
+          # no pypi build exists for macos+py3.9 and source install fails to
+          # install `tables` py pkg (a `scanpy` dependency), so we test py3.9
+          # only on ubuntu
           - os: macos-11
             python-version: 3.9
           - os: macos-latest
@@ -61,15 +61,15 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies (Ubuntu Linux)
-      if: startsWith(${{ matrix.os }}, 'ubuntu')
+      if: startsWith(matrix.os, 'ubuntu')
       run: |
         sudo apt-get update
         sudo apt-get install -y libhdf5-serial-dev
     - name: Install dependencies (MacOS)
-      if: startsWith(${{ matrix.os }}, 'macos')
+      if: startsWith(matrix.os, 'macos')
       run: brew install hdf5
     - name: Install cellxgene from main (latest)
-      if: ${{ matrix.cellxgene_build }} == 'latest'
+      if: matrix.cellxgene_build == 'latest'
       run: |
         # only install the dev requirements on top of what is in the
         # cellxgene pip package
@@ -77,10 +77,12 @@ jobs:
         pip install -r backend/server/requirements-dev.txt
         make pydist install-dist
     - name: Install cellxgene from release (pypi.org)
-      if: ${{ matrix.cellxgene_build }} == 'release'
+      if: matrix.cellxgene_build == 'release'
       run: pip install --upgrade cellxgene
     - name: Install anndata version per matrix variable
-      run: pip install anndata${{ anndata_version }}
-    # - name: Tests
-    #   run: make test
+      run: pip install anndata${{ matrix.anndata_version }}
+    - name: Tests
+      run: |
+        echo skipping tests for debug
+        # make test
 
