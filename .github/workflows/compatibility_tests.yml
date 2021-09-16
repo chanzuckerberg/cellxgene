@@ -43,6 +43,7 @@ jobs:
         # TODO: Reinstate before merge to main
         python-version: [3.6, 3.7, 3.8, 3.9]
         cellxgene_build: [main, release]
+        anndata_version: ['==0.7.6', '']
         exclude:
           # 3.6 no longer avail on Big Sur (`macos-11`)
           - os: macos-11
@@ -59,23 +60,27 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
+    - name: Install dependencies (Ubuntu Linux)
+      if: startsWith(${{ matrix.os }}, 'ubuntu')
       run: |
-        # 1. only install the dev requirements on top of what is in the
-        # cellxgene pip package
-        # TODO: Can use github actions `if` for os-conditional cmds: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsif
-        if [[ ${{ matrix.os }} == macos* ]]; then brew install hdf5; fi
-        if [[ ${{ matrix.os }} == ubuntu* ]]; then sudo apt-get update && sudo apt-get install -y libhdf5-serial-dev; fi
+        sudo apt-get update
+        sudo apt-get install -y libhdf5-serial-dev
+    - name: Install dependencies (MacOS)
+      if: startsWith(${{ matrix.os }}, 'macos')
+      run: brew install hdf5
     - name: Install cellxgene from main (latest)
-        if: ${{ matrix.cellxgene_build }} == latest
-        run: |
-          sed -i'' -e 's/-r requirements.txt//' backend/server/requirements-dev.txt
-          pip install -r backend/server/requirements-dev.txt
-          make pydist install-dist
+      if: ${{ matrix.cellxgene_build }} == 'latest'
+      run: |
+        # only install the dev requirements on top of what is in the
+        # cellxgene pip package
+        sed -i'' -e 's/-r requirements.txt//' backend/server/requirements-dev.txt
+        pip install -r backend/server/requirements-dev.txt
+        make pydist install-dist
     - name: Install cellxgene from release (pypi.org)
-        if: ${{ matrix.cellxgene_build }} == release
-        run: |
-          pip install --upgrade cellxgene
-    - name: Tests
-      run: make test
+      if: ${{ matrix.cellxgene_build }} == 'release'
+      run: pip install --upgrade cellxgene
+    - name: Install anndata version per matrix variable
+      run: pip install anndata${{ anndata_version }}
+    # - name: Tests
+    #   run: make test
 
