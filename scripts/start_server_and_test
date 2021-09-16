@@ -20,8 +20,9 @@ eval "$START_SERVER_SCRIPT &"
 SERVER_PID=$!
 
 function finish {
+  SERVER_PID=`lsof -i -P -n | grep LISTEN | grep ${PORT} | awk '{ print $2 }'`
   echo Killing server PID=${SERVER_PID}
-  kill -9 $SERVER_PID || true
+  kill $SERVER_PID || true
 }
 
 trap finish EXIT
@@ -29,3 +30,4 @@ trap finish EXIT
 await_port "$PORT"
 
 # eval "$TEST_SCRIPT"
+
