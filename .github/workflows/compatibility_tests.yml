@@ -56,8 +56,8 @@ jobs:
         # in order to reduce matrix cross-product explosion
         include:
           - python-version: 3.8
-          - cellxgene_build: release
-          - anndata_version: '==0.7.6'
+            cellxgene_build: release
+            anndata_version: '==0.7.6'
       steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
