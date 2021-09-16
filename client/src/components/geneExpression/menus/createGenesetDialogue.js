@@ -90,14 +90,15 @@ class CreateGenesetDialogue extends React.PureComponent {
     this.setState({ genesetDescription: e });
   };
 
-  instruction = (genesetName, genesets) => genesets.has(genesetName)
+  instruction = (genesetName, genesets) =>
+    genesets.has(genesetName)
       ? "Gene set name must be unique."
       : "New, unique gene set name";
 
   validate = (genesetName, genesets) => {
     if (genesets.has(genesetName)) {
       this.setState({
-        nameErrorMessage: "There is already a geneset with that name",
+        nameErrorMessage: "There is already a gene set with that name",
       });
       return false;
     }
