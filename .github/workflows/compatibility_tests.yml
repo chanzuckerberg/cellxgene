@@ -31,7 +31,7 @@ jobs:
       - name: Build docker image
         run: docker build .
 
-  compatibility test:
+  matrix-compatibility-test:
     name: cxg:${{ matrix.cellxgene_build }} os:${{ matrix.os }} py:${{ matrix.python-version }} anndata:${{ matrix.anndata_version }}
     runs-on: ${{ matrix.os }}
     continue-on-error: true
