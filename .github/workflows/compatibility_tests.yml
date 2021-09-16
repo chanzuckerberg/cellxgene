@@ -40,7 +40,7 @@ jobs:
         # note: The `macos-latest` is latest Catalina version, and not Big Sur. So we explicitly ask for Big Sur (`macos-11`)
         os: [ubuntu-latest, macos-latest, macos-11]
         python-version: [3.6, 3.7, 3.8, 3.9]
-        cellxgene_build: [main, release]
+        cellxgene_build: [main, latest]
         exclude:
           # 3.6 no longer avail on Big Sur (`macos-11`)
           - os: macos-11
@@ -56,7 +56,7 @@ jobs:
         # in order to reduce matrix cross-product explosion
         include:
           - python-version: 3.8
-            cellxgene_build: release
+            cellxgene_build: latest
             anndata_version: '==0.7.6'
     steps:
     - uses: actions/checkout@v2
@@ -72,13 +72,13 @@ jobs:
     - name: Install dependencies (MacOS)
       if: startsWith(matrix.os, 'macos')
       run: brew install hdf5
-    - name: Install cellxgene from main (latest)
-      if: matrix.cellxgene_build == 'latest'
+    - name: Install cellxgene from `main` branch
+      if: matrix.cellxgene_build == 'main'
       run: |
         pip install -r backend/server/requirements-dev.txt
         make pydist install-dist
-    - name: Install cellxgene from release (pypi.org)
-      if: matrix.cellxgene_build == 'release'
+    - name: Install cellxgene from latest release (pypi.org)
+      if: matrix.cellxgene_build == 'latest'
       run: |
         pip install --upgrade cellxgene
         # install the additional dev requirements on top of what is in the
