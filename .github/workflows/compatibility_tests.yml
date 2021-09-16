@@ -42,8 +42,6 @@ jobs:
         python-version: [3.6, 3.7, 3.8, 3.9]
         cellxgene_build: [main, latest]
         exclude:
-          # TODO: remove; temporary for workflow debugging
-          - cellxgene_build: main
           # 3.6 no longer avail on Big Sur (`macos-11`)
           - os: macos-11
             python-version: 3.6
@@ -95,15 +93,14 @@ jobs:
     - name: Install node
       run: cd client && make ci
     # Run different types of test separately, to facilitate troubleshooting
-    # TODO: temp, reinstate
     - name: Unit Tests - common
       run: make unit-test-common
     - name: Unit Tests - client
       run: make unit-test-client
     - name: Unit Tests - server
       run: make unit-test-server
-    # - name: Smoke Tests
-    #   run: make smoke-test
-    # - name: Smoke Tests with Annotations
-    #   run: make smoke-test-annotations
+    - name: Smoke Tests
+      run: make smoke-test
+    - name: Smoke Tests with Annotations
+      run: make smoke-test-annotations
 
