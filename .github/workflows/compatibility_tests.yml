@@ -93,12 +93,12 @@ jobs:
     - name: Install node
       run: cd client && make ci
     # Run different types of test separately, to facilitate troubleshooting
-    # - name: Unit Tests - common
-    #   run: make unit-test-common
-    # - name: Unit Tests - client
-    #   run: make unit-test-client
-    # - name: Unit Tests - server
-    #   run: make unit-test-server
+    - name: Unit Tests - common
+      run: make unit-test-common
+    - name: Unit Tests - client
+      run: make unit-test-client
+    - name: Unit Tests - server
+      run: make unit-test-server
     - name: Smoke Tests
       run: make smoke-test
     - name: Smoke Tests with Annotations

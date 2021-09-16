@@ -29,5 +29,5 @@ trap finish EXIT
 
 await_port "$PORT"
 
-# eval "$TEST_SCRIPT"
+eval "$TEST_SCRIPT"
 
