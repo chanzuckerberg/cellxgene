@@ -21,13 +21,11 @@ SERVER_PID=$!
 
 function finish {
   echo Killing server PID=${SERVER_PID}
-  kill $SERVER_PID || true
+  kill -9 $SERVER_PID || true
 }
 
 trap finish EXIT
 
 await_port "$PORT"
 
-eval "$TEST_SCRIPT"
-
-finish
+# eval "$TEST_SCRIPT"
