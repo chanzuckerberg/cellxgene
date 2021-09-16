@@ -75,18 +75,20 @@ jobs:
     - name: Install cellxgene from main (latest)
       if: matrix.cellxgene_build == 'latest'
       run: |
-        # only install the dev requirements on top of what is in the
-        # cellxgene pip package
-        sed -i'' -e 's/-r requirements.txt//' backend/server/requirements-dev.txt
         pip install -r backend/server/requirements-dev.txt
         make pydist install-dist
     - name: Install cellxgene from release (pypi.org)
       if: matrix.cellxgene_build == 'release'
-      run: pip install --upgrade cellxgene
+      run: |
+        pip install --upgrade cellxgene
+        # install the additional dev requirements on top of what is in the
+        # cellxgene pip package, which are needed for testing, but otherwise
+        # keep same pip pkg versions as in the cxg release
+        sed -i'' -e 's/-r requirements.txt//' backend/server/requirements-dev.txt
+        pip install -r backend/server/requirements-dev.txt
     - name: Install anndata version per matrix variable
       run: pip install anndata${{ matrix.anndata_version }}
     - name: Tests
       run: |
-        echo skipping tests for debug
         make test
 
