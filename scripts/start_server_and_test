@@ -20,7 +20,6 @@ eval "$START_SERVER_SCRIPT &"
 SERVER_PID=$!
 
 function finish {
-  lsof -i -P -n | grep LISTEN | grep ${PORT}
   SERVER_PID=`lsof -i -P -n | grep LISTEN | grep ${PORT} | awk '{ print $2 }'`
   echo Killing server PID=${SERVER_PID}
   kill $SERVER_PID || true
