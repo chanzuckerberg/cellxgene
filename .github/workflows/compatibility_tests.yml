@@ -34,7 +34,6 @@ jobs:
   matrix-compatibility-test:
     name: cxg:${{ matrix.cellxgene_build }} os:${{ matrix.os }} py:${{ matrix.python-version }} anndata:${{ matrix.anndata_version || 'latest' }}
     runs-on: ${{ matrix.os }}
-    continue-on-error: true
     strategy:
       matrix:
         # note: The `macos-latest` is latest Catalina version, and not Big Sur. So we explicitly ask for Big Sur (`macos-11`)
