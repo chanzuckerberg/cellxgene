@@ -32,7 +32,7 @@ jobs:
         run: docker build .
 
   matrix-compatibility-test:
-    name: cxg:${{ matrix.cellxgene_build }} os:${{ matrix.os }} py:${{ matrix.python-version }} anndata:${{ matrix.anndata_version }}
+    name: cxg:${{ matrix.cellxgene_build }} os:${{ matrix.os }} py:${{ matrix.python-version }} anndata:${{ matrix.anndata_version || 'latest' }}
     runs-on: ${{ matrix.os }}
     continue-on-error: true
     strategy:
@@ -88,5 +88,5 @@ jobs:
     - name: Tests
       run: |
         echo skipping tests for debug
-        # make test
+        make test
 
