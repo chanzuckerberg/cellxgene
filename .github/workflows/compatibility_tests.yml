@@ -32,7 +32,7 @@ jobs:
         run: docker build .
 
   compatibility test:
-    name: cxg:${{ cellxgene_build }} os:${{ matrix.os }} py:${{ python-version }} anndata:${{ anndata_version }}
+    name: cxg:${{ matrix.cellxgene_build }} os:${{ matrix.os }} py:${{ matrix.python-version }} anndata:${{ matrix.anndata_version }}
     runs-on: ${{ matrix.os }}
     continue-on-error: true
     strategy:
