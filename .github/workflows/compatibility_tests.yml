@@ -42,6 +42,7 @@ jobs:
         # python-version: [3.8]
         # TODO: Reinstate before merge to main
         python-version: [3.6, 3.7, 3.8, 3.9]
+        cellxgene_build: [main, release]
         exclude:
           # 3.6 no longer avail on Big Sur (`macos-11`)
           - os: macos-11
@@ -65,65 +66,16 @@ jobs:
         # TODO: Can use github actions `if` for os-conditional cmds: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsif
         if [[ ${{ matrix.os }} == macos* ]]; then brew install hdf5; fi
         if [[ ${{ matrix.os }} == ubuntu* ]]; then sudo apt-get update && sudo apt-get install -y libhdf5-serial-dev; fi
-        sed -i'' -e 's/-r requirements.txt//' backend/server/requirements-dev.txt
-        pip install -r backend/server/requirements-dev.txt
-        # 2. install cellxgene
-        make pydist install-dist
-    # - name: Tests
-    #   run: make test
+    - name: Install cellxgene from main (latest)
+        if: ${{ matrix.cellxgene_build }} == latest
+        run: |
+          sed -i'' -e 's/-r requirements.txt//' backend/server/requirements-dev.txt
+          pip install -r backend/server/requirements-dev.txt
+          make pydist install-dist
+    - name: Install cellxgene from release (pypi.org)
+        if: ${{ matrix.cellxgene_build }} == release
+        run: |
+          pip install --upgrade cellxgene
+    - name: Tests
+      run: make test
 
-# TODO: Reinstate before merge to main. These currently pass.
-#  cellxgene-release-with-anndata-master:
-#    name: cellxgene release with anndata master
-#    runs-on: ubuntu-latest
-#    strategy:
-#      matrix:
-#        test-suite: [smoke-test, smoke-test-annotations]
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Set up Python 3.9
-#        uses: actions/setup-python@v1
-#        with:
-#          python-version: 3.9
-#      - name: Checkout
-#        uses: actions/checkout@v2
-#        with:
-#          path: cellxgene
-#      - name: Install dependencies
-#        run: |
-#          cd cellxgene
-#          # 1. only install the dev requirements on top of what is in the cellxgene pip package
-#          make dev-env-client
-#          sed -i 's/-r requirements.txt//' backend/server/requirements-dev.txt
-#          pip install -r backend/server/requirements-dev.txt
-#          # 2. install cellxgene
-#          pip install --upgrade cellxgene
-#          # 3. install anndata
-#          pip install git+https://github.com/theislab/anndata
-#      - name: Tests
-#        run: cd cellxgene && make unit-test ${{ matrix.test-suite }}
-#
-#  cellxgene-main-with-anndata-master:
-#    name: cellxgene main with anndata master
-#    runs-on: ubuntu-latest
-#    strategy:
-#      matrix:
-#        test-suite: [smoke-test, smoke-test-annotations]
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Set up Python 3.9
-#        uses: actions/setup-python@v1
-#        with:
-#          python-version: 3.9
-#      - name: Checkout
-#        uses: actions/checkout@v2
-#        with:
-#          path: cellxgene
-#      - name: Install dependencies
-#        run: |
-#          cd cellxgene
-#          pip install git+https://github.com/theislab/anndata
-#          sed -i -E 's/^anndata[>=]=[0-9]+.[0-9]+.[0-9]+$//g' backend/server/requirements.txt
-#          make pydist install-dist dev-env
-#      - name: Tests
-#        run: cd cellxgene && make unit-test ${{ matrix.test-suite }}
