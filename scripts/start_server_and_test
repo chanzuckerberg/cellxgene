@@ -14,7 +14,7 @@ START_SERVER_SCRIPT="$1"
 PORT="$2"
 TEST_SCRIPT="$3"
 
-await_port --await-free "$PORT"
+await_port --await-free --timeout 120 "$PORT"
 
 eval "$START_SERVER_SCRIPT &"
 SERVER_PID=$!
