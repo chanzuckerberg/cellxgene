@@ -101,8 +101,6 @@ class ConfigTests(unittest.TestCase):
         lfc_cutoff=0.01,
         top_n=10,
         environment=None,
-        aws_secrets_manager_region=None,
-        aws_secrets_manager_secrets=[],
         X_approximate_distribution="auto",
         config_file_name="app_config.yml",
     ):
@@ -156,8 +154,6 @@ class ConfigTests(unittest.TestCase):
         )
         external_config = self.custom_external_config(
             environment=environment,
-            aws_secrets_manager_region=aws_secrets_manager_region,
-            aws_secrets_manager_secrets=aws_secrets_manager_secrets,
             config_file_name=f"temp_external_config_{random_num}.yml",
         )
 
@@ -203,8 +199,6 @@ class ConfigTests(unittest.TestCase):
     def custom_external_config(
         self,
         environment=None,
-        aws_secrets_manager_region=None,
-        aws_secrets_manager_secrets=[],
         config_file_name="external_config.yaml",
     ):
         # set to the default if environment is None
@@ -215,7 +209,6 @@ class ConfigTests(unittest.TestCase):
         external_config = {
             "external": {
                 "environment": environment,
-                "aws_secrets_manager": {"region": aws_secrets_manager_region, "secrets": aws_secrets_manager_secrets},
             }
         }
 
