@@ -91,7 +91,7 @@ jobs:
     - name: Install anndata version per matrix variable
       run: pip install anndata${{ matrix.anndata_version }}
     - name: Install node
-      run: cd client && make ci
+      run: make dev-env-client
     # Run different types of test separately, to facilitate troubleshooting
     - name: Unit Tests - common
       run: make unit-test-common
