@@ -216,11 +216,13 @@ def fixup_gene_symbols(adata, fixup_config):
 
     return fixup_adata
 
+
 def _strip_version(adata):
     """Remove version information from the AnnData object."""
 
     if "version" in adata.uns_keys():
         del adata.uns["version"]
+
 
 def apply_schema(source_h5ad, remix_config, output_filename):
 

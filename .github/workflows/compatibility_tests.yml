@@ -9,7 +9,6 @@ on:
 
 env:
   JEST_ENV: prod
-  CXG_AUTH_TYPE: none
 
 jobs:
   docker-build:
