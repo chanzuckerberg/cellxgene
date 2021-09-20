@@ -12,13 +12,6 @@ server:
     flask_secret_key: null
     generate_cache_control_headers: false
 
-  authentication:
-    # The authentication types may be "none" or "session"
-    # none:  No authentication support, features like user_annotations must not be enabled.
-    # session:  A session based userid is automatically generated. (no params needed)
-    type: session
-    insecure_test_environment: false
-
   single_dataset:
     # If datapath is set, then cellxgene with serve a single dataset located at datapath.
     datapath: null
@@ -52,9 +45,6 @@ dataset:
     # Inline scripts are a list of file names, where the contents of the file will be injected into the index.
     inline_scripts: []
 
-    # allow authentication support
-    authentication_enable: true
-
   presentation:
     max_categories: 1000
     custom_colors: true
@@ -81,7 +71,7 @@ dataset:
 
 external:
   # You can retrieve configuration parameters from this config file, the environment,
-  # the AWS secrets manager, or from the "cellxgene launch" command line arguments.
+  # or from the "cellxgene launch" command line arguments.
   # They are applied in that order, meaning that if a parameter is defined in more
   # than one location, the last one applied takes effect.
 
@@ -97,39 +87,6 @@ external:
      - name: CXG_SECRET_KEY
        path: [server, app, flask_secret_key]
        required: false
-
-  # AWS Secrets Manager
-  # This section describes how to map aws secrets to configuration parameters.
-  # The format is the region for the secrets manager, then a list of secrets.
-  # each secret has a name, and a list of values.
-  # Each entry in the list of values is a dictionary with three entries:
-  # key:  the key of the aws secret.
-  # path: the path within the cellxgene configuration to update.
-  # required: (default=False) a boolean.  If true, then it is an error if the key does not exist in the secret.
-  #
-  # example:
-  # aws_secrets_manager:
-  #   region: us-west-2
-  #    - name: my_first_secret
-  #      values:
-  #      - key: flask_secret_key
-  #        path: [server, app, flask_secret_key]
-  #        required: true
-  #      - key: db_uri
-  #        path: [dataset, user_annotations, db_uri]
-  #        required: true
-  #    - name:  my_auth_secret
-  #      values:
-  #      - key: client_secret
-  #        path: [server, authentication, client_secret]
-  #        required: true
-  #      - key: client_id
-  #        path: [server, authentication, client_id]
-  #        required: true
-
-  aws_secrets_manager:
-    region: null
-    secrets: []
 """
 
 

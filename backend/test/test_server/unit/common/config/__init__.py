@@ -33,7 +33,6 @@ class ConfigTests(unittest.TestCase):
         force_https="false",
         flask_secret_key="secret",
         generate_cache_control_headers="false",
-        auth_type="session",
         insecure_test_environment="false",
         index="false",
         allowed_matrix_types=[],
@@ -69,7 +68,6 @@ class ConfigTests(unittest.TestCase):
         force_https="false",
         flask_secret_key="secret",
         generate_cache_control_headers="false",
-        auth_type="session",
         index="false",
         allowed_matrix_types=[],
         max_cached_datasets=5,
@@ -85,7 +83,6 @@ class ConfigTests(unittest.TestCase):
         diffexp_cellcount_max="null",
         scripts=[],
         inline_scripts=[],
-        authentication_enable="true",
         max_categories=1000,
         custom_colors="true",
         enable_users_annotations="true",
@@ -101,8 +98,6 @@ class ConfigTests(unittest.TestCase):
         lfc_cutoff=0.01,
         top_n=10,
         environment=None,
-        aws_secrets_manager_region=None,
-        aws_secrets_manager_secrets=[],
         X_approximate_distribution="auto",
         config_file_name="app_config.yml",
     ):
@@ -117,7 +112,6 @@ class ConfigTests(unittest.TestCase):
             force_https=force_https,
             flask_secret_key=flask_secret_key,
             generate_cache_control_headers=generate_cache_control_headers,
-            auth_type=auth_type,
             index=index,
             allowed_matrix_types=allowed_matrix_types,
             max_cached_datasets=max_cached_datasets,
@@ -136,7 +130,6 @@ class ConfigTests(unittest.TestCase):
         dataset_config = self.custom_dataset_config(
             scripts=scripts,
             inline_scripts=inline_scripts,
-            authentication_enable=authentication_enable,
             max_categories=max_categories,
             custom_colors=custom_colors,
             enable_users_annotations=enable_users_annotations,
@@ -156,8 +149,6 @@ class ConfigTests(unittest.TestCase):
         )
         external_config = self.custom_external_config(
             environment=environment,
-            aws_secrets_manager_region=aws_secrets_manager_region,
-            aws_secrets_manager_secrets=aws_secrets_manager_secrets,
             config_file_name=f"temp_external_config_{random_num}.yml",
         )
 
@@ -172,7 +163,6 @@ class ConfigTests(unittest.TestCase):
         self,
         scripts=[],
         inline_scripts=[],
-        authentication_enable="true",
         max_categories=1000,
         custom_colors="true",
         enable_users_annotations="true",
@@ -203,8 +193,6 @@ class ConfigTests(unittest.TestCase):
     def custom_external_config(
         self,
         environment=None,
-        aws_secrets_manager_region=None,
-        aws_secrets_manager_secrets=[],
         config_file_name="external_config.yaml",
     ):
         # set to the default if environment is None
@@ -215,7 +203,6 @@ class ConfigTests(unittest.TestCase):
         external_config = {
             "external": {
                 "environment": environment,
-                "aws_secrets_manager": {"region": aws_secrets_manager_region, "secrets": aws_secrets_manager_secrets},
             }
         }
 

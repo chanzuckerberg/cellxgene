@@ -4,7 +4,6 @@ import warnings
 from os.path import basename
 from urllib.parse import urlparse
 
-from backend.server.auth.auth import AuthTypeFactory
 from backend.server.common.config.base_config import BaseConfig
 from backend.server.common.config import DEFAULT_SERVER_PORT, BIG_FILE_SIZE_THRESHOLD
 from backend.common.utils.data_locator import discover_s3_region_name
@@ -29,11 +28,6 @@ class ServerConfig(BaseConfig):
             self.app__flask_secret_key = default_config["app"]["flask_secret_key"]
             self.app__generate_cache_control_headers = default_config["app"]["generate_cache_control_headers"]
 
-            self.authentication__type = default_config["authentication"]["type"]
-            self.authentication__insecure_test_environment = default_config["authentication"][
-                "insecure_test_environment"
-            ]
-
             self.single_dataset__datapath = default_config["single_dataset"]["datapath"]
             self.single_dataset__obs_names = default_config["single_dataset"]["obs_names"]
             self.single_dataset__var_names = default_config["single_dataset"]["var_names"]
@@ -52,13 +46,9 @@ class ServerConfig(BaseConfig):
 
         self.data_adaptor = None
 
-        # The authentication object
-        self.auth = None
-
     def complete_config(self, context):
         self.handle_app(context)
         self.handle_data_source()
-        self.handle_authentication()
         self.handle_data_locator()
         self.handle_adaptor()  # may depend on data_locator
         self.handle_single_dataset(context)  # may depend on adaptor
@@ -105,17 +95,6 @@ class ServerConfig(BaseConfig):
 
         if not self.app__verbose:
             sys.tracebacklimit = 0
-
-    def handle_authentication(self):
-        self.validate_correct_type_of_configuration_attribute("authentication__type", (type(None), str))
-        self.validate_correct_type_of_configuration_attribute("authentication__insecure_test_environment", bool)
-
-        if self.authentication__type == "test" and not self.authentication__insecure_test_environment:
-            raise ConfigurationError("Test auth can only be used in an insecure test environment")
-
-        self.auth = AuthTypeFactory.create(self.authentication__type, self)
-        if self.auth is None:
-            raise ConfigurationError(f"Unknown authentication type: {self.authentication__type}")
 
     def handle_data_locator(self):
         self.validate_correct_type_of_configuration_attribute("data_locator__s3__region_name", (type(None), bool, str))
