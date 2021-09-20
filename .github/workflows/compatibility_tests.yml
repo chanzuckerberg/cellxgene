@@ -85,13 +85,13 @@ jobs:
       if: startsWith(matrix.os, 'macos')
       run: |
         echo "BREW_CACHE=`brew --cache`" >> $GITHUB_ENV
-        echo "BREW_REPOSITORY=`brew --repository`" >> $GITHUB_ENV
+        echo "BREW_REPOSITORY_GLOB=`brew --repository`'/Library/Taps/**/.git/ORIG_HEAD'" >> $GITHUB_ENV
     - name: Brew cache
       if: startsWith(matrix.os, 'macos')
       uses: actions/cache@v1
       with:
         path: ${{ env.BREW_CACHE }}
-        key: ${{ runner.os }}-brew-${{ hashFiles(join([env.BREW_REPOSITORY, 'Library/Taps/**/.git/ORIG_HEAD'], '/')) }}
+        key: ${{ runner.os }}-brew-${{ hashFiles(env.BREW_REPOSITORY_GLOB) }}
         restore-keys: |
           ${{ runner.os }}-brew-
     - name: Install dependencies (Ubuntu Linux)
