@@ -69,6 +69,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Cache env vars
       run: echo "PIP_CACHE=`python -m pip cache dir`" >> $GITHUB_ENV
+    - name: Cache env vars (MacOS)
+      if: startsWith(matrix.os, 'macos')
+      run: echo BREW_CACHE=`brew --cache`" >> $GITHUB_ENV
     - name: Python cache
       uses: actions/cache@v1
       with:
@@ -83,11 +86,11 @@ jobs:
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
           ${{ runner.os }}-node-
-    - name: Brew cache
+    - name: Brew cache (MacOS)
       if: startsWith(matrix.os, 'macos')
       uses: actions/cache@v1
       with:
-        path: ${{ env.HOME }}/Library/Caches/Homebrew
+        path: ${{ env.BREW_CACHE }}
         key: ${{ runner.os }}-brew-
     - name: Install dependencies (Ubuntu Linux)
       if: startsWith(matrix.os, 'ubuntu')
@@ -118,12 +121,12 @@ jobs:
     # Run different types of test separately, to facilitate troubleshooting
     - name: Unit Tests - common
       run: make unit-test-common
-    - name: Unit Tests - client
-      run: make unit-test-client
-    - name: Unit Tests - server
-      run: make unit-test-server
-    - name: Smoke Tests
-      run: make smoke-test
+    # - name: Unit Tests - client
+    #   run: make unit-test-client
+    # - name: Unit Tests - server
+    #   run: make unit-test-server
+    # - name: Smoke Tests
+    #   run: make smoke-test
     # FIXME: Fails intermittently. See https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/cellxgene/2415
     # - name: Smoke Tests with Annotations
     #   run: make smoke-test-annotations
