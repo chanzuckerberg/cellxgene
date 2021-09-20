@@ -6,9 +6,10 @@ from datetime import datetime
 from hashlib import blake2b
 
 import pandas as pd
-from flask import session, has_request_context, current_app
+from flask import session
 
 from backend.server import __version__ as cellxgene_version
+from backend.server.app.session import get_user_id
 from backend.server.common.annotations.annotations import Annotations
 from backend.common.genesets import read_gene_sets_tidycsv
 from backend.common.errors import AnnotationsError, ObsoleteRequest
@@ -60,10 +61,6 @@ class AnnotationsLocalFile(Annotations):
     def read_labels(self, data_adaptor):
         self.check_user_annotations_enabled()  # raises
 
-        if has_request_context():
-            if not current_app.auth.is_user_authenticated():
-                return pd.DataFrame()
-
         fname = self._get_celllabels_filename(data_adaptor)
         with self.label_lock:
             if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
@@ -111,10 +108,6 @@ class AnnotationsLocalFile(Annotations):
             self.last_labels = df
 
     def read_gene_sets(self, data_adaptor, context=None):
-        if has_request_context():
-            if not current_app.auth.is_user_authenticated():
-                return ({}, self.last_geneset_tid)
-
         fname = self._get_genesets_filename(data_adaptor)
         gene_sets = {}
         tid = None
@@ -177,7 +170,7 @@ class AnnotationsLocalFile(Annotations):
         Return a short hash that weakly identifies the user and dataset.
         Used to create safe annotations output file names.
         """
-        uid = current_app.auth.get_user_id() or ""
+        uid = get_user_id(session)
         id = (uid + data_adaptor.get_location()).encode()
         idhash = base64.b32encode(blake2b(id, digest_size=5).digest()).decode("utf-8")
         return idhash
@@ -275,7 +268,6 @@ class AnnotationsLocalFile(Annotations):
             params["annotations-data-collection-is-read-only"] = not self.user_annotations_enabled()
             params["annotations-data-collection-name"] = collection
 
-        if current_app.auth.is_user_authenticated():
-            params["annotations-user-data-idhash"] = self._get_userdata_idhash(data_adaptor)
+        params["annotations-user-data-idhash"] = self._get_userdata_idhash(data_adaptor)
 
         parameters.update(params)

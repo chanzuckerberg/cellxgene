@@ -16,7 +16,6 @@ class DatasetConfig(BaseConfig):
         try:
             self.app__scripts = default_config["app"]["scripts"]
             self.app__inline_scripts = default_config["app"]["inline_scripts"]
-            self.app__authentication_enable = default_config["app"]["authentication_enable"]
 
             self.presentation__max_categories = default_config["presentation"]["max_categories"]
             self.presentation__custom_colors = default_config["presentation"]["custom_colors"]
@@ -65,7 +64,6 @@ class DatasetConfig(BaseConfig):
     def handle_app(self):
         self.validate_correct_type_of_configuration_attribute("app__scripts", list)
         self.validate_correct_type_of_configuration_attribute("app__inline_scripts", list)
-        self.validate_correct_type_of_configuration_attribute("app__authentication_enable", bool)
 
         # scripts can be string (filename) or dict (attributes). Convert string to dict.
         scripts = []
@@ -99,14 +97,6 @@ class DatasetConfig(BaseConfig):
             "user_annotations__local_file_csv__gene_sets_file", (type(None), str)
         )
         self.validate_correct_type_of_configuration_attribute("user_annotations__gene_sets__readonly", bool)
-
-        if self.user_annotations__enable or not self.user_annotations__gene_sets__readonly:
-            server_config = self.app_config.server_config
-            if not self.app__authentication_enable:
-                raise ConfigurationError("user annotations requires authentication to be enabled")
-            if not server_config.auth.is_valid_authentication_type():
-                auth_type = server_config.authentication__type
-                raise ConfigurationError(f"authentication method {auth_type} is not compatible with user annotations")
 
         # Must always have an annotations instance to support genesets. User annotation (cell labels) are optional
         # as are writable gene sets

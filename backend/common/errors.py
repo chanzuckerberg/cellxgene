@@ -41,9 +41,6 @@ define_request_exception(
 )
 define_request_exception("ExceedsLimitError", "Raised when an HTTP request exceeds a limit/quota")
 define_request_exception("ColorFormatException", "Raised when color helper functions encounter an unknown color format")
-define_request_exception(
-    "AuthenticationError", "Raised when there is an authentication error", default_status_code=HTTPStatus.UNAUTHORIZED
-)
 
 define_request_exception(
     "AnnotationCategoryNameError",
@@ -53,6 +50,5 @@ define_request_exception(
 
 define_exception("ConfigurationError", "Raised when checking configuration errors")
 define_exception("PrepareError", "Raised when data is misprepared")
-define_exception("SecretKeyRetrievalError", "Raised when get_secret_key from AWS fails")
 define_exception("ObsoleteRequest", "Raised when the request is no longer valid.")
 define_exception("UnsupportedSummaryMethod", "Raised when a gene set summary method is unknown or unsupported.")
