@@ -9,4 +9,4 @@ clean:
 
 .PHONY: test-annotations-performance
 test-annotations-performance:
-	python ../test/performance/performance_test_annotations_py
+	python ../test/performance/performance_test_annotations.py
