@@ -2,9 +2,7 @@
 if __package__ is None:
     import sys
     from pathlib import Path
-    import pdb
 
-    pdb.set_trace()
     PKG_PATH = Path(__file__).parent
     sys.path.insert(0, str(PKG_PATH.parent))
     import server  # noqa F401
