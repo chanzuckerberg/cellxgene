@@ -1,11 +1,19 @@
 name: Compatibility Tests
 
+# TODO: Reinstate before merge to main
+#on:
+#  schedule:
+#    - cron: '0 8 7 * 2'
+#  push:
+#    branches:
+#      - main
+
+# TEMPORARY
+# TODO: Remove before merge to main
 on:
- schedule:
-   - cron: '0 8 7 * 2'
- push:
-   branches:
-     - main
+  push:
+    branches:
+      - atolopko/2410-update-compatibility-test-matrix
 
 env:
   JEST_ENV: prod
@@ -108,7 +116,7 @@ jobs:
       run: make unit-test-server
     - name: Smoke Tests
       run: make smoke-test
-    # FIXME: 
+    # FIXME: Fails intermittently. See https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/cellxgene/2415
     # - name: Smoke Tests with Annotations
     #   run: make smoke-test-annotations
 
