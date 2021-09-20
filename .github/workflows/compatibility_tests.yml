@@ -1,19 +1,11 @@
 name: Compatibility Tests
 
-# TODO: Reinstate before merge to main
-#on:
-#  schedule:
-#    - cron: '0 8 7 * 2'
-#  push:
-#    branches:
-#      - main
-
-# TEMPORARY
-# TODO: Remove before merge to main
 on:
-  push:
-    branches:
-      - atolopko/2410-update-compatibility-test-matrix
+ schedule:
+   - cron: '0 8 7 * 2'
+ push:
+   branches:
+     - main
 
 env:
   JEST_ENV: prod
