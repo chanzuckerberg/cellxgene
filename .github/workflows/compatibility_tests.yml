@@ -67,10 +67,12 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Cache env vars
+      run: echo "PIP_CACHE=`python -m pip cache dir`" >> $GITHUB_ENV
     - name: Python cache
       uses: actions/cache@v1
       with:
-        path: ~/.cache/pip
+        path: ${{ env.PIP_CACHE }}
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
@@ -81,17 +83,12 @@ jobs:
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
           ${{ runner.os }}-node-
-    - name: Brew cache env
-      if: startsWith(matrix.os, 'macos')
-      run: echo "BREW_CACHE=`brew --cache`" >> $GITHUB_ENV
     - name: Brew cache
       if: startsWith(matrix.os, 'macos')
       uses: actions/cache@v1
       with:
-        path: ${{ env.BREW_CACHE }}
-        key: ${{ runner.os }}-brew-${{ hashFiles('*_manifest*') }}
-        restore-keys: |
-          ${{ runner.os }}-brew-
+        path: ${{ env.HOME }}/Library/Caches/Homebrew
+        key: ${{ runner.os }}-brew-
     - name: Install dependencies (Ubuntu Linux)
       if: startsWith(matrix.os, 'ubuntu')
       run: |
