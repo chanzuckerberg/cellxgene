@@ -4,8 +4,6 @@ dataset:
     scripts: {scripts} #list of strs (filenames) or dicts containing keys
     inline_scripts: {inline_scripts} #list of strs (filenames)
 
-    authentication_enable: {authentication_enable}
-
   presentation:
     max_categories: {max_categories}
     custom_colors: {custom_colors}

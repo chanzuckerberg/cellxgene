@@ -1,7 +1,6 @@
 import datetime
 import logging
 from functools import wraps
-from http import HTTPStatus
 
 from flask import (
     Flask,
@@ -81,18 +80,6 @@ def handle_request_exception(error):
     return common_rest.abort_and_log(error.status_code, error.message, loglevel=logging.INFO, include_exc_info=True)
 
 
-def requires_authentication(func):
-    @wraps(func)
-    def wrapped_function(self, *args, **kwargs):
-        auth = current_app.auth
-        if auth.is_user_authenticated():
-            return func(self, *args, **kwargs)
-        else:
-            return make_response("not authenticated", HTTPStatus.UNAUTHORIZED)
-
-    return wrapped_function
-
-
 def rest_get_data_adaptor(func):
     @wraps(func)
     def wrapped_function(self):
@@ -128,20 +115,12 @@ class ConfigAPI(Resource):
         return common_rest.config_get(current_app.app_config, data_adaptor)
 
 
-class UserInfoAPI(Resource):
-    @cache_control_always(no_store=True)
-    @rest_get_data_adaptor
-    def get(self, data_adaptor):
-        return common_rest.userinfo_get(current_app.app_config, data_adaptor)
-
-
 class AnnotationsObsAPI(Resource):
     @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
     def get(self, data_adaptor):
         return common_rest.annotations_obs_get(request, data_adaptor)
 
-    @requires_authentication
     @cache_control(no_store=True)
     @rest_get_data_adaptor
     def put(self, data_adaptor):
@@ -194,7 +173,6 @@ class GenesetsAPI(Resource):
     def get(self, data_adaptor):
         return common_rest.genesets_get(request, data_adaptor)
 
-    @requires_authentication
     @cache_control(no_store=True)
     @rest_get_data_adaptor
     def put(self, data_adaptor):
@@ -233,7 +211,6 @@ def get_api_dataroot_resources(bp_dataroot):
     # Initialization routes
     add_resource(SchemaAPI, "/schema")
     add_resource(ConfigAPI, "/config")
-    add_resource(UserInfoAPI, "/userinfo")
     # Data routes
     add_resource(AnnotationsObsAPI, "/annotations/obs")
     add_resource(AnnotationsVarAPI, "/annotations/var")
@@ -288,9 +265,3 @@ class Server:
 
         self.app.data_adaptor = server_config.data_adaptor
         self.app.app_config = app_config
-
-        auth = server_config.auth
-        self.app.auth = auth
-        if auth.requires_client_login():
-            auth.add_url_rules(self.app)
-        auth.complete_setup(self.app)
