@@ -88,8 +88,6 @@ class TestExternalConfig(ConfigTests):
         with self.assertRaises(ConfigurationError) as config_error:
             app_config.complete_config()
         self.assertEqual(config_error.exception.message, "required environment variable 'THIS_ENV_IS_NOT_SET' not set")
-<<<<<<< HEAD:backend/test/test_server/unit/common/config/test_external_config.py
-=======
 
     @patch("server.common.config.external_config.get_secret_key")
     def test_aws_secrets_manager(self, mock_get_secret_key):
