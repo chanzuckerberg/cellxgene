@@ -89,7 +89,7 @@ jobs:
       uses: actions/cache@v1
       with:
         path: ${{ env.BREW_CACHE }}
-        key: ${{ runner.os }}-brew-${{ hashFiles('/usr/local/Homebrew/Library/Taps/**/.git/ORIG_HEAD') }}
+        key: ${{ runner.os }}-brew-${{ hashFiles('*_manifest*') }}
         restore-keys: |
           ${{ runner.os }}-brew-
     - name: Install dependencies (Ubuntu Linux)
