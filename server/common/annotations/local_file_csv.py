@@ -9,6 +9,7 @@ import pandas as pd
 from flask import session
 
 from server import __version__ as cellxgene_version
+from server.app.session import get_user_id
 from server.common.annotations.annotations import Annotations
 from server.common.genesets import read_gene_sets_tidycsv
 from server.common.errors import AnnotationsError, ObsoleteRequest
