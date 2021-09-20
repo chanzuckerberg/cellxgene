@@ -1,19 +1,11 @@
 name: Compatibility Tests
 
-# TODO: Reinstate before merge to main
-#on:
-#  schedule:
-#    - cron: '0 8 7 * 2'
-#  push:
-#    branches:
-#      - main
-
-# TEMPORARY
-# TODO: Remove before merge to main
 on:
-  push:
-    branches:
-      - atolopko/2410-update-compatibility-test-matrix
+ schedule:
+   - cron: '0 8 7 * 2'
+ push:
+   branches:
+     - main
 
 env:
   JEST_ENV: prod
@@ -72,6 +64,7 @@ jobs:
     - name: Cache env vars (MacOS)
       if: startsWith(matrix.os, 'macos')
       run: echo "BREW_CACHE=`brew --cache`" >> $GITHUB_ENV
+    # FIXME: Only working for Linux
     - name: Python cache
       uses: actions/cache@v1
       with:
@@ -121,12 +114,12 @@ jobs:
     # Run different types of test separately, to facilitate troubleshooting
     - name: Unit Tests - common
       run: make unit-test-common
-    # - name: Unit Tests - client
-    #   run: make unit-test-client
-    # - name: Unit Tests - server
-    #   run: make unit-test-server
-    # - name: Smoke Tests
-    #   run: make smoke-test
+    - name: Unit Tests - client
+      run: make unit-test-client
+    - name: Unit Tests - server
+      run: make unit-test-server
+    - name: Smoke Tests
+      run: make smoke-test
     # FIXME: Fails intermittently. See https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/cellxgene/2415
     # - name: Smoke Tests with Annotations
     #   run: make smoke-test-annotations
