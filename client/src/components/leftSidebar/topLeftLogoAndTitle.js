@@ -1,11 +1,9 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Button } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
 import Logo from "../framework/logo";
 import Truncate from "../util/truncate";
-import InfoDrawer from "../infoDrawer/infoDrawer";
 import InformationMenu from "./infoMenu";
 
 const DATASET_TITLE_FONT_SIZE = 14;
@@ -25,11 +23,6 @@ const DATASET_TITLE_FONT_SIZE = 14;
   };
 })
 class LeftSideBar extends React.Component {
-  handleClick = () => {
-    const { dispatch } = this.props;
-    dispatch({ type: "toggle dataset drawer" });
-  };
-
   render() {
     const {
       datasetTitle,
@@ -82,22 +75,19 @@ class LeftSideBar extends React.Component {
           </span>
         </div>
         <div style={{ marginRight: 5, height: "100%" }}>
-          <Button
+          <span
             minimal
             style={{
               fontSize: DATASET_TITLE_FONT_SIZE,
-              position: "relative",
-              top: -1,
+              padding: "5px 10px",
             }}
-            onClick={this.handleClick}
           >
             <Truncate>
               <span style={{ maxWidth: 155 }} data-testid="header">
                 {title ?? datasetTitle}
               </span>
             </Truncate>
-          </Button>
-          <InfoDrawer />
+          </span>
           <InformationMenu
             {...{
               libraryVersions,
