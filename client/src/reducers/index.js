@@ -21,6 +21,7 @@ import autosave from "./autosave";
 import ontology from "./ontology";
 import centroidLabels from "./centroidLabels";
 import pointDialation from "./pointDilation";
+import sankeySelection from "./sankeySelection";
 import { reembedController, reembedParameters } from "./reembed";
 import { gcMiddleware as annoMatrixGC } from "../annoMatrix";
 
@@ -38,6 +39,7 @@ const Reducer = undoable(
     ["layoutChoice", layoutChoice],
     ["categoricalSelection", categoricalSelection],
     ["continuousSelection", continuousSelection],
+    ["sankeySelection", sankeySelection],
     ["graphSelection", graphSelection],
     ["colors", colors],
     ["controls", controls],
@@ -54,6 +56,7 @@ const Reducer = undoable(
     "obsCrossfilter",
     "categoricalSelection",
     "continuousSelection",
+    "sankeySelection",
     "graphSelection",
     "colors",
     "controls",

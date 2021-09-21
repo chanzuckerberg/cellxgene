@@ -45,6 +45,7 @@ const LABEL_WIDTH_ANNO = LABEL_WIDTH - ANNO_BUTTON_WIDTH;
     crossfilter: state.obsCrossfilter,
     isUserAnno,
     genesets: state.genesets.genesets,
+    sankeySelected: state.sankeySelection?.[metadataField] ?? false
   };
 })
 class Category extends React.PureComponent {
@@ -98,6 +99,14 @@ class Category extends React.PureComponent {
     if (!editingCategory) {
       onExpansionChange(metadataField);
     }
+  };
+  
+  handleSankeyClick = () => {
+    const { dispatch, metadataField } = this.props;
+    dispatch({
+      type: "sankey: toggle",
+      category: metadataField,
+    });
   };
 
   handleCategoryKeyPress = (e) => {
@@ -223,6 +232,7 @@ class Category extends React.PureComponent {
     } = this.props;
 
     const checkboxID = `category-select-${metadataField}`;
+    const sankeyCheckboxID = `sankey-select-${metadataField}`;
 
     return (
       <CategoryCrossfilterContext.Provider value={crossfilter}>
@@ -278,6 +288,9 @@ class Category extends React.PureComponent {
                   onCategoryToggleAllClick={handleCategoryToggleAllClick}
                   onCategoryMenuClick={this.handleCategoryClick}
                   onCategoryMenuKeyPress={this.handleCategoryKeyPress}
+                  onCategorySankeyClick={this.handleSankeyClick}
+                  sankeyCheckboxID={sankeyCheckboxID}
+                  sankeySelected={sankeySelected}
                 />
               );
             }}
@@ -363,6 +376,7 @@ const CategoryHeader = React.memo(
   ({
     metadataField,
     checkboxID,
+    sankeyCheckboxID,
     isUserAnno,
     isTruncated,
     isColorAccessor,
@@ -372,12 +386,14 @@ const CategoryHeader = React.memo(
     onCategoryMenuClick,
     onCategoryMenuKeyPress,
     onCategoryToggleAllClick,
+    sankeySelected,
+    onCategorySankeyClick,
   }) => {
     /*
     Render category name and controls (eg, color-by button).
     */
     const checkboxRef = useRef(null);
-
+    const checkboxSankeyRef = useRef(null);
     useEffect(() => {
       checkboxRef.current.indeterminate = selectionState === "some";
     }, [checkboxRef.current, selectionState]);
@@ -475,6 +491,15 @@ const CategoryHeader = React.memo(
               disabled={isTruncated}
               icon="tint"
             />
+            <input
+              id={sankeyCheckboxID}
+              data-testclass="category-sankey"
+              data-testid={`${metadataField}:category-sankey`}
+              onChange={onCategorySankeyClick}
+              ref={checkboxSankeyRef}
+              checked={sankeySelected}
+              type="checkbox"
+            />
           </Tooltip>
         </div>
       </>
@@ -500,6 +525,9 @@ const CategoryRender = React.memo(
     onCategoryMenuClick,
     onCategoryMenuKeyPress,
     onCategoryToggleAllClick,
+    sankeySelected,
+    onCategorySankeyClick,
+    sankeyCheckboxID
   }) => {
     /*
     Render the core of the category, including checkboxes, controls, etc.
@@ -535,6 +563,7 @@ const CategoryRender = React.memo(
           <CategoryHeader
             metadataField={metadataField}
             checkboxID={checkboxID}
+            sankeyCheckboxID={sankeyCheckboxID}
             isUserAnno={isUserAnno}
             isTruncated={isTruncated}
             isExpanded={isExpanded}
@@ -544,6 +573,8 @@ const CategoryRender = React.memo(
             onCategoryToggleAllClick={onCategoryToggleAllClick}
             onCategoryMenuClick={onCategoryMenuClick}
             onCategoryMenuKeyPress={onCategoryMenuKeyPress}
+            onCategorySankeyClick={onCategorySankeyClick}
+            sankeySelected={sankeySelected}
           />
         </div>
         <div style={{ marginLeft: 26 }}>
