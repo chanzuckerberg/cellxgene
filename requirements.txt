@@ -1,1 +1,1 @@
--r ./backend/server/requirements.txt
+-r ./server/requirements.txt

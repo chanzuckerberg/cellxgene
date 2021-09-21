@@ -1,7 +1,7 @@
 include ../common.mk
 
-ANNOTATIONS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../backend/test/fixtures/pbmc3k-annotations.csv)
-GENE_SETS := $(if $(GENE_SETS),$(GENE_SETS),../backend/test/fixtures/pbmc3k-genesets.csv)
+ANNOTATIONS := $(if $(ANNOTATIONS),$(ANNOTATIONS),../test/fixtures/pbmc3k-annotations.csv)
+GENE_SETS := $(if $(GENE_SETS),$(GENE_SETS),../test/fixtures/pbmc3k-genesets.csv)
 ANNOTATIONS_FILENAME := $(shell basename $(ANNOTATIONS))
 GENE_SETS_FILENAME := $(shell basename $(GENE_SETS))
 
