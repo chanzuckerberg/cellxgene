@@ -13,7 +13,8 @@
     "fmt": "eslint --fix src __tests__",
     "lint": "eslint --fix src __tests__",
     "prod": "npm run build -- configuration/webpack/webpack.config.prod.js",
-    "test": "jest --testPathIgnorePatterns e2e"
+    "test": "jest --testPathIgnorePatterns e2e",
+    "prepare": "cd .. && husky install client/.husky"
   },
   "engineStrict": true,
   "engines": {
@@ -117,7 +118,7 @@
     "favicons-webpack-plugin": "^5.0.2",
     "file-loader": "^6.0.0",
     "html-webpack-plugin": "^5.3.1",
-    "husky": "^4.2.5",
+    "husky": "^7.0.2",
     "jest": "^27.0.6",
     "jest-circus": "^27.0.6",
     "jest-environment-puppeteer": "^5.0.1",
@@ -195,11 +196,6 @@
           "@babel/plugin-proposal-nullish-coalescing-operator"
         ]
       }
-    }
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged --config \"./configuration/lint-staged/lint-staged.config.js\""
     }
   }
 }
