@@ -2,4 +2,4 @@ bin
 client
 dist
 docs
-backend
+server
