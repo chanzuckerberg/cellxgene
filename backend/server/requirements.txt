@@ -1,7 +1,7 @@
 anndata>=0.7.6 # we need to_memory(), added in 0.7.6
 boto3>=1.12.18
 click>=7.1.2
-Flask>=1.0.2,<2.0.0 # Flask 2.0 is not compatible with the latest version of Flask-RESTful (0.3.8)
+Flask>=1.0.2
 Flask-Compress>=1.4.0
 Flask-Cors>=3.0.9  # CVE-2020-25032
 Flask-RESTful>=0.3.6
@@ -12,7 +12,6 @@ flatten-dict>=0.2.0
 fsspec>=0.4.4,<0.8.0
 gunicorn>=20.0.4
 h5py>=3.0.0
-jinja2>=2.11.3  # Flask sub-dependency. Added due to CVE-2020-28493
 numba>=0.51.2
 numpy>=1.17.5
 packaging>=20.0
