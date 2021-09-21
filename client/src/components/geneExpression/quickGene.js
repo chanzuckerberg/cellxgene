@@ -102,7 +102,7 @@ function QuickGene() {
     dispatch({ type: "clear user defined gene", data: gene });
   };
 
-  const QuickGenes = useMemo(() => userDefinedGenes.map((gene) => (
+  const QuickGenes = useMemo(() => userDefinedGenes.reverse().map((gene) => (
         <Gene
           key={`quick=${gene}`}
           gene={gene}
