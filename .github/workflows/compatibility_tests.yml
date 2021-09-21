@@ -1,11 +1,19 @@
 name: Compatibility Tests
 
+# TODO: Reinstate before merge to main
+#on:
+#  schedule:
+#    - cron: '0 8 7 * 2'
+#  push:
+#    branches:
+#      - main
+
+# TEMPORARY
+# TODO: Remove before merge to main
 on:
-  schedule:
-    - cron: '0 8 7 * 2'
   push:
     branches:
-      - main
+      - atolopko/2410-update-compatibility-test-matrix
 
 env:
   JEST_ENV: prod
@@ -22,85 +30,102 @@ jobs:
       - name: Build docker image
         run: docker build .
 
-  cellxgene-main-with-python-and-anndata-versions:
-    name: python versions x anndata versions
-    runs-on: ubuntu-latest
-    continue-on-error: true
+  matrix-compatibility-test:
+    name: cxg:${{ matrix.cellxgene_build }} os:${{ matrix.os }} py:${{ matrix.python-version }} anndata:${{ matrix.anndata_version || 'latest' }}
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        python-version: [3.6, 3.7, 3.8]
-        anndata-version: [0.7.6]
-        test-suite: [smoke-test, smoke-test-annotations]
+        # note: The `macos-latest` is latest Catalina version, and not Big Sur. So we explicitly ask for Big Sur (`macos-11`)
+        os: [ubuntu-latest, macos-latest, macos-11]
+        python-version: [3.6, 3.7, 3.8, 3.9]
+        cellxgene_build: [main, latest]
+        exclude:
+          # 3.6 no longer avail on Big Sur (`macos-11`)
+          - os: macos-11
+            python-version: 3.6
+          # no pypi build exists for macos+py3.9 and source install fails to
+          # install `tables` py pkg (a `scanpy` dependency), so we test py3.9
+          # only on ubuntu
+          - os: macos-11
+            python-version: 3.9
+          - os: macos-latest
+            python-version: 3.9
+        # add anndata pinned version test for subset of matrix configurations,
+        # in order to reduce matrix cross-product explosion
+        include:
+          - python-version: 3.8
+            cellxgene_build: latest
+            # TODO: dynamically use the literal version in requirements.txt,
+            # to avoid having to update this in manually in the future
+            # TODO: Do not bother running this if anndata latest version
+            # matches this pinned version, to avoid a redundant test
+            anndata_version: '==0.7.6'
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
+    - name: Cache env vars
+      run: echo "PIP_CACHE=`python -m pip cache dir`" >> $GITHUB_ENV
+    - name: Cache env vars (MacOS)
+      if: startsWith(matrix.os, 'macos')
+      run: echo "BREW_CACHE=`brew --cache`" >> $GITHUB_ENV
+    # FIXME: Only working for Linux
+    - name: Python cache
+      uses: actions/cache@v1
+      with:
+        path: ${{ env.PIP_CACHE }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    - name: Node cache
+      uses: actions/cache@v1
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+    - name: Brew cache (MacOS)
+      if: startsWith(matrix.os, 'macos')
+      uses: actions/cache@v1
+      with:
+        path: ${{ env.BREW_CACHE }}
+        key: ${{ runner.os }}-brew-
+    - name: Install dependencies (Ubuntu Linux)
+      if: startsWith(matrix.os, 'ubuntu')
       run: |
-        # 1. only install the dev requirements on top of what is in the cellxgene pip package
-        sudo apt-get update && sudo apt-get install -y libhdf5-serial-dev
-        sed -i 's/-r requirements.txt//' server/requirements-dev.txt
+        sudo apt-get update
+        sudo apt-get install -y libhdf5-serial-dev
+    - name: Install dependencies (MacOS)
+      if: startsWith(matrix.os, 'macos')
+      run: brew install hdf5
+    - name: Install cellxgene from `main` branch
+      if: matrix.cellxgene_build == 'main'
+      run: |
         pip install -r server/requirements-dev.txt
-        # 2. install cellxgene
         make pydist install-dist
-        # 3. install anndata
-        pip install anndata==${{ matrix.anndata-version }}
-    - name: Tests
-      run: make unit-test ${{ matrix.test-suite }}
-
-  cellxgene-release-with-anndata-master:
-    name: cellxgene release with anndata master
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        test-suite: [smoke-test, smoke-test-annotations]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          path: cellxgene
-      - name: Install dependencies
-        run: |
-          cd cellxgene
-          # 1. only install the dev requirements on top of what is in the cellxgene pip package
-          make dev-env-client
-          sed -i 's/-r requirements.txt//' server/requirements-dev.txt
-          pip install -r server/requirements-dev.txt
-          # 2. install cellxgene
-          pip install --upgrade cellxgene
-          # 3. install anndata
-          pip install git+https://github.com/theislab/anndata
-      - name: Tests
-        run: cd cellxgene && make unit-test ${{ matrix.test-suite }}
-
-  cellxgene-main-with-anndata-master:
-    name: cellxgene main with anndata master
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        test-suite: [smoke-test, smoke-test-annotations]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          path: cellxgene
-      - name: Install dependencies
-        run: |
-          cd cellxgene
-          sed -i -E 's/^anndata[>=]=[0-9]+.[0-9]+.[0-9]+$/anndata/g' server/requirements.txt
-          make pydist install-dist dev-env
-          pip install git+https://github.com/theislab/anndata
-      - name: Tests
-        run: cd cellxgene && make unit-test ${{ matrix.test-suite }}
+    - name: Install cellxgene from latest release (pypi.org)
+      if: matrix.cellxgene_build == 'latest'
+      run: |
+        pip install --upgrade cellxgene
+        # install the additional dev requirements on top of what is in the
+        # cellxgene pip package, which are needed for testing, but otherwise
+        # keep same pip pkg versions as in the cxg release
+        sed -i'' -e 's/-r requirements.txt//' server/requirements-dev.txt
+        pip install -r server/requirements-dev.txt
+    - name: Install anndata version per matrix variable
+      run: pip install anndata${{ matrix.anndata_version }}
+    - name: Install node
+      run: make dev-env-client
+    # Run different types of test separately, to facilitate troubleshooting
+    - name: Unit Tests - client
+      run: make unit-test-client
+    - name: Unit Tests - server
+      run: make unit-test-server
+    - name: Smoke Tests
+      run: make smoke-test
+    # FIXME: Fails intermittently. See https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/cellxgene/2415
+    # - name: Smoke Tests with Annotations
+    #   run: make smoke-test-annotations

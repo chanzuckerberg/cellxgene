@@ -1,3 +1,5 @@
+# NOTE: If you update 'anndata' min version, also update the 'anndata_version'
+# matrix value in .github/workflows/compatibility_tests.yml
 anndata>=0.7.6 # we need to_memory(), added in 0.7.6
 boto3>=1.12.18
 click>=7.1.2
