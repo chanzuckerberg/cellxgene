@@ -2,8 +2,8 @@ import os
 
 import requests
 
-from server.common.errors import ConfigurationError
 from server.common.config.app_config import AppConfig
+from server.common.errors import ConfigurationError
 from server.common.utils.type_conversion_utils import convert_string_to_value
 
 from test import FIXTURES_ROOT
