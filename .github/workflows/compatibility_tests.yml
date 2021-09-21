@@ -104,7 +104,7 @@ jobs:
     - name: Install cellxgene from `main` branch
       if: matrix.cellxgene_build == 'main'
       run: |
-        pip install -r backend/server/requirements-dev.txt
+        pip install -r server/requirements-dev.txt
         make pydist install-dist
     - name: Install cellxgene from latest release (pypi.org)
       if: matrix.cellxgene_build == 'latest'
@@ -113,8 +113,8 @@ jobs:
         # install the additional dev requirements on top of what is in the
         # cellxgene pip package, which are needed for testing, but otherwise
         # keep same pip pkg versions as in the cxg release
-        sed -i'' -e 's/-r requirements.txt//' backend/server/requirements-dev.txt
-        pip install -r backend/server/requirements-dev.txt
+        sed -i'' -e 's/-r requirements.txt//' server/requirements-dev.txt
+        pip install -r server/requirements-dev.txt
     - name: Install anndata version per matrix variable
       run: pip install anndata${{ matrix.anndata_version }}
     - name: Install node
@@ -131,4 +131,3 @@ jobs:
     # FIXME: Fails intermittently. See https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/cellxgene/2415
     # - name: Smoke Tests with Annotations
     #   run: make smoke-test-annotations
-
