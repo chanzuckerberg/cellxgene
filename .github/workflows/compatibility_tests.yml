@@ -1,11 +1,11 @@
 name: Compatibility Tests
 
 on:
- schedule:
-   - cron: '0 8 7 * 2'
- push:
-   branches:
-     - main
+  schedule:
+    - cron: '0 8 7 * 2'
+  push:
+    branches:
+      - main
 
 env:
   JEST_ENV: prod
