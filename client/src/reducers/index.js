@@ -21,7 +21,7 @@ import autosave from "./autosave";
 import ontology from "./ontology";
 import centroidLabels from "./centroidLabels";
 import pointDialation from "./pointDilation";
-import sankeySelection from "./sankeySelection";
+import sankeySelection, { sankeyController } from "./sankeySelection";
 import { reembedController, reembedParameters } from "./reembed";
 import { gcMiddleware as annoMatrixGC } from "../annoMatrix";
 
@@ -47,6 +47,7 @@ const Reducer = undoable(
     ["centroidLabels", centroidLabels],
     ["pointDilation", pointDialation],
     ["reembedController", reembedController],
+    ["sankeyController", sankeyController],
     ["reembedParameters", reembedParameters],
     ["autosave", autosave],
     ["userInfo", userInfo],

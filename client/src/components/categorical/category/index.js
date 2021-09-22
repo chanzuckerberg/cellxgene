@@ -45,7 +45,8 @@ const LABEL_WIDTH_ANNO = LABEL_WIDTH - ANNO_BUTTON_WIDTH;
     crossfilter: state.obsCrossfilter,
     isUserAnno,
     genesets: state.genesets.genesets,
-    sankeySelected: state.sankeySelection?.[metadataField] ?? false
+    sankeySelected: state.sankeySelection.categories?.[metadataField] ?? false,
+    displaySankey: state.sankeySelection.displaySankey
   };
 })
 class Category extends React.PureComponent {
@@ -229,6 +230,7 @@ class Category extends React.PureComponent {
       colors,
       annoMatrix,
       isUserAnno,
+      sankeySelected
     } = this.props;
 
     const checkboxID = `category-select-${metadataField}`;
@@ -491,7 +493,8 @@ const CategoryHeader = React.memo(
               disabled={isTruncated}
               icon="tint"
             />
-            <input
+          </Tooltip>
+          <input
               id={sankeyCheckboxID}
               data-testclass="category-sankey"
               data-testid={`${metadataField}:category-sankey`}
@@ -499,8 +502,7 @@ const CategoryHeader = React.memo(
               ref={checkboxSankeyRef}
               checked={sankeySelected}
               type="checkbox"
-            />
-          </Tooltip>
+            />          
         </div>
       </>
     );
