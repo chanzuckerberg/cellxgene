@@ -102,7 +102,6 @@ class Gene extends React.Component {
                   iconSize={12}
                   style={{
                     marginRight: 7,
-                    cursor: "grab",
                     position: "relative",
                     top: -1,
                   }}
