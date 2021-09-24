@@ -89,7 +89,6 @@ class Gene extends React.Component {
             data-testid={`${gene}:gene-expand`}
             onKeyPress={() => {}}
             style={{
-              cursor: "pointer",
               display: "flex",
               justifyContent: "space-between",
               width: "100%",
