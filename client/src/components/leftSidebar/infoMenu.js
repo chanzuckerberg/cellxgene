@@ -29,8 +29,12 @@ const InformationMenu = React.memo((props) => {
             text="Github"
             rel="noopener"
           />
-          <MenuItem target="_blank" text={libraryVersions?.cellxgene || null} />
-          <MenuItem text="MIT License" />
+          <MenuItem
+            style={{ cursor: "default" }}
+            target="_blank"
+            text={libraryVersions?.cellxgene || null}
+          />
+          <MenuItem style={{ cursor: "default" }} text="MIT License" />
           {tosURL && (
             <MenuItem
               href={tosURL}
