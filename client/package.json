@@ -1,6 +1,6 @@
 {
   "name": "cellxgene",
-  "version": "0.19.0-rc.0",
+  "version": "0.19.0-rc.1",
   "license": "MIT",
   "description": "cellxgene is a web application for the interactive exploration of single cell sequence data.",
   "repository": "https://github.com/chanzuckerberg/cellxgene",
