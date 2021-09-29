@@ -9,7 +9,7 @@ const InformationMenu = React.memo((props) => {
       content={
         <Menu>
           <MenuItem
-            href="https://chanzuckerberg.github.io/cellxgene/"
+            href="https://docs.cellxgene.cziscience.com/"
             target="_blank"
             icon="book"
             text="Documentation"
