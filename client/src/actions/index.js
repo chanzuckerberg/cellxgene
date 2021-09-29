@@ -6,8 +6,11 @@ import {
   dispatchNetworkErrorMessageToUser,
 } from "../util/actionHelpers";
 import {
-  requestReembed /* , reembedResetWorldToUniverse -- disabled temporarily, TODO issue #1606 */,
+  requestReembed
 } from "./reembed";
+import {
+  requestSankey
+} from "./sankey";
 import { loadUserColorConfig } from "../util/stateManager/colorHelpers";
 import * as selnActions from "./selection";
 import * as annoActions from "./annotation";
@@ -285,6 +288,7 @@ export default {
   requestSingleGeneExpressionCountsForColoringPOST,
   requestUserDefinedGene,
   requestReembed,
+  requestSankey,
   setCellsFromSelectionAndInverseAction:
     selnActions.setCellsFromSelectionAndInverseAction,
   selectContinuousMetadataAction: selnActions.selectContinuousMetadataAction,

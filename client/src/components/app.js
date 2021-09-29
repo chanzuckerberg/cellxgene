@@ -12,6 +12,7 @@ import Autosave from "./autosave";
 import Embedding from "./embedding";
 import TermsOfServicePrompt from "./termsPrompt";
 import { GlobalHotkeys } from "./hotkeys";
+import Sankey from "./sankey";
 import actions from "../actions";
 
 @connect((state) => ({
@@ -77,6 +78,7 @@ class App extends React.Component {
                 <Autosave />
                 <TermsOfServicePrompt />
                 <Legend viewportRef={viewportRef} />
+                <Sankey/>
                 <Graph key={graphRenderCounter} viewportRef={viewportRef} />
               </>
             )}

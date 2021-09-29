@@ -7,7 +7,7 @@ import memoize from "memoize-one";
 import Async from "react-async";
 import { Button, Card, Elevation } from "@blueprintjs/core";
 import { Popover2 } from "@blueprintjs/popover2";
-
+import Sankey from "../sankey";
 import setupSVGandBrushElements from "./setupSVGandBrush";
 import _camera from "../../util/camera";
 import _drawPoints from "./drawPointsRegl";
