@@ -121,24 +121,24 @@ bump-version:
 
 # Create new version to commit to main
 .PHONY: create-release-candidate
-create-release-candidate: dev-env bump-version clean-lite gen-package-lock
+create-release-candidate: bump-version clean-lite gen-package-lock
 	@echo "Version bumped part:$(PART) and client built. Ready to commit and push"
 
 # Bump the release candidate version if needed (i.e. the previous release candidate had errors).
 .PHONY: recreate-release-candidate
-recreate-release-candidate: dev-env bump-release-candidate clean-lite gen-package-lock
+recreate-release-candidate: bump-release-candidate clean-lite gen-package-lock
 	@echo "Version bumped part:$(PART) and client built. Ready to commit and push"
 
 # Build dist and release to Test PyPI
 .PHONY: release-candidate-to-test-pypi
-release-candidate-to-test-pypi: dev-env pydist twine
+release-candidate-to-test-pypi: pydist twine
 	@echo "Dist built and uploaded to test.pypi.org"
 	@echo "Test the install:"
 	@echo "    make install-release-test"
 
 # Build final dist (gets rid of the rc tag) and release final candidate to TestPyPI
 .PHONY: release-final-to-test-pypi
-release-final-to-test-pypi: dev-env bump-release clean-lite gen-package-lock pydist twine
+release-final-to-test-pypi: bump-release clean-lite gen-package-lock pydist twine
 	@echo "Final release dist built and uploaded to test.pypi.org"
 	@echo "Test the install:"
 	@echo "    make install-release-test"
@@ -148,9 +148,9 @@ release-final: twine-prod
 	@echo "Release uploaded to pypi.org"
 
 # DANGER: releases directly to prod
-# use this if you accidently burned a test release version number,
+# use this if you accidentally burned a test release version number,
 .PHONY: release-directly-to-prod
-release-directly-to-prod: dev-env pydist twine-prod
+release-directly-to-prod: pydist twine-prod
 	@echo "Dist built and uploaded to pypi.org"
 	@echo "Test the install:"
 	@echo "    make install-release"
@@ -200,7 +200,7 @@ install-dev: uninstall
 # install from test.pypi to test your release
 .PHONY: install-release-test
 install-release-test: uninstall
-	pip install --no-cache-dir --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple cellxgene
+	pip install --no-cache-dir --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple cellxgene==$(VERSION)
 	@echo "Installed cellxgene from test.pypi.org, now run and smoke test"
 
 # install from pypi to test your release
