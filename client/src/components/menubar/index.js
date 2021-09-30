@@ -376,15 +376,22 @@ class MenuBar extends React.PureComponent {
               }}
             />       
           </Tooltip>
-          <AnchorButton
-              type="button"
-              icon="duplicate"
-              active={layoutChoice.sankey}
-              disabled={!displaySankey && !layoutChoice.sankey}
-              onClick={() => {
-                this.handleSankey()
-              }}
-            />               
+          <Tooltip
+            content="Display sankey plot from selected categories."
+            position="bottom"
+            hoverOpenDelay={globals.tooltipHoverOpenDelay}
+          >            
+            <AnchorButton
+                type="button"
+                icon="duplicate"
+                active={layoutChoice.sankey}
+                disabled={!displaySankey && !layoutChoice.sankey}
+                onClick={() => {
+                  this.handleSankey()
+                }}
+              />           
+            </Tooltip>
+    
         </ButtonGroup>
         <Subset
           subsetPossible={subsetPossible}

@@ -494,15 +494,21 @@ const CategoryHeader = React.memo(
               icon="tint"
             />
           </Tooltip>
-          <input
-              id={sankeyCheckboxID}
-              data-testclass="category-sankey"
-              data-testid={`${metadataField}:category-sankey`}
-              onChange={onCategorySankeyClick}
-              ref={checkboxSankeyRef}
-              checked={sankeySelected}
-              type="checkbox"
-            />          
+          <Tooltip
+            content="Select to choose category for sankey plot."
+            position="bottom"
+            hoverOpenDelay={globals.tooltipHoverOpenDelay}          
+          >
+            <input
+                id={sankeyCheckboxID}
+                data-testclass="category-sankey"
+                data-testid={`${metadataField}:category-sankey`}
+                onChange={onCategorySankeyClick}
+                ref={checkboxSankeyRef}
+                checked={sankeySelected}
+                type="checkbox"
+              />     
+          </Tooltip>     
         </div>
       </>
     );
