@@ -7,27 +7,27 @@ _an interactive explorer for single-cell transcriptomics data_
 [![Compatibility Tests](https://github.com/chanzuckerberg/cellxgene/workflows/Compatibility%20Tests/badge.svg)](https://github.com/chanzuckerberg/cellxgene/actions?query=workflow%3A%22Compatibility+Tests%22)
 ![Code Coverage](https://codecov.io/gh/chanzuckerberg/cellxgene/branch/main/graph/badge.svg)
 
-cellxgene (pronounced "cell-by-gene") is an interactive data explorer for single-cell transcriptomics datasets, such as those coming from the [Human Cell Atlas](https://humancellatlas.org). Leveraging modern web development techniques to enable fast visualizations of at least 1 million cells, we hope to enable biologists and computational researchers to explore their data.
+cellxgene Desktop (pronounced "cell-by-gene") is an interactive data explorer for single-cell datasets, such as those coming from the [Human Cell Atlas](https://humancellatlas.org). Leveraging modern web development techniques to enable fast visualizations of at least 1 million cells, we hope to enable biologists and computational researchers to explore their data.
 
-Whether you need to visualize one thousand cells or one million, cellxgene helps you gain insight into your single-cell data.
+Whether you need to visualize one thousand cells or one million, cellxgene Desktop helps you gain insight into your single-cell data.
 
 <img src="https://github.com/chanzuckerberg/cellxgene/raw/main/docs/images/crossfilter.gif" width="350" height="200" hspace="30"><img src="https://github.com/chanzuckerberg/cellxgene/raw/main/docs/images/category-breakdown.gif" width="350" height="200" hspace="30">
 
 # Getting started
 
-### The comprehensive guide to cellxgene
+### The comprehensive guide to cellxgene Desktop
 
-[The cellxgene documentation is your one-stop-shop for information about cellxgene](https://chanzuckerberg.github.io/cellxgene/)! You may be particularly interested in:
+[The cellxgene documentation is your one-stop-shop for information about cellxgene Desktop](https://docs.cellxgene.cziscience.com/)! You may be particularly interested in:
 
-- Seeing [what cellxgene can do](https://chanzuckerberg.github.io/cellxgene/posts/gallery)
-- Learning more about cellxgene [installation](https://chanzuckerberg.github.io/cellxgene/posts/install) and [usage](https://chanzuckerberg.github.io/cellxgene/posts/launch)
-- [Preparing your own data](https://chanzuckerberg.github.io/cellxgene/posts/prepare) for use in cellxgene
-- Checking out [our roadmap](https://chanzuckerberg.github.io/cellxgene/posts/roadmap) for future development
-- [Contributing](https://chanzuckerberg.github.io/cellxgene/posts/contribute) to cellxgene
+- Seeing [what cellxgene Desktop can do](https://docs.cellxgene.cziscience.com/explore-data/how-to-explore-data)
+- Learning more about cellxgene [installation](https://docs.cellxgene.cziscience.com/desktop/install) and [usage](https://docs.cellxgene.cziscience.com/desktop/launch)
+- [Preparing your own data](https://docs.cellxgene.cziscience.com/desktop/data-reqs) for use in cellxgene Desktop
+- Checking out [our roadmap](https://docs.cellxgene.cziscience.com/roadmap) for future development
+- [Contributing](https://docs.cellxgene.cziscience.com/contribute) to cellxgene Desktop
 
 ### Quick start
 
-To install cellxgene you need Python 3.6+. We recommend [installing cellxgene into a conda or virtual environment.](https://chanzuckerberg.github.io/cellxgene/posts/install)
+To install cellxgene Desktop you need Python 3.6+. We recommend [installing cellxgene Desktop into a conda or virtual environment.](https://docs.cellxgene.cziscience.com/desktop/install)
 
 Install the package.
 
@@ -35,19 +35,19 @@ Install the package.
 pip install cellxgene
 ```
 
-Launch cellxgene with an example [anndata](https://anndata.readthedocs.io/en/latest/) file
+Launch cellxgene Desktop with an example [anndata](https://anndata.readthedocs.io/en/latest/) file
 
 ```bash
 cellxgene launch https://cellxgene-example-data.czi.technology/pbmc3k.h5ad
 ```
 
-To explore more datasets already formatted for cellxgene, check out the [Demo data](https://chanzuckerberg.github.io/cellxgene/posts/demo-data) or
-see [Preparing your data](https://chanzuckerberg.github.io/cellxgene/posts/prepare) to learn more about formatting your own
-data for cellxgene.
+To explore more datasets already formatted for cellxgene Desktop, check out the [Demo data](https://docs.cellxgene.cziscience.com/desktop/quick-start#example-datasets) or
+see [Preparing your data](https://docs.cellxgene.cziscience.com/desktop/data-reqs) to learn more about formatting your own
+data for cellxgene Desktop.
 
 ### Supported browsers
 
-cellxgene currently supports the following browsers:
+cellxgene Desktop currently supports the following browsers:
 
 - Google Chrome 61+
 - Edge 15+
@@ -62,11 +62,11 @@ For questions, suggestions, or accolades, [join the `#cellxgene-users` channel o
 
 For any errors, [report bugs on Github](https://github.com/chanzuckerberg/cellxgene/issues).
 
-# Developing with cellxgene
+# Developing with cellxgene Desktop
 
 ### Contributing
 
-We warmly welcome contributions from the community! Please see our [contributing guide](https://chanzuckerberg.github.io/cellxgene/posts/contribute) and don't hesitate to open an issue or send a pull request to improve cellxgene. Please see the [dev_docs](https://github.com/chanzuckerberg/cellxgene/tree/main/dev_docs) for pull request suggestions, unit test details, local documentation preview, and other development specifics. 
+We warmly welcome contributions from the community! Please see our [contributing guide](https://docs.cellxgene.cziscience.com/contribute) and don't hesitate to open an issue or send a pull request to improve cellxgene Desktop. Please see the [dev_docs](https://github.com/chanzuckerberg/cellxgene/tree/main/dev_docs) for pull request suggestions, unit test details, local documentation preview, and other development specifics. 
 
 This project adheres to the Contributor Covenant [code of conduct](https://github.com/chanzuckerberg/.github/blob/master/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to opensource@chanzuckerberg.com.
 
@@ -79,9 +79,9 @@ this project. All code is freely available for reuse under the [MIT license](htt
 
 Before extending cellxgene, we encourage you to reach out to us with ideas or questions. It might be possible that an 
 extension could be directly contributed, which would make it available for a wider audience, or that it's on our 
-[roadmap](./docs/posts/roadmap.md) and under active development. 
+[roadmap](https://docs.cellxgene.cziscience.com/roadmap) and under active development. 
 
-See the [cellxgene extensions](./docs/posts/extensions.md) section of our documentation for examples of community use and cellxgene extensions. 
+See the [cellxgene extensions](https://docs.cellxgene.cziscience.com/community-extensions) section of our documentation for examples of community use and cellxgene extensions. 
 
 ### Security
 
