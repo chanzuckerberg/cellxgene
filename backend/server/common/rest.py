@@ -310,6 +310,26 @@ def layout_obs_get(request, data_adaptor):
             include_exc_info=True,
         )
 
+def sankey_data_put(request, data_adaptor):
+    args = request.get_json()
+    labels = args.get("labels", None)
+    labels = [x['__columns'][0] for x in labels]
+    name = args.get("name", None)
+
+    if not labels:
+        return make_response(jsonify({"edges":[],"weights":[]}),HTTPStatus.OK, {"Content-Type": "application/json"})
+    
+
+    try:
+        edges,weights = data_adaptor.compute_sankey_df(labels,name)
+        edges = [list(x) for x in edges]
+        weights = list(weights)
+        return make_response(jsonify({"edges": edges, "weights": weights}), HTTPStatus.OK, {"Content-Type": "application/json"})
+    except NotImplementedError as e:
+        return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
+    except (ValueError, DisabledFeatureError, FilterError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
+
 
 def layout_obs_put(request, data_adaptor):
     args = request.get_json()

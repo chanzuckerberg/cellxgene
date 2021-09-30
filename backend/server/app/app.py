@@ -192,6 +192,12 @@ class LayoutObsAPI(Resource):
     def put(self, data_adaptor):
         return common_rest.layout_obs_put(request, data_adaptor)
 
+class SankeyPlotAPI(Resource):
+    @cache_control(no_store=True)
+    @rest_get_data_adaptor
+    def put(self, data_adaptor):
+        return common_rest.sankey_data_put(request, data_adaptor)
+
 class ReembedParametersAPI(Resource):
     @cache_control(public=True, max_age=ONE_WEEK)
     @rest_get_data_adaptor
@@ -255,7 +261,8 @@ def get_api_dataroot_resources(bp_dataroot):
     add_resource(AnnotationsVarAPI, "/annotations/var")
     add_resource(DataVarAPI, "/data/var")
     add_resource(GenesetsAPI, "/genesets")
-    add_resource(ReembedParametersAPI, "/reembed-parameters")    
+    add_resource(ReembedParametersAPI, "/reembed-parameters")
+    add_resource(SankeyPlotAPI, "/sankey")
     add_resource(SummarizeVarAPI, "/summarize/var")
     # Display routes
     add_resource(ColorsAPI, "/colors")

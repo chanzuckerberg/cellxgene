@@ -179,8 +179,9 @@ def scanpy_umap(adata, obs_mask=None, reembedParams = {}, pca_options={}, neighb
     else:
         sam.run_umap(metric=distanceMetric,min_dist=umapMinDist)
         adata_raw.obsm['X_umap'] = sam.adata.obsm['X_umap']
+        adata_raw.obsp['connectivities'] = sam.adata.obsp['connectivities']
         
     umap = adata_raw.obsm["X_umap"]
     result = np.full((obs_mask.shape[0], umap.shape[1]), np.NaN)
     result[obs_mask] = umap
-    return result
+    return result, adata_raw.obsp['connectivities']

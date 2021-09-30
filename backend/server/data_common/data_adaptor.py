@@ -66,6 +66,12 @@ class DataAdaptor(metaclass=ABCMeta):
         """return an numpy array for the given pre-computed embedding name."""
         pass
 
+    
+    @abstractmethod
+    def compute_sankey_df(self, labels, name):
+        """compute sankey"""
+        pass
+
     @abstractmethod
     def compute_embedding(self, method, filter, reembedParams):
         """compute a new embedding on the specified obs subset and return the embedding schema."""
