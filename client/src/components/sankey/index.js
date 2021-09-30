@@ -1,28 +1,39 @@
 import React from "react";
 import * as d3 from "d3";
 import * as d3s from "d3-sankey";
-import { Popover2 } from "@blueprintjs/popover2";
 import { AnchorButton } from "@blueprintjs/core";
 import { connect } from "react-redux";
 
 @connect((state) => ({
-  displaySankey: state.sankeySelection.displaySankey,
-  sankeyData: state.sankeySelection.sankeyData
-}))
+    layoutChoice: state.layoutChoice,
+    displaySankey: state.sankeySelection.displaySankey,
+    sankeyData: state.sankeySelection.sankeyData
+  }))
 class Sankey extends React.Component {
   constructor(props) {
     super(props);
+    const viewport = this.getViewportDimensions();
+    this.sankeyTopPadding = 120;
+    this.sankeyLeftPadding = 170;
+    this.displayed = false;
+    this.state = {
+      viewport,
+    };
   }
-
-  constructSankey = (data) => {
-    if (!data) {
-      return;
-    }
-    const margin = 10;
-    const width = 740;
-    const height = 500;
-    const svgBackground = "#eee";
-    const svgBorder = "1px solid #333";
+  handleResize = () => {
+    const viewport = this.getViewportDimensions();
+    this.setState({
+      ...this.state,
+      viewport,
+    });
+  };  
+  constructSankey = () => {
+    const { sankeyData: data } = this.props
+    const { viewport } = this.state
+    const topMargin = this.sankeyTopPadding
+    const leftMargin = this.sankeyLeftPadding
+    const width = viewport.width 
+    const height = viewport.height
     const nodeWidth = 24;
     const nodePadding = 16;
     const nodeOpacity = 0.8;
@@ -159,15 +170,10 @@ class Sankey extends React.Component {
     
     d3.selectAll("#canvas > *").remove()
     const svg = d3.select("#canvas")
-                  .attr("width", width)
-                  .attr("height", height)
-                  .style("background-color", svgBackground)
-                  .style("border", svgBorder)
                   .append("g")
-                  .attr("transform", `translate(${margin},${margin})`);
-    
+                  .attr("transform", `translate(${leftMargin},${topMargin})`);
     // Define our sankey instance.
-    const graphSize = [width - 2*margin, height - 2*margin];
+    const graphSize = [width - 2*leftMargin, height - 2*topMargin];
     const sankey = d3s.sankey()
                      .size(graphSize)
                      .nodeId(d => d.id)
@@ -210,7 +216,7 @@ class Sankey extends React.Component {
     
     // Add hover effect to links.
     svgLinks.append("title")
-            .text(d => `${d.source.id} ${arrow} ${d.target.id}\n${d.value}`);
+            .text(d => `${d.source.id.substring(3)} ${arrow} ${d.target.id.substring(3)}\n${d.value}`);
 
     let svgNodes = svg.append("g")
                       .classed("nodes", true)
@@ -226,8 +232,7 @@ class Sankey extends React.Component {
                       .attr("fill", d => d.fillColor)
                       .attr("opacity", nodeOpacity)
                       .attr("stroke", d => d.strokeColor)
-                      .attr("stroke-width", 0);
-    
+                      .attr("stroke-width", 0)
     let nodeDepths = graph.nodes
         .map(n => n.depth)
         .reduce(reduceUnique, []);
@@ -244,41 +249,68 @@ class Sankey extends React.Component {
     
     // Add hover effect to nodes.
     svgNodes.append("title")
-            .text(d => `${d.id}\n${d.value} unit(s)`);
+            .text(d => `${d.id}\n${d.value}`);
             
     svgNodes.call(d3.drag()
                     .on("start", onDragStart)
                     .on("drag", onDragDragging)
                     .on("end", onDragEnd));
-
-    console.log("sankey load.");  
-    return <svg id='canvas'/>
+    svg.append("g")
+    .attr("font-family", "sans-serif")
+    .attr("font-size", 14)
+    .selectAll("text")
+    .data(graph.nodes).enter().append("text")
+    .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
+    .attr("y", d => (d.y1 + d.y0) / 2)
+    .attr("dy", "0.35em")
+    .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
+    .text(d => d.id.substring(3))
   }
 
+  handleResize = () => {
+    const { state } = this.state;
+    const viewport = this.getViewportDimensions();
+
+    this.setState({
+      ...state,
+      viewport,
+    });
+    d3.selectAll("#canvas > *").remove()
+    this.constructSankey()
+  };
+    
+  componentDidMount() {
+    window.addEventListener("resize", this.handleResize);
+    this.constructSankey();
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.handleResize);
+  }
+
+  getViewportDimensions = () => {
+    const { viewportRef } = this.props;
+    return {
+      height: viewportRef.clientHeight,
+      width: viewportRef.clientWidth,
+    };
+  };
+
   render() {
-    const {
-      sankeyData
-    } = this.props;
-    
-    this.constructSankey(sankeyData);
-
-    const sankeyReady = sankeyData ? true : false
-    
-
-    console.log('Hello world2')
-    return (<div>
-              <AnchorButton
-                  type="button"
-                  data-testid="delete-sankey"
-                  onClick={(() => {
-                    d3.selectAll("#canvas > *").remove()
-                  })}
-                  intent="primary"
-                >
-                  Close
-              </AnchorButton>        
-              {sankeyReady ? <svg id='canvas'/> : null}
-            </div>  
+    return (
+      <div
+        id="sankey-wrapper"
+        style={{
+          position: "relative",
+          top: 0,
+          left: 0,
+          zIndex: -9999,
+          width: "inherit",
+          height: "inherit"
+        }}
+      >
+        {<svg id="canvas" style={{width:"100%", height:"100%"}}/>}
+      </div>
     );
   }
 }

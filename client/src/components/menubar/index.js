@@ -13,6 +13,7 @@ import UndoRedoReset from "./undoRedo";
 import DiffexpButtons from "./diffexpButtons";
 import Reembedding from "./reembedding";
 import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
+import { requestSankey } from "../../actions/sankey";
 
 @connect((state) => {
   const { annoMatrix } = state;
@@ -49,6 +50,9 @@ import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
     tosURL: state.config?.parameters?.about_legal_tos,
     privacyURL: state.config?.parameters?.about_legal_privacy,
     categoricalSelection: state.categoricalSelection,
+    displaySankey: state.sankeySelection.displaySankey,
+    layoutChoice: state.layoutChoice,
+
   };
 })
 class MenuBar extends React.PureComponent {
@@ -82,6 +86,42 @@ class MenuBar extends React.PureComponent {
       pendingClipPercentiles: null,
     };
   }
+
+  handleSankey = () => {
+    const { dispatch, layoutChoice } = this.props;
+    if (!layoutChoice.sankey) {
+      const prom = dispatch(requestSankey());
+      const links = []
+      const nodes = []
+      prom.then((res) => {
+        let n = []
+        res.edges.forEach(function (item, index) {
+          links.push({
+            source: item[0],
+            target: item[1],
+            value: res.weights[index]
+          })
+          n.push(item[0])
+          n.push(item[1])
+        });   
+        n = n.filter((item, i, ar) => ar.indexOf(item) === i);
+  
+        n.forEach(function (item){
+          nodes.push({
+            id: item
+          })
+        })
+        
+        const data = {links: links, nodes: nodes}
+        dispatch({type: "sankey: set data",data: data})
+        dispatch({type: "toggle sankey"})
+      })      
+    } else {
+      dispatch({type: "sankey: reset"})
+      dispatch({type: "toggle sankey"})
+    }
+
+  };
 
   isClipDisabled = () => {
     /*
@@ -212,6 +252,8 @@ class MenuBar extends React.PureComponent {
       subsetResetPossible,
       userInfo,
       auth,
+      displaySankey,
+      layoutChoice
     } = this.props;
     const { pendingClipPercentiles } = this.state;
 
@@ -332,8 +374,17 @@ class MenuBar extends React.PureComponent {
                   data: "lidar",
                 });
               }}
-            />
+            />       
           </Tooltip>
+          <AnchorButton
+              type="button"
+              icon="duplicate"
+              active={layoutChoice.sankey}
+              disabled={!displaySankey && !layoutChoice.sankey}
+              onClick={() => {
+                this.handleSankey()
+              }}
+            />               
         </ButtonGroup>
         <Subset
           subsetPossible={subsetPossible}

@@ -32,7 +32,11 @@ async function doSankeyFetch(dispatch, getState) {
         let t = await annoMatrix.fetch("obs",key)
         labels.push(t)
       }
-    }    
+    }
+    if (labels.length === 1){
+      labels.push(labels[0])
+    }
+
     const af = abortableFetch(
       `${API.prefix}${API.version}sankey`,
       {
@@ -77,8 +81,6 @@ export function requestSankey() {
         dispatch({
           type: "sankey: request completed",
         });
-
-        postAsyncSuccessToast("Sankey has completed.");
 
         return sankey      
       } catch (error) {

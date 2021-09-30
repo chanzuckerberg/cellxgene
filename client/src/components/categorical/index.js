@@ -8,7 +8,6 @@ import AnnoDialog from "../annoDialog";
 import AnnoSelect from "./annoSelect";
 import LabelInput from "../labelInput";
 import { labelPrompt } from "./labelUtil";
-import { requestSankey } from "../../actions/sankey";
 import actions from "../../actions";
 
 @connect((state) => ({
@@ -16,7 +15,6 @@ import actions from "../../actions";
   schema: state.annoMatrix?.schema,
   ontology: state.ontology,
   userInfo: state.userInfo,
-  displaySankey: state.sankeySelection.displaySankey
 }))
 class Categories extends React.Component {
   constructor(props) {
@@ -56,40 +54,6 @@ class Categories extends React.Component {
       categoryToDuplicate: null,
       newCategoryText: "",
     });
-  };
-  calculateSankey = () => {
-    const { dispatch, displaySankey } = this.props;
-    let prom;
-    if (displaySankey) {
-      console.log("Entered")
-      prom = dispatch(requestSankey());
-    } else {
-      return
-    }
-    const links = []
-    const nodes = []
-    prom.then((res) => {
-      let n = []
-      res.edges.forEach(function (item, index) {
-        links.push({
-          source: item[0],
-          target: item[1],
-          value: res.weights[index]
-        })
-        n.push(item[0])
-        n.push(item[1])
-      });   
-      n = n.filter((item, i, ar) => ar.indexOf(item) === i);
-
-      n.forEach(function (item){
-        nodes.push({
-          id: item
-        })
-      })
-      
-      const data = {links: links, nodes: nodes}
-      dispatch({type: "sankey: set data",data: data})
-    })
   };
 
   handleModalDuplicateCategorySelection = (d) => {
@@ -243,16 +207,7 @@ class Categories extends React.Component {
                 Create new <strong>category</strong>
               </AnchorButton>
             </Tooltip>
-            
-            <AnchorButton
-                type="button"
-                data-testid="calculate-sankey"
-                onClick={this.calculateSankey}
-                intent="primary"
-                disabled={!userInfo.is_authenticated}
-              >
-                Compute <strong>sankey</strong>
-              </AnchorButton>              
+                      
           </div>
         ) : null}
 

@@ -12,7 +12,7 @@ const SankeySelection = (
       }
       state.categories[category] = !value;
       const numCheckedNow = Object.values(state.categories).reduce((a, item) => a + item, 0);
-      if (numCheckedNow == 2) {
+      if (numCheckedNow >= 1) {
         state.displaySankey = true;
       } else {
         state.displaySankey = false;
@@ -24,6 +24,9 @@ const SankeySelection = (
       state.sankeyData = data;
       return state;
     }
+    case "sankey: reset": {
+      return state={displaySankey: false, categories: {}, sankeyData: null};
+    }    
     default:
       return state;
   }

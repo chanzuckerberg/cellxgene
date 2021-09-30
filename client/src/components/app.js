@@ -19,6 +19,7 @@ import actions from "../actions";
   loading: state.controls.loading,
   error: state.controls.error,
   graphRenderCounter: state.controls.graphRenderCounter,
+  layoutChoice: state.layoutChoice
 }))
 class App extends React.Component {
   componentDidMount() {
@@ -38,7 +39,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { dispatch } = this.props;
+    const { dispatch, layoutChoice } = this.props;
     const { loading, error, graphRenderCounter } = this.props;
     return (
       <Container>
@@ -78,8 +79,9 @@ class App extends React.Component {
                 <Autosave />
                 <TermsOfServicePrompt />
                 <Legend viewportRef={viewportRef} />
-                <Sankey/>
-                <Graph key={graphRenderCounter} viewportRef={viewportRef} />
+                {layoutChoice.sankey && <Sankey viewportRef={viewportRef}/>}
+                <Graph sankeyPlotMode={layoutChoice.sankey} key={graphRenderCounter} viewportRef={viewportRef} />
+
               </>
             )}
             <RightSideBar />

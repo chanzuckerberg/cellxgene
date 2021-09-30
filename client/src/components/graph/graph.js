@@ -1099,6 +1099,7 @@ class Graph extends React.Component {
       layoutChoice,
       pointDilation,
       crossfilter,
+      sankeyPlotMode
     } = this.props;
     const {
       modelTF,
@@ -1121,6 +1122,7 @@ class Graph extends React.Component {
           position: "relative",
           top: 0,
           left: 0,
+          display: sankeyPlotMode ? "none" : "inherit",
         }}
         ref={this.myRef}
       >

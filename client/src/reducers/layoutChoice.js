@@ -24,6 +24,7 @@ function setToDefaultLayout(schema) {
 const LayoutChoice = (
   state = {
     available: [], // all available choices
+    sankey: false,
     current: undefined, // name of the current layout, eg, 'umap'
     currentDimNames: [], // dimension name
   },
@@ -39,7 +40,12 @@ const LayoutChoice = (
         ...setToDefaultLayout(annoMatrix.schema),
       };
     }
-
+    case "toggle sankey": {
+      return {
+        ...state,
+        sankey: !state.sankey,
+      };
+    }
     case "set layout choice": {
       const { schema } = nextSharedState.annoMatrix;
       const current = action.layoutChoice;

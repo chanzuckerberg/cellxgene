@@ -54,6 +54,9 @@ export const GlobalHotkeys = (props) => {
       tabIndex={0}
       onKeyDown={handleKeyDown}
       onKeyUp={handleKeyUp}
+      style={{
+        display: "none"
+      }}      
     >
       <InputGroup inputRef={inputRef} />
     </div>
@@ -88,6 +91,9 @@ export const DgeHotkeys = (props) => {
       tabIndex={0}
       onKeyDown={handleKeyDown}
       onKeyUp={handleKeyUp}
+      style={{
+        display: "none"
+      }}
     >
       <InputGroup inputRef={inputRef} />
     </div>
@@ -124,6 +130,9 @@ export const GenesetHotkeys = (props) => {
       tabIndex={0}
       onKeyDown={handleKeyDown}
       onKeyUp={handleKeyUp}
+      style={{
+        display: "none"
+      }}      
     >
       <InputGroup inputRef={inputRef} />
     </div>
