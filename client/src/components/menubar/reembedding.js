@@ -19,6 +19,7 @@ import DimredPanel from "./dimredpanel";
   reembedParams: state.reembedParameters,
   annoMatrix: state.annoMatrix,
   idhash: state.config?.parameters?.["annotations-user-data-idhash"] ?? null,
+  obsCrossfilter: state.obsCrossfilter
 }))
 class Reembedding extends React.PureComponent {
   constructor(props) {
@@ -50,7 +51,7 @@ class Reembedding extends React.PureComponent {
   render() {
     const { setReembedDialogActive } = this.state;
 
-    const { reembedController, idhash, reembedParams, annoMatrix } = this.props;
+    const { reembedController, idhash, reembedParams, annoMatrix, obsCrossfilter } = this.props;
     const loading = !!reembedController?.pendingFetch;
     const tipContent =
       "Click to recompute UMAP embedding on the currently selected cells.";
@@ -70,7 +71,7 @@ class Reembedding extends React.PureComponent {
           icon="info-sign"
           onClose={this.handleDisableReembedDialog}
           finalButtonProps={finalButtonProps}
-          title={`Reembedding on ${annoMatrix.nObs}/${annoMatrix.schema.dataframe.nObs} cells.`}
+          title={`Reembedding on ${obsCrossfilter.countSelected()}/${annoMatrix.schema.dataframe.nObs} cells.`}
           autoFocus
           canEscapeKeyClose
           canOutsideClickClose
