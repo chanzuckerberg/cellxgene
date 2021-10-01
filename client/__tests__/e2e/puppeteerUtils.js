@@ -100,12 +100,6 @@ export async function getElementCoordinates(testId) {
   });
 }
 
-async function clickTermsOfService() {
-  if (!(await isElementPresent(getTestId("tos-cookies-accept")))) return;
-
-  await clickOn("tos-cookies-accept");
-}
-
 async function nameNewAnnotation() {
   if (await isElementPresent(getTestId("annotation-dialog"))) {
     await typeInto("new-annotation-name", "ignoreE2E");
@@ -122,7 +116,6 @@ export async function goToPage(url) {
   });
 
   await nameNewAnnotation();
-  await clickTermsOfService();
 }
 
 export async function isElementPresent(selector, options) {
