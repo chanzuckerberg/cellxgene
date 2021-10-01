@@ -5,6 +5,7 @@ import anndata
 import numpy as np
 from packaging import version
 import pandas as pd
+import scipy as sp
 from pandas.core.dtypes.dtypes import CategoricalDtype
 from scipy import sparse
 from server_timing import Timing as ServerTiming
@@ -303,35 +304,60 @@ class AnndataAdaptor(DataAdaptor):
     def get_embedding_array(self, ename, dims=2):
         full_embedding = self.data.obsm[f"X_{ename}"]
         return full_embedding[:, 0:dims]
+    
+    def compute_leiden(self,name,resolution):
+        X = self.data.uns.get('N_'+name,self.data.obsp['connectivities'])
+
+        import igraph as ig
+        import leidenalg
+
+        adjacency = X
+        sources, targets = adjacency.nonzero()
+        weights = adjacency[sources, targets]
+        if isinstance(weights, np.matrix):
+            weights = weights.A1
+        g = ig.Graph(directed=True)
+        g.add_vertices(adjacency.shape[0])
+        g.add_edges(list(zip(sources, targets)))
+        try:
+            g.es["weight"] = weights
+        except BaseException:
+            pass
+
+        cl = leidenalg.find_partition(
+            g, leidenalg.RBConfigurationVertexPartition, resolution_parameter=resolution,seed=0
+        )
+        self.data.uns["leiden_{}_res{}".format(name,np.round(resolution,3))] = np.array(cl.membership)
+        return np.array(cl.membership)        
 
     def compute_sankey_df(self, labels, name):
         nnm = self.data.uns.get('N_'+name,self.data.obsp['connectivities'])
         nnm = (nnm+nnm.T)/2
         
         cl=[]
+        clu = []
         for i,c in enumerate(labels):
-            cl.append(np.array(['A'+str(i)+'_'+x.replace(' ','_') for x in c]))
-        
-        x,y = nnm.nonzero()
-        ps=[]
-        cs=[]
-        for i,cl1 in enumerate(cl):
-            for cl2 in cl[i:]:
-                if cl1[0].split('_')[0] != cl2[0].split('_')[0]:
-                    a1,c1 = np.unique(cl1,return_counts=True)
-                    a2,c2 = np.unique(cl2,return_counts=True)
-                    A1 = pd.Series(data=c1,index=a1)
-                    A2 = pd.Series(data=c2,index=a2)
-                    pairs = cl1[x].astype('object')+';;;'+cl2[y].astype('object')
-                    pairsu,cu = np.unique(pairs,return_counts=True)
-                    pairsu = np.array([x.split(';;;') for x in pairsu])
-                    cu1 = A1[pairsu[:,0]].values
-                    cu2 = A2[pairsu[:,1]].values
-                    cu = cu / np.array([cu1,cu2]).min(0)
-                    ps.append(pairsu)
-                    cs.append(cu)
+            cl.append(np.array(['A'+str(i)+'_'+str(x).replace(' ','_') for x in c]))
+            clu.append(np.unique(cl[-1]))
+
+            ps = []
+            cs = []
+            for i,cl1 in enumerate(cl):
+                for cl2 in cl[(i+1):]:
+                    clu1 = np.unique(cl1)
+                    clu2 = np.unique(cl2)
+
+                    for i, c1 in enumerate(clu1):
+                        for j, c2 in enumerate(clu2):
+                            if c1.split('_')[1] !='unassigned' and c2.split('_')[1]!='unassigned':
+                                val = max(nnm[cl1 == c1,:][:, cl2 == c2].sum(1).A.mean(),
+                                    nnm[cl2 == c2,:][:, cl1 == c1].sum(1).A.mean())
+                                if val > 0:
+                                    cs.append(val)
+                                    ps.append([c1,c2])
+                            
         ps = np.vstack(ps)
-        cs = np.concatenate(cs)
+        cs = np.array(cs)
         return ps,cs
 
     def compute_embedding(self, method, obsFilter, reembedParams):

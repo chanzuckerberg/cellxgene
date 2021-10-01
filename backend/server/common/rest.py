@@ -330,6 +330,20 @@ def sankey_data_put(request, data_adaptor):
     except (ValueError, DisabledFeatureError, FilterError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
 
+def leiden_put(request, data_adaptor):
+    args = request.get_json()
+    name = args.get("name", None)
+    resolution = args.get('resolution')
+    name = args.get("name", None)
+
+    try:
+        cl = list(data_adaptor.compute_leiden(name,resolution))
+        return make_response(jsonify({"clusters": cl}), HTTPStatus.OK, {"Content-Type": "application/json"})
+    except NotImplementedError as e:
+        return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
+    except (ValueError, DisabledFeatureError, FilterError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
+
 
 def layout_obs_put(request, data_adaptor):
     args = request.get_json()

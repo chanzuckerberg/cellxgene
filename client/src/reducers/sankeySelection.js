@@ -1,16 +1,13 @@
 const SankeySelection = (
-  state={displaySankey: false, categories: {}, sankeyData: null},
+  state={displaySankey: false, categories: {}, sankeyData: null, refresher: false},
   action
 ) => {
   switch (action.type) {
     case "sankey: toggle": {
       const { category } = action;
-      const numChecked = Object.values(state.categories).reduce((a, item) => a + item, 0);
       const value = state?.categories?.[category] ?? false;
-      if (numChecked > 1 && !value){
-        return state;
-      }
       state.categories[category] = !value;
+      state.refresher = !state.refresher;
       const numCheckedNow = Object.values(state.categories).reduce((a, item) => a + item, 0);
       if (numCheckedNow >= 1) {
         state.displaySankey = true;
@@ -25,7 +22,7 @@ const SankeySelection = (
       return state;
     }
     case "sankey: reset": {
-      return state={displaySankey: false, categories: {}, sankeyData: null};
+      return state={displaySankey: false, categories: {}, sankeyData: null, refresher: false};
     }    
     default:
       return state;

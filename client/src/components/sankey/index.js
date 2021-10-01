@@ -1,13 +1,14 @@
-import React from "react";
+import React, { useEffect } from "react";
 import * as d3 from "d3";
 import * as d3s from "d3-sankey";
-import { AnchorButton } from "@blueprintjs/core";
 import { connect } from "react-redux";
+import { requestSankey } from "../../actions/sankey";
 
 @connect((state) => ({
     layoutChoice: state.layoutChoice,
     displaySankey: state.sankeySelection.displaySankey,
-    sankeyData: state.sankeySelection.sankeyData
+    sankeyData: state.sankeySelection.sankeyData,
+    refresher: state.sankeySelection.refresher
   }))
 class Sankey extends React.Component {
   constructor(props) {
@@ -20,6 +21,37 @@ class Sankey extends React.Component {
       viewport,
     };
   }
+
+  handleSankey = () => {
+    const { dispatch } = this.props;
+    const prom = dispatch(requestSankey());
+    const links = []
+    const nodes = []
+    prom.then((res) => {
+      let n = []
+      res.edges.forEach(function (item, index) {
+        links.push({
+          source: item[0],
+          target: item[1],
+          value: res.weights[index]
+        })
+        n.push(item[0])
+        n.push(item[1])
+      });   
+      n = n.filter((item, i, ar) => ar.indexOf(item) === i);
+
+      n.forEach(function (item){
+        nodes.push({
+          id: item
+        })
+      })
+      
+      const data = {links: links, nodes: nodes}
+      dispatch({type: "sankey: set data",data: data})
+      this.constructSankey()
+    });
+  };  
+
   handleResize = () => {
     const viewport = this.getViewportDimensions();
     this.setState({
@@ -283,11 +315,21 @@ class Sankey extends React.Component {
     window.addEventListener("resize", this.handleResize);
     this.constructSankey();
   }
-
+  componentDidUpdate(prevProps) {
+    const { layoutChoice, refresher, displaySankey } = this.props;
+    if (
+      layoutChoice.current !== prevProps.layoutChoice.current ||
+      (refresher !== prevProps.refresher && displaySankey)
+      ) {
+      this.handleSankey()
+    }
+  }
   componentWillUnmount() {
     window.removeEventListener("resize", this.handleResize);
   }
-
+  static getDerivedStateFromProps(newProps,newState){
+    return null
+  }
   getViewportDimensions = () => {
     const { viewportRef } = this.props;
     return {
@@ -297,6 +339,7 @@ class Sankey extends React.Component {
   };
 
   render() {
+    const { categories } = this.props
     return (
       <div
         id="sankey-wrapper"
@@ -309,6 +352,7 @@ class Sankey extends React.Component {
           height: "inherit"
         }}
       >
+        <SankeyRefresher categories={categories}/>
         {<svg id="canvas" style={{width:"100%", height:"100%"}}/>}
       </div>
     );
@@ -316,3 +360,14 @@ class Sankey extends React.Component {
 }
 
 export default Sankey;
+
+const SankeyRefresher = React.memo(
+  ({
+    categories
+  }) => {
+    useEffect(() => {
+      console.log('yo')
+    }, [categories]);
+    return null;
+  }
+);

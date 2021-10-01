@@ -11,6 +11,9 @@ import {
 import {
   requestSankey
 } from "./sankey";
+import {
+  requestLeiden
+} from "./leiden";
 import { loadUserColorConfig } from "../util/stateManager/colorHelpers";
 import * as selnActions from "./selection";
 import * as annoActions from "./annotation";
@@ -289,6 +292,7 @@ export default {
   requestUserDefinedGene,
   requestReembed,
   requestSankey,
+  requestLeiden,
   setCellsFromSelectionAndInverseAction:
     selnActions.setCellsFromSelectionAndInverseAction,
   selectContinuousMetadataAction: selnActions.selectContinuousMetadataAction,

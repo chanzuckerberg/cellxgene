@@ -1,5 +1,5 @@
 import React from "react";
-import { AnchorButton, Tooltip, Position } from "@blueprintjs/core";
+import { AnchorButton, Tooltip, Position, ButtonGroup, Label, NumericInput } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import Category from "./category";
@@ -9,24 +9,32 @@ import AnnoSelect from "./annoSelect";
 import LabelInput from "../labelInput";
 import { labelPrompt } from "./labelUtil";
 import actions from "../../actions";
+import { Dataframe } from "../../util/dataframe";
 
 @connect((state) => ({
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
   schema: state.annoMatrix?.schema,
   ontology: state.ontology,
   userInfo: state.userInfo,
+  resolution: state.Leiden.res,
+  layoutChoice: state.layoutChoice,
+  obsCrossfilter: state.obsCrossfilter
 }))
 class Categories extends React.Component {
   constructor(props) {
     super(props);
+    const { resolution } = props
     this.state = {
       createAnnoModeActive: false,
       newCategoryText: "",
       categoryToDuplicate: null,
       expandedCats: new Set(),
+      value: resolution
     };
   }
-
+  clamp = (num, min=Number.POSITIVE_INFINITY, max=Number.NEGATIVE_INFINITY) => {
+    return Math.min(Math.max(num, min), max);
+  }
   handleCreateUserAnno = (e) => {
     const { dispatch } = this.props;
     const { newCategoryText, categoryToDuplicate } = this.state;
@@ -47,7 +55,49 @@ class Categories extends React.Component {
   handleEnableAnnoMode = () => {
     this.setState({ createAnnoModeActive: true });
   };
+  handleLeidenClustering = () => {
+    const { dispatch, layoutChoice, resolution, obsCrossfilter: prevObsCF } = this.props
+    dispatch(actions.requestLeiden()).then(val => {
+      const name = `leiden_${layoutChoice.current}_res${Math.round((resolution+Number.EPSILON)*1000)/1000.0}`
+      let prevObsCrossfilter;
+      if (prevObsCF.annoMatrix.schema.annotations.obsByName[name]) {
+        prevObsCrossfilter = prevObsCF.dropObsColumn(name);
+      } else {
+        prevObsCrossfilter = prevObsCF;
+      }
+      const initialValue = new Array(val.clusters);
+      const df = new Dataframe([initialValue[0].length,1],initialValue)
+      const { categories } = df.col(0).summarizeCategorical();
+      if (!categories.includes(globals.unassignedCategoryLabel)) {
+        categories.push(globals.unassignedCategoryLabel);
+      }
+      const ctor = initialValue.constructor;
+      const newSchema = {
+        name: name,
+        type: "categorical",
+        categories,
+        writable: true,
+      };     
+      const arr = new Array(prevObsCrossfilter.annoMatrix.schema.dataframe.nObs).fill("unassigned");
 
+      const index = prevObsCrossfilter.allSelectedLabels()
+      for (let i = 0; i < index.length; i++) {
+        arr[index[i]] = val.clusters[i] ?? "what"
+      }
+      const obsCrossfilter = prevObsCrossfilter.addObsColumn(
+        newSchema,
+        ctor,
+        arr
+      );          
+      dispatch({
+        type: "annotation: create category",
+        data: name,
+        categoryToDuplicate: null,
+        annoMatrix: obsCrossfilter.annoMatrix,
+        obsCrossfilter,
+      });            
+    })
+  };
   handleDisableAnnoMode = () => {
     this.setState({
       createAnnoModeActive: false,
@@ -126,12 +176,15 @@ class Categories extends React.Component {
       categoryToDuplicate,
       newCategoryText,
       expandedCats,
+      value
     } = this.state;
     const {
       writableCategoriesEnabled,
       schema,
       ontology,
       userInfo,
+      resolution,
+      dispatch
     } = this.props;
     const ontologyEnabled = ontology?.enabled ?? false;
     /* all names, sorted in display order.  Will be rendered in this order */
@@ -182,7 +235,14 @@ class Categories extends React.Component {
         />
         
         {writableCategoriesEnabled ? (
-          <div style={{ marginBottom: 10 }}>
+          <div  style={{
+            display: 'inline-flex',
+            justifyContent: 'space-between',
+            margin: '0 auto',
+            padding: "10px 0",
+            marginBottom: 10,
+            columnGap: "5px"
+          }}>
             <Tooltip
               content={
                 userInfo.is_authenticated
@@ -207,7 +267,42 @@ class Categories extends React.Component {
                 Create new <strong>category</strong>
               </AnchorButton>
             </Tooltip>
-                      
+              <AnchorButton
+                  style={{"height":"20px"}}
+                  type="button"
+                  data-testid="leiden-cluster"
+                  onClick={this.handleLeidenClustering}
+                  intent="primary"
+                >
+                  <strong>Leiden</strong> cluster
+                </AnchorButton>     
+                <Tooltip
+                    content="Leiden clustering resolution parameter"
+                    position={Position.BOTTOM}
+                    boundary="viewport"
+                    hoverOpenDelay={globals.tooltipHoverOpenDelay}
+                    modifiers={{
+                      preventOverflow: { enabled: false },
+                      hide: { enabled: false },
+                    }}
+                  >                       
+                    <NumericInput
+                      style={{"width":"40px"}}
+                      placeholder={value}
+                      value={value}
+                      onValueChange={
+                        (_valueAsNumber, valueAsString) => {
+                          let val = valueAsString;
+                          dispatch({
+                            type: "leiden: set resolution",
+                            res: parseFloat(val)
+                          })
+                          this.setState({value: val})
+                        }
+                      }
+                    />
+                </Tooltip>
+
           </div>
         ) : null}
 
