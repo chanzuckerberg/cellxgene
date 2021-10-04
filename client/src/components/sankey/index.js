@@ -352,7 +352,6 @@ class Sankey extends React.Component {
           height: "inherit"
         }}
       >
-        <SankeyRefresher categories={categories}/>
         {<svg id="canvas" style={{width:"100%", height:"100%"}}/>}
       </div>
     );
@@ -360,14 +359,3 @@ class Sankey extends React.Component {
 }
 
 export default Sankey;
-
-const SankeyRefresher = React.memo(
-  ({
-    categories
-  }) => {
-    useEffect(() => {
-      console.log('yo')
-    }, [categories]);
-    return null;
-  }
-);

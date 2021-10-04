@@ -4,6 +4,7 @@ import {
   AnchorButton,
   Collapse,
   ControlGroup,
+  InputGroup
 } from "@blueprintjs/core";
 import ParameterInput from "./parameterinput";
 import DefaultsButton from "./defaultsio";
@@ -23,12 +24,12 @@ class DimredPanel extends React.PureComponent {
       trshown: false,
     };
   }
+
   render() {
     const {
       cfshown, gfshown, hvgshown, samshown, trshown
     } = this.state;
-    const { reembedParams, annoMatrix, dispatch } = this.props;
-    
+    const { reembedParams, annoMatrix, dispatch, embName, onChange } = this.props;
     return (
       <div>
       <DefaultsButton dispatch={dispatch}/>
@@ -40,6 +41,18 @@ class DimredPanel extends React.PureComponent {
           disabled={!reembedParams.doPreprocess}
         />                   
       </ControlGroup>    
+      <div
+      style={{
+        paddingBottom: "10px",
+        paddingTop: "10px"
+      }}>
+      <InputGroup
+          id="emb-name-input"
+          placeholder="New embedding name..."
+          onChange={onChange}
+          value={embName}
+      />
+      </div>
       <AnchorButton
         onClick={() => {
           this.setState({ 

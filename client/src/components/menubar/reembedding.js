@@ -6,6 +6,7 @@ import {
   Tooltip,
   DialogStep,
   MultistepDialog,
+  InputGroup,
 } from "@blueprintjs/core";
 import * as globals from "../../globals";
 import actions from "../../actions";
@@ -19,13 +20,15 @@ import DimredPanel from "./dimredpanel";
   reembedParams: state.reembedParameters,
   annoMatrix: state.annoMatrix,
   idhash: state.config?.parameters?.["annotations-user-data-idhash"] ?? null,
-  obsCrossfilter: state.obsCrossfilter
+  obsCrossfilter: state.obsCrossfilter,
+  layoutChoice: state.layoutChoice
 }))
 class Reembedding extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
       setReembedDialogActive: false,
+      embName: "",
     };
   }
 
@@ -40,17 +43,30 @@ class Reembedding extends React.PureComponent {
   };
 
   handleRunAndDisableReembedDialog = () => {
-    const { dispatch, reembedParams } = this.props;
-    dispatch(actions.requestReembed(reembedParams));
+    const { dispatch, reembedParams, layoutChoice, obsCrossfilter } = this.props;
+    const { embName } = this.state
+    let parentName;
+    if (obsCrossfilter.countSelected() === obsCrossfilter.annoMatrix.nObs) {
+      if (layoutChoice.current.includes(";;")){
+        parentName = layoutChoice.current.split(";;").at(-2);
+      } else{
+        parentName="";
+      }
+    } else {
+      parentName = layoutChoice.current;
+    }
+    dispatch(actions.requestReembed(reembedParams,parentName, embName));
     this.setState({
       setReembedDialogActive: false,
+      embName: ""
     });
     // this is where you need to trigger subset if cells were filtered.
   };
-
+  onNameChange = (name) => {
+    this.setState({embName: name.target.value})
+  }
   render() {
-    const { setReembedDialogActive } = this.state;
-
+    const { setReembedDialogActive, embName } = this.state;
     const { reembedController, idhash, reembedParams, annoMatrix, obsCrossfilter } = this.props;
     const loading = !!reembedController?.pendingFetch;
     const tipContent =
@@ -99,7 +115,7 @@ class Reembedding extends React.PureComponent {
             id="dimred"
             panel={
               <div>
-                <DimredPanel idhash={idhash} />
+                <DimredPanel textField={embName} onChange={this.onNameChange} idhash={idhash} />
               </div>
             }
             title="Dimensionality reduction"

@@ -63,11 +63,11 @@ const defaultDimredParams = {
   dataLayer: "X",
   sumNormalizeCells: false,
 };
-
 export const defaultReembedParams = {
   ...defaultPrepParams,
   ...defaultBatchParams,
   ...defaultDimredParams,
+  displayName: {}
 };
 export const reembedParameters = (state = defaultReembedParams, action) => {
   switch (action.type) {

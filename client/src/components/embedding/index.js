@@ -14,6 +14,7 @@ import {
 import * as globals from "../../globals";
 import actions from "../../actions";
 import { getDiscreteCellEmbeddingRowIndex } from "../../util/stateManager/viewStackHelpers";
+import _ from "lodash";
 
 @connect((state) => {
   return {
@@ -63,7 +64,7 @@ class Embedding extends React.PureComponent {
                   cursor: "pointer",
                 }}
               >
-                {layoutChoice?.current}: {crossfilter.countSelected()} out of{" "}
+                {layoutChoice?.current.split(";;").at(-1)}: {crossfilter.countSelected()} out of{" "}
                 {crossfilter.size()} cells
               </Button>
             </Tooltip>
@@ -118,7 +119,6 @@ const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice }) => {
     annoMatrix,
     available,
   });
-
   if (error) {
     /* log, as this is unexpected */
     console.error(error);
@@ -126,27 +126,74 @@ const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice }) => {
   if (error || isPending) {
     /* still loading, or errored out - just omit counts (TODO: spinner?) */
     return (
-      <RadioGroup onChange={onChange} selectedValue={layoutChoice.current}>
-        {layoutChoice.available.map((name) => (
-          <Radio label={`${name}`} value={name} key={name} />
-        ))}
-      </RadioGroup>
+      <div>
+        {null}
+      </div>
     );
   }
   if (data) {
+    const name = layoutChoice.current;
+    let parentName;
+    const embName = name;
+    if(name.includes(";;")){
+      parentName = name.replace(`;;${name.split(";;").at(-1)}`,"")
+    } else {
+      parentName = "";
+    }
+    let sizeHintParent;
+    let sizeHintCurrent;
+    const x = data.map((summary) => {
+      const { discreteCellIndex, embeddingName } = summary;
+      const sizeHint = `${discreteCellIndex.size()} cells`;
+
+      let queryParent;
+      const queryName = embeddingName;
+      if(embeddingName.includes(";;")){        
+        queryParent = embeddingName.replace(`;;${embeddingName.split(";;").at(-1)}`,"")
+      } else {
+        queryParent = "";
+      }      
+      if (queryName === embName) {
+        sizeHintCurrent = sizeHint;
+      }       
+      if (queryName === parentName) {
+        sizeHintParent = sizeHint;
+      }
+      if(parentName === "" && queryParent === "" || queryParent === embName){
+        return (
+          <Radio
+          label={`${queryName.split(';;').at(-1)}: ${sizeHint}`}
+          value={embeddingName}
+          key={embeddingName}
+        />          
+        // add `X` button which deletes embedding for all embeddings that are not present in original schema.
+        // remove all embeddings that are its children 
+        // to figure out: how to delete embeddings from schema.
+        );
+      } else {
+        return null;
+      }
+    });
+    if(parentName !== ""){
+      x.unshift(
+        <Radio
+          label={`${embName.split(';;').at(-1)}: ${sizeHintCurrent}`}
+          value={name}
+          key={name}
+        />        
+      )
+      x.unshift(
+        <Radio
+          label={`(Parent) ${parentName.split(';;').at(-1)}: ${sizeHintParent}`}
+          value={parentName}
+          key={parentName}
+        />        
+      )      
+    }
+
     return (
       <RadioGroup onChange={onChange} selectedValue={layoutChoice.current}>
-        {data.map((summary) => {
-          const { discreteCellIndex, embeddingName } = summary;
-          const sizeHint = `${discreteCellIndex.size()} cells`;
-          return (
-            <Radio
-              label={`${embeddingName}: ${sizeHint}`}
-              value={embeddingName}
-              key={embeddingName}
-            />
-          );
-        })}
+        {x}
       </RadioGroup>
     );
   }

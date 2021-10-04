@@ -23,7 +23,7 @@ function abortableFetch(request, opts, timeout = 0) {
   };
 }
 
-async function doReembedFetch(dispatch, getState, reembedParams) {
+async function doReembedFetch(dispatch, getState, reembedParams,parentName,embName) {
   const state = getState();
   let cells = state.annoMatrix.rowIndex.labels();
   // These lines ensure that we convert any TypedArray to an Array.
@@ -43,6 +43,8 @@ async function doReembedFetch(dispatch, getState, reembedParams) {
         method: "umap",
         filter: { obs: { index: cells } },
         params: reembedParams,
+        parentName: parentName,
+        embName: embName,
       }),
       credentials: "include",
     },
@@ -71,11 +73,11 @@ async function doReembedFetch(dispatch, getState, reembedParams) {
 /*
 functions below are dispatch-able
 */
-export function requestReembed(reembedParams) {
+export function requestReembed(reembedParams,parentName,embName) {
   return async (dispatch, getState) => {
     try {
       await dispatch(subsetAction());
-      const res = await doReembedFetch(dispatch, getState, reembedParams);
+      const res = await doReembedFetch(dispatch, getState, reembedParams,parentName,embName);
       const schema = await res.json();
       dispatch({
         type: "reembed: request completed",
@@ -87,6 +89,7 @@ export function requestReembed(reembedParams) {
         layoutChoice,
       } = getState();
       const base = prevAnnoMatrix.base().addEmbedding(schema);
+
       const [annoMatrix, obsCrossfilter] = await _switchEmbedding(
         base,
         prevCrossfilter,
