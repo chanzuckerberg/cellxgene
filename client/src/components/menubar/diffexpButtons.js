@@ -37,7 +37,7 @@ class DiffexpButtons extends React.PureComponent {
     const slowMsg = diffexpMayBeSlow
       ? " (CAUTION: large dataset - may take longer or fail)"
       : "";
-    const tipMessage = `See top 10 differentially expressed genes${slowMsg}`;
+    const tipMessage = `See top differentially expressed genes${slowMsg}`;
     const tipMessageWarn = `The total number of cells for differential expression computation
                             may not exceed ${diffexpCellcountMax}. Try reselecting new cell sets.`;
 
