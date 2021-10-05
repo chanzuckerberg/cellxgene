@@ -330,6 +330,40 @@ def sankey_data_put(request, data_adaptor):
     except (ValueError, DisabledFeatureError, FilterError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
 
+def output_data_put(request, data_adaptor):
+    args = request.get_json()
+    saveName = args.get("saveName","")
+    fail=False
+    if saveName != "":
+        try:
+            data_adaptor.data.write_h5ad(saveName.split('.h5ad')[0]+'.h5ad')
+        except:
+            fail=True
+    try:
+        return make_response(jsonify({"fail": fail}), HTTPStatus.OK, {"Content-Type": "application/json"})
+    except NotImplementedError as e:
+        return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
+    except (ValueError, DisabledFeatureError, FilterError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)  
+
+def delete_obsm_put(request, data_adaptor):
+    args = request.get_json()
+    embNames = args.get("embNames",None)
+    fail=False
+    if embNames is not None:
+        for embName in embNames:
+            try:
+                del data_adaptor.data.obsm[f'X_{embName}']
+                data_adaptor._refresh_layout_schema()
+            except:
+                pass
+    try:
+        return make_response(jsonify({"fail": fail}), HTTPStatus.OK, {"Content-Type": "application/json"})
+    except NotImplementedError as e:
+        return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
+    except (ValueError, DisabledFeatureError, FilterError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)    
+
 def leiden_put(request, data_adaptor):
     args = request.get_json()
     name = args.get("name", None)
@@ -352,8 +386,11 @@ def layout_obs_put(request, data_adaptor):
         return abort_and_log(HTTPStatus.BAD_REQUEST, "obs filter is required")
     method = args["method"] if args else "umap"
     reembedParams = args["params"] if args else {}
+    parentName = args["parentName"] if args else ""
+    embName = args["embName"] if args else None
+
     try:
-        schema = data_adaptor.compute_embedding(method, filter, reembedParams)
+        schema = data_adaptor.compute_embedding(method, filter, reembedParams, parentName, embName)
         return make_response(jsonify(schema), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
         return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))

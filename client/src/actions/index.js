@@ -1,4 +1,5 @@
 import * as globals from "../globals";
+import { API } from "../globals";
 import { AnnoMatrixLoader, AnnoMatrixObsCrossfilter } from "../annoMatrix";
 import {
   catchErrorsWrap,
@@ -14,6 +15,11 @@ import {
 import {
   requestLeiden
 } from "./leiden";
+import {
+  postNetworkErrorToast,
+  postAsyncSuccessToast,
+  postAsyncFailureToast,
+} from "../components/framework/toasters";
 import { loadUserColorConfig } from "../util/stateManager/colorHelpers";
 import * as selnActions from "./selection";
 import * as annoActions from "./annotation";
@@ -112,6 +118,72 @@ function prefetchEmbeddings(annoMatrix) {
   available.forEach((embName) => annoMatrix.prefetch("emb", embName));
 }
 
+function abortableFetch(request, opts, timeout = 0) {
+  const controller = new AbortController();
+  const { signal } = controller;
+
+  return {
+    abort: () => controller.abort(),
+    isAborted: () => signal.aborted,
+    ready: () => {
+      if (timeout) {
+        setTimeout(() => controller.abort(), timeout);
+      }
+      return fetch(request, { ...opts, signal });
+    },
+  };
+}
+export const requestSaveAnndataToFile = (saveName) => async (
+  dispatch,
+  _getState
+) => {
+  try{
+    const af = abortableFetch(
+      `${API.prefix}${API.version}output`,
+      {
+        method: "PUT",
+        headers: new Headers({
+          Accept: "application/octet-stream",
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({
+          saveName: saveName,
+        }),
+        credentials: "include",
+      },
+      60000
+    );
+    dispatch({
+      type: "output data: request start",
+      abortableFetch: af,
+    });
+    const res = await af.ready();
+    postAsyncSuccessToast("Data has been successfully saved.");
+    dispatch({
+      type: "output data: request completed",
+    });
+    if (res.ok && res.headers.get("Content-Type").includes("application/json")) {      
+      return true;
+    }
+
+    // else an error
+    let msg = `Unexpected HTTP response ${res.status}, ${res.statusText}`;
+    const body = await res.text();
+    if (body && body.length > 0) {
+      msg = `${msg} -- ${body}`;
+    }
+    throw new Error(msg);
+  } catch (error) {
+    dispatch({
+      type: "ouput data: request aborted",
+    });
+    if (error.name === "AbortError") {
+      postAsyncFailureToast("Data output was aborted.");
+    } else {
+      postNetworkErrorToast(`Data output: ${error.message}`);
+    }
+  }
+}
 /*
 Application bootstrap
 */
@@ -293,6 +365,7 @@ export default {
   requestReembed,
   requestSankey,
   requestLeiden,
+  requestSaveAnndataToFile,
   setCellsFromSelectionAndInverseAction:
     selnActions.setCellsFromSelectionAndInverseAction,
   selectContinuousMetadataAction: selnActions.selectContinuousMetadataAction,

@@ -43,16 +43,6 @@ function _copyObsAnno(schema) {
     },
   };
 }
-function _copyObsmAnno(schema) {
-  /* redux copy conventions - WARNING, only for modifying obs annotations */
-  return {
-    ...schema,
-    layout: {
-      ...schema.layout,
-      emb: cloneDeep(schema.layout.obs),
-    },
-  };
-}
 
 function _copyObsLayout(schema) {
   return {
@@ -72,14 +62,6 @@ function _reindexObsAnno(schema) {
   return schema;
 }
 
-function _reindexObsmAnno(schema) {
-  /* reindex obs annotations ONLY */
-  schema.layout.obsByName = fromEntries(
-    schema.layout.obs.map((v) => [v.name, v])
-  );
-  return schema;
-}
-
 function _reindexObsLayout(schema) {
   schema.layout.obsByName = fromEntries(
     schema.layout.obs.map((v) => [v.name, v])
@@ -89,18 +71,10 @@ function _reindexObsLayout(schema) {
 
 export function removeObsAnnoColumn(schema, name) {
   const newSchema = _copyObsAnno(schema);
-  newSchema.annotations.obs = schema.layout.obs.filter(
+  newSchema.annotations.obs.columns = schema.annotations.obs.columns.filter(
     (v) => v.name !== name
   );
   return _reindexObsAnno(newSchema);
-}
-
-export function removeObsmAnnoColumn(schema, name) {
-  const newSchema = _copyObsmAnno(schema);
-  newSchema.layout.obs = schema.layout.obs.filter(
-    (v) => v.name !== name
-  );
-  return _reindexObsmAnno(newSchema);
 }
 
 export function addObsAnnoColumn(schema, name, defn) {

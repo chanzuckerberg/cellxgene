@@ -40,9 +40,9 @@ class Embedding extends React.PureComponent {
   handleDeleteEmbedding = (e,val) => {
     const { dispatch, annoMatrix, layoutChoice } = this.props;
     const { available } = layoutChoice;
-    const toDelete = []
+    const toDelete = [val]
     available.forEach((item) => {
-      if (item.includes(val)){
+      if (item.includes(`${val};;`)){
         toDelete.push(item)
       }
     });

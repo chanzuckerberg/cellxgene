@@ -198,6 +198,18 @@ class SankeyPlotAPI(Resource):
     def put(self, data_adaptor):
         return common_rest.sankey_data_put(request, data_adaptor)
 
+class OutputAPI(Resource):
+    @cache_control(no_store=True)
+    @rest_get_data_adaptor
+    def put(self, data_adaptor):
+        return common_rest.output_data_put(request, data_adaptor)
+
+class DeleteObsmAPI(Resource):
+    @cache_control(no_store=True)
+    @rest_get_data_adaptor
+    def put(self, data_adaptor):
+        return common_rest.delete_obsm_put(request, data_adaptor)
+
 class LeidenClusterAPI(Resource):
     @cache_control(no_store=True)
     @rest_get_data_adaptor
@@ -269,7 +281,9 @@ def get_api_dataroot_resources(bp_dataroot):
     add_resource(GenesetsAPI, "/genesets")
     add_resource(ReembedParametersAPI, "/reembed-parameters")
     add_resource(SankeyPlotAPI, "/sankey")
+    add_resource(OutputAPI, "/output")
     add_resource(LeidenClusterAPI, "/leiden")
+    add_resource(DeleteObsmAPI, "/layout/obsm")
     add_resource(SummarizeVarAPI, "/summarize/var")
     # Display routes
     add_resource(ColorsAPI, "/colors")

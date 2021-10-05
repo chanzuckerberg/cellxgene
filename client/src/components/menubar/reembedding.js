@@ -115,7 +115,7 @@ class Reembedding extends React.PureComponent {
             id="dimred"
             panel={
               <div>
-                <DimredPanel textField={embName} onChange={this.onNameChange} idhash={idhash} />
+                <DimredPanel embName={embName} onChange={this.onNameChange} idhash={idhash} />
               </div>
             }
             title="Dimensionality reduction"

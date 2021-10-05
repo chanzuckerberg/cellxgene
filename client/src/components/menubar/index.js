@@ -1,12 +1,11 @@
 import React from "react";
 import { connect } from "react-redux";
-import { ButtonGroup, AnchorButton, Tooltip } from "@blueprintjs/core";
+import { ButtonGroup, AnchorButton, InputGroup, Tooltip } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
 import styles from "./menubar.css";
 import actions from "../../actions";
 import Clip from "./clip";
-
 import AuthButtons from "./authButtons";
 import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
@@ -52,6 +51,8 @@ import { requestSankey } from "../../actions/sankey";
     categoricalSelection: state.categoricalSelection,
     displaySankey: state.sankeySelection.displaySankey,
     layoutChoice: state.layoutChoice,
+    outputController: state.outputController,
+    sankeyController: state.sankeyController
 
   };
 })
@@ -84,6 +85,7 @@ class MenuBar extends React.PureComponent {
     super(props);
     this.state = {
       pendingClipPercentiles: null,
+      saveName: ""
     };
   }
 
@@ -122,7 +124,11 @@ class MenuBar extends React.PureComponent {
     }
 
   };
-
+  handleSaveData = () => {
+    const { dispatch } = this.props;
+    const { saveName } = this.state;
+    dispatch(actions.requestSaveAnndataToFile(saveName))
+  }
   isClipDisabled = () => {
     /*
     return true if clip button should be disabled.
@@ -154,7 +160,9 @@ class MenuBar extends React.PureComponent {
       e.preventDefault();
     }
   };
-
+  handleSaveChange = (e) => {
+    this.setState({saveName: e.target.value})
+  };
   handleClipPercentileMinValueChange = (v) => {
     /*
     Ignore anything that isn't a legit number
@@ -253,11 +261,14 @@ class MenuBar extends React.PureComponent {
       userInfo,
       auth,
       displaySankey,
-      layoutChoice
+      layoutChoice,
+      outputController,
+      sankeyController
     } = this.props;
-    const { pendingClipPercentiles } = this.state;
-
+    const { pendingClipPercentiles, saveName } = this.state;
     const isColoredByCategorical = !!categoricalSelection?.[colorAccessor];
+    const loading = !!outputController?.pendingFetch;
+    const loadingSankey = !!sankeyController?.pendingFetch;
 
     // constants used to create selection tool button
     const [selectionTooltip, selectionButtonIcon] =
@@ -386,6 +397,7 @@ class MenuBar extends React.PureComponent {
                 icon="duplicate"
                 active={layoutChoice.sankey}
                 disabled={!displaySankey && !layoutChoice.sankey}
+                loading={loadingSankey}
                 onClick={() => {
                   this.handleSankey()
                 }}
@@ -400,6 +412,35 @@ class MenuBar extends React.PureComponent {
           handleSubsetReset={this.handleSubsetReset}
         />
         {disableDiffexp ? null : <DiffexpButtons />}
+        <div
+            style={{
+              paddingBottom: "9px",
+              paddingTop: "8px",
+              width: "400px"
+            }}>
+            <InputGroup
+                id="save-output-name"
+                placeholder="Enter an output path to save the data to an h5ad file..."
+                value={saveName}
+                onChange={this.handleSaveChange}
+            />            
+          </div>  
+          <div
+            style={{
+              paddingBottom: "9px",
+              paddingTop: "8px"
+            }}>                  
+          <AnchorButton
+              type="button"
+              icon="floppy-disk"
+              loading={loading}
+              disabled={saveName===""}
+              onClick={() => {
+                this.handleSaveData()
+              }}
+            />    
+          </div>  
+       
       </div>
     );
   }

@@ -18,7 +18,8 @@ import { Dataframe } from "../../util/dataframe";
   userInfo: state.userInfo,
   resolution: state.Leiden.res,
   layoutChoice: state.layoutChoice,
-  obsCrossfilter: state.obsCrossfilter
+  obsCrossfilter: state.obsCrossfilter,
+  leidenController: state.leidenController,
 }))
 class Categories extends React.Component {
   constructor(props) {
@@ -183,10 +184,12 @@ class Categories extends React.Component {
       schema,
       ontology,
       userInfo,
-      resolution,
+      leidenController,
       dispatch
     } = this.props;
     const ontologyEnabled = ontology?.enabled ?? false;
+    const loading = !!leidenController?.pendingFetch;
+
     /* all names, sorted in display order.  Will be rendered in this order */
     const allCategoryNames = ControlsHelpers.selectableCategoryNames(
       schema
@@ -273,6 +276,7 @@ class Categories extends React.Component {
                   data-testid="leiden-cluster"
                   onClick={this.handleLeidenClustering}
                   intent="primary"
+                  disabled={loading}
                 >
                   <strong>Leiden</strong> cluster
                 </AnchorButton>     

@@ -4,7 +4,7 @@ import { _getColumnSchema, _normalizeCategoricalSchema } from "./schema";
 import {
   addObsAnnoColumn,
   removeObsAnnoColumn,
-  removeObsmAnnoColumn,
+  removeObsLayout,
   addObsAnnoCategory,
   removeObsAnnoCategory,
   addObsLayout,
@@ -98,7 +98,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix._cache.emb = this._cache.emb.dropCol(`${layout}_0`);
     newAnnoMatrix._cache.emb = this._cache.emb.dropCol(`${layout}_1`);
-    newAnnoMatrix.schema = removeObsmAnnoColumn(this.schema, layout);
+    newAnnoMatrix.schema = removeObsLayout(this.schema, layout);
     return newAnnoMatrix;
   }
   addObsColumn(colSchema, Ctor, value) {
