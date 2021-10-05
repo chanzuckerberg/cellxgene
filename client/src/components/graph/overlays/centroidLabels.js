@@ -136,7 +136,7 @@ class CentroidLabels extends PureComponent {
 
               // Mirror LSB middle truncation
               let displayLabel = label;
-              if (displayLabel.length > categoryLabelDisplayStringLongLength) {
+              if (displayLabel?.length > categoryLabelDisplayStringLongLength) {
                 displayLabel = `${label.slice(
                   0,
                   categoryLabelDisplayStringLongLength / 2
