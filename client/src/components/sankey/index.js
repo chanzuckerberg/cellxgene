@@ -357,5 +357,4 @@ class Sankey extends React.Component {
     );
   }
 }
-
 export default Sankey;

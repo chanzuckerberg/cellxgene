@@ -65,7 +65,14 @@ const LayoutChoice = (
         currentDimNames,
       };
     }
-
+    case "reembed: delete reembedding": {
+      let available = Array.from(new Set(state.available));      
+      available = available.filter(e => e !== action.embName);
+      return {
+        ...state,
+        available,
+      };
+    }
     default: {
       return state;
     }

@@ -324,6 +324,7 @@ export default {
   saveReembedParametersAction: annoActions.saveReembedParametersAction,
   needToSaveObsAnnotations: annoActions.needToSaveObsAnnotations,
   layoutChoiceAction: embActions.layoutChoiceAction,
+  requestDeleteEmbedding: embActions.requestDeleteEmbedding,
   setCellSetFromSelection: selnActions.setCellSetFromSelection,
   setCellSetFromInputArray: selnActions.setCellSetFromInputArray,
   genesetDelete: genesetActions.genesetDelete,

@@ -41,7 +41,14 @@ class AnnoMatrixView extends AnnoMatrix {
     newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
     return newAnnoMatrix;
   }
-
+  dropObsmLayout(layout) {
+    const newAnnoMatrix = this._clone();
+    newAnnoMatrix.viewOf = this.viewOf.dropObsmLayout(layout);
+    newAnnoMatrix._cache.emb = this._cache.emb.dropCol(`${layout}_0`);
+    newAnnoMatrix._cache.emb = this._cache.emb.dropCol(`${layout}_1`);
+    newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
+    return newAnnoMatrix;
+  }
   addObsColumn(colSchema, Ctor, value) {
     const newAnnoMatrix = this._clone();
     newAnnoMatrix.viewOf = this.viewOf.addObsColumn(colSchema, Ctor, value);

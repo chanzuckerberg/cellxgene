@@ -315,6 +315,12 @@ export default class AnnoMatrix {
     _subclassResponsibility();
   }
 
+  dropObsmLayout(layout) {
+    /*
+    Drop an obsm layout from the schema.
+    */
+    _subclassResponsibility();
+  }
   // eslint-disable-next-line class-methods-use-this, no-unused-vars -- make sure subclass implements
   addObsColumn(colSchema, Ctor, value) {
     /*

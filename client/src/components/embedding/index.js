@@ -9,6 +9,7 @@ import {
   Position,
   Radio,
   RadioGroup,
+  AnchorButton,
   Tooltip,
 } from "@blueprintjs/core";
 import * as globals from "../../globals";
@@ -20,6 +21,7 @@ import _ from "lodash";
   return {
     layoutChoice: state.layoutChoice, // TODO: really should clean up naming, s/layout/embedding/g
     schema: state.annoMatrix?.schema,
+    annoMatrix: state.annoMatrix,
     crossfilter: state.obsCrossfilter,
   };
 })
@@ -30,13 +32,32 @@ class Embedding extends React.PureComponent {
   }
 
   handleLayoutChoiceChange = (e) => {
-    const { dispatch } = this.props;
-    dispatch(actions.layoutChoiceAction(e.currentTarget.value));
+    const { dispatch, layoutChoice } = this.props;
+    if (layoutChoice.available.includes(e.currentTarget.value)) {
+      dispatch(actions.layoutChoiceAction(e.currentTarget.value));
+    }
   };
-
+  handleDeleteEmbedding = (e,val) => {
+    const { dispatch, annoMatrix, layoutChoice } = this.props;
+    const { available } = layoutChoice;
+    const toDelete = []
+    available.forEach((item) => {
+      if (item.includes(val)){
+        toDelete.push(item)
+      }
+    });
+    let newAnnoMatrix;
+    toDelete.forEach((item) => {
+      dispatch({type: "reembed: delete reembedding", embName: item})
+      newAnnoMatrix = annoMatrix.dropObsmLayout(val);
+      dispatch({type: "", annoMatrix: newAnnoMatrix})
+    })
+    dispatch(actions.requestDeleteEmbedding(toDelete))
+  }
   render() {
     const { layoutChoice, schema, crossfilter } = this.props;
     const { annoMatrix } = crossfilter;
+    console.log(schema)
     return (
       <ButtonGroup
         style={{
@@ -90,6 +111,7 @@ class Embedding extends React.PureComponent {
                 onChange={this.handleLayoutChoiceChange}
                 annoMatrix={annoMatrix}
                 layoutChoice={layoutChoice}
+                onDeleteEmbedding={this.handleDeleteEmbedding}
               />
             </div>
           }
@@ -112,13 +134,14 @@ const loadAllEmbeddingCounts = async ({ annoMatrix, available }) => {
   }));
 };
 
-const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice }) => {
+const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice, onDeleteEmbedding }) => {
   const { available } = layoutChoice;
   const { data, error, isPending } = useAsync({
     promiseFn: loadAllEmbeddingCounts,
     annoMatrix,
     available,
   });
+  
   if (error) {
     /* log, as this is unexpected */
     console.error(error);
@@ -159,13 +182,31 @@ const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice }) => {
       if (queryName === parentName) {
         sizeHintParent = sizeHint;
       }
-      if(parentName === "" && queryParent === "" || queryParent === embName){
+      if((parentName === "" && queryParent === "" || queryParent === embName) && available.includes(queryName)){
         return (
-          <Radio
-          label={`${queryName.split(';;').at(-1)}: ${sizeHint}`}
-          value={embeddingName}
-          key={embeddingName}
-        />          
+         
+            <Radio
+              label={`${queryName.split(';;').at(-1)}: ${sizeHint}`}
+              value={embeddingName}
+              key={embeddingName}
+              style={{
+                display: "flex",
+                verticalAlign: "middle",
+              }}
+              children={
+                (queryName !== embName ? <AnchorButton
+                  icon="small-cross"
+                  minimal
+                  style={{
+                    cursor: "pointer",
+                    marginLeft: "auto",
+                    marginTop: "-5px"
+                  }}
+                  onClick={(e) => onDeleteEmbedding(e,queryName)}
+                /> : null)
+              }
+            />  
+            
         // add `X` button which deletes embedding for all embeddings that are not present in original schema.
         // remove all embeddings that are its children 
         // to figure out: how to delete embeddings from schema.
