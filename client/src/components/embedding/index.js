@@ -57,7 +57,6 @@ class Embedding extends React.PureComponent {
   render() {
     const { layoutChoice, schema, crossfilter } = this.props;
     const { annoMatrix } = crossfilter;
-    console.log(schema)
     return (
       <ButtonGroup
         style={{
