@@ -57,7 +57,6 @@ class CentroidLabels extends PureComponent {
   };
 
   handleMouseEnter = (e, colorAccessor, label) => {
-    console.log(colorAccessor, label);
     const { dispatch } = this.props;
     dispatch({
       type: "category value mouse hover start",
