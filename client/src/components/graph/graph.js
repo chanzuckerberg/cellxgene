@@ -229,7 +229,11 @@ class Graph extends React.Component {
       modelTF,
       modelInvTF: mat3.invert([], modelTF),
       projectionTF: createProjectionTF(viewport.width, viewport.height),
-
+      renderedMetadata: (
+        <Card interactive elevation={Elevation.TWO}>
+          {`No cells in range.`}
+        </Card>
+      ),
       // regl state
       regl: null,
       drawPoints: null,
@@ -339,33 +343,15 @@ class Graph extends React.Component {
   };
 
   handleLidarWheelEvent = (e) => {
-    const { graphInteractionMode, layoutChoice } = this.props;
+    const { graphInteractionMode } = this.props;
     if (graphInteractionMode === "lidar") {
-      const { lidarRadius, lidarCrossfilter } = this.state;
+      const { lidarRadius } = this.state;
       e.preventDefault();
       const offset = e.deltaY < 0 ? -1.5 : 1.5;
 
       const radius = (lidarRadius ?? 20) + offset;
       this.setState((state) => {
         return { ...state, lidarRadius: radius < 10 ? 10 : radius };
-      });
-      this.fetchLidarCrossfilter();
-      let count = 0;
-      if (lidarCrossfilter) {
-        const dim =
-          lidarCrossfilter.obsCrossfilter.dimensions[
-            `emb/${layoutChoice.current}_0:${layoutChoice.current}_1`
-          ];
-        if (!dim) {
-          return;
-        }
-        const { ranges } = dim.selection;
-        ranges.forEach((range) => {
-          count += range[1] - range[0];
-        });
-      }
-      this.setState((state) => {
-        return { ...state, numCellsInLidar: count };
       });
     }
   };
@@ -377,8 +363,6 @@ class Graph extends React.Component {
           return { ...state, lidarFocused: true };
         });
       }
-      const { layoutChoice } = this.props;
-      const { lidarCrossfilter } = this.state;
       const rect = e.target.getBoundingClientRect();
       const screenX = e.pageX - rect.left;
       const screenY = e.pageY - rect.top;
@@ -392,24 +376,10 @@ class Graph extends React.Component {
           pointY: point[1],
         };
       });
+    } else if(e.type === "mousedown") {
+
       this.fetchLidarCrossfilter();
-      let count = 0;
-      if (lidarCrossfilter) {
-        const dim =
-          lidarCrossfilter.obsCrossfilter.dimensions[
-            `emb/${layoutChoice.current}_0:${layoutChoice.current}_1`
-          ];
-        if (!dim) {
-          return;
-        }
-        const { ranges } = dim.selection;
-        ranges.forEach((range) => {
-          count += range[1] - range[0];
-        });
-      }
-      this.setState((state) => {
-        return { ...state, numCellsInLidar: count };
-      });
+      
     } else if (e.type === "mouseleave") {
       this.setState((state) => {
         return { ...state, lidarFocused: false };
@@ -714,9 +684,29 @@ class Graph extends React.Component {
       radius,
     };
     crossfilter.select("emb", layoutChoice.current, selection).then((cf) => {
+      let count = 0;
+      if (cf) {
+        const dim =
+          cf.obsCrossfilter.dimensions[
+            `emb/${layoutChoice.current}_0:${layoutChoice.current}_1`
+          ];
+        if (!dim) {
+          return;
+        }
+        const { ranges } = dim.selection;
+        ranges.forEach((range) => {
+          count += range[1] - range[0];
+        });
+      }
       this.setState((state) => {
-        return { ...state, lidarCrossfilter: cf };
+        return { ...state, numCellsInLidar: count, lidarCrossfilter: cf };
       });
+
+      const metadata = this.renderMetadata()
+      this.setState((state) => {
+        return { ...state, renderedMetadata: metadata };
+      });
+
     });
   }
 
@@ -939,6 +929,7 @@ class Graph extends React.Component {
 
         const dfcol = df.col(colorAccessor);
         let els;
+        let nums;
         if (dfcol) {
           const { categories, categoryCounts } = dfcol.summarizeCategorical();
           const groupBy = df.col("New");
@@ -955,12 +946,15 @@ class Graph extends React.Component {
             });
           if (occupancy) {
             els = [];
+            nums = [];
             for (const key of categories) {
               if (occupancy.get(key)) {
                 const c = colorDict[key];
                 const color = c
                   ? `rgb(${c.map((x) => (x * 255).toFixed(0))})`
                   : "black";
+                const num = occupancy.get(key, 0) ?? 0
+                nums.push(parseInt(num))
                 els.push(
                   <div
                     key={key}
@@ -975,10 +969,10 @@ class Graph extends React.Component {
                         color: `${color}`,
                       }}
                     >
-                      {key.toString().concat(" ")}
+                      {key?.toString()?.concat(" ")}
                     </strong>
                     <div style={{ paddingLeft: "10px" }}>
-                      {`${occupancy.get(key, 0) ?? 0} / ${
+                      {`${num} / ${
                         categoryCounts.get(key) ?? 0
                       }`}
                     </div>
@@ -986,6 +980,13 @@ class Graph extends React.Component {
                 );
               }
             }
+            const dsu = (arr1, arr2) => arr1
+                          .map((item, index) => [arr2[index], item]) 
+                          .sort(([arg1], [arg2]) => arg2 - arg1) 
+                          .map(([, item]) => item); 
+            
+            els = dsu(els, nums);
+
           }
         }
 
@@ -1111,6 +1112,7 @@ class Graph extends React.Component {
       viewport,
       regl,
       lidarRadius,
+      renderedMetadata
     } = this.state;
 
     const radius = lidarRadius ?? 20;
@@ -1155,7 +1157,7 @@ class Graph extends React.Component {
         <Popover2
           placement="top-left"
           minimal
-          content={this.renderMetadata()}
+          content={renderedMetadata}
           isOpen={graphInteractionMode === "lidar" && lidarFocused}
         >
           <svg
