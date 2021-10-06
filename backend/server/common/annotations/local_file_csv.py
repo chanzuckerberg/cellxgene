@@ -233,8 +233,11 @@ class AnnotationsLocalFile(Annotations):
         """ return the current reembed parameters file name """
         if self.reembed_parameters_output_file:
             return self.reembed_parameters_output_file
-
-        return '.csv'.join(self._get_filename(data_adaptor, "reembed-parameters").split('.csv')[:-1])+'.json'
+        x = self._get_filename(data_adaptor, "reembed-parameters")
+        if x is not None:
+            return '.csv'.join(x.split('.csv')[:-1])+'.json'
+        else:
+            return ''
 
     def _get_filename(self, data_adaptor, anno_name):
         # we need to generate a file name, which we can only do if we have a UID and collection name
