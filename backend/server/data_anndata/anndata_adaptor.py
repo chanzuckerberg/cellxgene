@@ -346,21 +346,21 @@ class AnndataAdaptor(DataAdaptor):
             cl.append(np.array(['A'+str(i)+'_'+str(x).replace(' ','_') for x in c]))
             clu.append(np.unique(cl[-1]))
 
-            ps = []
-            cs = []
-            for i,cl1 in enumerate(cl):
-                for cl2 in cl[(i+1):]:
-                    clu1 = np.unique(cl1)
-                    clu2 = np.unique(cl2)
+        ps = []
+        cs = []
+        for i,cl1 in enumerate(cl):
+            for cl2 in cl[(i+1):]:
+                clu1 = np.unique(cl1)
+                clu2 = np.unique(cl2)
 
-                    for i, c1 in enumerate(clu1):
-                        for j, c2 in enumerate(clu2):
-                            if c1.split('_')[1] !='unassigned' and c2.split('_')[1]!='unassigned':
-                                val = max(nnm[cl1 == c1,:][:, cl2 == c2].sum(1).A.mean(),
-                                    nnm[cl2 == c2,:][:, cl1 == c1].sum(1).A.mean())
-                                if val > 0:
-                                    cs.append(val)
-                                    ps.append([c1,c2])
+                for i, c1 in enumerate(clu1):
+                    for j, c2 in enumerate(clu2):
+                        if c1.split('_')[1] !='unassigned' and c2.split('_')[1]!='unassigned':
+                            val = max(nnm[cl1 == c1,:][:, cl2 == c2].sum(1).A.mean(),
+                                nnm[cl2 == c2,:][:, cl1 == c1].sum(1).A.mean())
+                            if val > 0:
+                                cs.append(val)
+                                ps.append([c1,c2])
                             
         ps = np.vstack(ps)
         cs = np.array(cs)
