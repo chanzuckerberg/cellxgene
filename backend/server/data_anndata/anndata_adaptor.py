@@ -348,6 +348,7 @@ class AnndataAdaptor(DataAdaptor):
 
         ps = []
         cs = []
+        kmean = np.unique(nnm.nonzero()[0],return_counts=True)[1].mean()
         for i,cl1 in enumerate(cl):
             for cl2 in cl[(i+1):]:
                 clu1 = np.unique(cl1)
@@ -358,7 +359,8 @@ class AnndataAdaptor(DataAdaptor):
                         if c1.split('_')[1] !='unassigned' and c2.split('_')[1]!='unassigned':
                             val = max(nnm[cl1 == c1,:][:, cl2 == c2].sum(1).A.mean(),
                                 nnm[cl2 == c2,:][:, cl1 == c1].sum(1).A.mean())
-                            if val > 0:
+                            val /= kmean
+                            if val > 0.1:
                                 cs.append(val)
                                 ps.append([c1,c2])
                             
