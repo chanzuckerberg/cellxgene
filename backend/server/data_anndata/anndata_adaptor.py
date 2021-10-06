@@ -360,7 +360,7 @@ class AnndataAdaptor(DataAdaptor):
                             val = max(nnm[cl1 == c1,:][:, cl2 == c2].sum(1).A.mean(),
                                 nnm[cl2 == c2,:][:, cl1 == c1].sum(1).A.mean())
                             val /= kmean
-                            if val > 0.1:
+                            if val > 0.2:
                                 cs.append(val)
                                 ps.append([c1,c2])
                             
