@@ -3,7 +3,7 @@ import { dispatchNetworkErrorMessageToUser } from "./util/actionHelpers";
 import ENV_DEFAULT from "../../environment.default.json";
 
 /* if a categorical metadata field has more options than this, truncate */
-export const maxCategoricalOptionsToDisplay = 200;
+export const maxCategoricalOptionsToDisplay = 2000;
 
 /* default "unassigned" value for user-created categorical metadata */
 export const unassignedCategoryLabel = "unassigned";
