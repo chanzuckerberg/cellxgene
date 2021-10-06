@@ -357,6 +357,10 @@ def delete_obsm_put(request, data_adaptor):
                 data_adaptor._refresh_layout_schema()
             except:
                 pass
+            try:
+                del data_adaptor.data.uns[f"N_{embName}"]
+            except:
+                pass
     try:
         return make_response(jsonify({"fail": fail}), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
