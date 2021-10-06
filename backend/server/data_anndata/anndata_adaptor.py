@@ -343,12 +343,12 @@ class AnndataAdaptor(DataAdaptor):
         cl=[]
         clu = []
         for i,c in enumerate(labels):
-            cl.append(np.array(['A'+str(i)+'_'+str(x).replace(' ','_') for x in c]))
+            cl.append(np.array(['A'+str(i)+'_'+str(x).replace(' ','_').replace('(','_').replace(')','_') for x in c]))
             clu.append(np.unique(cl[-1]))
 
         ps = []
         cs = []
-        kmean = np.unique(nnm.nonzero()[0],return_counts=True)[1].mean()
+        kmean = nnm.sum(1).A.mean()
         for i,cl1 in enumerate(cl):
             for cl2 in cl[(i+1):]:
                 clu1 = np.unique(cl1)
