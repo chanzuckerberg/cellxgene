@@ -51,7 +51,7 @@ async function doSankeyFetch(dispatch, getState) {
         }),
         credentials: "include",
       },
-      60000 // 1 minute timeout
+      600000 // 10 minute timeout
     );
     dispatch({
       type: "sankey: request start",
