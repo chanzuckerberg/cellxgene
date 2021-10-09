@@ -68,7 +68,7 @@ export function isSelectableCategoryName(schema, name) {
   return (
     name &&
     name !== index &&
-    (isCategoricalAnnotation(schema, name) || colSchema.writable)
+    (isCategoricalAnnotation(schema, name) && colSchema.writable)
   );
 }
 

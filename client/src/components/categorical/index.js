@@ -10,6 +10,7 @@ import LabelInput from "../labelInput";
 import { labelPrompt } from "./labelUtil";
 import actions from "../../actions";
 import { Dataframe } from "../../util/dataframe";
+import { keys } from "lodash";
 
 @connect((state) => ({
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
@@ -20,6 +21,8 @@ import { Dataframe } from "../../util/dataframe";
   layoutChoice: state.layoutChoice,
   obsCrossfilter: state.obsCrossfilter,
   leidenController: state.leidenController,
+  refresher: state.sankeySelection.refresher,
+  numChecked: state.sankeySelection.numChecked
 }))
 class Categories extends React.Component {
   constructor(props) {
@@ -30,7 +33,9 @@ class Categories extends React.Component {
       newCategoryText: "",
       categoryToDuplicate: null,
       expandedCats: new Set(),
-      value: resolution
+      value: resolution,
+      deleteEnabled: false,
+      fuseEnabled: false,
     };
   }
   clamp = (num, min=Number.POSITIVE_INFINITY, max=Number.NEGATIVE_INFINITY) => {
@@ -52,6 +57,13 @@ class Categories extends React.Component {
     });
     e.preventDefault();
   };
+
+  componentDidUpdate(prevProps) {
+    const { refresher, numChecked } = this.props;
+    if (refresher !== prevProps.refresher) {
+      this.setState({deleteEnabled: numChecked>0, fuseEnabled: numChecked>1})
+    }
+  }
 
   handleEnableAnnoMode = () => {
     this.setState({ createAnnoModeActive: true });
@@ -80,8 +92,7 @@ class Categories extends React.Component {
         writable: true,
       };     
       const arr = new Array(prevObsCrossfilter.annoMatrix.schema.dataframe.nObs).fill("unassigned");
-
-      const index = prevObsCrossfilter.allSelectedLabels()
+      const index = prevObsCrossfilter.annoMatrix.rowIndex.labels()
       for (let i = 0; i < index.length; i++) {
         arr[index[i]] = val.clusters[i] ?? "what"
       }
@@ -126,7 +137,6 @@ class Categories extends React.Component {
     */
     const { schema } = this.props;
     const allCategoryNames = schema.annotations.obs.columns.map((c) => c.name);
-
     /* check category name syntax */
     const error = AnnotationsHelpers.annotationNameIsErroneous(name);
     if (error) {
@@ -149,6 +159,16 @@ class Categories extends React.Component {
   handleSelect = (name) => {
     this.setState({ newCategoryText: name });
   };
+
+  handleFuseLabels = () => {
+    const { dispatch } = this.props
+    dispatch(actions.requestFuseLabels())
+  };  
+
+  handleDeleteLabels = () => {
+    const { dispatch } = this.props
+    dispatch(actions.requestDeleteLabels())
+  };  
 
   instruction = (name) => {
     return labelPrompt(
@@ -177,7 +197,9 @@ class Categories extends React.Component {
       categoryToDuplicate,
       newCategoryText,
       expandedCats,
-      value
+      value,
+      deleteEnabled,
+      fuseEnabled
     } = this.state;
     const {
       writableCategoriesEnabled,
@@ -196,118 +218,146 @@ class Categories extends React.Component {
     ).sort();
 
     return (
-      <div
-        style={{
-          padding: globals.leftSidebarSectionPadding,
-        }}
-      >
-        <AnnoDialog
-          isActive={createAnnoModeActive}
-          title="Create new category"
-          instruction={this.instruction(newCategoryText)}
-          cancelTooltipContent="Close this dialog without creating a category."
-          primaryButtonText="Create new category"
-          primaryButtonProps={{ "data-testid": "submit-category" }}
-          text={newCategoryText}
-          validationError={this.categoryNameError(newCategoryText)}
-          handleSubmit={this.handleCreateUserAnno}
-          handleCancel={this.handleDisableAnnoMode}
-          annoInput={
-            <LabelInput
-              labelSuggestions={ontologyEnabled ? ontology.terms : null}
-              onChange={this.handleChange}
-              onSelect={this.handleSelect}
-              inputProps={{
-                "data-testid": "new-category-name",
-                leftIcon: "tag",
-                intent: "none",
-                autoFocus: true,
-              }}
-              newLabelMessage="New category"
-            />
-          }
-          annoSelect={
-            <AnnoSelect
-              handleModalDuplicateCategorySelection={
-                this.handleModalDuplicateCategorySelection
-              }
-              categoryToDuplicate={categoryToDuplicate}
-              allCategoryNames={allCategoryNames}
-            />
-          }
-        />
-        
-        {writableCategoriesEnabled ? (
-          <div  style={{
-            display: 'inline-flex',
-            justifyContent: 'space-between',
-            margin: '0 auto',
-            padding: "10px 0",
-            marginBottom: 10,
-            columnGap: "5px"
-          }}>
-            <Tooltip
-              content={
-                userInfo.is_authenticated
-                  ? "Create a new category"
-                  : "You must be logged in to create new categorical fields"
-              }
-              position={Position.RIGHT}
-              boundary="viewport"
-              hoverOpenDelay={globals.tooltipHoverOpenDelay}
-              modifiers={{
-                preventOverflow: { enabled: false },
-                hide: { enabled: false },
-              }}
-            >
-              <AnchorButton
-                type="button"
-                data-testid="open-annotation-dialog"
-                onClick={this.handleEnableAnnoMode}
-                intent="primary"
-                disabled={!userInfo.is_authenticated}
-              >
-                Create new <strong>category</strong>
-              </AnchorButton>
-            </Tooltip>
-              <AnchorButton
-                  style={{"height":"20px"}}
-                  type="button"
-                  data-testid="leiden-cluster"
-                  onClick={this.handleLeidenClustering}
-                  intent="primary"
-                  disabled={loading}
-                >
-                  <strong>Leiden</strong> cluster
-                </AnchorButton>     
+        <div
+          style={{
+            padding: globals.leftSidebarSectionPadding,
+          }}
+        >
+          <AnnoDialog
+            isActive={createAnnoModeActive}
+            title="Create new category"
+            instruction={this.instruction(newCategoryText)}
+            cancelTooltipContent="Close this dialog without creating a category."
+            primaryButtonText="Create new category"
+            primaryButtonProps={{ "data-testid": "submit-category" }}
+            text={newCategoryText}
+            validationError={this.categoryNameError(newCategoryText)}
+            handleSubmit={this.handleCreateUserAnno}
+            handleCancel={this.handleDisableAnnoMode}
+            annoInput={
+              <LabelInput
+                labelSuggestions={ontologyEnabled ? ontology.terms : null}
+                onChange={this.handleChange}
+                onSelect={this.handleSelect}
+                inputProps={{
+                  "data-testid": "new-category-name",
+                  leftIcon: "tag",
+                  intent: "none",
+                  autoFocus: true,
+                }}
+                newLabelMessage="New category"
+              />
+            }
+            annoSelect={
+              <AnnoSelect
+                handleModalDuplicateCategorySelection={
+                  this.handleModalDuplicateCategorySelection
+                }
+                categoryToDuplicate={categoryToDuplicate}
+                allCategoryNames={allCategoryNames}
+              />
+            }
+          />
+          
+          {writableCategoriesEnabled ? (
+            <div style={{display: "flex", flexDirection: "column"}}>
+              <div  style={{
+                display: 'inline-flex',
+                justifyContent: 'space-between',
+                margin: '0 0',
+                marginBottom: 10,
+                columnGap: "5px"
+              }}>
                 <Tooltip
-                    content="Leiden clustering resolution parameter"
-                    position={Position.BOTTOM}
-                    boundary="viewport"
-                    hoverOpenDelay={globals.tooltipHoverOpenDelay}
-                    modifiers={{
-                      preventOverflow: { enabled: false },
-                      hide: { enabled: false },
-                    }}
-                  >                       
-                    <NumericInput
-                      style={{"width":"40px"}}
-                      placeholder={value}
-                      value={value}
-                      onValueChange={
-                        (_valueAsNumber, valueAsString) => {
-                          let val = valueAsString;
-                          dispatch({
-                            type: "leiden: set resolution",
-                            res: parseFloat(val)
-                          })
-                          this.setState({value: val})
-                        }
-                      }
-                    />
+                  content={
+                    userInfo.is_authenticated
+                      ? "Create a new category"
+                      : "You must be logged in to create new categorical fields"
+                  }
+                  position={Position.RIGHT}
+                  boundary="viewport"
+                  hoverOpenDelay={globals.tooltipHoverOpenDelay}
+                  modifiers={{
+                    preventOverflow: { enabled: false },
+                    hide: { enabled: false },
+                  }}
+                >
+                  <AnchorButton
+                    type="button"
+                    data-testid="open-annotation-dialog"
+                    onClick={this.handleEnableAnnoMode}
+                    intent="primary"
+                    disabled={!userInfo.is_authenticated}
+                  >
+                    Create new <strong>category</strong>
+                  </AnchorButton>
                 </Tooltip>
-
-          </div>
+                  <AnchorButton
+                    style={{"height":"20px"}}
+                    type="button"
+                    data-testid="leiden-cluster"
+                    onClick={this.handleLeidenClustering}
+                    intent="primary"
+                    disabled={loading}
+                  >
+                    <strong>Leiden</strong> cluster
+                  </AnchorButton>     
+                  <Tooltip
+                      content="Leiden clustering resolution parameter"
+                      position={Position.BOTTOM}
+                      boundary="viewport"
+                      hoverOpenDelay={globals.tooltipHoverOpenDelay}
+                      modifiers={{
+                        preventOverflow: { enabled: false },
+                        hide: { enabled: false },
+                      }}
+                    >                       
+                      <NumericInput
+                        style={{"width":"40px"}}
+                        placeholder={value}
+                        value={value}
+                        onValueChange={
+                          (_valueAsNumber, valueAsString) => {
+                            let val = valueAsString;
+                            dispatch({
+                              type: "leiden: set resolution",
+                              res: parseFloat(val)
+                            })
+                            this.setState({value: val})
+                          }
+                        }
+                      />
+                  </Tooltip>
+                </div>
+                <div  style={{
+                  display: 'inline-flex',
+                  justifyContent: 'space-between',
+                  margin: '0 0',
+                  marginBottom: 10,
+                  columnGap: "5px"
+                }}>
+                  <AnchorButton
+                    style={{"height":"20px", marginBottom: 10, width: "50%", margin: '0 0',}}
+                    type="button"
+                    data-testid="fuse-labels"
+                    onClick={this.handleFuseLabels}
+                    intent="primary"
+                    disabled={!fuseEnabled}
+                  >
+                    <strong>Fuse</strong> labels
+                  </AnchorButton>   
+                  <AnchorButton
+                    style={{"height":"20px", marginBottom: 10, width: "50%", margin: '0 0',}}
+                    type="button"
+                    data-testid="delete-labels"
+                    onClick={this.handleDeleteLabels}
+                    intent="primary"
+                    disabled={!deleteEnabled}
+                  >
+                    <strong>Delete</strong> labels
+                  </AnchorButton>                     
+                </div>
+              </div>            
         ) : null}
 
         {/* READ ONLY CATEGORICAL FIELDS */}

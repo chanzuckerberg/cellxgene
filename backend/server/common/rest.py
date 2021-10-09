@@ -4,7 +4,7 @@ import sys
 from http import HTTPStatus
 import zlib
 import json
-
+import pandas as pd
 from flask import make_response, jsonify, current_app, abort
 from werkzeug.urls import url_unquote
 
@@ -111,7 +111,14 @@ def schema_get_helper(data_adaptor):
     annotations = data_adaptor.dataset_config.user_annotations
     if annotations.user_annotations_enabled():
         label_schema = annotations.get_schema(data_adaptor)
-        schema["annotations"]["obs"]["columns"].extend(label_schema)
+        curr_schema = schema["annotations"]["obs"]["columns"]
+        keys = []
+        vals = []
+        for i in (label_schema + curr_schema):
+            if i['name'] not in keys:
+                keys.append(i['name'])
+                vals.append(i)
+        schema["annotations"]["obs"]["columns"] = vals
 
     return schema
 
@@ -145,6 +152,9 @@ def annotations_obs_get(request, data_adaptor):
         annotations = data_adaptor.dataset_config.user_annotations
         if annotations.user_annotations_enabled():
             labels = annotations.read_labels(data_adaptor)
+        #print(Axis.OBS)
+        #print(fields)
+        #print(labels)            
         fbs = data_adaptor.annotation_to_fbs_matrix(Axis.OBS, fields, labels)
         return make_response(fbs, HTTPStatus.OK, {"Content-Type": "application/octet-stream"})
     except KeyError as e:
@@ -333,12 +343,67 @@ def sankey_data_put(request, data_adaptor):
 def output_data_put(request, data_adaptor):
     args = request.get_json()
     saveName = args.get("saveName","")
+    labels = args.get("labels",None)
+    labelNames = args.get("labelNames",None)
+    
+    if labels and labelNames:
+        labels = [x['__columns'][0] for x in labels]
+        for n,l in zip(labelNames,labels):
+            data_adaptor.data.obs[n] = pd.Categorical(l)
+
     fail=False
     if saveName != "":
+        adata = data_adaptor.data.copy()
         try:
-            data_adaptor.data.write_h5ad(saveName.split('.h5ad')[0]+'.h5ad')
+            del adata.obs["name_0"]
+        except:
+            pass
+        try:
+            adata.write_h5ad(saveName.split('.h5ad')[0]+'.h5ad')
         except:
             fail=True
+
+    try:
+        return make_response(jsonify({"fail": fail}), HTTPStatus.OK, {"Content-Type": "application/json"})
+    except NotImplementedError as e:
+        return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
+    except (ValueError, DisabledFeatureError, FilterError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)  
+
+def rename_obs_put(request, data_adaptor):
+    args = request.get_json()
+    oldName = args.get("oldCategoryName","")
+    newName = args.get("newCategoryName","")
+    
+
+    fail=False
+    if oldName != "" and newName != "":
+        try:
+            data_adaptor.data.obs[newName] = data_adaptor.data.obs[oldName]
+            del data_adaptor.data.obs[oldName]
+            data_adaptor._create_schema()
+        except:
+            fail=True
+
+    try:
+        return make_response(jsonify({"fail": fail}), HTTPStatus.OK, {"Content-Type": "application/json"})
+    except NotImplementedError as e:
+        return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
+    except (ValueError, DisabledFeatureError, FilterError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)  
+
+def delete_obs_put(request, data_adaptor):
+    args = request.get_json()
+    name = args.get("category","")
+
+    fail=False
+    if name != "":
+        try:
+            del data_adaptor.data.obs[name]
+            data_adaptor._create_schema()
+        except:
+            fail=True
+
     try:
         return make_response(jsonify({"fail": fail}), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:

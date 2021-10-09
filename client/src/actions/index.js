@@ -135,9 +135,22 @@ function abortableFetch(request, opts, timeout = 0) {
 }
 export const requestSaveAnndataToFile = (saveName) => async (
   dispatch,
-  _getState
+  getState
 ) => {
   try{
+    const state = getState();
+    const { annoMatrix } = state;
+    
+    const annos = []
+    const annoNames = []
+    
+    for (const item of annoMatrix.schema.annotations?.obs?.columns) {
+      if(item?.categories){
+        let labels = await annoMatrix.fetch("obs",item.name)
+        annos.push(labels)
+        annoNames.push(item.name)
+      }
+    }
     const af = abortableFetch(
       `${API.prefix}${API.version}output`,
       {
@@ -148,6 +161,8 @@ export const requestSaveAnndataToFile = (saveName) => async (
         }),
         body: JSON.stringify({
           saveName: saveName,
+          labelNames: annoNames,
+          labels: annos
         }),
         credentials: "include",
       },
@@ -388,6 +403,8 @@ export default {
   annotationRenameCategoryAction: annoActions.annotationRenameCategoryAction,
   annotationDeleteCategoryAction: annoActions.annotationDeleteCategoryAction,
   annotationCreateLabelInCategory: annoActions.annotationCreateLabelInCategory,
+  requestFuseLabels: annoActions.requestFuseLabels,
+  requestDeleteLabels: annoActions.requestDeleteLabels,
   annotationDeleteLabelFromCategory:
     annoActions.annotationDeleteLabelFromCategory,
   annotationRenameLabelInCategory: annoActions.annotationRenameLabelInCategory,

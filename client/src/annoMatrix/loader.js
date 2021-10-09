@@ -242,7 +242,6 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     */
     let doRequest;
     let priority = 10; // default fetch priority
-
     switch (field) {
       case "obs":
       case "var": {

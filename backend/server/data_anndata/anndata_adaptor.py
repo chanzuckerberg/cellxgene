@@ -139,10 +139,11 @@ class AnndataAdaptor(DataAdaptor):
         for ax in Axis:
             curr_axis = getattr(self.data, str(ax))
             for ann in curr_axis:
-                ann_schema = {"name": ann, "writable": False}
+                ann_schema = {"name": ann, "writable": True}
                 ann_schema.update(get_schema_type_hint_of_array(curr_axis[ann]))
+                if ann_schema['type']!='categorical':
+                    ann_schema['writable']=False
                 self.schema["annotations"][ax]["columns"].append(ann_schema)
-
         for layout in self.get_embedding_names():
             layout_schema = {"name": layout, "type": "float32", "dims": [f"{layout}_0", f"{layout}_1"]}
             self.schema["layout"]["obs"].append(layout_schema)
@@ -263,7 +264,9 @@ class AnndataAdaptor(DataAdaptor):
     def annotation_to_fbs_matrix(self, axis, fields=None, labels=None):
         if axis == Axis.OBS:
             if labels is not None and not labels.empty:
-                df = self.data.obs.join(labels, self.parameters.get("obs_names"))
+                df = self.data.obs.copy()
+                for c in labels.columns:
+                    df[c] = np.array(list(labels[c]))
             else:
                 df = self.data.obs
         else:
@@ -333,7 +336,6 @@ class AnndataAdaptor(DataAdaptor):
         cl = leidenalg.find_partition(
             g, leidenalg.RBConfigurationVertexPartition, resolution_parameter=resolution,seed=0
         )
-        self.data.uns["leiden_{}_res{}".format(name,np.round(resolution,3))] = np.array(cl.membership)
         return np.array(cl.membership)        
 
     def compute_sankey_df(self, labels, name):

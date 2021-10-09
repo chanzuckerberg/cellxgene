@@ -8,8 +8,7 @@ import { requestSankey } from "../../actions/sankey";
     layoutChoice: state.layoutChoice,
     displaySankey: state.sankeySelection.displaySankey,
     sankeyData: state.sankeySelection.sankeyData,
-    refresher: state.sankeySelection.refresher
-  }))
+}))
 class Sankey extends React.Component {
   constructor(props) {
     super(props);
@@ -315,20 +314,9 @@ class Sankey extends React.Component {
     window.addEventListener("resize", this.handleResize);
     this.constructSankey();
   }
-  componentDidUpdate(prevProps) {
-    const { layoutChoice, refresher, displaySankey } = this.props;
-    if (
-      layoutChoice.current !== prevProps.layoutChoice.current ||
-      (refresher !== prevProps.refresher && displaySankey)
-      ) {
-      this.handleSankey()
-    }
-  }
+
   componentWillUnmount() {
     window.removeEventListener("resize", this.handleResize);
-  }
-  static getDerivedStateFromProps(newProps,newState){
-    return null
   }
   getViewportDimensions = () => {
     const { viewportRef } = this.props;

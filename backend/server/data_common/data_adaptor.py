@@ -238,14 +238,6 @@ class DataAdaptor(metaclass=ABCMeta):
         if not labels_df.index.is_unique:
             raise KeyError("All row index values specified in user annotations must be unique.")
 
-        obs_columns = self.get_obs_columns()
-
-        duplicate_columns = list(set(labels_df.columns) & set(obs_columns))
-        if len(duplicate_columns) > 0:
-            raise KeyError(
-                "Labels file may not contain column names which overlap " f"with h5ad obs columns {duplicate_columns}"
-            )
-
         # labels must have same count as obs annotations
         shape = self.get_shape()
         if labels_df.shape[0] != shape[0]:
@@ -262,7 +254,7 @@ class DataAdaptor(metaclass=ABCMeta):
                     labels_df[col] = labels_df[col].astype("int32")
                 if isinstance(dtype, pd.Int64Dtype):
                     labels_df[col] = labels_df[col].astype("int64")
-
+        
         if any([np.issubdtype(coltype.type, np.floating) for coltype in labels_df.dtypes]):
             raise ValueError("Columns may not have floating point types")
 

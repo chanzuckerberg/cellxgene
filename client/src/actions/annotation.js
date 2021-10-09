@@ -1,10 +1,12 @@
 /*
 Action creators for user annotation
 */
+import { API } from "../globals";
 import difference from "lodash.difference";
 import pako from "pako";
 import * as globals from "../globals";
 import { MatrixFBS, AnnotationsHelpers } from "../util/stateManager";
+import { Dataframe } from "../util/dataframe";
 
 const { isUserAnnotation } = AnnotationsHelpers;
 
@@ -122,8 +124,130 @@ export const annotationRenameCategoryAction = (
     newCategoryText: newCategoryName,
     data: newCategoryName,
   });
+  dispatch(requestObsRename(oldCategoryName,newCategoryName))
+  dispatch({
+    type: "sankey: rename category",
+    oldCategoryName,
+    newCategoryName
+  })
 };
 
+export function requestObsRename(oldCategoryName,newCategoryName) {
+  return async (_dispatch, _getState) => {
+    const res = await fetch(
+      `${API.prefix}${API.version}renameObs`,
+      {
+        method: "PUT",
+        headers: new Headers({
+          Accept: "application/octet-stream",
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({
+          oldCategoryName: oldCategoryName,
+          newCategoryName: newCategoryName,
+        }),
+        credentials: "include",
+        }
+    );
+
+    if (res.ok && res.headers.get("Content-Type").includes("application/json")) {
+      return res;
+    }
+  }
+}
+export function requestFuseLabels() {
+  return async (dispatch, getState) => {
+    const state = getState();
+    const { annoMatrix,sankeySelection, obsCrossfilter: prevObsCF } = state;
+    const { categories } = sankeySelection;
+    let keys = []
+    Object.entries(categories).forEach((item) => {
+      const [ key, value ] = item;
+      if(value){
+        keys.push(key)
+      }
+    })
+    keys.sort()
+
+    const labels = []
+    for (const key of keys){
+      const df = await annoMatrix.fetch("obs",key)
+      labels.push(df.icol(0).asArray())
+    }
+    const new_labels = []
+    labels[0].forEach((_,i)=>{
+      const vals = []
+      for (const [index,label] of labels.entries()) {
+        if(label[i] !== "unassigned"){
+          vals.push(`${label[i]}_${index}`)
+        }
+      }
+      if(vals.length===0){
+        new_labels.push("unassigned")
+      } else {
+        new_labels.push(vals.join(';'))
+      }
+    })
+    const name = `fuse_${Math.round(new Date().getTime() / 1000).toString(16)}`
+    let prevObsCrossfilter;
+    if (prevObsCF.annoMatrix.schema.annotations.obsByName[name]) {
+      prevObsCrossfilter = prevObsCF.dropObsColumn(name);
+    } else {
+      prevObsCrossfilter = prevObsCF;
+    }
+    const initialValue = new Array(new_labels);
+    const df = new Dataframe([initialValue[0].length,1],initialValue)
+    const { categories: cat } = df.col(0).summarizeCategorical();
+    if (!cat.includes(globals.unassignedCategoryLabel)) {
+      cat.push(globals.unassignedCategoryLabel);
+    }
+    const ctor = initialValue.constructor;
+    const newSchema = {
+      name: name,
+      type: "categorical",
+      cat,
+      writable: true,
+    };     
+    const index = prevObsCrossfilter.annoMatrix.rowIndex.labels()
+    const arr = new Array(prevObsCrossfilter.annoMatrix.schema.dataframe.nObs).fill("unassigned");
+    for (let i = 0; i < index.length; i++) {
+      arr[index[i]] = initialValue[0][i]
+    }
+    const obsCrossfilter = prevObsCrossfilter.addObsColumn(
+      newSchema,
+      ctor,
+      arr
+    );      
+          
+    dispatch({
+      type: "annotation: create category",
+      data: name,
+      categoryToDuplicate: null,
+      annoMatrix: obsCrossfilter.annoMatrix,
+      obsCrossfilter,
+    });    
+    for (const key of keys){
+      dispatch({
+        type: "sankey: set",
+        category: key,
+        value: false
+      })
+    }        
+  }
+}
+export function requestDeleteLabels() {
+  return async (dispatch, getState) => {
+    const state = getState();
+    const { sankeySelection } = state;
+    const { categories } = sankeySelection;
+    const x = Object.entries(categories)
+    for (const [key, value] of x) {
+      if(value){
+        await dispatch(annotationDeleteCategoryAction(key))
+      }
+    }    
+  }
+}
 export const annotationDeleteCategoryAction = (categoryName) => (
   dispatch,
   getState
@@ -146,6 +270,23 @@ export const annotationDeleteCategoryAction = (categoryName) => (
     obsCrossfilter,
     metadataField: categoryName,
   });
+  dispatch({type: "sankey: set", category: categoryName, value: false})
+
+  
+  fetch(
+    `${API.prefix}${API.version}deleteObs`,
+    {
+      method: "PUT",
+      headers: new Headers({
+        Accept: "application/octet-stream",
+        "Content-Type": "application/json",
+      }),
+      body: JSON.stringify({
+        category: categoryName,
+      }),
+      credentials: "include",
+      }
+  );
 };
 
 export const annotationCreateLabelInCategory = (

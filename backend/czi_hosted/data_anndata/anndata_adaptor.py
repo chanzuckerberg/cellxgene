@@ -140,7 +140,6 @@ class AnndataAdaptor(DataAdaptor):
                 ann_schema = {"name": ann, "writable": False}
                 ann_schema.update(get_schema_type_hint_of_array(curr_axis[ann]))
                 self.schema["annotations"][ax]["columns"].append(ann_schema)
-
         for layout in self.get_embedding_names():
             layout_schema = {"name": layout, "type": "float32", "dims": [f"{layout}_0", f"{layout}_1"]}
             self.schema["layout"]["obs"].append(layout_schema)
