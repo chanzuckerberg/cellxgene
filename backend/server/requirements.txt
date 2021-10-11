@@ -16,6 +16,8 @@ h5py<3.0.0 # h5py>=3.0.0 had a breaking change; there is a fix in anndata>=0.7.5
 jinja2>=2.11.3  # Flask sub-dependency. Added due to CVE-2020-28493
 numba>=0.51.2,<0.53.0
 numpy>=1.17.5
+leidenalg>=0.8.7
+python-igraph>=0.9.6
 packaging>=20.0
 pandas>=1.0,!=1.1  # pandas 1.1 breaks tests, https://github.com/pandas-dev/pandas/issues/35446
 PyYAML>=5.4  # CVE-2020-14343
