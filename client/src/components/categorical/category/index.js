@@ -495,7 +495,7 @@ const CategoryHeader = React.memo(
             />
           </Tooltip>
           <Tooltip
-            content="Select to choose category for sankey plot."
+            content="Select category."
             position="bottom"
             hoverOpenDelay={globals.tooltipHoverOpenDelay}          
           >

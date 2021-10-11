@@ -382,7 +382,11 @@ class Graph extends React.Component {
       
     } else if (e.type === "mouseleave") {
       this.setState((state) => {
-        return { ...state, lidarFocused: false };
+        return { ...state, lidarFocused: false, renderedMetadata: (
+          <Card interactive elevation={Elevation.TWO}>
+            {`No cells in range.`}
+          </Card>
+        )};
       });
     }
   };
