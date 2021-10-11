@@ -1,15 +1,19 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Button } from "@blueprintjs/core";
+import { Button, ControlGroup } from "@blueprintjs/core";
+import ParameterInput from "../menubar/parameterinput";
 import GeneSet from "./geneSet";
 import { GenesetHotkeys } from "../hotkeys";
-
+import actions from "../../actions";
 import CreateGenesetDialogue from "./menus/createGenesetDialogue";
-
+import * as globals from "../../globals";
+import { AnnoMatrixLoader } from "../../annoMatrix";
 @connect((state) => {
   return {
     genesets: state.genesets.genesets,
     colorAccessor: state.colors.colorAccessor,
+    annoMatrix: state.annoMatrix,
+    reembedParams: state.reembedParameters
   };
 })
 class GeneExpression extends React.Component {
@@ -30,13 +34,28 @@ class GeneExpression extends React.Component {
     return sets;
   };
 
+  componentDidUpdate(prevProps) {
+    const { dispatch, reembedParams, annoMatrix } = this.props;
+    if(prevProps.reembedParams.dataLayerExpr !== reembedParams.dataLayerExpr){
+      // Trigger new data layer.
+      dispatch(actions.requestDataLayerChange(reembedParams.dataLayerExpr)).then(()=>{
+        const baseDataUrl = `${globals.API.prefix}${globals.API.version}`;
+        const annoMatrixNew = new AnnoMatrixLoader(baseDataUrl, annoMatrix.schema);
+        dispatch({
+          type: "",
+          annoMatrix: annoMatrixNew
+        });      
+      })
+    }
+  }
+
   handleActivateCreateGenesetMode = () => {
     const { dispatch } = this.props;
     dispatch({ type: "geneset: activate add new geneset mode" });
   };
 
   render() {
-    const { dispatch, genesets, colorAccessor } = this.props;
+    const { dispatch, genesets, colorAccessor, annoMatrix, reembedParams } = this.props;
     return (
       <div>
         <GenesetHotkeys
@@ -45,7 +64,7 @@ class GeneExpression extends React.Component {
           colorAccessor={colorAccessor}
         />
         <div>
-          <div style={{ marginBottom: 10, position: "relative", top: -2 }}>
+          <div style={{ display: "flex", marginBottom: 10, justifyContent: "space-between", position: "relative", top: -2 }}>
             <Button
               data-testid="open-create-geneset-dialog"
               onClick={this.handleActivateCreateGenesetMode}
@@ -53,6 +72,12 @@ class GeneExpression extends React.Component {
             >
               Create new <strong>gene set</strong>
             </Button>
+            <ParameterInput
+              label="Data layer"
+              param="dataLayerExpr"
+              options={annoMatrix.schema.layers}
+            />                   
+                              
           </div>
           <CreateGenesetDialogue />
         </div>

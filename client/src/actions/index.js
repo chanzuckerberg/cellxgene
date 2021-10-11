@@ -199,6 +199,28 @@ export const requestSaveAnndataToFile = (saveName) => async (
     }
   }
 }
+export function requestDataLayerChange(dataLayer) {
+  return async (_dispatch, _getState) => {
+    const res = await fetch(
+      `${API.prefix}${API.version}layer`,
+      {
+        method: "PUT",
+        headers: new Headers({
+          Accept: "application/octet-stream",
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({
+          dataLayer: dataLayer,
+        }),
+        credentials: "include",
+        }
+    );
+    if (res.ok && res.headers.get("Content-Type").includes("application/json")) {
+      return res;
+    }
+  }
+}
+  
 /*
 Application bootstrap
 */
@@ -215,7 +237,7 @@ const doInitialDataLoad = () =>
       ]);
       genesetsFetch(dispatch, config);
       reembedParamsFetch(dispatch);
-
+      await dispatch(requestDataLayerChange("X"));
       const baseDataUrl = `${globals.API.prefix}${globals.API.version}`;
       const annoMatrix = new AnnoMatrixLoader(baseDataUrl, schema.schema);
       const obsCrossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
@@ -373,6 +395,7 @@ function fetchJson(pathAndQuery) {
 
 export default {
   doInitialDataLoad,
+  requestDataLayerChange,
   selectAll,
   requestDifferentialExpression,
   requestSingleGeneExpressionCountsForColoringPOST,

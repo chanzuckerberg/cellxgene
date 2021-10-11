@@ -32,15 +32,7 @@ class DimredPanel extends React.PureComponent {
     const { reembedParams, annoMatrix, dispatch, embName, onChange } = this.props;
     return (
       <div>
-      <DefaultsButton dispatch={dispatch}/>
-      <ControlGroup fill={true} vertical={false}>
-        <ParameterInput
-          label="Data layer"
-          param="dataLayer"
-          options={annoMatrix.schema.layers}
-          disabled={!reembedParams.doPreprocess}
-        />                   
-      </ControlGroup>    
+      <DefaultsButton dispatch={dispatch}/>  
       <div
       style={{
         paddingBottom: "10px",

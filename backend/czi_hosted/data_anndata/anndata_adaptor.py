@@ -125,6 +125,11 @@ class AnndataAdaptor(DataAdaptor):
                 raise KeyError(f"Annotation name {name}, specified in --{ax_name}-name does not exist.")
 
     def _create_schema(self):
+        if self.data.raw is not None:
+            layers = ["X",".raw"]+list(self.data.layers.keys())
+        else:
+            layers = ["X"]+list(self.data.layers.keys())
+
         self.schema = {
             "dataframe": {"nObs": self.cell_count, "nVar": self.gene_count, "type": str(self.data.X.dtype)},
             "annotations": {
@@ -132,7 +137,7 @@ class AnndataAdaptor(DataAdaptor):
                 "var": {"index": self.parameters.get("var_names"), "columns": []},
             },
             "layout": {"obs": []},
-            "layers": ["X"]+list(self.data.layers.keys())
+            "layers": layers
         }
         for ax in Axis:
             curr_axis = getattr(self.data, str(ax))

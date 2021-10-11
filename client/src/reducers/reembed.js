@@ -61,6 +61,7 @@ const defaultDimredParams = {
   logTransform: false,
   scaleData: false,
   dataLayer: "X",
+  dataLayerExpr: "X",
   sumNormalizeCells: false,
 };
 export const defaultReembedParams = {

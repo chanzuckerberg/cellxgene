@@ -41,7 +41,7 @@ class Autosave extends React.Component {
 
   componentWillUnmount() {
     const { timer } = this.state;
-    if (timer) this.clearInterval(timer);
+    if (timer) clearInterval(timer);
   }
 
   tick = () => {

@@ -94,17 +94,30 @@ def scanpy_umap(adata, obs_mask=None, reembedParams = {}, pca_options={}, neighb
     dataLayer = reembedParams.get("dataLayer","X")
     sumNormalizeCells = reembedParams.get("sumNormalizeCells",False)
 
+    
+    if dataLayer == ".raw" and adata.raw is not None:
+        adata_raw = AnnData(X=adata.raw.X)
+        adata_raw.var_names = adata.raw.var_names
+        adata_raw.obs_names = adata.obs_names
+        adata_raw.obs = adata.obs
+        for key in adata.var.keys():
+            adata_raw.var[key] = adata.var[key]
+    elif dataLayer == ".raw":
+        adata_raw = adata
+    elif dataLayer == "X":
+        adata_raw = adata
+        if dataLayer == "X" and "X" not in adata_raw.layers.keys():
+            adata_raw.layers["X"] = adata_raw.X    
+        adata_raw.X = adata_raw.layers[dataLayer]        
+    else:
+        adata_raw = AnnData(X=adata.layers[dataLayer])
+        adata_raw.var_names = adata.raw.var_names
+        adata_raw.obs_names = adata.obs_names
+        adata_raw.obs = adata.obs
+        for key in adata.var.keys():
+            adata_raw.var[key] = adata.var[key]
+                
     if doPreprocess:
-        if adata.raw is not None:
-            adata_raw = AnnData(X=adata.raw.X)
-            adata_raw.var_names = adata.raw.var_names
-            adata_raw.obs_names = adata.obs_names
-            adata_raw.obs = adata.obs
-            for key in adata.var.keys():
-                adata_raw.var[key] = adata.var[key]
-        else:
-            adata_raw = adata
-        
         # sc.pp.filter_cells(adata_raw,min_counts=minCountsCF,min_genes=minGenesCF)
         sc.pp.filter_genes(adata_raw, min_counts=minCountsGF)
         sc.pp.filter_genes(adata_raw, min_cells=minCellsGF/100*adata_raw.shape[0])
@@ -113,9 +126,7 @@ def scanpy_umap(adata, obs_mask=None, reembedParams = {}, pca_options={}, neighb
         if not doSAM:
             batchKey = None if (batchKey == "" or not doBatch) else batchKey
             sc.pp.highly_variable_genes(adata_raw,batch_key=batchKey,flavor='seurat_v3',n_top_genes=nTopGenesHVG, n_bins=nBinsHVG)
-    else:
-        adata_raw = adata
-        
+
     if doSAM:
         SAM = get_samalg_module()
         sam=SAM(counts = adata_raw, inplace=True)
@@ -134,8 +145,6 @@ def scanpy_umap(adata, obs_mask=None, reembedParams = {}, pca_options={}, neighb
     
     if not doSAM:
         X = adata_raw.X
-        if dataLayer != "X":
-            adata_raw.X = adata_raw.layers[dataLayer]
         if scaleData:
             print('Scaling')
             sc.pp.scale(adata_raw,max_value=10)
@@ -143,15 +152,12 @@ def scanpy_umap(adata, obs_mask=None, reembedParams = {}, pca_options={}, neighb
         adata_raw.X = X
     else:
         X = sam.adata.X
-        if dataLayer != "X":
-            sam.adata.X = sam.adata.layers[dataLayer]        
         preprocessing = "StandardScaler" if scaleData else "Normalizer"
         sam.run(projection=None,weight_mode=weightModeSAM,preprocessing=preprocessing,distance=distanceMetric,num_norm_avg=nnaSAM)
         sam.adata.X = X        
         adata_raw=sam.adata
 
     if doBatch:
-        # do yo batch correction
         sce = get_scanpy_external_module()
         if doSAM:
             adata_batch = sam.adata
@@ -162,7 +168,7 @@ def scanpy_umap(adata, obs_mask=None, reembedParams = {}, pca_options={}, neighb
             sce.pp.harmony_integrate(adata_batch,batchKey,adjusted_basis="X_pca")
         elif batchMethod == "BBKNN":
             metric = "angular" if distanceMetric in ["correlation","cosine"] else "euclidean"
-            sce.pp.bbknn(adata_batch, batch_key=batchKey, metric=metric, n_pcs=numPCs)
+            sce.pp.bbknn(adata_batch, batch_key=batchKey, metric=metric, n_pcs=numPCs, neighbors_within_batch=bbknnNeighborsWithinBatch)
         elif batchMethod == "Scanorama":
             sce.pp.scanorama_integrate(adata_batch, batchKey, basis='X_pca', adjusted_basis='X_pca',
                                     knn=scanoramaKnn, sigma=scanoramaSigma, alpha=scanoramaAlpha,

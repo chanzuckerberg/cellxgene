@@ -358,6 +358,11 @@ def output_data_put(request, data_adaptor):
             del adata.obs["name_0"]
         except:
             pass
+        
+        if "X" in data_adaptor.data.layers.keys():
+            data_adaptor.data.X = data_adaptor.data.layers["X"]
+            del data_adaptor.data.layers["X"]
+
         try:
             adata.write_h5ad(saveName.split('.h5ad')[0]+'.h5ad')
         except:
@@ -426,6 +431,27 @@ def delete_obsm_put(request, data_adaptor):
                 del data_adaptor.data.uns[f"N_{embName}"]
             except:
                 pass
+    try:
+        return make_response(jsonify({"fail": fail}), HTTPStatus.OK, {"Content-Type": "application/json"})
+    except NotImplementedError as e:
+        return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
+    except (ValueError, DisabledFeatureError, FilterError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)    
+
+def change_layer_put(request, data_adaptor):
+    args = request.get_json()
+    dataLayer = args.get("dataLayer",None)
+    fail=False
+    if dataLayer is not None:            
+        try:
+            if "X" not in data_adaptor.data.layers.keys():
+                data_adaptor.data.layers['X'] = data_adaptor.data.X
+            if dataLayer == ".raw":
+                data_adaptor.data.X = data_adaptor.data.raw.X
+            else:
+                data_adaptor.data.X = data_adaptor.data.layers[dataLayer]
+        except:
+            fail=True
     try:
         return make_response(jsonify({"fail": fail}), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:

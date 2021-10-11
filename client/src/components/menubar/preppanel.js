@@ -52,7 +52,13 @@ class PrepPanel extends React.PureComponent {
           param="doSAM"
         />                   
       </ControlGroup>    
-
+      <ControlGroup fill={true} vertical={false}>
+        <ParameterInput
+          label="Data layer"
+          param="dataLayer"
+          options={annoMatrix.schema.layers}
+        />                   
+      </ControlGroup>  
       <AnchorButton
         onClick={() => {
           this.setState({ 
