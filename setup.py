@@ -10,14 +10,14 @@ with open("backend/server/requirements-prepare.txt") as fh:
     requirements_prepare = fh.read().splitlines()
 
 setup(
-    name="cellxgene",
-    version="0.16.7",
+    name="excellxgene",
+    version="1.0.1",
     packages=find_packages(),
-    url="https://github.com/chanzuckerberg/cellxgene",
+    url="https://github.com/czbiohub/cellxgene",
     license="MIT",
-    author="Chan Zuckerberg Initiative",
-    author_email="cellxgene@chanzuckerberg.com",
-    description="Web application for exploration of large scale scRNA-seq datasets",
+    author="Chan Zuckerberg Biohub",
+    author_email="alexander.tarashansky@czbiohub.org",
+    description="Web application for exploration of large scale scRNA-seq datasets, upgraded to enable end-to-end interactive analysis.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=requirements,
