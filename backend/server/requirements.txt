@@ -23,5 +23,8 @@ scipy>=1.4
 requests>=2.22.0
 scikit-misc
 s3fs==0.4.2
+sam-algorithm>=0.8.7
+hnswlib>=0.5.2
+bbknn>=1.5.1
+scanorama>=1.7.1
 scanpy>=1.7.0 # Until we move to anndata 0.7.4 scanpy needs to be pinned here
-umap-learn<0.5.0 # The pinned version scanpy is not compatible with latest umap-learn
