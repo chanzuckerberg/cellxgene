@@ -57,11 +57,12 @@ class CentroidLabels extends PureComponent {
   };
 
   handleMouseEnter = (e, colorAccessor, label) => {
+    console.log(colorAccessor, label);
     const { dispatch } = this.props;
     dispatch({
       type: "category value mouse hover start",
       metadataField: colorAccessor,
-      categoryField: label,
+      label,
     });
   };
 
@@ -70,7 +71,7 @@ class CentroidLabels extends PureComponent {
     dispatch({
       type: "category value mouse hover end",
       metadataField: colorAccessor,
-      categoryField: label,
+      label,
     });
   };
 
@@ -135,7 +136,7 @@ class CentroidLabels extends PureComponent {
 
               // Mirror LSB middle truncation
               let displayLabel = label;
-              if (displayLabel.length > categoryLabelDisplayStringLongLength) {
+              if (displayLabel?.length > categoryLabelDisplayStringLongLength) {
                 displayLabel = `${label.slice(
                   0,
                   categoryLabelDisplayStringLongLength / 2
