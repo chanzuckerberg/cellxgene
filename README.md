@@ -17,17 +17,17 @@ Whether you need to visualize one thousand cells or one million, cellxgene Deskt
 
 ### The comprehensive guide to cellxgene Desktop
 
-[The cellxgene documentation is your one-stop-shop for information about cellxgene Desktop](https://docs.cellxgene.cziscience.com/)! You may be particularly interested in:
+[The cellxgene documentation is your one-stop-shop for information about cellxgene Desktop](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/README.md)! You may be particularly interested in:
 
-- Seeing [what cellxgene Desktop can do](https://docs.cellxgene.cziscience.com/explore-data/how-to-explore-data)
-- Learning more about cellxgene [installation](https://docs.cellxgene.cziscience.com/desktop/install) and [usage](https://docs.cellxgene.cziscience.com/desktop/launch)
-- [Preparing your own data](https://docs.cellxgene.cziscience.com/desktop/data-reqs) for use in cellxgene Desktop
-- Checking out [our roadmap](https://docs.cellxgene.cziscience.com/roadmap) for future development
-- [Contributing](https://docs.cellxgene.cziscience.com/contribute) to cellxgene Desktop
+- Seeing [what cellxgene Desktop can do](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/explore-data/explorer-tutorials.md)
+- Learning more about cellxgene [installation](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/install.md) and [usage](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/quick-start.md#quick-start-1)
+- [Preparing your own data](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/data-reqs.md) for use in cellxgene Desktop
+- Checking out [our roadmap](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/roadmap.md) for future development
+- [Contributing](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/contribute.md) to cellxgene Desktop
 
 ### Quick start
 
-To install cellxgene Desktop you need Python 3.6+. We recommend [installing cellxgene Desktop into a conda or virtual environment.](https://docs.cellxgene.cziscience.com/desktop/install)
+To install cellxgene Desktop you need Python 3.6+. We recommend [installing cellxgene Desktop into a conda or virtual environment.](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/install.md)
 
 Install the package.
 
@@ -41,8 +41,8 @@ Launch cellxgene Desktop with an example [anndata](https://anndata.readthedocs.i
 cellxgene launch https://cellxgene-example-data.czi.technology/pbmc3k.h5ad
 ```
 
-To explore more datasets already formatted for cellxgene Desktop, check out the [Demo data](https://docs.cellxgene.cziscience.com/desktop/quick-start#example-datasets) or
-see [Preparing your data](https://docs.cellxgene.cziscience.com/desktop/data-reqs) to learn more about formatting your own
+To explore more datasets already formatted for cellxgene Desktop, check out the [Demo data](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/quick-start.md#example-datasets) or
+see [Preparing your data](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/data-reqs.md) to learn more about formatting your own
 data for cellxgene Desktop.
 
 ### Supported browsers
@@ -66,7 +66,7 @@ For any errors, [report bugs on Github](https://github.com/chanzuckerberg/cellxg
 
 ### Contributing
 
-We warmly welcome contributions from the community! Please see our [contributing guide](https://docs.cellxgene.cziscience.com/contribute) and don't hesitate to open an issue or send a pull request to improve cellxgene Desktop. Please see the [dev_docs](https://github.com/chanzuckerberg/cellxgene/tree/main/dev_docs) for pull request suggestions, unit test details, local documentation preview, and other development specifics. 
+We warmly welcome contributions from the community! Please see our [contributing guide](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/contribute.md) and don't hesitate to open an issue or send a pull request to improve cellxgene Desktop. Please see the [dev_docs](https://github.com/chanzuckerberg/cellxgene/tree/main/dev_docs) for pull request suggestions, unit test details, local documentation preview, and other development specifics. 
 
 This project adheres to the Contributor Covenant [code of conduct](https://github.com/chanzuckerberg/.github/blob/master/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to opensource@chanzuckerberg.com.
 
@@ -79,9 +79,9 @@ this project. All code is freely available for reuse under the [MIT license](htt
 
 Before extending cellxgene, we encourage you to reach out to us with ideas or questions. It might be possible that an 
 extension could be directly contributed, which would make it available for a wider audience, or that it's on our 
-[roadmap](https://docs.cellxgene.cziscience.com/roadmap) and under active development. 
+[roadmap](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/roadmap.md) and under active development. 
 
-See the [cellxgene extensions](https://docs.cellxgene.cziscience.com/community-extensions) section of our documentation for examples of community use and cellxgene extensions. 
+See the [cellxgene extensions](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/community-extensions.md) section of our documentation for examples of community use and cellxgene extensions. 
 
 ### Security
 
