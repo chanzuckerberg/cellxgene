@@ -151,18 +151,3 @@ If you would like to run the smoke tests against a hot-reloaded version of the c
 - You can also install/launch the server side code from npm scrips (requires python3.6 with virtualenv) with the `scripts/backend_dev` script.
 
 - Check out [e2e Tests](e2e_tests.md) for more details
-
-## Doc changes
-
-To evaluate changes to documentation in `cellxgene/docs`, you must install [jekyll](https://jekyllrb.com/docs/installation/), then run:
-
-```bash
-cd docs
-bundle install
-bundle exec jekyll serve
-```
-
-If changes look good, run the following, then commit and push: 
-```bash
-bundle exec jekyll build
-```

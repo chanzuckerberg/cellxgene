@@ -332,7 +332,7 @@ def launch(
     This web app lets you explore single-cell expression data.
     Data must be in a format that cellxgene expects.
     Read the "getting started" guide to learn more:
-    https://chanzuckerberg.github.io/cellxgene/getting-started.html
+    https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/README.md
 
     Examples:
 
