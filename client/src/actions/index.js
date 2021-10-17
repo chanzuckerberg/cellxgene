@@ -7,7 +7,7 @@ import {
   dispatchNetworkErrorMessageToUser,
 } from "../util/actionHelpers";
 import {
-  requestReembed
+  requestReembed, requestPreprocessing
 } from "./reembed";
 import {
   requestSankey
@@ -401,6 +401,7 @@ export default {
   requestSingleGeneExpressionCountsForColoringPOST,
   requestUserDefinedGene,
   requestReembed,
+  requestPreprocessing,
   requestSankey,
   requestLeiden,
   requestSaveAnndataToFile,

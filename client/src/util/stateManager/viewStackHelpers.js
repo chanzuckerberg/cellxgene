@@ -142,7 +142,6 @@ function _getEmbeddingRowOffsets(baseRowIndex, embeddingDf) {
   const Y = embeddingDf.icol(1).asArray();
   const offsets = new Int32Array(X.length);
   let numOffsets = 0;
-
   for (let i = 0, l = X.length; i < l; i += 1) {
     if (!Number.isNaN(X[i]) && !Number.isNaN(Y[i])) {
       offsets[numOffsets] = i;

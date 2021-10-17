@@ -96,6 +96,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
 
   dropObsmLayout(layout) {
     const newAnnoMatrix = this._clone();
+    console.log(newAnnoMatrix._cache.emb)
     newAnnoMatrix._cache.emb = this._cache.emb.dropCol(`${layout}_0`);
     newAnnoMatrix._cache.emb = this._cache.emb.dropCol(`${layout}_1`);
     newAnnoMatrix.schema = removeObsLayout(this.schema, layout);
@@ -262,7 +263,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     }
 
     const buffer = await promiseThrottle.priorityAdd(priority, doRequest);
-    const result = matrixFBSToDataframe(buffer);
+    const result = matrixFBSToDataframe(buffer);    
     if (!result || result.isEmpty()) throw Error("Unknown field/col");
 
     const whereCacheUpdate = _whereCacheCreate(

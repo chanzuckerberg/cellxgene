@@ -492,6 +492,20 @@ def layout_obs_put(request, data_adaptor):
     except (ValueError, DisabledFeatureError, FilterError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
 
+
+def preprocess_put(request, data_adaptor):
+    args = request.get_json()
+    reembedParams = args["params"] if args else {}
+
+    try:
+        fail = data_adaptor.compute_preprocess(reembedParams)
+        return make_response(jsonify(fail), HTTPStatus.OK, {"Content-Type": "application/json"})
+    except NotImplementedError as e:
+        return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
+    except (ValueError, DisabledFeatureError, FilterError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
+
+
 def reembed_parameters_get(request, data_adaptor):
     preferred_mimetype = request.accept_mimetypes.best_match(["application/json", "text/csv"])
     if preferred_mimetype not in ("application/json", "text/csv"):

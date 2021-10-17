@@ -96,11 +96,11 @@ class Reembedding extends React.PureComponent {
           isOpen={setReembedDialogActive}
           usePortal
         >
-          <DialogStep
+          {/*<DialogStep
             id="preprocessing"
             panel={<PrepPanel idhash={idhash} />}
             title="Preprocessing"
-          />
+          />*/}
           <DialogStep
             id="batchcorrect"
             panel={

@@ -10,13 +10,15 @@ from pandas.core.dtypes.dtypes import CategoricalDtype
 from scipy import sparse
 from server_timing import Timing as ServerTiming
 import time
+import os
+from glob import glob
 import backend.common.compute.diffexp_generic as diffexp_generic
 from backend.common.colors import convert_anndata_category_colors_to_cxg_category_colors
 from backend.common.constants import Axis, MAX_LAYOUTS
 from backend.server.common.corpora import corpora_get_props_from_anndata
 from backend.common.errors import PrepareError, DatasetAccessError, FilterError
 from backend.common.utils.type_conversion_utils import get_schema_type_hint_of_array
-from backend.server.compute.scanpy import scanpy_umap
+from backend.server.compute.scanpy import get_scanpy_external_module, AnnData, get_samalg_module, get_scanpy_module
 from backend.server.data_common.data_adaptor import DataAdaptor
 from backend.common.fbs.matrix import encode_matrix_fbs
 
@@ -48,8 +50,6 @@ class AnndataAdaptor(DataAdaptor):
             # based typing).
             if not data_locator.exists():
                 raise DatasetAccessError("does not exist")
-            if not data_locator.isfile():
-                raise DatasetAccessError("is not a file")
 
     @staticmethod
     def file_size(data_locator):
@@ -165,10 +165,39 @@ class AnndataAdaptor(DataAdaptor):
             # API will only consume local file objects.  If we get a non-local object,
             # make a copy in tmp, and delete it after we load into memory.
             with data_locator.local_handle() as lh:
+                backed = "r" if self.server_config.adaptor__anndata_adaptor__backed else None
+
+                if os.path.isdir(lh):
+                    filenames = glob(lh+'/*')
+                    adatas = []
+                    batch = []
+                    for file in filenames:
+                        if os.path.isdir(file):
+                            backed=False
+                    
+                    for file in filenames:
+                        if os.path.isdir(file):
+                            sc = get_scanpy_module()
+                            adata = sc.read_10x_mtx(file)
+                        else:
+                            adata = anndata.read_h5ad(file, backed=backed)
+                        adatas.append(adata)
+                        batch.append([file.split('.h5ad')[0].split('/')[-1]]*adata.shape[0])
+                    adata = anndata.concat(adatas,join='inner',axis=0)
+                    if "orig.ident" not in adata.obs.keys():
+                        key = "orig.ident"
+                    else:
+                        key = f"orig.ident.{str(hex(int(time.time())))[2:]}"
+                    adata.obs[key] = pd.Categorical(np.concatenate(batch))
+                else:
+                    adata = anndata.read_h5ad(lh, backed=backed)
                 # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
                 # cost of significantly slower access to X data.
-                backed = "r" if self.server_config.adaptor__anndata_adaptor__backed else None
-                self.data = anndata.read_h5ad(lh, backed=backed)
+                if len(adata.obsm.keys())==0:       
+                    adata.obsm["X_umap_init"] = np.zeros((adata.shape[0],2))
+
+                self.data = adata
+                self.data_orig = adata
 
         except ValueError:
             raise DatasetAccessError(
@@ -302,11 +331,6 @@ class AnndataAdaptor(DataAdaptor):
                 warnings.warn(f"Ignoring layout due to malformed shape or data type: {layout}")
             else:
                 valid_layouts.append(layout)
-
-        if len(valid_layouts) == 0:
-            self.data.obsm["X_umap"] = np.zeros((self.data.shape[0],2))
-            valid_layouts = ["umap"]
-
         # cap layouts to MAX_LAYOUTS
         return valid_layouts[0:MAX_LAYOUTS]
 
@@ -369,6 +393,161 @@ class AnndataAdaptor(DataAdaptor):
         ps = np.vstack(ps)
         cs = np.array(cs)
         return ps,cs
+    
+    
+    def compute_preprocess(self, reembedParams):
+        print(self.data.obs.columns)
+        print(self.data_orig.obs.columns)
+                
+        adata = self.data_orig
+
+        if adata.isbacked:
+            raise NotImplementedError("Backed mode is incompatible with preprocessing.")
+
+        # safely get scanpy module, which may not be present.
+        sc = get_scanpy_module()
+
+        cn = np.array(list(adata.obs["name_0"]))
+
+        for k in list(adata.obsm.keys()):
+            del adata.obsm[k]
+        for k in list(adata.uns.keys()):
+            del adata.uns[k]
+        
+        doBatchPrep = reembedParams.get("doBatchPrep",False)
+        batchPrepParams = reembedParams.get("batchPrepParams",{})
+        batchPrepKey = reembedParams.get("batchPrepKey","")
+        batchPrepLabel = reembedParams.get("batchPrepLabel","")
+
+        doPreprocess = reembedParams.get("doPreprocess",False)
+        minCountsCF = reembedParams.get("minCountsCF",0)
+        minGenesCF = reembedParams.get("minGenesCF",0)
+        minCellsGF = reembedParams.get("minCellsGF",0)
+        maxCellsGF = reembedParams.get("maxCellsGF",100)
+        minCountsGF = reembedParams.get("minCountsGF",0)
+        logTransform = reembedParams.get("logTransform",False)
+        dataLayer = reembedParams.get("dataLayer","X")
+        sumNormalizeCells = reembedParams.get("sumNormalizeCells",False)
+
+            
+
+        if doBatchPrep and batchPrepKey != "" and batchPrepLabel != "":
+            cl = np.array(list(adata.obs[batchPrepKey]))
+            batches = np.unique(cl)
+            adatas = []
+            cns = []
+            for k in batches:
+                params = batchPrepParams[batchPrepKey].get(k,{})
+
+                doPreprocess = params.get("doPreprocess",False)
+                minCountsCF = params.get("minCountsCF",0)
+                minGenesCF = params.get("minGenesCF",0)
+                minCellsGF = params.get("minCellsGF",0)
+                maxCellsGF = params.get("maxCellsGF",100)
+                minCountsGF = params.get("minCountsGF",0)
+                logTransform = params.get("logTransform",False)
+                dataLayer = params.get("dataLayer","X")
+                sumNormalizeCells = params.get("sumNormalizeCells",False)
+                
+                adata_sub = adata[cl==k].copy()
+                adata_sub.obs_names = adata_sub.obs["name_0"]
+
+                if dataLayer == ".raw" and adata_sub.raw is not None:
+                    adata_sub_raw = AnnData(X=adata_sub.raw.X)
+                    adata_sub_raw.var_names = adata_sub.raw.var_names
+                    adata_sub_raw.obs_names = adata_sub.obs_names
+                    adata_sub_raw.obs = adata_sub.obs
+                    for key in adata_sub.var.keys():
+                        adata_sub_raw.var[key] = adata_sub.var[key]
+                elif dataLayer == ".raw":
+                    adata_sub_raw = adata_sub
+                elif dataLayer == "X":
+                    adata_sub_raw = adata_sub
+                    if dataLayer == "X" and "X" not in adata_sub_raw.layers.keys():
+                        adata_sub_raw.layers["X"] = adata_sub_raw.X    
+                    adata_sub_raw.X = adata_sub_raw.layers[dataLayer]        
+                else:
+                    adata_sub_raw = AnnData(X=adata_sub.layers[dataLayer])
+                    adata_sub_raw.var_names = adata_sub.raw.var_names
+                    adata_sub_raw.obs_names = adata_sub.obs_names
+                    adata_sub_raw.obs = adata_sub.obs
+                    for key in adata_sub.var.keys():
+                        adata_sub_raw.var[key] = adata_sub.var[key]   
+                if doPreprocess:
+                    filt1,_ = sc.pp.filter_cells(adata_sub_raw,min_counts=minCountsCF, inplace=False)
+                    filt2,_ = sc.pp.filter_cells(adata_sub_raw,min_genes=minGenesCF, inplace=False)
+                    filt = np.logical_and(filt1,filt2)
+                    cns.extend(np.array(list(adata_sub_raw.obs["name_0"]))[filt])
+                    adata_sub_raw=adata_sub_raw[filt]
+                    a1=sc.pp.filter_genes(adata_sub_raw, min_counts=minCountsGF,inplace=False)
+                    a2=sc.pp.filter_genes(adata_sub_raw, min_cells=minCellsGF/100*adata_sub_raw.shape[0],inplace=False)
+                    a3=sc.pp.filter_genes(adata_sub_raw, max_cells=maxCellsGF/100*adata_sub_raw.shape[0],inplace=False)
+                    a = a1*a2*a3
+                    if sp.sparse.issparse(adata_sub_raw.X):
+                        adata_sub_raw.X = adata_sub_raw.X.multiply(a.flatten()[None,:]).tocsc()
+                    else:
+                        adata_sub_raw.X = adata_sub_raw.X * (a.flatten()[None,:])
+                
+
+                    if sumNormalizeCells:
+                        sc.pp.normalize_total(adata_sub_raw)
+                    if logTransform or adata_sub_raw.X.max() > 30:
+                        sc.pp.log1p(adata_sub_raw)   
+
+
+                adatas.append(adata_sub_raw)
+            adata_raw = anndata.concat(adatas,axis=0,join="inner")
+            filt = np.in1d(np.array(list(cn)),np.array(list(adata_raw.obs["name_0"])))
+            cell_order = cn[filt]
+            temp = adata_raw.obs_names.copy()
+            adata_raw.obs_names = adata_raw.obs["name_0"]
+            adata_raw = adata_raw[cell_order]
+            adata_raw.obs_names = temp
+        else:
+            if dataLayer == ".raw" and adata.raw is not None:
+                adata_raw = AnnData(X=adata.raw.X)
+                adata_raw.var_names = adata.raw.var_names
+                adata_raw.obs_names = adata.obs_names
+                adata_raw.obs = adata.obs
+                for key in adata.var.keys():
+                    adata_raw.var[key] = adata.var[key]
+            elif dataLayer == ".raw":
+                adata_raw = adata.copy()
+            elif dataLayer == "X":
+                adata_raw = adata.copy()
+                if dataLayer == "X" and "X" not in adata_raw.layers.keys():
+                    adata_raw.layers["X"] = adata_raw.X    
+                adata_raw.X = adata_raw.layers[dataLayer]        
+            else:
+                adata_raw = AnnData(X=adata.layers[dataLayer])
+                adata_raw.var_names = adata.raw.var_names
+                adata_raw.obs_names = adata.obs_names
+                adata_raw.obs = adata.obs
+                for key in adata.var.keys():
+                    adata_raw.var[key] = adata.var[key]                
+            
+            if doPreprocess:
+                filt1,_ = sc.pp.filter_cells(adata_raw,min_counts=minCountsCF, inplace=False)
+                filt2,_ = sc.pp.filter_cells(adata_raw,min_genes=minGenesCF, inplace=False)
+                filt = np.logical_and(filt1,filt2)
+                adata_raw=adata_raw[filt]
+                a1=sc.pp.filter_genes(adata_raw, min_counts=minCountsGF,inplace=False)
+                a2=sc.pp.filter_genes(adata_raw, min_cells=minCellsGF/100*adata_raw.shape[0],inplace=False)
+                a3=sc.pp.filter_genes(adata_raw, max_cells=maxCellsGF/100*adata_raw.shape[0],inplace=False)
+                a = a1*a2*a3
+                if sp.sparse.issparse(adata_raw.X):
+                    adata_raw.X = adata_raw.X.multiply(a.flatten()[None,:]).tocsc()
+                else:
+                    adata_raw.X = adata_raw.X * (a.flatten()[None,:])
+            
+                if sumNormalizeCells:
+                    sc.pp.normalize_total(adata_raw)
+                if logTransform or adata_raw.X.max() > 30:
+                    sc.pp.log1p(adata_raw) 
+                                            
+        self.data = adata_raw
+        print(self.data.shape)
+        return True
 
     def compute_embedding(self, method, obsFilter, reembedParams, parentName, embName):
         if Axis.VAR in obsFilter:
@@ -380,9 +559,96 @@ class AnndataAdaptor(DataAdaptor):
             obs_mask = self._axis_filter_to_mask(Axis.OBS, obsFilter["obs"], shape[0])
         except (KeyError, IndexError):
             raise FilterError("Error parsing filter")
-        with ServerTiming.time("layout.compute"):
+        with ServerTiming.time("layout.compute"):            
+            adata = self.data
+
+            if adata.isbacked:
+                raise NotImplementedError("Backed mode is incompatible with re-embedding")
+
+            # safely get scanpy module, which may not be present.
+            sc = get_scanpy_module()
+
+            # https://github.com/theislab/anndata/issues/311
+            obs_mask = slice(None) if obs_mask is None else obs_mask
+            adata = adata[obs_mask, :].copy()
+
+            for k in list(adata.obsm.keys()):
+                del adata.obsm[k]
+            for k in list(adata.uns.keys()):
+                del adata.uns[k]
             
-            X_umap,nnm = scanpy_umap(self.data, obs_mask, reembedParams)
+            doSAM = reembedParams.get("doSAM",False)
+            nTopGenesHVG = reembedParams.get("nTopGenesHVG",2000)
+            nBinsHVG = reembedParams.get("nBins",20)
+            doBatch = reembedParams.get("doBatch",False)
+            batchMethod = reembedParams.get("batchMethod","Scanorama")
+            batchKey = reembedParams.get("batchKey","")
+            scanoramaKnn = reembedParams.get("scanoramaKnn",20)
+            scanoramaSigma = reembedParams.get("scanoramaSigma",15)
+            scanoramaAlpha = reembedParams.get("scanoramaAlpha",0.1)
+            scanoramaBatchSize = reembedParams.get("scanoramaBatchSize",5000)
+            bbknnNeighborsWithinBatch = reembedParams.get("bbknnNeighborsWithinBatch",3)
+            numPCs = reembedParams.get("numPCs",150)
+            pcaSolver = reembedParams.get("pcaSolver","randomized")
+            neighborsKnn = reembedParams.get("neighborsKnn",20)
+            neighborsMethod = reembedParams.get("neighborsMethod","umap")
+            distanceMetric = reembedParams.get("distanceMetric","cosine")
+            nnaSAM = reembedParams.get("nnaSAM",50)
+            weightModeSAM = reembedParams.get("weightModeSAM","dispersion")
+            umapMinDist = reembedParams.get("umapMinDist",0.1)
+            scaleData = reembedParams.get("scaleData",False)
+
+ 
+            if not doSAM:
+                sc.pp.highly_variable_genes(adata,flavor='seurat_v3',n_top_genes=min(nTopGenesHVG,adata.shape[1]), n_bins=nBinsHVG)                
+                adata = adata[:,adata.var['highly_variable']]                
+                X = adata.X
+                if scaleData:
+                    sc.pp.scale(adata,max_value=10)
+                sc.pp.pca(adata,n_comps=min(adata.n_vars - 1, numPCs), svd_solver=pcaSolver)
+                adata.X = X
+            else:
+                SAM = get_samalg_module()
+                sam=SAM(counts = adata, inplace=True)
+                X = sam.adata.X
+                preprocessing = "StandardScaler" if scaleData else "Normalizer"
+                sam.run(projection=None,weight_mode=weightModeSAM,preprocessing=preprocessing,distance=distanceMetric,num_norm_avg=nnaSAM)
+                sam.adata.X = X        
+                adata=sam.adata
+
+            if doBatch:
+                sce = get_scanpy_external_module()
+                if doSAM:
+                    adata_batch = sam.adata
+                else:
+                    adata_batch = adata
+                
+                if batchMethod == "Harmony":
+                    sce.pp.harmony_integrate(adata_batch,batchKey,adjusted_basis="X_pca")
+                elif batchMethod == "BBKNN":
+                    sce.pp.bbknn(adata_batch, batch_key=batchKey, metric=distanceMetric, n_pcs=numPCs, neighbors_within_batch=bbknnNeighborsWithinBatch)
+                elif batchMethod == "Scanorama":
+                    sce.pp.scanorama_integrate(adata_batch, batchKey, basis='X_pca', adjusted_basis='X_pca',
+                                            knn=scanoramaKnn, sigma=scanoramaSigma, alpha=scanoramaAlpha,
+                                            batch_size=scanoramaBatchSize)
+                if doSAM:
+                    sam.adata = adata_batch
+                else:
+                    adata = adata_batch
+
+            if not doSAM or doSAM and batchMethod == "BBKNN":
+                if not doBatch or doBatch and batchMethod != "BBKNN":
+                    sc.pp.neighbors(adata, n_neighbors=neighborsKnn, use_rep="X_pca",method=neighborsMethod, metric=distanceMetric)    
+                sc.tl.umap(adata, min_dist=umapMinDist)
+            else:
+                sam.run_umap(metric=distanceMetric,min_dist=umapMinDist)
+                adata.obsm['X_umap'] = sam.adata.obsm['X_umap']
+                adata.obsp['connectivities'] = sam.adata.obsp['connectivities']
+                
+            umap = adata.obsm["X_umap"]
+            result = np.full((obs_mask.shape[0], umap.shape[1]), np.NaN)
+            result[obs_mask] = umap
+            X_umap,nnm = result, adata.obsp['connectivities']            
 
         # Server picks reemedding name, which must not collide with any other
         # embedding name generated by this backend.
@@ -402,6 +668,9 @@ class AnndataAdaptor(DataAdaptor):
         self.data.obsm[f"X_{name}"] = X_umap
         # This is where we store reembedding manifolds in uns.
         self.data.uns[f"N_{name}"] = nnm
+        #self.data_orig.obsm[f"X_{name}"] = X_umap
+        #self.data_orig.uns[f"N_{name}"] = nnm        
+
         return layout_schema
 
     def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None):

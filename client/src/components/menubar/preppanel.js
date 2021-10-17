@@ -7,10 +7,11 @@ import {
 } from "@blueprintjs/core";
 import ParameterInput from "./parameterinput";
 import DefaultsButton from "./defaultsio";
+import { ControlsHelpers } from "../../util/stateManager";
 
 @connect((state) => ({
   reembedParams: state.reembedParameters,
-  annoMatrix: state.annoMatrix
+  annoMatrix: state.annoMatrix,
 }))
 class PrepPanel extends React.PureComponent {
   constructor(props) {
@@ -19,6 +20,7 @@ class PrepPanel extends React.PureComponent {
       cfshown: false,
       gfshown: false,
       hvgshown: false,
+      trshown: false
     };
   }  
   componentDidUpdate(prevProps) {
@@ -27,32 +29,61 @@ class PrepPanel extends React.PureComponent {
       this.setState({ 
         hvgshown: false,
         cfshown: false,
-        gfshown: false,        
+        gfshown: false,   
+        trshown: false     
       });
     }
   }
 
   render() {
     const {
-      cfshown, gfshown, hvgshown
+      cfshown, gfshown, hvgshown, trshown
     } = this.state;
     const { reembedParams, annoMatrix, dispatch} = this.props;
-    
-    const disabled = !reembedParams.doPreprocess
+    const allCategoryNames = ControlsHelpers.selectableCategoryNames(
+      annoMatrix.schema
+    ).sort();
+    let disabled = !reembedParams.doPreprocess
+    const batchDisabled = !reembedParams.doBatchPrep
+    let allBatchPrepLabels;
+    let disabledBatchLabel = true;
+    if (reembedParams.batchPrepKey !== ""){
+      if (reembedParams.batchPrepLabel !== ""){
+        disabled = !reembedParams.batchPrepParams[reembedParams.batchPrepKey][reembedParams.batchPrepLabel].doPreprocess
+      }
+      allBatchPrepLabels = annoMatrix.schema.annotations.obsByName?.[reembedParams.batchPrepKey]?.categories
+      if(allBatchPrepLabels){
+        allBatchPrepLabels = allBatchPrepLabels.filter(item => item !== "unassigned")
+        disabledBatchLabel = false;
+      }
+    }
+    allBatchPrepLabels = allBatchPrepLabels ?? [""]
     return (
       <div>
-      <DefaultsButton dispatch={dispatch}/>
+      <DefaultsButton dispatch={dispatch}/>       
+      <ControlGroup fill={true} vertical={false}>     
+        <ParameterInput 
+          label="Batch preprocess?"
+          param="doBatchPrep"
+        />   
+        <ParameterInput 
+          disabled={batchDisabled}        
+          label="Batch key"
+          param="batchPrepKey"
+          options={allCategoryNames}
+        />
+        <ParameterInput 
+          disabled={batchDisabled || disabledBatchLabel}        
+          label="Batch label"
+          param="batchPrepLabel"
+          options={allBatchPrepLabels}
+        />              
+      </ControlGroup>        
       <ControlGroup fill={true} vertical={false}>
         <ParameterInput 
           label="Preprocess?"
           param="doPreprocess"
-        />
-        <ParameterInput 
-          label="SAM?"
-          param="doSAM"
-        />                   
-      </ControlGroup>    
-      <ControlGroup fill={true} vertical={false}>
+        />           
         <ParameterInput
           label="Data layer"
           param="dataLayer"
@@ -65,15 +96,16 @@ class PrepPanel extends React.PureComponent {
             hvgshown: false,
             cfshown: !this.state.cfshown,
             gfshown: false,
+            trshown: false
           });
         }}
         text={`Cell filtering`}
         fill outlined
         rightIcon={cfshown ? "chevron-down" : "chevron-right"} small
-        disabled = {true}
+        disabled = {disabled}
       />                    
       <div style={{"paddingLeft":"10px"}}>
-        <Collapse isOpen={cfshown}>
+        <Collapse isOpen={cfshown && !disabled}>
           <ControlGroup fill={true} vertical={false}>
             <ParameterInput
             min={0}
@@ -94,6 +126,7 @@ class PrepPanel extends React.PureComponent {
             hvgshown: false,
             gfshown: !this.state.gfshown,
             cfshown: false,
+            trshown: false
           });
         }}
         text={`Gene filtering`}
@@ -102,7 +135,7 @@ class PrepPanel extends React.PureComponent {
         disabled = {disabled}
       />   
       <div style={{"paddingLeft":"10px"}}>
-        <Collapse isOpen={gfshown}>
+        <Collapse isOpen={gfshown && !disabled}>
           <ControlGroup fill={true} vertical={false}>
             <ParameterInput
               min={0}
@@ -129,35 +162,31 @@ class PrepPanel extends React.PureComponent {
       <AnchorButton
         onClick={() => {
           this.setState({ 
-            hvgshown: !this.state.hvgshown,
+            hvgshown: false,
             cfshown: false,
             gfshown: false,
+            trshown: !this.state.trshown
           });
         }}
-        text={`Highly variable gene selection`}
+        text={`Transformation`}
         fill outlined
-        rightIcon={hvgshown ? "chevron-down" : "chevron-right"} small
-        disabled = {disabled || reembedParams.doSAM}
+        rightIcon={trshown ? "chevron-down" : "chevron-right"} small
+        disabled = {disabled}
       />   
       <div style={{"paddingLeft":"10px"}}>
-        <Collapse isOpen={hvgshown}>   
+        <Collapse isOpen={trshown}>     
           <ControlGroup fill={true} vertical={false}>
+          <ParameterInput
+              label="Sum normalize?"
+              param="sumNormalizeCells"
+            />            
             <ParameterInput
-              min={0}
-              disabled={reembedParams.doSAM}
-              max={annoMatrix.nVar}
-              label="n_top_genes"
-              param="nTopGenesHVG"
-            />  
-            <ParameterInput
-              min={1}
-              disabled={reembedParams.doSAM}
-              label="n_bins"
-              param="nBinsHVG"
-            />        
-          </ControlGroup>                    
-        </Collapse>  
-      </div>                  
+              label="Log transform?"
+              param="logTransform"
+            />
+          </ControlGroup> 
+        </Collapse>       
+      </div>                               
     </div>
     );
   }

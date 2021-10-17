@@ -11,6 +11,7 @@ import Subset from "./subset";
 import UndoRedoReset from "./undoRedo";
 import DiffexpButtons from "./diffexpButtons";
 import Reembedding from "./reembedding";
+import Preprocessing from "./preprocessing";
 import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
 import { requestSankey } from "../../actions/sankey";
 
@@ -313,6 +314,7 @@ class MenuBar extends React.PureComponent {
           }
         />
         <Reembedding />
+        <Preprocessing />
         <Tooltip
           content="When a category is colored by, show labels on the graph"
           position="bottom"
