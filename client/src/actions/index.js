@@ -27,7 +27,7 @@ import * as viewActions from "./viewStack";
 import * as embActions from "./embedding";
 import * as genesetActions from "./geneset";
 import { defaultReembedParams } from "../reducers/reembed";
-
+import { _switchEmbedding } from "./embedding";
 /*
 return promise fetching user-configured colors
 */
@@ -139,7 +139,7 @@ export const requestSaveAnndataToFile = (saveName) => async (
 ) => {
   try{
     const state = getState();
-    const { annoMatrix } = state;
+    const { annoMatrix, layoutChoice } = state;
     
     const annos = []
     const annoNames = []
@@ -162,7 +162,8 @@ export const requestSaveAnndataToFile = (saveName) => async (
         body: JSON.stringify({
           saveName: saveName,
           labelNames: annoNames,
-          labels: annos
+          labels: annos,
+          currentLayout: layoutChoice.current
         }),
         credentials: "include",
       },
@@ -242,22 +243,43 @@ const doInitialDataLoad = () =>
       const annoMatrix = new AnnoMatrixLoader(baseDataUrl, schema.schema);
       const obsCrossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
       prefetchEmbeddings(annoMatrix);
+      
+      const layoutSchema = schema?.schema?.layout?.obs ?? [];
+      if(layoutSchema.length > 0){
+        const name = layoutSchema[0].name
+        const base = annoMatrix.base();
 
-      dispatch({
-        type: "annoMatrix: init complete",
-        annoMatrix,
-        obsCrossfilter,
-      });
+        const [annoMatrixNew, obsCrossfilterNew] = await _switchEmbedding(
+          base,
+          obsCrossfilter,
+          name,
+          name
+        ); 
+        dispatch({
+          type: "annoMatrix: init complete",
+          annoMatrix: annoMatrixNew,
+          obsCrossfilter: obsCrossfilterNew,
+        });        
+        
+      } else { 
+        dispatch({
+          type: "annoMatrix: init complete",
+          annoMatrix,
+          obsCrossfilter,
+        });
+      }
+
       dispatch({ type: "initial data load complete" });
 
       const defaultEmbedding = config?.parameters?.default_embedding;
-      const layoutSchema = schema?.schema?.layout?.obs ?? [];
       if (
         defaultEmbedding &&
         layoutSchema.some((s) => s.name === defaultEmbedding)
       ) {
         dispatch(embActions.layoutChoiceAction(defaultEmbedding));
       }
+
+ 
     } catch (error) {
       dispatch({ type: "initial data load error", error });
     }

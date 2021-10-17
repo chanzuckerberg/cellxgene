@@ -162,20 +162,31 @@ functions below are dispatch-able
 export function requestPreprocessing(reembedParams) {
   return async (dispatch, getState) => {
     try {
-      const { annoMatrix } = getState()
-
+      const {
+        obsCrossfilter: prevCrossfilter,
+        layoutChoice,
+      } = getState();
       const res = await doPreprocessingFetch(dispatch, getState, reembedParams);
-      
+      const schema = await res.json()
+
       dispatch({
         type: "preprocess: request completed",
       });
 
-      
       const baseDataUrl = `${API.prefix}${API.version}`;
-      const annoMatrixNew = new AnnoMatrixLoader(baseDataUrl, annoMatrix.schema);
+      const annoMatrixNew = new AnnoMatrixLoader(baseDataUrl, schema);
+      
+      const [annoMatrix, obsCrossfilter] = await _switchEmbedding(
+        annoMatrixNew,
+        prevCrossfilter,
+        layoutChoice.current,
+        layoutChoice.current
+      );
+      
       dispatch({
-        type: "",
-        annoMatrix: annoMatrixNew
+        type: "annoMatrix: init complete",
+        annoMatrix,
+        obsCrossfilter
       });      
       
 

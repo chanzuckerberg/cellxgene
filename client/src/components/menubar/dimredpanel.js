@@ -8,6 +8,7 @@ import {
 } from "@blueprintjs/core";
 import ParameterInput from "./parameterinput";
 import DefaultsButton from "./defaultsio";
+import BatchPanel from "./batchpanel";
 
 @connect((state) => ({
   reembedParams: state.reembedParameters,
@@ -38,6 +39,7 @@ class DimredPanel extends React.PureComponent {
         paddingBottom: "10px",
         paddingTop: "10px"
       }}>
+      <BatchPanel/>
       <InputGroup
           id="emb-name-input"
           placeholder="New embedding name..."

@@ -14,6 +14,7 @@ import styles from "./menubar.css";
 import PrepPanel from "./preppanel";
 
 @connect((state) => ({
+  reembedController: state.reembedController,
   preprocessController: state.preprocessController,
   reembedParams: state.reembedParameters,
   idhash: state.config?.parameters?.["annotations-user-data-idhash"] ?? null,
@@ -50,8 +51,8 @@ class Preprocessing extends React.PureComponent {
   }
   render() {
     const { setPreprocessingDialogActive } = this.state;
-    const { preprocessController, idhash } = this.props;
-    const loading = !!preprocessController?.pendingFetch;
+    const { reembedController, preprocessController, idhash } = this.props;
+    const loading = !!reembedController?.pendingFetch || !!preprocessController?.pendingFetch;    
     const tipContent =
       "Click to perform preprocessing.";
     return (
@@ -73,9 +74,9 @@ class Preprocessing extends React.PureComponent {
             marginRight: "10px"
           }}>
             <PrepPanel idhash={idhash} />
-            <ControlGroup fill={true} vertical={false}>
+            <ControlGroup style={{paddingTop: "15px"}} fill={true} vertical={false}>
               <Button onClick={this.handleDisablePreprocessingDialog}>Close</Button>
-              <Button onClick={this.handleRunAndDisablePreprocessingDialog}> Preprocess </Button>                 
+              <Button onClick={this.handleRunAndDisablePreprocessingDialog} intent="primary"> Preprocess </Button>                 
             </ControlGroup>            
           </div>
         </Dialog>

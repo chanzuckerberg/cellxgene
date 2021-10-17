@@ -5,6 +5,7 @@ from http import HTTPStatus
 import zlib
 import json
 import pandas as pd
+import numpy as np
 from flask import make_response, jsonify, current_app, abort
 from werkzeug.urls import url_unquote
 
@@ -345,23 +346,38 @@ def output_data_put(request, data_adaptor):
     saveName = args.get("saveName","")
     labels = args.get("labels",None)
     labelNames = args.get("labelNames",None)
-    
-    if labels and labelNames:
-        labels = [x['__columns'][0] for x in labels]
-        for n,l in zip(labelNames,labels):
-            data_adaptor.data.obs[n] = pd.Categorical(l)
+    currentLayout = args.get("currentLayout",None)
 
     fail=False
     if saveName != "":
-        adata = data_adaptor.data.copy()
+        adata = data_adaptor.data
+        X = adata.obsm["X_"+currentLayout]
+        adata = adata[np.invert(np.isnan(X)).sum(1)>0].copy()
+        name = currentLayout.split(';')[-1]
+        
+        if labels and labelNames:
+            labels = [x['__columns'][0] for x in labels]
+            for n,l in zip(labelNames,labels):
+                adata.obs[n] = pd.Categorical(l)        
+        
+        keys = list(adata.obsm.keys())
+        for k in keys:
+            if name not in k:
+                del adata.obsm[k]
+        
+        keys = list(adata.uns.keys())
+        for k in keys:
+            if name not in k and k[:2] == "N_":
+                del adata.uns[k]  
+
         try:
             del adata.obs["name_0"]
         except:
             pass
         
-        if "X" in data_adaptor.data.layers.keys():
-            data_adaptor.data.X = data_adaptor.data.layers["X"]
-            del data_adaptor.data.layers["X"]
+        if "X" in adata.layers.keys():
+            adata.X = adata.layers["X"]
+            del adata.layers["X"]
 
         try:
             adata.write_h5ad(saveName.split('.h5ad')[0]+'.h5ad')
@@ -386,6 +402,10 @@ def rename_obs_put(request, data_adaptor):
         try:
             data_adaptor.data.obs[newName] = data_adaptor.data.obs[oldName]
             del data_adaptor.data.obs[oldName]
+            
+            data_adaptor.data_orig.obs[newName] = data_adaptor.data_orig.obs[oldName]
+            del data_adaptor.data_orig.obs[oldName]            
+            
             data_adaptor._create_schema()
         except:
             fail=True
@@ -405,6 +425,7 @@ def delete_obs_put(request, data_adaptor):
     if name != "":
         try:
             del data_adaptor.data.obs[name]
+            del data_adaptor.data_orig.obs[name]
             data_adaptor._create_schema()
         except:
             fail=True
@@ -424,13 +445,18 @@ def delete_obsm_put(request, data_adaptor):
         for embName in embNames:
             try:
                 del data_adaptor.data.obsm[f'X_{embName}']
-                data_adaptor._refresh_layout_schema()
+                del data_adaptor.data_orig.obsm[f'X_{embName}']
+                del data_adaptor.data.uns[f"N_{embName}_mask"]
             except:
                 pass
             try:
                 del data_adaptor.data.uns[f"N_{embName}"]
+                del data_adaptor.data_orig.uns[f"N_{embName}"]
+                del data_adaptor.data_orig.uns[f"N_{embName}_mask"]
             except:
                 pass
+
+            data_adaptor._refresh_layout_schema()
     try:
         return make_response(jsonify({"fail": fail}), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
@@ -462,11 +488,11 @@ def change_layer_put(request, data_adaptor):
 def leiden_put(request, data_adaptor):
     args = request.get_json()
     name = args.get("name", None)
+    cName = args.get("cName", None)
     resolution = args.get('resolution')
-    name = args.get("name", None)
 
     try:
-        cl = list(data_adaptor.compute_leiden(name,resolution))
+        cl = list(data_adaptor.compute_leiden(name,cName,resolution))
         return make_response(jsonify({"clusters": cl}), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
         return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
@@ -498,8 +524,8 @@ def preprocess_put(request, data_adaptor):
     reembedParams = args["params"] if args else {}
 
     try:
-        fail = data_adaptor.compute_preprocess(reembedParams)
-        return make_response(jsonify(fail), HTTPStatus.OK, {"Content-Type": "application/json"})
+        schema = data_adaptor.compute_preprocess(reembedParams)
+        return make_response(jsonify(schema), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
         return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
     except (ValueError, DisabledFeatureError, FilterError) as e:

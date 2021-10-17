@@ -100,9 +100,7 @@ export function _setEmbeddingSubset(annoMatrix, embeddingDf) {
     annoMatrix.rowIndex,
     embeddingDf
   );
-
   const curEmbSubsetView = getEmbSubsetView(annoMatrix);
-
   /* if no current embedding subset, and no new embedding subset, just noop */
   if (!embRowOffsets && !curEmbSubsetView) return annoMatrix;
   // ... otherwise, do the work

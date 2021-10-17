@@ -193,8 +193,7 @@ class AnndataAdaptor(DataAdaptor):
                     adata = anndata.read_h5ad(lh, backed=backed)
                 # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
                 # cost of significantly slower access to X data.
-                if len(adata.obsm.keys())==0:       
-                    adata.obsm["X_umap_init"] = np.zeros((adata.shape[0],2))
+                adata.obsm["X_root"] = np.zeros((adata.shape[0],2))
 
                 self.data = adata
                 self.data_orig = adata
@@ -338,8 +337,15 @@ class AnndataAdaptor(DataAdaptor):
         full_embedding = self.data.obsm[f"X_{ename}"]
         return full_embedding[:, 0:dims]
     
-    def compute_leiden(self,name,resolution):
-        X = self.data.uns.get('N_'+name,self.data.obsp['connectivities'])
+    def compute_leiden(self,name,cName,resolution):
+        nnm = self.data.uns.get('N_'+name,None)
+        if nnm is None:
+            nnm = self.data.obsp['connectivities']
+            mask = np.array([True]*nnm.shape[0])
+        else:
+            mask = self.data.uns['N_'+name+'_mask']
+            nnm = nnm[mask][:,mask]        
+        X = nnm
 
         import igraph as ig
         import leidenalg
@@ -360,10 +366,22 @@ class AnndataAdaptor(DataAdaptor):
         cl = leidenalg.find_partition(
             g, leidenalg.RBConfigurationVertexPartition, resolution_parameter=resolution,seed=0
         )
-        return np.array(cl.membership)        
+        result = np.array(cl.membership)
+        clusters = np.array(["unassigned"]*mask.size,dtype='object')
+        clusters[mask] = result.astype('str')
+        
+        self.data.obs[cName] = pd.Categorical(clusters)
+        self.data_orig.obs[cName] = pd.Categorical(clusters)
+        
+        return result      
 
     def compute_sankey_df(self, labels, name):
-        nnm = self.data.uns.get('N_'+name,self.data.obsp['connectivities'])
+        nnm = self.data.uns.get('N_'+name,None)
+        if nnm is None:
+            nnm = self.data.obsp['connectivities']
+        else:
+            mask = self.data.uns['N_'+name+'_mask']
+            nnm = nnm[mask][:,mask]
         nnm = (nnm+nnm.T)/2
         
         cl=[]
@@ -396,10 +414,8 @@ class AnndataAdaptor(DataAdaptor):
     
     
     def compute_preprocess(self, reembedParams):
-        print(self.data.obs.columns)
-        print(self.data_orig.obs.columns)
-                
-        adata = self.data_orig
+        self.data = self.data_orig.copy()
+        adata = self.data
 
         if adata.isbacked:
             raise NotImplementedError("Backed mode is incompatible with preprocessing.")
@@ -408,9 +424,7 @@ class AnndataAdaptor(DataAdaptor):
         sc = get_scanpy_module()
 
         cn = np.array(list(adata.obs["name_0"]))
-
-        for k in list(adata.obsm.keys()):
-            del adata.obsm[k]
+        uns = adata.uns.copy()
         for k in list(adata.uns.keys()):
             del adata.uns[k]
         
@@ -430,6 +444,7 @@ class AnndataAdaptor(DataAdaptor):
         sumNormalizeCells = reembedParams.get("sumNormalizeCells",False)
 
             
+        filt = np.array([True]*adata.shape[0])
 
         if doBatchPrep and batchPrepKey != "" and batchPrepLabel != "":
             cl = np.array(list(adata.obs[batchPrepKey]))
@@ -451,7 +466,6 @@ class AnndataAdaptor(DataAdaptor):
                 
                 adata_sub = adata[cl==k].copy()
                 adata_sub.obs_names = adata_sub.obs["name_0"]
-
                 if dataLayer == ".raw" and adata_sub.raw is not None:
                     adata_sub_raw = AnnData(X=adata_sub.raw.X)
                     adata_sub_raw.var_names = adata_sub.raw.var_names
@@ -477,11 +491,12 @@ class AnndataAdaptor(DataAdaptor):
                     filt1,_ = sc.pp.filter_cells(adata_sub_raw,min_counts=minCountsCF, inplace=False)
                     filt2,_ = sc.pp.filter_cells(adata_sub_raw,min_genes=minGenesCF, inplace=False)
                     filt = np.logical_and(filt1,filt2)
+
                     cns.extend(np.array(list(adata_sub_raw.obs["name_0"]))[filt])
-                    adata_sub_raw=adata_sub_raw[filt]
-                    a1=sc.pp.filter_genes(adata_sub_raw, min_counts=minCountsGF,inplace=False)
-                    a2=sc.pp.filter_genes(adata_sub_raw, min_cells=minCellsGF/100*adata_sub_raw.shape[0],inplace=False)
-                    a3=sc.pp.filter_genes(adata_sub_raw, max_cells=maxCellsGF/100*adata_sub_raw.shape[0],inplace=False)
+                    target_sum = np.median(np.array(adata_sub_raw.X[filt].sum(1)).flatten())
+                    a1,_=sc.pp.filter_genes(adata_sub_raw, min_counts=minCountsGF,inplace=False)
+                    a2,_=sc.pp.filter_genes(adata_sub_raw, min_cells=minCellsGF/100*adata_sub_raw.shape[0],inplace=False)
+                    a3,_=sc.pp.filter_genes(adata_sub_raw, max_cells=maxCellsGF/100*adata_sub_raw.shape[0],inplace=False)
                     a = a1*a2*a3
                     if sp.sparse.issparse(adata_sub_raw.X):
                         adata_sub_raw.X = adata_sub_raw.X.multiply(a.flatten()[None,:]).tocsc()
@@ -490,18 +505,19 @@ class AnndataAdaptor(DataAdaptor):
                 
 
                     if sumNormalizeCells:
-                        sc.pp.normalize_total(adata_sub_raw)
+                        sc.pp.normalize_total(adata_sub_raw,target_sum=target_sum)
                     if logTransform or adata_sub_raw.X.max() > 30:
-                        sc.pp.log1p(adata_sub_raw)   
+                        sc.pp.log1p(adata_sub_raw)  
+                else: 
+                    cns.extend(np.array(list(adata_sub_raw.obs["name_0"])))
 
 
                 adatas.append(adata_sub_raw)
             adata_raw = anndata.concat(adatas,axis=0,join="inner")
-            filt = np.in1d(np.array(list(cn)),np.array(list(adata_raw.obs["name_0"])))
-            cell_order = cn[filt]
+            filt = np.in1d(np.array(list(cn)),np.array(cns))
             temp = adata_raw.obs_names.copy()
             adata_raw.obs_names = adata_raw.obs["name_0"]
-            adata_raw = adata_raw[cell_order]
+            adata_raw = adata_raw[cn]
             adata_raw.obs_names = temp
         else:
             if dataLayer == ".raw" and adata.raw is not None:
@@ -530,10 +546,10 @@ class AnndataAdaptor(DataAdaptor):
                 filt1,_ = sc.pp.filter_cells(adata_raw,min_counts=minCountsCF, inplace=False)
                 filt2,_ = sc.pp.filter_cells(adata_raw,min_genes=minGenesCF, inplace=False)
                 filt = np.logical_and(filt1,filt2)
-                adata_raw=adata_raw[filt]
-                a1=sc.pp.filter_genes(adata_raw, min_counts=minCountsGF,inplace=False)
-                a2=sc.pp.filter_genes(adata_raw, min_cells=minCellsGF/100*adata_raw.shape[0],inplace=False)
-                a3=sc.pp.filter_genes(adata_raw, max_cells=maxCellsGF/100*adata_raw.shape[0],inplace=False)
+                target_sum = np.median(np.array(adata_raw.X[filt].sum(1)).flatten())
+                a1,_=sc.pp.filter_genes(adata_raw, min_counts=minCountsGF,inplace=False)
+                a2,_=sc.pp.filter_genes(adata_raw, min_cells=minCellsGF/100*adata_raw.shape[0],inplace=False)
+                a3,_=sc.pp.filter_genes(adata_raw, max_cells=maxCellsGF/100*adata_raw.shape[0],inplace=False)
                 a = a1*a2*a3
                 if sp.sparse.issparse(adata_raw.X):
                     adata_raw.X = adata_raw.X.multiply(a.flatten()[None,:]).tocsc()
@@ -541,13 +557,21 @@ class AnndataAdaptor(DataAdaptor):
                     adata_raw.X = adata_raw.X * (a.flatten()[None,:])
             
                 if sumNormalizeCells:
-                    sc.pp.normalize_total(adata_raw)
+                    sc.pp.normalize_total(adata_raw,target_sum=target_sum)
                 if logTransform or adata_raw.X.max() > 30:
                     sc.pp.log1p(adata_raw) 
-                                            
-        self.data = adata_raw
-        print(self.data.shape)
-        return True
+
+
+        self.data.X = adata_raw.X
+        self.data.uns=uns
+        
+        for k in self.data.obsm.keys():
+            umap = self.data.obsm[k]
+            result = np.full((filt.size, umap.shape[1]), np.NaN)
+            result[filt] = umap[filt]
+            self.data.obsm[k] = result
+        self._create_schema()
+        return self.get_schema()
 
     def compute_embedding(self, method, obsFilter, reembedParams, parentName, embName):
         if Axis.VAR in obsFilter:
@@ -600,8 +624,11 @@ class AnndataAdaptor(DataAdaptor):
 
  
             if not doSAM:
-                sc.pp.highly_variable_genes(adata,flavor='seurat_v3',n_top_genes=min(nTopGenesHVG,adata.shape[1]), n_bins=nBinsHVG)                
-                adata = adata[:,adata.var['highly_variable']]                
+                try:
+                    sc.pp.highly_variable_genes(adata,flavor='seurat_v3',n_top_genes=min(nTopGenesHVG,adata.shape[1]), n_bins=nBinsHVG)                
+                    adata = adata[:,adata.var['highly_variable']]                
+                except:
+                    print('Error during HVG selection - some of your expressions are probably negative.')
                 X = adata.X
                 if scaleData:
                     sc.pp.scale(adata,max_value=10)
@@ -665,11 +692,21 @@ class AnndataAdaptor(DataAdaptor):
         dims = [f"{name}_0", f"{name}_1"]
         layout_schema = {"name": name, "type": "float32", "dims": dims}
         self.schema["layout"]["obs"].append(layout_schema)
+
+        IXer = pd.Series(index =np.arange(nnm.shape[0]), data = np.where(obs_mask.flatten())[0])
+        x,y = nnm.nonzero()
+        d = nnm.data
+        nnm = sp.sparse.coo_matrix((d,(IXer[x].values,IXer[y].values)),shape=(self.data.shape[0],)*2).tocsr()
+
         self.data.obsm[f"X_{name}"] = X_umap
-        # This is where we store reembedding manifolds in uns.
+        self.data.obsp["connectivities"] = nnm
         self.data.uns[f"N_{name}"] = nnm
-        #self.data_orig.obsm[f"X_{name}"] = X_umap
-        #self.data_orig.uns[f"N_{name}"] = nnm        
+        self.data.uns[f"N_{name}_mask"] = np.array(list(obs_mask)).flatten()
+        
+        self.data_orig.obsm[f"X_{name}"] = X_umap
+        self.data_orig.obsp["connectivities"] = nnm
+        self.data_orig.uns[f"N_{name}"] = nnm     
+        self.data_orig.uns[f"N_{name}_mask"] = np.array(list(obs_mask)).flatten()
 
         return layout_schema
 

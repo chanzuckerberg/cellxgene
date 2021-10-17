@@ -96,7 +96,6 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
 
   dropObsmLayout(layout) {
     const newAnnoMatrix = this._clone();
-    console.log(newAnnoMatrix._cache.emb)
     newAnnoMatrix._cache.emb = this._cache.emb.dropCol(`${layout}_0`);
     newAnnoMatrix._cache.emb = this._cache.emb.dropCol(`${layout}_1`);
     newAnnoMatrix.schema = removeObsLayout(this.schema, layout);

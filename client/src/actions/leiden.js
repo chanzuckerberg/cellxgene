@@ -25,7 +25,7 @@ async function doLeidenFetch(dispatch, getState) {
     // get current embedding
     const { layoutChoice, Leiden } = state;
     const { res } = Leiden;
-
+    const name = `leiden_${layoutChoice.current}_res${Math.round((res+Number.EPSILON)*1000)/1000.0}`
     const af = abortableFetch(
       `${API.prefix}${API.version}leiden`,
       {
@@ -36,6 +36,7 @@ async function doLeidenFetch(dispatch, getState) {
         }),
         body: JSON.stringify({
           name: layoutChoice.current,
+          cName: name,
           resolution: res,
         }),
         credentials: "include",
@@ -64,7 +65,6 @@ async function doLeidenFetch(dispatch, getState) {
 export function requestLeiden() {
     return async (dispatch, getState) => {
       try {
-
         const res = await doLeidenFetch(dispatch, getState);
         const leiden = await res.json();
         dispatch({

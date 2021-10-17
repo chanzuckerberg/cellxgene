@@ -143,6 +143,13 @@ export const reembedParameters = (state = defaultReembedParams, action) => {
           ...state,
           batchPrepParams
         };        
+      } else if (key === "doBatch" && !value) {
+        return {
+          ...state,
+          [key]: value,
+          batchKey: ""
+        }
+        
       } else {
         return {
           ...state,

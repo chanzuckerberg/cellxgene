@@ -100,7 +100,7 @@ class Categories extends React.Component {
         newSchema,
         ctor,
         arr
-      );          
+      );         
       dispatch({
         type: "annotation: create category",
         data: name,

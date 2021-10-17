@@ -193,7 +193,7 @@ const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice, onDeleteEmbeddin
                 verticalAlign: "middle",
               }}
               children={
-                (queryName !== embName ? <AnchorButton
+                (queryName !== embName && queryName !== "root" ? <AnchorButton
                   icon="small-cross"
                   minimal
                   style={{

@@ -17,7 +17,6 @@ export async function _switchEmbedding(
   */
   const base = prevAnnoMatrix.base();
   const embeddingDf = await base.fetch("emb", newEmbeddingName);
-
   const annoMatrix = _setEmbeddingSubset(prevAnnoMatrix, embeddingDf);
   let obsCrossfilter = await new AnnoMatrixObsCrossfilter(
     annoMatrix,
