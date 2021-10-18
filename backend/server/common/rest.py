@@ -369,12 +369,12 @@ def output_data_put(request, data_adaptor):
                 del adata.uns[k]  
 
         try:
-            adata.obs_names = adata.obs["name_0"]
+            adata.obs_names = pd.Index(adata.obs["name_0"])
             del adata.obs["name_0"]
         except:
             pass
         try:
-            adata.var_names = adata.var["name_0"]
+            adata.var_names = pd.Index(adata.var["name_0"])
             del adata.var["name_0"]
         except:
             pass        
@@ -411,22 +411,17 @@ def reload_put(request, data_adaptor):
     adata = adata[f].copy()
     data_adaptor.data = adata
     data_adaptor.data_orig = data_adaptor.data_orig[f].copy()
+    
     try:
+        data_adaptor.data.obs_names = pd.Index(data_adaptor.data.obs["name_0"])
         del data_adaptor.data.obs["name_0"]
     except:
         pass
     try:
+        data_adaptor.data.var_names = pd.Index(data_adaptor.data.var["name_0"])
         del data_adaptor.data.var["name_0"]
     except:
-        pass
-    try:
-        del data_adaptor.data_orig.obs["name_0"]
-    except:
-        pass
-    try:
-        del data_adaptor.data_orig.var["name_0"]
-    except:
-        pass      
+        pass        
 
     data_adaptor._validate_and_initialize()
     
