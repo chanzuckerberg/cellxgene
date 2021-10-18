@@ -179,8 +179,16 @@ class AnndataAdaptor(DataAdaptor):
                         if os.path.isdir(file):
                             sc = get_scanpy_module()
                             adata = sc.read_10x_mtx(file)
+                            filt1,_ = sc.pp.filter_cells(adata,min_counts=100, inplace=False)
+                            filt2,_ = sc.pp.filter_cells(adata,min_genes=100, inplace=False)
+                            filt = np.logical_and(filt1,filt2)
+                            adata = adata[filt].copy()
+                        elif file.split('.')[-1] =='csv':
+                            adata = sc.read_csv(file) 
+                            adata.X = sp.sparse.csc_matrix(adata.X)
                         else:
                             adata = anndata.read_h5ad(file, backed=backed)
+
                         adatas.append(adata)
                         batch.append([file.split('.h5ad')[0].split('/')[-1]]*adata.shape[0])
                     adata = anndata.concat(adatas,join='inner',axis=0)
