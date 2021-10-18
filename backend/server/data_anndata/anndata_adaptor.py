@@ -167,7 +167,7 @@ class AnndataAdaptor(DataAdaptor):
             with data_locator.local_handle() as lh:
                 backed = "r" if self.server_config.adaptor__anndata_adaptor__backed else None
 
-                if os.path.isdir(lh):
+                if os.path.isdir(lh) and len(glob(lh+'/*.gz'))==0:
                     filenames = glob(lh+'/*')
                     adatas = []
                     batch = []
@@ -189,6 +189,9 @@ class AnndataAdaptor(DataAdaptor):
                     else:
                         key = f"orig.ident.{str(hex(int(time.time())))[2:]}"
                     adata.obs[key] = pd.Categorical(np.concatenate(batch))
+                elif len(glob(lh+'/*.gz'))>0:
+                    sc = get_scanpy_module()
+                    adata = sc.read_10x_mtx(lh)
                 else:
                     adata = anndata.read_h5ad(lh, backed=backed)
                 # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
@@ -491,7 +494,6 @@ class AnndataAdaptor(DataAdaptor):
                     filt1,_ = sc.pp.filter_cells(adata_sub_raw,min_counts=minCountsCF, inplace=False)
                     filt2,_ = sc.pp.filter_cells(adata_sub_raw,min_genes=minGenesCF, inplace=False)
                     filt = np.logical_and(filt1,filt2)
-
                     cns.extend(np.array(list(adata_sub_raw.obs["name_0"]))[filt])
                     target_sum = np.median(np.array(adata_sub_raw.X[filt].sum(1)).flatten())
                     a1,_=sc.pp.filter_genes(adata_sub_raw, min_counts=minCountsGF,inplace=False)
