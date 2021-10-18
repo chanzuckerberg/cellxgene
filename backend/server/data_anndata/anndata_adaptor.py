@@ -563,6 +563,7 @@ class AnndataAdaptor(DataAdaptor):
 
 
         self.data.X = adata_raw.X
+        self.data.layers['X'] = adata_raw.X
         self.data.uns=uns
         
         for k in self.data.obsm.keys():

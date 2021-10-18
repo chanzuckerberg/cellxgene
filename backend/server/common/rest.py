@@ -150,12 +150,7 @@ def annotations_obs_get(request, data_adaptor):
 
     try:
         labels = None
-        annotations = data_adaptor.dataset_config.user_annotations
-        if annotations.user_annotations_enabled():
-            labels = annotations.read_labels(data_adaptor)
-        #print(Axis.OBS)
-        #print(fields)
-        #print(labels)            
+        labels = data_adaptor.data.obs[fields]
         fbs = data_adaptor.annotation_to_fbs_matrix(Axis.OBS, fields, labels)
         return make_response(fbs, HTTPStatus.OK, {"Content-Type": "application/octet-stream"})
     except KeyError as e:
@@ -171,12 +166,14 @@ def annotations_put_fbs_helper(data_adaptor, fbs):
     new_label_df = decode_matrix_fbs(fbs)
     if not new_label_df.empty:
         new_label_df = data_adaptor.check_new_labels(new_label_df)
-    annotations.write_labels(new_label_df, data_adaptor)
+
+    for k in new_label_df.columns:
+        data_adaptor.data.obs[k] = pd.Categorical(np.array(list(new_label_df[k])).astype('str'))
+        data_adaptor.data_orig.obs[k] = pd.Categorical(np.array(list(new_label_df[k])).astype('str'))
 
 
 def inflate(data):
     return zlib.decompress(data)
-
 
 def annotations_obs_put(request, data_adaptor):
     annotations = data_adaptor.dataset_config.user_annotations
@@ -194,6 +191,7 @@ def annotations_obs_put(request, data_adaptor):
     try:
         annotations_put_fbs_helper(data_adaptor, fbs)
         res = json.dumps({"status": "OK"})
+        data_adaptor._create_schema()
         return make_response(res, HTTPStatus.OK, {"Content-Type": "application/json"})
     except (ValueError, DisabledFeatureError, KeyError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
@@ -352,7 +350,7 @@ def output_data_put(request, data_adaptor):
     if saveName != "":
         adata = data_adaptor.data
         X = adata.obsm["X_"+currentLayout]
-        adata = adata[np.invert(np.isnan(X)).sum(1)>0].copy()
+        adata = adata[np.isnan(X).sum(1)==0].copy()
         name = currentLayout.split(';')[-1]
         
         if labels and labelNames:
