@@ -197,7 +197,7 @@ class AnndataAdaptor(DataAdaptor):
                 # as of AnnData 0.6.19, backed mode performs initial load fast, but at the
                 # cost of significantly slower access to X data.
                 adata.obsm["X_root"] = np.zeros((adata.shape[0],2))
-
+                adata.obs_names_make_unique()
                 self.data = adata
                 self.data_orig = adata
 
