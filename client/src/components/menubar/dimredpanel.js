@@ -188,7 +188,7 @@ class DimredPanel extends React.PureComponent {
             />     
             <div style={{"margin":"auto 0"}}>
               <ParameterInput
-                label="num_norm_avg"
+                label="Weight mode"
                 param="weightModeSAM"
                 options={["dispersion","rms","combined"]}
               />    

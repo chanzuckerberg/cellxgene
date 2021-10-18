@@ -417,6 +417,9 @@ class AnndataAdaptor(DataAdaptor):
     
     
     def compute_preprocess(self, reembedParams):
+        if 'orig.exprs' not in self.data_orig.layers.keys():
+            self.data_orig.layers['orig.exprs'] = self.data_orig.X
+                        
         self.data = self.data_orig.copy()
         adata = self.data
 
