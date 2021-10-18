@@ -369,10 +369,12 @@ def output_data_put(request, data_adaptor):
                 del adata.uns[k]  
 
         try:
+            adata.obs_names = adata.obs["name_0"]
             del adata.obs["name_0"]
         except:
             pass
         try:
+            adata.var_names = adata.obs["name_0"]
             del adata.var["name_0"]
         except:
             pass        
