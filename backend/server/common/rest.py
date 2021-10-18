@@ -379,6 +379,11 @@ def output_data_put(request, data_adaptor):
         if "X" in adata.layers.keys():
             adata.X = adata.layers["X"]
             del adata.layers["X"]
+        
+        try:
+            del adata.obsm["X_root"]
+        except:
+            pass
 
         try:
             adata.write_h5ad(saveName.split('.h5ad')[0]+'.h5ad')
@@ -419,7 +424,7 @@ def reload_put(request, data_adaptor):
         del data_adaptor.data_orig.var["name_0"]
     except:
         pass      
-    
+
     data_adaptor._validate_and_initialize()
     
     try:
