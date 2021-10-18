@@ -1,6 +1,5 @@
 import React from "react";
 import { connect } from "react-redux";
-import { useAsync } from "react-async";
 import {
   Button,
   ButtonGroup,
@@ -10,12 +9,16 @@ import {
   Radio,
   RadioGroup,
   AnchorButton,
+  MenuItem,
+  Menu,
   Tooltip,
 } from "@blueprintjs/core";
 import * as globals from "../../globals";
 import actions from "../../actions";
 import { getDiscreteCellEmbeddingRowIndex } from "../../util/stateManager/viewStackHelpers";
 import _ from "lodash";
+import AnnoDialog from "../annoDialog";
+import LabelInput from "../labelInput";
 
 @connect((state) => {
   return {
@@ -28,15 +31,62 @@ import _ from "lodash";
 class Embedding extends React.PureComponent {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {newLayoutText: ""};
   }
+  
+  handleChangeOrSelect = (name) => {
+    this.setState({
+      newLayoutText: name,
+    });
+  };
 
+  activateEditLayoutMode = (e, embeddingName) => {
+    const { dispatch } = this.props;
+    this.setState({
+      newLayoutText: embeddingName.split(';;').at(-1)
+    })
+    dispatch({
+      type: "reembed: activate layout edit mode",
+      data: embeddingName,
+    });
+  };
+  disableEditLayoutMode = () => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: "reembed: deactivate layout edit mode",
+    });
+  };
+  handleEditLayout = (e) => {
+    const { dispatch, layoutChoice } = this.props;
+    const { newLayoutText } = this.state
+    const { available } = layoutChoice;
+    const toRename = [layoutChoice.layoutNameBeingEdited]
+    available.forEach((item) => {
+      if (item.includes(`${layoutChoice.layoutNameBeingEdited};;`)){
+        toRename.push(item)
+      }
+    });
+    const oldName = layoutChoice.layoutNameBeingEdited.split(';;').at(-1);
+    const newName = newLayoutText;
+    
+    toRename.forEach((item) => {
+      dispatch({type: "reembed: rename reembedding", embName: item, newName: item.replace(oldName,newName)})
+    })        
+    
+    if (oldName !== newName) {
+      dispatch(actions.requestRenameEmbedding(toRename,oldName,newName))
+    }
+    dispatch({
+      type: "reembed: deactivate layout edit mode",
+    });       
+  }
   handleLayoutChoiceChange = (e) => {
     const { dispatch, layoutChoice } = this.props;
-    if (layoutChoice.available.includes(e.currentTarget.value)) {
+    if (layoutChoice.available.includes(e.currentTarget.value) && !layoutChoice.isEditingLayoutName) {
       dispatch(actions.layoutChoiceAction(e.currentTarget.value));
-    }
+    } 
   };
+
   handleDeleteEmbedding = (e,val) => {
     const { dispatch, annoMatrix, layoutChoice } = this.props;
     const { available } = layoutChoice;
@@ -56,6 +106,7 @@ class Embedding extends React.PureComponent {
   }
   render() {
     const { layoutChoice, schema, crossfilter } = this.props;
+    const { newLayoutText } = this.state;
     const { annoMatrix } = crossfilter;
     return (
       <ButtonGroup
@@ -111,7 +162,40 @@ class Embedding extends React.PureComponent {
                 annoMatrix={annoMatrix}
                 layoutChoice={layoutChoice}
                 onDeleteEmbedding={this.handleDeleteEmbedding}
+                activateEditLayoutMode={this.activateEditLayoutMode}
               />
+              <AnnoDialog
+                isActive={
+                  layoutChoice.isEditingLayoutName
+                }
+                inputProps={{
+                  "data-testid": `edit-layout-name-dialog`,
+                }}
+                primaryButtonProps={{
+                  "data-testid": `submit-layout-edit`,
+                }}
+                title="Edit layout name"
+                instruction={"Choose a new layout name"}
+                cancelTooltipContent="Close this dialog without editing this layout."
+                primaryButtonText="Edit layout name"
+                text={layoutChoice.layoutNameBeingEdited}
+                handleSubmit={this.handleEditLayout}
+                handleCancel={this.disableEditLayoutMode}
+                annoInput={
+                  <LabelInput
+                    label={newLayoutText}
+                    inputProps={{
+                      "data-testid": `edit-layout-name-text`,
+                      leftIcon: "tag",
+                      intent: "none",
+                      autoFocus: true,
+                    }}
+                    onChange={this.handleChangeOrSelect}
+                    onSelect={this.handleChangeOrSelect}                    
+                    newLabelMessage="New layout name"
+                  />
+                }
+              />              
             </div>
           }
         />
@@ -122,30 +206,34 @@ class Embedding extends React.PureComponent {
 
 export default Embedding;
 
-const loadAllEmbeddingCounts = async ({ annoMatrix, available }) => {
+const loadAllEmbeddingCounts = async (annoMatrix, available) => {
   const embeddings = await Promise.all(
     available.map((name) => annoMatrix.base().fetch("emb", name))
   );
-  return available.map((name, idx) => ({
-    embeddingName: name,
-    embedding: embeddings[idx],
-    discreteCellIndex: getDiscreteCellEmbeddingRowIndex(embeddings[idx]),
-  }));
+  try {
+    return available.map((name, idx) => ({
+      embeddingName: name,
+      embedding: embeddings[idx],
+      discreteCellIndex: getDiscreteCellEmbeddingRowIndex(embeddings[idx]),
+    }));
+  } catch {
+    // nothing happens
+  }
+  
 };
 
-const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice, onDeleteEmbedding }) => {
+
+const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice, onDeleteEmbedding, activateEditLayoutMode }) => {
   const { available } = layoutChoice;
-  const { data, error, isPending } = useAsync({
-    promiseFn: loadAllEmbeddingCounts,
-    annoMatrix,
-    available,
-  });
+  const [ data, setData ] = React.useState(null)
   
-  if (error) {
-    /* log, as this is unexpected */
-    console.error(error);
-  }
-  if (error || isPending) {
+  React.useEffect(() => {
+    loadAllEmbeddingCounts(annoMatrix,available).then((res)=>{
+      setData(res)
+    })
+  }, [annoMatrix,available]);
+
+  if (!data) {
     /* still loading, or errored out - just omit counts (TODO: spinner?) */
     return (
       <div>
@@ -193,7 +281,24 @@ const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice, onDeleteEmbeddin
                 verticalAlign: "middle",
               }}
               children={
-                (queryName !== embName && queryName !== "root" ? <AnchorButton
+              <div style={{
+                paddingLeft: "5px",
+              }}>
+                {queryName !== "root" ?
+               <AnchorButton
+                  icon="more"
+                  data-testid={`${embeddingName}:edit-category-mode`}
+                  onClick={(e) => activateEditLayoutMode(e,queryName)}
+                  minimal
+                  style={{
+                    cursor: "pointer",
+                    marginLeft: "auto",
+                    marginTop: "-5px"
+                  }}                    
+                /> : null}
+                {queryName !== embName && queryName !== "root" ?
+
+                <AnchorButton
                   icon="small-cross"
                   minimal
                   style={{
@@ -202,7 +307,8 @@ const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice, onDeleteEmbeddin
                     marginTop: "-5px"
                   }}
                   onClick={(e) => onDeleteEmbedding(e,queryName)}
-                /> : null)
+                /> : null}  
+              </div> 
               }
             />  
             
@@ -220,6 +326,28 @@ const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice, onDeleteEmbeddin
           label={`${embName.split(';;').at(-1)}: ${sizeHintCurrent}`}
           value={name}
           key={name}
+          style={{
+            display: "flex",
+            verticalAlign: "middle",
+          }}          
+          children={
+            <div style={{
+              paddingLeft: "5px",
+            }}>
+              {embName !== "root" ?
+              <AnchorButton
+                icon="more"
+                data-testid={`${embName}:edit-category-mode`}
+                onClick={(e) => activateEditLayoutMode(e,embName)}
+                minimal
+                style={{
+                  cursor: "pointer",
+                  marginLeft: "auto",
+                  marginTop: "-5px"
+                }}                    
+              /> : null}
+            </div>
+          }          
         />        
       )
       x.unshift(
@@ -227,11 +355,33 @@ const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice, onDeleteEmbeddin
           label={`(Parent) ${parentName.split(';;').at(-1)}: ${sizeHintParent}`}
           value={parentName}
           key={parentName}
+          style={{
+            display: "flex",
+            verticalAlign: "middle",
+          }}          
+          children={
+            <div style={{
+              paddingLeft: "5px",
+            }}>
+              {parentName !== "root" ?
+              <AnchorButton
+                icon="more"
+                data-testid={`${parentName}:edit-category-mode`}
+                onClick={(e) => activateEditLayoutMode(e,parentName)}
+                minimal
+                style={{
+                  cursor: "pointer",
+                  marginLeft: "auto",
+                  marginTop: "-5px"
+                }}                    
+              /> : null}
+            </div>
+          }               
         />        
       )      
     }
 
-    return (
+    return (      
       <RadioGroup onChange={onChange} selectedValue={layoutChoice.current}>
         {x}
       </RadioGroup>

@@ -27,6 +27,8 @@ const LayoutChoice = (
     sankey: false,
     current: undefined, // name of the current layout, eg, 'umap'
     currentDimNames: [], // dimension name
+    layoutNameBeingEdited: "",
+    isEditingLayoutName: false,
   },
   action,
   nextSharedState
@@ -73,6 +75,44 @@ const LayoutChoice = (
         available,
       };
     }
+    case "reembed: rename reembedding": {
+      let { current } = state;
+      const { newName } = action
+      const available = Array.from(new Set(state.available));
+      const availableNew = []
+      available.forEach((item)=>{
+        if (item === action.embName){
+          availableNew.push(action.newName) 
+        } else {
+          availableNew.push(item) 
+        }
+      })
+      const oldname = action.embName.split(';;').at(-1)
+      const newname = newName.split(';;').at(-1)
+      if (current === action.embName || current.includes(`${action.embName};;`)){
+        current = current.replace(oldname,newname)
+      }
+      return {
+        ...state,
+        available: availableNew,
+        current: current,
+        currentDimNames: [`${current}_0`,`${current}_1`]        
+      };
+    }
+    case "reembed: activate layout edit mode": {
+      return {
+        ...state,
+        isEditingLayoutName: true,
+        layoutNameBeingEdited: action.data,
+      };      
+    }
+    case "reembed: deactivate layout edit mode": {
+      return {
+        ...state,
+        isEditingLayoutName: false,
+        layoutNameBeingEdited: "",
+      };      
+    }    
     default: {
       return state;
     }

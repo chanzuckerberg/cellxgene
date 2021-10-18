@@ -210,6 +210,12 @@ class LayerAPI(Resource):
     def put(self, data_adaptor):
         return common_rest.change_layer_put(request, data_adaptor)
 
+class ReloadAPI(Resource):
+    @cache_control(no_store=True)
+    @rest_get_data_adaptor
+    def put(self, data_adaptor):
+        return common_rest.reload_put(request, data_adaptor)
+
 class OutputAPI(Resource):
     @cache_control(no_store=True)
     @rest_get_data_adaptor
@@ -233,6 +239,12 @@ class DeleteObsmAPI(Resource):
     @rest_get_data_adaptor
     def put(self, data_adaptor):
         return common_rest.delete_obsm_put(request, data_adaptor)
+
+class RenameObsmAPI(Resource):
+    @cache_control(no_store=True)
+    @rest_get_data_adaptor
+    def put(self, data_adaptor):
+        return common_rest.rename_obsm_put(request, data_adaptor)
 
 class LeidenClusterAPI(Resource):
     @cache_control(no_store=True)
@@ -311,7 +323,9 @@ def get_api_dataroot_resources(bp_dataroot):
     add_resource(OutputAPI, "/output")
     add_resource(LeidenClusterAPI, "/leiden")
     add_resource(DeleteObsmAPI, "/layout/obsm")
+    add_resource(RenameObsmAPI, "/layout/rename")
     add_resource(PreprocessAPI, "/preprocess")
+    add_resource(ReloadAPI, "/reload")
     add_resource(SummarizeVarAPI, "/summarize/var")
     # Display routes
     add_resource(ColorsAPI, "/colors")

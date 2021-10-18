@@ -51,7 +51,7 @@ class Preprocessing extends React.PureComponent {
   }
   render() {
     const { setPreprocessingDialogActive } = this.state;
-    const { reembedController, preprocessController, idhash } = this.props;
+    const { reembedController, preprocessController, idhash, reembedParams } = this.props;
     const loading = !!reembedController?.pendingFetch || !!preprocessController?.pendingFetch;    
     const tipContent =
       "Click to perform preprocessing.";
@@ -76,7 +76,8 @@ class Preprocessing extends React.PureComponent {
             <PrepPanel idhash={idhash} />
             <ControlGroup style={{paddingTop: "15px"}} fill={true} vertical={false}>
               <Button onClick={this.handleDisablePreprocessingDialog}>Close</Button>
-              <Button onClick={this.handleRunAndDisablePreprocessingDialog} intent="primary"> Preprocess </Button>                 
+              <Button disabled={reembedParams.doBatchPrep && (reembedParams.batchPrepKey==="" || reembedParams.batchPrepLabel === "")}
+                      onClick={this.handleRunAndDisablePreprocessingDialog} intent="primary"> Preprocess </Button>                 
             </ControlGroup>            
           </div>
         </Dialog>

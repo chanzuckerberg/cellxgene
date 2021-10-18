@@ -419,7 +419,7 @@ class AnndataAdaptor(DataAdaptor):
     def compute_preprocess(self, reembedParams):
         if 'orig.exprs' not in self.data_orig.layers.keys():
             self.data_orig.layers['orig.exprs'] = self.data_orig.X
-                        
+            
         self.data = self.data_orig.copy()
         adata = self.data
 
@@ -511,11 +511,10 @@ class AnndataAdaptor(DataAdaptor):
 
                     if sumNormalizeCells:
                         sc.pp.normalize_total(adata_sub_raw,target_sum=target_sum)
-                    if logTransform or adata_sub_raw.X.max() > 30:
+                    if logTransform:
                         sc.pp.log1p(adata_sub_raw)  
                 else: 
                     cns.extend(np.array(list(adata_sub_raw.obs["name_0"])))
-
 
                 adatas.append(adata_sub_raw)
             adata_raw = anndata.concat(adatas,axis=0,join="inner")
@@ -563,7 +562,7 @@ class AnndataAdaptor(DataAdaptor):
             
                 if sumNormalizeCells:
                     sc.pp.normalize_total(adata_raw,target_sum=target_sum)
-                if logTransform or adata_raw.X.max() > 30:
+                if logTransform:
                     sc.pp.log1p(adata_raw) 
 
 

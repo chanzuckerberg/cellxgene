@@ -19,7 +19,8 @@ import actions from "../actions";
   loading: state.controls.loading,
   error: state.controls.error,
   graphRenderCounter: state.controls.graphRenderCounter,
-  layoutChoice: state.layoutChoice
+  layoutChoice: state.layoutChoice,
+  refresher: state.controls.refresher
 }))
 class App extends React.Component {
   componentDidMount() {
@@ -31,7 +32,13 @@ class App extends React.Component {
     dispatch(actions.doInitialDataLoad(window.location.search));
     this.forceUpdate();
   }
-
+  componentDidUpdate(prevProps) {
+    const { dispatch, refresher } = this.props
+    if (refresher !== prevProps.refresher){
+      dispatch(actions.doInitialDataLoad(window.location.search));
+      window.location.reload(true)
+    }
+  }
   _onURLChanged() {
     const { dispatch } = this.props;
 

@@ -2,7 +2,7 @@
 action creators related to embeddings choice
 */
 
-import { AnnoMatrixObsCrossfilter } from "../annoMatrix";
+import { AnnoMatrixLoader, AnnoMatrixObsCrossfilter } from "../annoMatrix";
 import { _setEmbeddingSubset } from "../util/stateManager/viewStackHelpers";
 import { API } from "../globals";
 
@@ -60,6 +60,52 @@ export const requestDeleteEmbedding = (toDelete) => async (
     msg = `${msg} -- ${body}`;
   }
   throw new Error(msg);
+}
+
+export const requestRenameEmbedding = (toRename,oldName,newName) => async (
+  dispatch,
+  getState
+) => {
+
+const res = await fetch(
+  `${API.prefix}${API.version}layout/rename`,
+  {
+    method: "PUT",
+    headers: new Headers({
+      Accept: "application/octet-stream",
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify({
+      embNames: toRename,
+      oldName: oldName,
+      newName: newName
+    }),
+    credentials: "include",
+  }
+);
+const schema = await res.json();
+
+const baseDataUrl = `${API.prefix}${API.version}`;
+const annoMatrix = new AnnoMatrixLoader(baseDataUrl, schema.schema);
+const obsCrossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);   
+     
+dispatch({
+  type: "annoMatrix: init complete",
+  annoMatrix: annoMatrix,
+  obsCrossfilter: obsCrossfilter,
+});   
+
+if (res.ok && res.headers.get("Content-Type").includes("application/json")) {      
+  return schema;
+}
+
+// else an error
+let msg = `Unexpected HTTP response ${res.status}, ${res.statusText}`;
+const body = await res.text();
+if (body && body.length > 0) {
+  msg = `${msg} -- ${body}`;
+}
+throw new Error(msg);
 }
 
 export const layoutChoiceAction = (newLayoutChoice) => async (

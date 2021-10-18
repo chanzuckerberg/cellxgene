@@ -126,9 +126,12 @@ class AnndataAdaptor(DataAdaptor):
 
     def _create_schema(self):
         if self.data.raw is not None:
-            layers = ["X",".raw"]+list(self.data.layers.keys())
+            layers = [".raw"]+list(self.data.layers.keys())
         else:
-            layers = ["X"]+list(self.data.layers.keys())
+            layers = list(self.data.layers.keys())
+        
+        if "X" not in layers:
+            layers = ["X"] + layers
 
         self.schema = {
             "dataframe": {"nObs": self.cell_count, "nVar": self.gene_count, "type": str(self.data.X.dtype)},

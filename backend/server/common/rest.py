@@ -372,7 +372,10 @@ def output_data_put(request, data_adaptor):
             del adata.obs["name_0"]
         except:
             pass
-        
+        try:
+            del adata.var["name_0"]
+        except:
+            pass        
         if "X" in adata.layers.keys():
             adata.X = adata.layers["X"]
             del adata.layers["X"]
@@ -382,6 +385,43 @@ def output_data_put(request, data_adaptor):
         except:
             fail=True
 
+    try:
+        return make_response(jsonify({"fail": fail}), HTTPStatus.OK, {"Content-Type": "application/json"})
+    except NotImplementedError as e:
+        return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
+    except (ValueError, DisabledFeatureError, FilterError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)  
+
+def reload_put(request, data_adaptor):
+    args = request.get_json()
+    currentLayout = args.get("currentLayout",None)
+
+    fail=False
+    adata = data_adaptor.data
+    X = adata.obsm["X_"+currentLayout]
+    f = np.isnan(X).sum(1)==0
+    adata = adata[f].copy()
+    data_adaptor.data = adata
+    data_adaptor.data_orig = data_adaptor.data_orig[f].copy()
+    try:
+        del data_adaptor.data.obs["name_0"]
+    except:
+        pass
+    try:
+        del data_adaptor.data.var["name_0"]
+    except:
+        pass
+    try:
+        del data_adaptor.data_orig.obs["name_0"]
+    except:
+        pass
+    try:
+        del data_adaptor.data_orig.var["name_0"]
+    except:
+        pass      
+    
+    data_adaptor._validate_and_initialize()
+    
     try:
         return make_response(jsonify({"fail": fail}), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
@@ -444,11 +484,11 @@ def delete_obsm_put(request, data_adaptor):
             try:
                 del data_adaptor.data.obsm[f'X_{embName}']
                 del data_adaptor.data_orig.obsm[f'X_{embName}']
-                del data_adaptor.data.uns[f"N_{embName}_mask"]
             except:
                 pass
             try:
                 del data_adaptor.data.uns[f"N_{embName}"]
+                del data_adaptor.data.uns[f"N_{embName}_mask"]
                 del data_adaptor.data_orig.uns[f"N_{embName}"]
                 del data_adaptor.data_orig.uns[f"N_{embName}_mask"]
             except:
@@ -461,6 +501,50 @@ def delete_obsm_put(request, data_adaptor):
         return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
     except (ValueError, DisabledFeatureError, FilterError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)    
+
+def rename_obsm_put(request, data_adaptor):
+    args = request.get_json()
+    embNames = args.get("embNames",None)
+    oldName = args.get("oldName",None)
+    newName = args.get("newName",None)
+
+    if embNames is not None and oldName is not None and newName is not None:
+        for embName in embNames:
+            try:
+                X1 = data_adaptor.data.obsm[f'X_{embName}']
+                X2 = data_adaptor.data_orig.obsm[f'X_{embName}']                
+                del data_adaptor.data.obsm[f'X_{embName}']
+                del data_adaptor.data_orig.obsm[f'X_{embName}']
+                data_adaptor.data.obsm[f'X_{embName.replace(oldName,newName)}'] = X1
+                data_adaptor.data_orig.obsm[f'X_{embName.replace(oldName,newName)}'] = X2
+            except:
+                pass
+            try:
+                X1 = data_adaptor.data.uns[f"N_{embName}"]
+                X2 = data_adaptor.data.uns[f"N_{embName}_mask"]
+                X3 = data_adaptor.data_orig.uns[f"N_{embName}"]
+                X4 = data_adaptor.data_orig.uns[f"N_{embName}_mask"]
+
+                del data_adaptor.data.uns[f"N_{embName}"]
+                del data_adaptor.data.uns[f"N_{embName}_mask"]
+                del data_adaptor.data_orig.uns[f"N_{embName}"]
+                del data_adaptor.data_orig.uns[f"N_{embName}_mask"]
+
+                data_adaptor.data.uns[f"N_{embName.replace(oldName,newName)}"] = X1
+                data_adaptor.data.uns[f"N_{embName.replace(oldName,newName)}_mask"] = X2
+                data_adaptor.data_orig.uns[f"N_{embName.replace(oldName,newName)}"] = X3
+                data_adaptor.data_orig.uns[f"N_{embName.replace(oldName,newName)}_mask"] = X4                
+            except:
+                pass
+
+            data_adaptor._refresh_layout_schema()
+    try:
+        return make_response(jsonify({"schema": data_adaptor.get_schema()}), HTTPStatus.OK, {"Content-Type": "application/json"})
+    except NotImplementedError as e:
+        return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
+    except (ValueError, DisabledFeatureError, FilterError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)    
+
 
 def change_layer_put(request, data_adaptor):
     args = request.get_json()

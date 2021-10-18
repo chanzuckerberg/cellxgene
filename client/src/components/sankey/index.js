@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import * as d3s from "d3-sankey";
 import { connect } from "react-redux";
 import { requestSankey } from "../../actions/sankey";
+import { width } from "../scatterplot/util";
 
 @connect((state) => ({
     layoutChoice: state.layoutChoice,
@@ -18,6 +19,7 @@ class Sankey extends React.Component {
     this.displayed = false;
     this.state = {
       viewport,
+      height: viewport.height
     };
   }
 
@@ -64,7 +66,6 @@ class Sankey extends React.Component {
     const topMargin = this.sankeyTopPadding
     const leftMargin = this.sankeyLeftPadding
     const width = viewport.width 
-    const height = viewport.height
     const nodeWidth = 24;
     const nodePadding = 16;
     const nodeOpacity = 0.8;
@@ -204,7 +205,14 @@ class Sankey extends React.Component {
                   .append("g")
                   .attr("transform", `translate(${leftMargin},${topMargin})`);
     // Define our sankey instance.
+    let height = 1500 / 25 * data.nodes.length / 2
+    if (height < viewport.height) {
+      height = viewport.height
+    }
     const graphSize = [width - 2*leftMargin, height - 2*topMargin];
+    this.setState({
+      height: height
+    })
     const sankey = d3s.sankey()
                      .size(graphSize)
                      .nodeId(d => d.id)
@@ -274,6 +282,7 @@ class Sankey extends React.Component {
         let totalHeight = nodesAtThisDepth
                             .map(n => n.height)
                             .reduce(sumValues, 0);
+
         let whitespace = graphSize[1] - totalHeight;
         let balancedWhitespace = whitespace / (numberOfNodes + 1.0);
     });
@@ -309,7 +318,12 @@ class Sankey extends React.Component {
     d3.selectAll("#canvas > *").remove()
     this.constructSankey()
   };
-    
+  componentDidUpdate(prevProps) {
+    const { layoutChoice } = this.props
+    if (layoutChoice.current !== prevProps.layoutChoice.current) {
+      this.handleSankey()
+    }
+  }
   componentDidMount() {
     window.addEventListener("resize", this.handleResize);
     this.constructSankey();
@@ -327,7 +341,7 @@ class Sankey extends React.Component {
   };
 
   render() {
-    const { categories } = this.props
+    const { height } = this.state
     return (
       <div
         id="sankey-wrapper"
@@ -340,7 +354,7 @@ class Sankey extends React.Component {
           height: "inherit"
         }}
       >
-        {<svg id="canvas" style={{width:"100%", height:"100%"}}/>}
+        {<svg id="canvas" style={{width: "100%", height:height}}/>}
       </div>
     );
   }

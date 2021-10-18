@@ -6,7 +6,7 @@ const Controls = (
     // data loading flag
     loading: true,
     error: null,
-
+    refresher: false,
     // all of the data + selection state
     userDefinedGenes: [],
     userDefinedGenesLoading: false,
@@ -96,7 +96,13 @@ const Controls = (
         error: action.error,
       };
     }
-
+    case "app: refresh": {
+      const { refresher } = state;
+      return {
+        ...state,
+        refresher: !refresher
+      }
+    }
     /*******************************
              User Events
      *******************************/

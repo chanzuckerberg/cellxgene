@@ -221,7 +221,64 @@ export function requestDataLayerChange(dataLayer) {
     }
   }
 }
-  
+export function requestReloadBackend() {
+  return async (dispatch, getState) => {
+    try{
+      const { layoutChoice } = getState()
+      const af = abortableFetch(
+        `${API.prefix}${API.version}reload`,
+        {
+          method: "PUT",
+          headers: new Headers({
+            Accept: "application/octet-stream",
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({
+            currentLayout: layoutChoice.current,
+          }),        
+          credentials: "include",
+          },
+          60000
+      );
+      dispatch({
+        type: "output data: request start",
+        abortableFetch: af,
+      });
+      const res = await af.ready();      
+      
+      dispatch({
+        type: "app: refresh"
+      })
+
+      dispatch({
+        type: "output data: request completed",
+      });
+
+      postAsyncSuccessToast("Data has successfuly overwritten the backend.");
+
+      if (res.ok && res.headers.get("Content-Type").includes("application/json")) {      
+        return true;
+      }
+
+      // else an error
+      let msg = `Unexpected HTTP response ${res.status}, ${res.statusText}`;
+      const body = await res.text();
+      if (body && body.length > 0) {
+        msg = `${msg} -- ${body}`;
+      }
+      throw new Error(msg);
+    } catch (error) {
+      dispatch({
+        type: "ouput data: request aborted",
+      });
+      if (error.name === "AbortError") {
+        postAsyncFailureToast("Data output was aborted.");
+      } else {
+        postNetworkErrorToast(`Data output: ${error.message}`);
+      }
+    }
+  }
+}
 /*
 Application bootstrap
 */
@@ -418,6 +475,7 @@ function fetchJson(pathAndQuery) {
 export default {
   doInitialDataLoad,
   requestDataLayerChange,
+  requestReloadBackend,
   selectAll,
   requestDifferentialExpression,
   requestSingleGeneExpressionCountsForColoringPOST,
@@ -461,6 +519,7 @@ export default {
   needToSaveObsAnnotations: annoActions.needToSaveObsAnnotations,
   layoutChoiceAction: embActions.layoutChoiceAction,
   requestDeleteEmbedding: embActions.requestDeleteEmbedding,
+  requestRenameEmbedding: embActions.requestRenameEmbedding,
   setCellSetFromSelection: selnActions.setCellSetFromSelection,
   setCellSetFromInputArray: selnActions.setCellSetFromInputArray,
   genesetDelete: genesetActions.genesetDelete,

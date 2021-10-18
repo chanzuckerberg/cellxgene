@@ -130,6 +130,10 @@ class MenuBar extends React.PureComponent {
     const { saveName } = this.state;
     dispatch(actions.requestSaveAnndataToFile(saveName))
   }
+  handleReload = () => {
+    const { dispatch } = this.props;
+    dispatch(actions.requestReloadBackend())
+  }
   isClipDisabled = () => {
     /*
     return true if clip button should be disabled.
@@ -407,12 +411,7 @@ class MenuBar extends React.PureComponent {
             </Tooltip>
     
         </ButtonGroup>
-        <Subset
-          subsetPossible={subsetPossible}
-          subsetResetPossible={subsetResetPossible}
-          handleSubset={this.handleSubset}
-          handleSubsetReset={this.handleSubsetReset}
-        />
+
         {disableDiffexp ? null : <DiffexpButtons />}
         <div
             style={{
@@ -431,16 +430,37 @@ class MenuBar extends React.PureComponent {
             style={{
               paddingBottom: "9px",
               paddingTop: "8px"
-            }}>                  
+            }}>  
+          <Tooltip
+            content="Write current subset into the backend."
+            position="bottom"
+            hoverOpenDelay={globals.tooltipHoverOpenDelay}
+          >   
           <AnchorButton
               type="button"
-              icon="floppy-disk"
+              icon="refresh"
               loading={loading}
-              disabled={saveName===""}
               onClick={() => {
-                this.handleSaveData()
+                this.handleReload()
               }}
-            />    
+            /> 
+            </Tooltip> 
+            <Tooltip
+              content="Save current subset to an `.h5ad` file."
+              position="bottom"
+              hoverOpenDelay={globals.tooltipHoverOpenDelay}
+            >                                              
+            <AnchorButton
+                type="button"
+                icon="floppy-disk"
+                loading={loading}
+                disabled={saveName===""}
+                onClick={() => {
+                  this.handleSaveData()
+                }}
+              /> 
+            </Tooltip>
+              
           </div>  
        
       </div>
