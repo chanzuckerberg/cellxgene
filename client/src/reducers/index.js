@@ -23,7 +23,7 @@ import centroidLabels from "./centroidLabels";
 import pointDialation from "./pointDilation";
 import sankeySelection, { sankeyController } from "./sankeySelection";
 import Leiden, { leidenController } from "./leiden";
-import { reembedController, reembedParameters } from "./reembed";
+import { reembedController, preprocessController, reembedParameters } from "./reembed";
 import { gcMiddleware as annoMatrixGC } from "../annoMatrix";
 import outputController from "./output";
 
@@ -50,6 +50,7 @@ const Reducer = undoable(
     ["centroidLabels", centroidLabels],
     ["pointDilation", pointDialation],
     ["reembedController", reembedController],
+    ["preprocessController", preprocessController],
     ["outputController", outputController],
     ["sankeyController", sankeyController],
     ["leidenController", leidenController],    

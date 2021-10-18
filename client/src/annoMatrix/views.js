@@ -42,10 +42,14 @@ class AnnoMatrixView extends AnnoMatrix {
     return newAnnoMatrix;
   }
   dropObsmLayout(layout) {
-    const newAnnoMatrix = this._clone();
-    newAnnoMatrix.viewOf = this.viewOf.dropObsmLayout(layout);
-    newAnnoMatrix._cache.emb = this._cache.emb.dropCol(`${layout}_0`);
-    newAnnoMatrix._cache.emb = this._cache.emb.dropCol(`${layout}_1`);
+    const newAnnoMatrix = this._clone();    
+    try{
+      newAnnoMatrix.viewOf = this.viewOf.dropObsmLayout(layout);      
+      newAnnoMatrix._cache.emb = this._cache.emb.dropCol(`${layout}_0`);
+      newAnnoMatrix._cache.emb = this._cache.emb.dropCol(`${layout}_1`);
+    } catch (error){
+      console.log(`Ignoring due to: ${error}`)
+    }    
     newAnnoMatrix.schema = newAnnoMatrix.viewOf.schema;
     return newAnnoMatrix;
   }

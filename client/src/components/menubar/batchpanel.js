@@ -79,8 +79,6 @@ class BatchPanel extends React.PureComponent {
     panel = reembedParams.doBatch ? panel : null;
     return (
       <div>
-      <DefaultsButton dispatch={dispatch}/>
-      <div style={{"paddingLeft":"10px"}}>     
         <ControlGroup fill={true} vertical={false}>
           <ParameterInput 
             label="Batch correct?"
@@ -99,7 +97,6 @@ class BatchPanel extends React.PureComponent {
             options={allCategoryNames}
           />    
         </ControlGroup>  
-      </div>
       {panel}      
     </div>
     );

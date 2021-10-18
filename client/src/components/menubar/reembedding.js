@@ -4,19 +4,18 @@ import {
   AnchorButton,
   ButtonGroup,
   Tooltip,
-  DialogStep,
-  MultistepDialog,
-  InputGroup,
+  Dialog,
+  ControlGroup,
+  Button
 } from "@blueprintjs/core";
 import * as globals from "../../globals";
 import actions from "../../actions";
 import styles from "./menubar.css";
-import PrepPanel from "./preppanel";
-import BatchPanel from "./batchpanel";
 import DimredPanel from "./dimredpanel";
 
 @connect((state) => ({
   reembedController: state.reembedController,
+  preprocessController: state.preprocessController,
   reembedParams: state.reembedParameters,
   annoMatrix: state.annoMatrix,
   idhash: state.config?.parameters?.["annotations-user-data-idhash"] ?? null,
@@ -67,26 +66,16 @@ class Reembedding extends React.PureComponent {
   }
   render() {
     const { setReembedDialogActive, embName } = this.state;
-    const { reembedController, idhash, reembedParams, annoMatrix, obsCrossfilter } = this.props;
-    const loading = !!reembedController?.pendingFetch;
+    const { reembedController, idhash, annoMatrix, obsCrossfilter, preprocessController, reembedParams } = this.props;
+    const loading = !!reembedController?.pendingFetch || !!preprocessController?.pendingFetch;
     const tipContent =
       "Click to recompute UMAP embedding on the currently selected cells.";
-    const finalButtonProps = {
-      intent: "primary",
-      onClick: this.handleRunAndDisableReembedDialog,
-      text: "Run",
-    };
-    const nextButtonProps = {
-      intent: "primary",
-      disabled: reembedParams.doBatch && reembedParams.batchKey === "",
-      text: "Next",
-    };
+
     return (
       <ButtonGroup className={styles.menubarButton}>
-        <MultistepDialog
+        <Dialog
           icon="info-sign"
           onClose={this.handleDisableReembedDialog}
-          finalButtonProps={finalButtonProps}
           title={`Reembedding on ${obsCrossfilter.countSelected()}/${annoMatrix.schema.dataframe.nObs} cells.`}
           autoFocus
           canEscapeKeyClose
@@ -95,32 +84,18 @@ class Reembedding extends React.PureComponent {
           initialStepIndex={0}
           isOpen={setReembedDialogActive}
           usePortal
-        >
-          <DialogStep
-            id="preprocessing"
-            panel={<PrepPanel idhash={idhash} />}
-            title="Preprocessing"
-          />
-          <DialogStep
-            id="batchcorrect"
-            panel={
-              <div>
-                <BatchPanel idhash={idhash} />
-              </div>
-            }
-            title="Batch correction"
-            nextButtonProps={nextButtonProps}
-          />
-          <DialogStep
-            id="dimred"
-            panel={
-              <div>
-                <DimredPanel embName={embName} onChange={this.onNameChange} idhash={idhash} />
-              </div>
-            }
-            title="Dimensionality reduction"
-          />
-        </MultistepDialog>
+        >        
+          <div style={{
+            marginLeft: "10px",
+            marginRight: "10px"
+          }}>        
+            <DimredPanel embName={embName} onChange={this.onNameChange} idhash={idhash} />
+            <ControlGroup style={{paddingTop: "15px"}} fill={true} vertical={false}>
+                <Button onClick={this.handleDisableReembedDialog}>Close</Button>
+                <Button disabled={reembedParams.doBatch && reembedParams.batchKey===""} onClick={this.handleRunAndDisableReembedDialog} intent="primary"> Run </Button>                 
+            </ControlGroup>            
+          </div>
+        </Dialog>
         <Tooltip
           content={tipContent}
           position="bottom"

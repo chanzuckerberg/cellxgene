@@ -262,7 +262,7 @@ export default class AnnoMatrixLoader extends AnnoMatrix {
     }
 
     const buffer = await promiseThrottle.priorityAdd(priority, doRequest);
-    const result = matrixFBSToDataframe(buffer);
+    const result = matrixFBSToDataframe(buffer);    
     if (!result || result.isEmpty()) throw Error("Unknown field/col");
 
     const whereCacheUpdate = _whereCacheCreate(

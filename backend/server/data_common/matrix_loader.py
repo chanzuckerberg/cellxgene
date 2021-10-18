@@ -3,7 +3,7 @@ from enum import Enum
 from backend.common.utils.data_locator import DataLocator
 from backend.common.errors import DatasetAccessError
 from http import HTTPStatus
-
+import os
 
 class MatrixDataType(Enum):
     H5AD = "h5ad"
@@ -22,7 +22,6 @@ class MatrixDataLoader(object):
         self.matrix_data_type = matrix_data_type
         # matrix_type is a DataAdaptor type, which corresonds to the matrix_data_type
         self.matrix_type = None
-
         if matrix_data_type is None:
             self.matrix_data_type = self.__matrix_data_type()
 
@@ -35,7 +34,7 @@ class MatrixDataLoader(object):
             self.matrix_type = AnndataAdaptor
 
     def __matrix_data_type(self):
-        if self.location.path.endswith(".h5ad"):
+        if self.location.path.endswith(".h5ad") or os.path.isdir(self.location.path):
             return MatrixDataType.H5AD
         else:
             return MatrixDataType.UNKNOWN

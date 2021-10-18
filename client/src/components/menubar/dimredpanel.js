@@ -8,6 +8,7 @@ import {
 } from "@blueprintjs/core";
 import ParameterInput from "./parameterinput";
 import DefaultsButton from "./defaultsio";
+import BatchPanel from "./batchpanel";
 
 @connect((state) => ({
   reembedParams: state.reembedParameters,
@@ -38,6 +39,7 @@ class DimredPanel extends React.PureComponent {
         paddingBottom: "10px",
         paddingTop: "10px"
       }}>
+      <BatchPanel/>
       <InputGroup
           id="emb-name-input"
           placeholder="New embedding name..."
@@ -45,38 +47,50 @@ class DimredPanel extends React.PureComponent {
           value={embName}
       />
       </div>
+      <ControlGroup fill={true} vertical={false}>
+        <ParameterInput 
+          label="Use SAM?"
+          param="doSAM"
+        />                     
+        <ParameterInput
+          label="Scale data?"
+          param="scaleData"
+        />
+      </ControlGroup>
       <AnchorButton
         onClick={() => {
           this.setState({ 
-            hvgshown: false,
+            trshown: !this.state.trshown,
             cfshown: false,
             gfshown: false,
-            trshown: !this.state.trshown,
-            samshown: false,
+            hvgshown: false,
+            samshown: false
           });
         }}
-        text={`Transformation`}
+        text={`Highly variable gene selection`}
         fill outlined
         rightIcon={trshown ? "chevron-down" : "chevron-right"} small
+        disabled = {reembedParams.doSAM}
       />   
       <div style={{"paddingLeft":"10px"}}>
-        <Collapse isOpen={trshown}>     
+        <Collapse isOpen={trshown && !reembedParams.doSAM}>   
           <ControlGroup fill={true} vertical={false}>
-          <ParameterInput
-              label="Sum normalize?"
-              param="sumNormalizeCells"
-            />            
             <ParameterInput
-              label="Log transform?"
-              param="logTransform"
-            />
+              min={0}
+              disabled={reembedParams.doSAM}
+              max={annoMatrix.nVar}
+              label="n_top_genes"
+              param="nTopGenesHVG"
+            />  
             <ParameterInput
-              label="Scale data?"
-              param="scaleData"
-            />
-          </ControlGroup> 
+              min={1}
+              disabled={reembedParams.doSAM}
+              label="n_bins"
+              param="nBinsHVG"
+            />        
+          </ControlGroup>                    
         </Collapse>  
-      </div>        
+      </div>                 
       <AnchorButton
         onClick={() => {
           this.setState({ 

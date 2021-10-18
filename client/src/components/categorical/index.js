@@ -21,6 +21,8 @@ import { keys } from "lodash";
   layoutChoice: state.layoutChoice,
   obsCrossfilter: state.obsCrossfilter,
   leidenController: state.leidenController,
+  reembedController: state.reembedController,
+  preprocessController: state.preprocessController,
   refresher: state.sankeySelection.refresher,
   numChecked: state.sankeySelection.numChecked
 }))
@@ -100,7 +102,7 @@ class Categories extends React.Component {
         newSchema,
         ctor,
         arr
-      );          
+      );         
       dispatch({
         type: "annotation: create category",
         data: name,
@@ -207,10 +209,12 @@ class Categories extends React.Component {
       ontology,
       userInfo,
       leidenController,
+      reembedController,
+      preprocessController,
       dispatch
     } = this.props;
     const ontologyEnabled = ontology?.enabled ?? false;
-    const loading = !!leidenController?.pendingFetch;
+    const loading = !!leidenController?.pendingFetch || !!reembedController?.pendingFetch || !!preprocessController?.pendingFetch;
 
     /* all names, sorted in display order.  Will be rendered in this order */
     const allCategoryNames = ControlsHelpers.selectableCategoryNames(

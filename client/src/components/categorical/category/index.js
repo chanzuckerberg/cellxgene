@@ -622,7 +622,6 @@ const CategoryValueList = React.memo(
     colorTable,
   }) => {
     const tuples = [...categorySummary.categoryValueIndices];
-
     /*
     Render the value list.  If this is a user annotation, we use a flipper
     animation, if read-only, we don't bother and save a few bits of perf.

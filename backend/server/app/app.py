@@ -180,6 +180,12 @@ class DiffExpObsAPI(Resource):
     def post(self, data_adaptor):
         return common_rest.diffexp_obs_post(request, data_adaptor)
 
+class PreprocessAPI(Resource):
+    @cache_control(no_store=True)
+    @rest_get_data_adaptor
+    def put(self, data_adaptor):
+        return common_rest.preprocess_put(request, data_adaptor)
+
 
 class LayoutObsAPI(Resource):
     @cache_control(public=True, max_age=ONE_WEEK)
@@ -305,6 +311,7 @@ def get_api_dataroot_resources(bp_dataroot):
     add_resource(OutputAPI, "/output")
     add_resource(LeidenClusterAPI, "/leiden")
     add_resource(DeleteObsmAPI, "/layout/obsm")
+    add_resource(PreprocessAPI, "/preprocess")
     add_resource(SummarizeVarAPI, "/summarize/var")
     # Display routes
     add_resource(ColorsAPI, "/colors")

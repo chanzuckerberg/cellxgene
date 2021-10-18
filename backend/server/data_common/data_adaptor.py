@@ -353,14 +353,19 @@ class DataAdaptor(metaclass=ABCMeta):
             min = np.NaN
             max = np.NaN
 
-        scale = np.amax(max - min)
-        normalized_layout = (embedding - min) / scale
+        diff = max-min
+        if np.abs(diff).sum()==0:
+            normalized_layout = embedding
+            normalized_layout[np.invert(np.isnan(normalized_layout))] = 0.5
+        else:
+            scale = np.amax(max - min)
+            normalized_layout = (embedding - min) / scale
 
-        # translate to center on both axis
-        translate = 0.5 - ((max - min) / scale / 2)
-        normalized_layout = normalized_layout + translate
+            # translate to center on both axis
+            translate = 0.5 - ((max - min) / scale / 2)
+            normalized_layout = normalized_layout + translate
 
-        normalized_layout = normalized_layout.astype(dtype=np.float32)
+            normalized_layout = normalized_layout.astype(dtype=np.float32)
         return normalized_layout
 
     def layout_to_fbs_matrix(self, fields):

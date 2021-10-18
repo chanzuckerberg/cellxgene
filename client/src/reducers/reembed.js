@@ -28,16 +28,48 @@ export const reembedController = (
   }
 };
 
-const defaultPrepParams = {
+export const preprocessController = (
+  state = {
+    pendingFetch: null,
+  },
+  action
+) => {
+  switch (action.type) {
+    case "preprocess: request start": {
+      return {
+        ...state,
+        pendingFetch: action.abortableFetch,
+      };
+    }
+    case "preprocess: request aborted":
+    case "preprocess: request cancel":
+    case "preprocess: request completed": {
+      return {
+        ...state,
+        pendingFetch: null,
+      };
+    }
+    default: {
+      return state;
+    }
+  }
+};
+
+export const defaultPrepParams = {
   doPreprocess: false,
   minCountsCF: 0,
   minGenesCF: 0,
   minCellsGF: 0,
   maxCellsGF: 100,
   minCountsGF: 0,
-  doSAM: false,
   nTopGenesHVG: 2000,
   nBinsHVG: 20,
+  doBatchPrep: false,
+  batchPrepKey: "",
+  batchPrepLabel: "",
+  dataLayer: "X",
+  logTransform: false,
+  sumNormalizeCells: false  
 };
 const defaultBatchParams = {
   doBatch: false,
@@ -55,20 +87,18 @@ const defaultDimredParams = {
   neighborsKnn: 20,
   neighborsMethod: "umap",
   distanceMetric: "cosine",
+  doSAM: false,
   nnaSAM: 50,
+  scaleData: false,
   weightModeSAM: "dispersion",
   umapMinDist: 0.1,
-  logTransform: false,
-  scaleData: false,
-  dataLayer: "X",
-  dataLayerExpr: "X",
-  sumNormalizeCells: false,
+  dataLayerExpr: "X"
 };
 export const defaultReembedParams = {
   ...defaultPrepParams,
   ...defaultBatchParams,
   ...defaultDimredParams,
-  displayName: {}
+  batchPrepParams: {}
 };
 export const reembedParameters = (state = defaultReembedParams, action) => {
   switch (action.type) {
@@ -77,11 +107,56 @@ export const reembedParameters = (state = defaultReembedParams, action) => {
       return params;
     }
     case "reembed: set parameter": {
+      const { batchPrepParams, batchPrepKey, batchPrepLabel } = state;
       const { key, value } = action;
-      return {
-        ...state,
-        [key]: value,
-      };
+      if (key === "doBatchPrep" && !value){
+        return {
+          ...state,
+          batchPrepParams: {},
+          [key]: value,
+          batchPrepKey: "",
+          batchPrepLabel: ""
+        }
+      }else if (key === "batchPrepKey" && value !== ""){ // create new param dict for batch key
+        batchPrepParams[value] = {};
+        return {
+          ...state,
+          [key]: value,
+          batchPrepParams
+        };                       
+      }else if (key === "batchPrepLabel" && value !== ""){
+        if (value.toString() in batchPrepParams[batchPrepKey]){
+          batchPrepParams[batchPrepKey][value.toString()] = {...batchPrepParams[batchPrepKey][value.toString()],
+                                                             batchPrepKey, doBatchPrep: true, batchPrepLabel: value.toString()};
+        } else {
+          batchPrepParams[batchPrepKey][value.toString()] = {...defaultPrepParams, batchPrepKey, doBatchPrep: true, batchPrepLabel: value.toString()};
+        }
+        
+        return {
+          ...state,
+          [key]: value.toString(),
+          batchPrepParams
+        };                
+      } else if (key !== "batchPrepLabel" && key !== "batchPrepKey" && (key in defaultPrepParams) && batchPrepLabel !== "") {
+        batchPrepParams[batchPrepKey][batchPrepLabel] = {...batchPrepParams[batchPrepKey][batchPrepLabel], [key]: value}
+        return {
+          ...state,
+          batchPrepParams
+        };        
+      } else if (key === "doBatch" && !value) {
+        return {
+          ...state,
+          [key]: value,
+          batchKey: ""
+        }
+        
+      } else {
+        return {
+          ...state,
+          [key]: value,
+        };
+      }
+
     }
     case "reembed: set parameters": {
       const { params } = action;

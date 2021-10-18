@@ -5,6 +5,7 @@ from http import HTTPStatus
 import zlib
 import json
 import pandas as pd
+import numpy as np
 from flask import make_response, jsonify, current_app, abort
 from werkzeug.urls import url_unquote
 
@@ -149,12 +150,7 @@ def annotations_obs_get(request, data_adaptor):
 
     try:
         labels = None
-        annotations = data_adaptor.dataset_config.user_annotations
-        if annotations.user_annotations_enabled():
-            labels = annotations.read_labels(data_adaptor)
-        #print(Axis.OBS)
-        #print(fields)
-        #print(labels)            
+        labels = data_adaptor.data.obs[fields]
         fbs = data_adaptor.annotation_to_fbs_matrix(Axis.OBS, fields, labels)
         return make_response(fbs, HTTPStatus.OK, {"Content-Type": "application/octet-stream"})
     except KeyError as e:
@@ -170,12 +166,14 @@ def annotations_put_fbs_helper(data_adaptor, fbs):
     new_label_df = decode_matrix_fbs(fbs)
     if not new_label_df.empty:
         new_label_df = data_adaptor.check_new_labels(new_label_df)
-    annotations.write_labels(new_label_df, data_adaptor)
+
+    for k in new_label_df.columns:
+        data_adaptor.data.obs[k] = pd.Categorical(np.array(list(new_label_df[k])).astype('str'))
+        data_adaptor.data_orig.obs[k] = pd.Categorical(np.array(list(new_label_df[k])).astype('str'))
 
 
 def inflate(data):
     return zlib.decompress(data)
-
 
 def annotations_obs_put(request, data_adaptor):
     annotations = data_adaptor.dataset_config.user_annotations
@@ -193,6 +191,7 @@ def annotations_obs_put(request, data_adaptor):
     try:
         annotations_put_fbs_helper(data_adaptor, fbs)
         res = json.dumps({"status": "OK"})
+        data_adaptor._create_schema()
         return make_response(res, HTTPStatus.OK, {"Content-Type": "application/json"})
     except (ValueError, DisabledFeatureError, KeyError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
@@ -345,23 +344,38 @@ def output_data_put(request, data_adaptor):
     saveName = args.get("saveName","")
     labels = args.get("labels",None)
     labelNames = args.get("labelNames",None)
-    
-    if labels and labelNames:
-        labels = [x['__columns'][0] for x in labels]
-        for n,l in zip(labelNames,labels):
-            data_adaptor.data.obs[n] = pd.Categorical(l)
+    currentLayout = args.get("currentLayout",None)
 
     fail=False
     if saveName != "":
-        adata = data_adaptor.data.copy()
+        adata = data_adaptor.data
+        X = adata.obsm["X_"+currentLayout]
+        adata = adata[np.isnan(X).sum(1)==0].copy()
+        name = currentLayout.split(';')[-1]
+        
+        if labels and labelNames:
+            labels = [x['__columns'][0] for x in labels]
+            for n,l in zip(labelNames,labels):
+                adata.obs[n] = pd.Categorical(l)        
+        
+        keys = list(adata.obsm.keys())
+        for k in keys:
+            if name not in k:
+                del adata.obsm[k]
+        
+        keys = list(adata.uns.keys())
+        for k in keys:
+            if name not in k and k[:2] == "N_":
+                del adata.uns[k]  
+
         try:
             del adata.obs["name_0"]
         except:
             pass
         
-        if "X" in data_adaptor.data.layers.keys():
-            data_adaptor.data.X = data_adaptor.data.layers["X"]
-            del data_adaptor.data.layers["X"]
+        if "X" in adata.layers.keys():
+            adata.X = adata.layers["X"]
+            del adata.layers["X"]
 
         try:
             adata.write_h5ad(saveName.split('.h5ad')[0]+'.h5ad')
@@ -386,6 +400,10 @@ def rename_obs_put(request, data_adaptor):
         try:
             data_adaptor.data.obs[newName] = data_adaptor.data.obs[oldName]
             del data_adaptor.data.obs[oldName]
+            
+            data_adaptor.data_orig.obs[newName] = data_adaptor.data_orig.obs[oldName]
+            del data_adaptor.data_orig.obs[oldName]            
+            
             data_adaptor._create_schema()
         except:
             fail=True
@@ -405,6 +423,7 @@ def delete_obs_put(request, data_adaptor):
     if name != "":
         try:
             del data_adaptor.data.obs[name]
+            del data_adaptor.data_orig.obs[name]
             data_adaptor._create_schema()
         except:
             fail=True
@@ -424,13 +443,18 @@ def delete_obsm_put(request, data_adaptor):
         for embName in embNames:
             try:
                 del data_adaptor.data.obsm[f'X_{embName}']
-                data_adaptor._refresh_layout_schema()
+                del data_adaptor.data_orig.obsm[f'X_{embName}']
+                del data_adaptor.data.uns[f"N_{embName}_mask"]
             except:
                 pass
             try:
                 del data_adaptor.data.uns[f"N_{embName}"]
+                del data_adaptor.data_orig.uns[f"N_{embName}"]
+                del data_adaptor.data_orig.uns[f"N_{embName}_mask"]
             except:
                 pass
+
+            data_adaptor._refresh_layout_schema()
     try:
         return make_response(jsonify({"fail": fail}), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
@@ -462,11 +486,11 @@ def change_layer_put(request, data_adaptor):
 def leiden_put(request, data_adaptor):
     args = request.get_json()
     name = args.get("name", None)
+    cName = args.get("cName", None)
     resolution = args.get('resolution')
-    name = args.get("name", None)
 
     try:
-        cl = list(data_adaptor.compute_leiden(name,resolution))
+        cl = list(data_adaptor.compute_leiden(name,cName,resolution))
         return make_response(jsonify({"clusters": cl}), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
         return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
@@ -491,6 +515,20 @@ def layout_obs_put(request, data_adaptor):
         return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
     except (ValueError, DisabledFeatureError, FilterError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
+
+
+def preprocess_put(request, data_adaptor):
+    args = request.get_json()
+    reembedParams = args["params"] if args else {}
+
+    try:
+        schema = data_adaptor.compute_preprocess(reembedParams)
+        return make_response(jsonify(schema), HTTPStatus.OK, {"Content-Type": "application/json"})
+    except NotImplementedError as e:
+        return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
+    except (ValueError, DisabledFeatureError, FilterError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
+
 
 def reembed_parameters_get(request, data_adaptor):
     preferred_mimetype = request.accept_mimetypes.best_match(["application/json", "text/csv"])
