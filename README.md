@@ -23,24 +23,34 @@ bash ~/miniconda.sh -b -p $HOME/miniconda
 
 2. Create and activate a new environment:
 
-```conda create -n cxg python=3.7
-conda activate cxg```
+```
+conda create -n cxg python=3.7
+conda activate cxg
+```
 
 3. Install excellxgene with pip (should be version 1.0.7)
-```pip install excellxgene```
+```
+pip install excellxgene
+```
 
 4. Download the git repository to get the example datasets (assumes git is available, if not install it with conda install -c anaconda git)
-```git clone https://github.com/czbiohub/cellxgene
-cd cellxgene```
+```
+git clone https://github.com/czbiohub/cellxgene
+cd cellxgene
+```
 Datasets are stored in example-datasets
 
 5. Launch cellxgene with:
-```cellxgene launch example-datasets```
+```
+cellxgene launch example-datasets
+```
 
 
 This should launch a cellxgene session with all the datasets in example-datasets/ loaded in.
 
 If you're running excellxgene remotely, please launch with:
-```cellxgene launch example-datasets --host 0.0.0.0```
+```
+cellxgene launch example-datasets --host 0.0.0.0
+```
 
 Ping me on the Biohub slack (@Alec) if you have any questions!
