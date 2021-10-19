@@ -47,7 +47,9 @@ class Reembedding extends React.PureComponent {
     let parentName;
     if (obsCrossfilter.countSelected() === obsCrossfilter.annoMatrix.nObs) {
       if (layoutChoice.current.includes(";;")){
-        parentName = layoutChoice.current.split(";;").at(-2);
+        parentName = layoutChoice.current.split(";;")
+        parentName.pop()
+        parentName = parentName.join(';;');
       } else{
         parentName="";
       }

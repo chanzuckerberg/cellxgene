@@ -215,6 +215,7 @@ class AnndataAdaptor(DataAdaptor):
                 adata.obsm["X_root"] = np.zeros((adata.shape[0],2))
                 adata.obs_names_make_unique()
                 self.data = adata
+                self.data_orig = adata
 
         except ValueError:
             raise DatasetAccessError(
@@ -388,7 +389,8 @@ class AnndataAdaptor(DataAdaptor):
         clusters = np.array(["unassigned"]*mask.size,dtype='object')
         clusters[mask] = result.astype('str')
         
-        self.data.obs[cName] = pd.Categorical(clusters)        
+        self.data.obs[cName] = pd.Categorical(clusters)  
+        self._save_orig_data()      
         return result      
 
     def compute_sankey_df(self, labels, name):
@@ -589,8 +591,51 @@ class AnndataAdaptor(DataAdaptor):
             result = np.full((filt.size, umap.shape[1]), np.NaN)
             result[filt] = umap[filt]
             self.data.obsm[k] = result
+
+        self._save_orig_data()
         self._create_schema()
         return self.get_schema()
+
+    def _save_orig_data(self):
+        if self.data_orig.shape[0] == self.data.shape[0]:
+            self.data_orig = self.data
+        else:
+            print('Test')
+            ixer = pd.Series(data = np.arange(self.data_orig.shape[0]),index = self.data_orig.obs_names)
+            ix = ixer[self.data.obs_names].values
+
+            rixer = pd.Series(index =np.arange(self.data.shape[0]), data = ix)
+
+            for ann_schema in self.schema["annotations"]["obs"]["columns"]:
+                if ann_schema["writable"] and ann_schema["name"] != "name_0":
+                    key = ann_schema["name"]
+
+                    cl = np.zeros([""]*self.data_orig.shape[0],dtype='object')
+                    cl[ix] = np.array(list(self.data.obs[key].values)).astype('str')
+                    self.data_orig.obs[key] = pd.Categorical(cl)
+
+            for key in self.data.obsm.keys():
+                obsm = self.data.obsm[key]
+                result = np.full((ixer.size, obsm.shape[1]), np.NaN)
+                result[ix] = obsm
+                self.data_orig.obsm[key] = result
+
+            for key in self.data.uns.keys():
+                if key[:2] == "N_" and "_mask" not in key:
+                    nnm = self.data.uns[key]
+                    
+                    x,y = nnm.nonzero()
+                    d = nnm.data
+                    nnm = sp.sparse.coo_matrix((d,(rixer[x].values,rixer[y].values)),shape=(self.data_orig.shape[0],)*2).tocsr()                    
+
+                    self.data_orig.uns[key] = nnm
+                elif key[:2] == "N_":
+                    mask = self.data.uns[key]
+                    cl = np.zeros([False]*self.data_orig.shape[0],dtype='boolean')
+                    cl[ix] = mask
+                    self.data_orig.uns[key] = mask
+                                
+                
 
     def compute_embedding(self, method, obsFilter, reembedParams, parentName, embName):
         if Axis.VAR in obsFilter:
@@ -651,14 +696,14 @@ class AnndataAdaptor(DataAdaptor):
                 X = adata.X
                 if scaleData:
                     sc.pp.scale(adata,max_value=10)
-                sc.pp.pca(adata,n_comps=min(adata.n_vars - 1, numPCs), svd_solver=pcaSolver)
+                sc.pp.pca(adata,n_comps=min(min(adata.shape) - 1, numPCs), svd_solver=pcaSolver)
                 adata.X = X
             else:
                 SAM = get_samalg_module()
                 sam=SAM(counts = adata, inplace=True)
                 X = sam.adata.X
                 preprocessing = "StandardScaler" if scaleData else "Normalizer"
-                sam.run(projection=None,weight_mode=weightModeSAM,preprocessing=preprocessing,distance=distanceMetric,num_norm_avg=nnaSAM)
+                sam.run(projection=None,npcs=min(min(adata.shape) - 1, numPCs), weight_mode=weightModeSAM,preprocessing=preprocessing,distance=distanceMetric,num_norm_avg=nnaSAM)
                 sam.adata.X = X        
                 adata=sam.adata
 
@@ -721,7 +766,7 @@ class AnndataAdaptor(DataAdaptor):
         self.data.obsp["connectivities"] = nnm
         self.data.uns[f"N_{name}"] = nnm
         self.data.uns[f"N_{name}_mask"] = np.array(list(obs_mask)).flatten()
-
+        self._save_orig_data()
         return layout_schema
 
     def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None):

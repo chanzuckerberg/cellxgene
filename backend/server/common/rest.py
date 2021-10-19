@@ -169,6 +169,8 @@ def annotations_put_fbs_helper(data_adaptor, fbs):
 
     for k in new_label_df.columns:
         data_adaptor.data.obs[k] = pd.Categorical(np.array(list(new_label_df[k])).astype('str'))
+    
+    data_adaptor._save_orig_data()
 
 
 def inflate(data):
@@ -354,9 +356,22 @@ def output_data_put(request, data_adaptor):
 
     fail=False
     if saveName != "":
-        adata = data_adaptor.data[obs_mask].copy()
-        X = adata.obsm["X_"+currentLayout]
-        adata = adata[np.isnan(X).sum(1)==0].copy()
+        X = data_adaptor.data.obsm["X_"+currentLayout]
+        f = np.isnan(X).sum(1)==0    
+        filt = np.logical_and(f,obs_mask)
+
+        temp = {}
+        for key in data_adaptor.data.uns.keys():
+            if key[:2] == "N_" and "_mask" not in key:
+                temp[key] = data_adaptor.data.uns[key][filt][:,filt]
+            else:
+                temp[key] = data_adaptor.data.uns[key][filt]
+
+        adata = data_adaptor.data[filt].copy()
+
+        for key in temp.keys():
+            adata.uns[key] = temp[key]
+            
         name = currentLayout.split(';')[-1]
         
         if labels and labelNames:
@@ -366,12 +381,21 @@ def output_data_put(request, data_adaptor):
         
         keys = list(adata.obsm.keys())
         for k in keys:
-            if name not in k:
+            if k[:2] == "X_":
+                k2 = k[2:]
+            else:
+                k2 = k
+            if name not in k2.split(';;'):
                 del adata.obsm[k]
         
         keys = list(adata.uns.keys())
         for k in keys:
-            if name not in k and k[:2] == "N_":
+            if k[:2] == "N_":
+                k2 = k[2:]
+            else:
+                k2 = k
+            k2 = k2.split('_mask')[0]
+            if name not in k2.split(';;') and k[:2] == "N_":          
                 del adata.uns[k]  
 
         try:
@@ -418,10 +442,23 @@ def reload_put(request, data_adaptor):
         raise FilterError("Error parsing filter")
 
     fail=False
-    adata = data_adaptor.data[obs_mask].copy()
-    X = adata.obsm["X_"+currentLayout]
-    f = np.isnan(X).sum(1)==0
-    adata = adata[f].copy()
+    
+    X = data_adaptor.data.obsm["X_"+currentLayout]
+    f = np.isnan(X).sum(1)==0    
+    filt = np.logical_and(f,obs_mask)
+
+    temp = {}
+    for key in data_adaptor.data.uns.keys():
+        if key[:2] == "N_" and "_mask" not in key:
+            temp[key] = data_adaptor.data.uns[key][filt][:,filt]
+        else:
+            temp[key] = data_adaptor.data.uns[key][filt]
+
+    adata = data_adaptor.data[filt].copy()
+
+    for key in temp.keys():
+        adata.uns[key] = temp[key]
+
     data_adaptor.data = adata
     
     try:
@@ -444,6 +481,29 @@ def reload_put(request, data_adaptor):
     except (ValueError, DisabledFeatureError, FilterError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)  
 
+def reload_full_put(request, data_adaptor):
+    data_adaptor.data = data_adaptor.data_orig
+    try:
+        data_adaptor.data.obs_names = pd.Index(data_adaptor.data.obs["name_0"].astype('str'))
+        del data_adaptor.data.obs["name_0"]
+    except:
+        pass
+    try:
+        data_adaptor.data.var_names = pd.Index(data_adaptor.data.var["name_0"].astype('str'))
+        del data_adaptor.data.var["name_0"]
+    except:
+        pass        
+
+    data_adaptor._validate_and_initialize()
+    data_adaptor.data_orig = data_adaptor.data
+    
+    try:
+        return make_response(jsonify({"fail": False}), HTTPStatus.OK, {"Content-Type": "application/json"})
+    except NotImplementedError as e:
+        return abort_and_log(HTTPStatus.NOT_IMPLEMENTED, str(e))
+    except (ValueError, DisabledFeatureError, FilterError) as e:
+        return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)  
+
 def rename_obs_put(request, data_adaptor):
     args = request.get_json()
     oldName = args.get("oldCategoryName","")
@@ -458,7 +518,8 @@ def rename_obs_put(request, data_adaptor):
             data_adaptor._create_schema()
         except:
             fail=True
-
+    
+    data_adaptor._save_orig_data()
     try:
         return make_response(jsonify({"fail": fail}), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
@@ -477,7 +538,8 @@ def delete_obs_put(request, data_adaptor):
             data_adaptor._create_schema()
         except:
             fail=True
-
+    
+    data_adaptor._save_orig_data()
     try:
         return make_response(jsonify({"fail": fail}), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
@@ -502,6 +564,8 @@ def delete_obsm_put(request, data_adaptor):
                 pass
 
             data_adaptor._refresh_layout_schema()
+    
+    data_adaptor._save_orig_data()            
     try:
         return make_response(jsonify({"fail": fail}), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
@@ -534,6 +598,8 @@ def rename_obsm_put(request, data_adaptor):
                 pass
 
             data_adaptor._refresh_layout_schema()
+    
+    data_adaptor._save_orig_data()            
     try:
         return make_response(jsonify({"schema": data_adaptor.get_schema()}), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:

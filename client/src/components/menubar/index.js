@@ -134,6 +134,10 @@ class MenuBar extends React.PureComponent {
     const { dispatch } = this.props;
     dispatch(actions.requestReloadBackend())
   }
+  handleReloadFull = () => {
+    const { dispatch } = this.props;
+    dispatch(actions.requestReloadFullBackend())
+  }
   isClipDisabled = () => {
     /*
     return true if clip button should be disabled.
@@ -436,6 +440,20 @@ class MenuBar extends React.PureComponent {
               paddingBottom: "9px",
               paddingTop: "8px"
             }}>  
+          <Tooltip
+            content="Reset backend to the full dataset."
+            position="bottom"
+            hoverOpenDelay={globals.tooltipHoverOpenDelay}
+          >   
+            <AnchorButton
+                type="button"
+                icon="reset"
+                loading={loading}
+                onClick={() => {
+                  this.handleReloadFull()
+                }}
+              /> 
+          </Tooltip>             
           <Tooltip
             content="Write current subset into the backend."
             position="bottom"

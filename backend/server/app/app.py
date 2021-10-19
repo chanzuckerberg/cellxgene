@@ -216,6 +216,12 @@ class ReloadAPI(Resource):
     def put(self, data_adaptor):
         return common_rest.reload_put(request, data_adaptor)
 
+class ReloadFullAPI(Resource):
+    @cache_control(no_store=True)
+    @rest_get_data_adaptor
+    def put(self, data_adaptor):
+        return common_rest.reload_full_put(request, data_adaptor)
+
 class OutputAPI(Resource):
     @cache_control(no_store=True)
     @rest_get_data_adaptor
@@ -326,6 +332,7 @@ def get_api_dataroot_resources(bp_dataroot):
     add_resource(RenameObsmAPI, "/layout/rename")
     add_resource(PreprocessAPI, "/preprocess")
     add_resource(ReloadAPI, "/reload")
+    add_resource(ReloadFullAPI, "/reloadFull")
     add_resource(SummarizeVarAPI, "/summarize/var")
     # Display routes
     add_resource(ColorsAPI, "/colors")

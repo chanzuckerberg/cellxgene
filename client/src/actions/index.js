@@ -288,6 +288,61 @@ export function requestReloadBackend() {
     }
   }
 }
+
+export function requestReloadFullBackend() {
+  return async (dispatch, _getState) => {
+    try{
+      const af = abortableFetch(
+        `${API.prefix}${API.version}reloadFull`,
+        {
+          method: "PUT",
+          headers: new Headers({
+            Accept: "application/octet-stream",
+            "Content-Type": "application/json",
+          }),     
+          credentials: "include",
+          },
+          60000
+      );
+      dispatch({
+        type: "output data: request start",
+        abortableFetch: af,
+      });
+      const res = await af.ready();      
+      
+      dispatch({
+        type: "app: refresh"
+      })
+
+      dispatch({
+        type: "output data: request completed",
+      });
+
+      postAsyncSuccessToast("Data has successfuly overwritten the backend.");
+
+      if (res.ok && res.headers.get("Content-Type").includes("application/json")) {      
+        return true;
+      }
+
+      // else an error
+      let msg = `Unexpected HTTP response ${res.status}, ${res.statusText}`;
+      const body = await res.text();
+      if (body && body.length > 0) {
+        msg = `${msg} -- ${body}`;
+      }
+      throw new Error(msg);
+    } catch (error) {
+      dispatch({
+        type: "ouput data: request aborted",
+      });
+      if (error.name === "AbortError") {
+        postAsyncFailureToast("Data output was aborted.");
+      } else {
+        postNetworkErrorToast(`Data output: ${error.message}`);
+      }
+    }
+  }
+}
 /*
 Application bootstrap
 */
@@ -485,6 +540,7 @@ export default {
   doInitialDataLoad,
   requestDataLayerChange,
   requestReloadBackend,
+  requestReloadFullBackend,
   selectAll,
   requestDifferentialExpression,
   requestSingleGeneExpressionCountsForColoringPOST,
