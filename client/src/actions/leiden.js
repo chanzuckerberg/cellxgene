@@ -41,7 +41,7 @@ async function doLeidenFetch(dispatch, getState) {
         }),
         credentials: "include",
       },
-      600000 // 1 minute timeout
+      6000000 // 1 minute timeout
     );
     dispatch({
       type: "leiden: request start",

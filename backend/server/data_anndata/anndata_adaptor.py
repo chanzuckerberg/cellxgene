@@ -390,7 +390,7 @@ class AnndataAdaptor(DataAdaptor):
         clusters[mask] = result.astype('str')
         
         self.data.obs[cName] = pd.Categorical(clusters)  
-        self._save_orig_data()      
+        self._save_orig_data(action = "obs", key = cName)
         return result      
 
     def compute_sankey_df(self, labels, name):
@@ -596,74 +596,41 @@ class AnndataAdaptor(DataAdaptor):
         self._create_schema()
         return self.get_schema()
 
-    def _save_orig_data(self):
+    def _save_orig_data(self, action=None, key = None):
         if self.data_orig.shape[0] == self.data.shape[0]:
             self.data_orig = self.data
         else:
-            ixer = pd.Series(data = np.arange(self.data_orig.shape[0]),index = self.data_orig.obs_names)
-            ix = ixer[self.data.obs_names].values
+            if action is not None and key is not None:
+                cnf = np.array(list(self.data_orig.obs["name_0"]))
+                cn = np.array(list(self.data.obs["name_0"]))
+                ix = pd.Series(data = np.arange(self.data_orig.shape[0]),index = cnf)[cn].values
+                if action == "obs":
+                    if key != "name_0":
+                        if key in self.data_orig.obs.keys():
+                            cl = np.array(list(self.data_orig.obs[key])).astype('str').astype('object')
+                        else:
+                            cl = np.array(["unassigned"]*self.data_orig.shape[0],dtype='object')
+                        cl[ix] = np.array(list(self.data.obs[key].values)).astype('str')
+                        self.data_orig.obs[key] = pd.Categorical(cl)
 
-            rixer = pd.Series(index =np.arange(self.data.shape[0]), data = ix)
-            keys = []
-            for ann_schema in self.schema["annotations"]["obs"]["columns"]:
-                key = ann_schema["name"]
-                keys.append(key)
-                if ann_schema["writable"] and key != "name_0":
-                    if key in self.data_orig.obs.keys():
-                        cl = np.array(list(self.data_orig.obs[key])).astype('str').astype('object')
-                    else:
-                        cl = np.zeros(["unassigned"]*self.data_orig.shape[0],dtype='object')
-                    cl[ix] = np.array(list(self.data.obs[key].values)).astype('str')
-                    self.data_orig.obs[key] = pd.Categorical(cl)
-            keys2 = list(self.data_orig.obs.keys())
-            for key in keys2:
-                if key not in keys:
-                    try:
-                        del self.data_orig.obs[key]
-                    except:
-                        pass
+                elif action == "emb":
+                    rixer = pd.Series(index =np.arange(self.data.shape[0]), data = ix)
+                    if "X_"+key not in self.data_orig.obsm.keys(): 
+                        obsm = self.data.obsm[key]
+                        result = np.full((self.data_orig.shape[0], obsm.shape[1]), np.NaN)
+                        result[ix] = obsm
+                        self.data_orig.obsm[key] = result                   
 
-
-            for key in self.data.obsm.keys():
-                obsm = self.data.obsm[key]
-                if key in self.data_orig.obs.keys():
-                    result = self.data_orig.obsm[key]
-                else:
-                    result = np.full((ixer.size, obsm.shape[1]), np.NaN)
+                        nnm = self.data.uns["N_"+key]
+                        x,y = nnm.nonzero()
+                        d = nnm.data
+                        nnm = sp.sparse.coo_matrix((d,(rixer[x].values,rixer[y].values)),shape=(self.data_orig.shape[0],)*2).tocsr()                    
+                        self.data_orig.uns["N_"+key] = nnm
                     
-                result[ix] = obsm
-                self.data_orig.obsm[key] = result
-            
-            keys = list(self.data_orig.obsm.keys())
-            for key in keys:
-                if key not in self.data.obsm.keys():
-                    try:
-                        del self.data_orig.obsm[key]
-                    except:
-                        pass                    
-
-            for key in self.data.uns.keys():
-                if key[:2] == "N_" and "_mask" not in key:
-                    nnm = self.data.uns[key]
-                    
-                    x,y = nnm.nonzero()
-                    d = nnm.data
-                    nnm = sp.sparse.coo_matrix((d,(rixer[x].values,rixer[y].values)),shape=(self.data_orig.shape[0],)*2).tocsr()                    
-
-                    self.data_orig.uns[key] = nnm
-                elif key[:2] == "N_":
-                    mask = self.data.uns[key]
-                    cl = np.zeros([False]*self.data_orig.shape[0],dtype='boolean')
-                    cl[ix] = mask
-                    self.data_orig.uns[key] = mask
-                                
-            keys = list(self.data_orig.uns.keys())
-            for key in keys:
-                if key not in self.data.uns.keys():
-                    try:
-                        del self.data_orig.uns[key]
-                    except:
-                        pass                                 
+                        mask = self.data.uns["N_"+key+"_mask"]
+                        cl = np.array([False]*self.data_orig.shape[0],dtype='bool')
+                        cl[ix] = mask
+                        self.data_orig.uns["N_"+key+"_mask"] = cl                              
                 
 
     def compute_embedding(self, method, obsFilter, reembedParams, parentName, embName):
@@ -795,7 +762,7 @@ class AnndataAdaptor(DataAdaptor):
         self.data.obsp["connectivities"] = nnm
         self.data.uns[f"N_{name}"] = nnm
         self.data.uns[f"N_{name}_mask"] = np.array(list(obs_mask)).flatten()
-        self._save_orig_data()
+        self._save_orig_data(action="emb",key=name)
         return layout_schema
 
     def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None):

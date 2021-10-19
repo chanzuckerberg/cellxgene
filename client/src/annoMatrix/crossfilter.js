@@ -47,7 +47,7 @@ export default class AnnoMatrixObsCrossfilter {
 
   dropObsColumn(col) {
     const annoMatrix = this.annoMatrix.dropObsColumn(col);
-    let { obsCrossfilter } = this;
+    let { obsCrossfilter } = this;    
     const dimName = _dimensionName("obs", col);
     if (obsCrossfilter.hasDimension(dimName)) {
       obsCrossfilter = obsCrossfilter.delDimension(dimName);

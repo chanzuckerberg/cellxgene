@@ -51,7 +51,7 @@ async function doReembedFetch(dispatch, getState, reembedParams,parentName,embNa
       }),
       credentials: "include",
     },
-    600000 // 1 minute timeout
+    6000000 // 1 minute timeout
   );
   dispatch({
     type: "reembed: request start",
@@ -135,7 +135,7 @@ async function doPreprocessingFetch(dispatch, _getState, reembedParams) {
       }),
       credentials: "include",
     },
-    600000 // 1 minute timeout
+    6000000 // 1 minute timeout
   );
   dispatch({
     type: "preprocess: request start",

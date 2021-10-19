@@ -169,8 +169,7 @@ def annotations_put_fbs_helper(data_adaptor, fbs):
 
     for k in new_label_df.columns:
         data_adaptor.data.obs[k] = pd.Categorical(np.array(list(new_label_df[k])).astype('str'))
-    
-    data_adaptor._save_orig_data()
+        data_adaptor._save_orig_data(action="obs",key = k)
 
 
 def inflate(data):
@@ -518,8 +517,13 @@ def rename_obs_put(request, data_adaptor):
             data_adaptor._create_schema()
         except:
             fail=True
-    
-    data_adaptor._save_orig_data()
+        
+        try:
+            data_adaptor.data_orig.obs[newName] = data_adaptor.data_orig.obs[oldName]
+            del data_adaptor.data_orig.obs[oldName]         
+        except:
+            pass
+
     try:
         return make_response(jsonify({"fail": fail}), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
@@ -538,8 +542,12 @@ def delete_obs_put(request, data_adaptor):
             data_adaptor._create_schema()
         except:
             fail=True
-    
-    data_adaptor._save_orig_data()
+        
+        try:
+            del data_adaptor.data_orig.obs[name]
+        except:
+            fail=True    
+
     try:
         return make_response(jsonify({"fail": fail}), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
@@ -563,9 +571,18 @@ def delete_obsm_put(request, data_adaptor):
             except:
                 pass
 
+            try:
+                del data_adaptor.data_orig.obsm[f'X_{embName}']
+            except:
+                pass
+            try:
+                del data_adaptor.data_orig.uns[f"N_{embName}"]
+                del data_adaptor.data_orig.uns[f"N_{embName}_mask"]
+            except:
+                pass            
+
             data_adaptor._refresh_layout_schema()
     
-    data_adaptor._save_orig_data()            
     try:
         return make_response(jsonify({"fail": fail}), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:
@@ -597,9 +614,23 @@ def rename_obsm_put(request, data_adaptor):
             except:
                 pass
 
+            try:
+                X1 = data_adaptor.data_orig.obsm[f'X_{embName}']
+                del data_adaptor.data_orig.obsm[f'X_{embName}']
+                data_adaptor.data_orig.obsm[f'X_{embName.replace(oldName,newName)}'] = X1
+            except:
+                pass
+            try:
+                X1 = data_adaptor.data_orig.uns[f"N_{embName}"]
+                X2 = data_adaptor.data_orig.uns[f"N_{embName}_mask"]
+                del data_adaptor.data_orig.uns[f"N_{embName}"]
+                del data_adaptor.data_orig.uns[f"N_{embName}_mask"]
+                data_adaptor.data_orig.uns[f"N_{embName.replace(oldName,newName)}"] = X1
+                data_adaptor.data_orig.uns[f"N_{embName.replace(oldName,newName)}_mask"] = X2
+            except:
+                pass
             data_adaptor._refresh_layout_schema()
     
-    data_adaptor._save_orig_data()            
     try:
         return make_response(jsonify({"schema": data_adaptor.get_schema()}), HTTPStatus.OK, {"Content-Type": "application/json"})
     except NotImplementedError as e:

@@ -459,9 +459,6 @@ class Dataframe {
     /* 
     Corner case to manage: if dropping the last column, return an empty dataframe. 
     */
-    if (this.dims[1] === 1) {
-      return Dataframe.empty();
-    }
 
     const dims = [this.dims[0], this.dims[1] - 1];
     const coffset = this.colIndex.getOffset(label);

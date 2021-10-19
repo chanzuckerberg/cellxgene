@@ -262,7 +262,7 @@ export const annotationDeleteCategoryAction = (categoryName) => (
   if (!prevAnnoMatrix || !prevObsCrossfilter) return;
   if (!isUserAnnotation(prevAnnoMatrix, categoryName))
     throw new Error("not a user annotation");
-
+  
   const obsCrossfilter = prevObsCrossfilter.dropObsColumn(categoryName);
   dispatch({
     type: "annotation: delete category",
@@ -270,6 +270,7 @@ export const annotationDeleteCategoryAction = (categoryName) => (
     obsCrossfilter,
     metadataField: categoryName,
   });
+
   dispatch({type: "sankey: set", category: categoryName, value: false})
 
   
