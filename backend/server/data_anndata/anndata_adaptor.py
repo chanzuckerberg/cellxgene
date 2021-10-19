@@ -616,10 +616,10 @@ class AnndataAdaptor(DataAdaptor):
                 elif action == "emb":
                     rixer = pd.Series(index =np.arange(self.data.shape[0]), data = ix)
                     if "X_"+key not in self.data_orig.obsm.keys(): 
-                        obsm = self.data.obsm[key]
+                        obsm = self.data.obsm["X_"+key]
                         result = np.full((self.data_orig.shape[0], obsm.shape[1]), np.NaN)
                         result[ix] = obsm
-                        self.data_orig.obsm[key] = result                   
+                        self.data_orig.obsm["X_"+key] = result                   
 
                         nnm = self.data.uns["N_"+key]
                         x,y = nnm.nonzero()
