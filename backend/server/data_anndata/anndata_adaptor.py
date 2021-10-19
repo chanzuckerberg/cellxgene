@@ -626,7 +626,11 @@ class AnndataAdaptor(DataAdaptor):
 
             for key in self.data.obsm.keys():
                 obsm = self.data.obsm[key]
-                result = np.full((ixer.size, obsm.shape[1]), np.NaN)
+                if key in self.data_orig.obs.keys():
+                    result = self.data_orig.obsm[key]
+                else:
+                    result = np.full((ixer.size, obsm.shape[1]), np.NaN)
+                    
                 result[ix] = obsm
                 self.data_orig.obsm[key] = result
             
