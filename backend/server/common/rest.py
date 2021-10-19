@@ -169,7 +169,6 @@ def annotations_put_fbs_helper(data_adaptor, fbs):
 
     for k in new_label_df.columns:
         data_adaptor.data.obs[k] = pd.Categorical(np.array(list(new_label_df[k])).astype('str'))
-        data_adaptor.data_orig.obs[k] = pd.Categorical(np.array(list(new_label_df[k])).astype('str'))
 
 
 def inflate(data):
@@ -345,10 +344,17 @@ def output_data_put(request, data_adaptor):
     labels = args.get("labels",None)
     labelNames = args.get("labelNames",None)
     currentLayout = args.get("currentLayout",None)
+    filter = args["filter"] if args else None
+    
+    try:
+        shape = data_adaptor.get_shape()
+        obs_mask = data_adaptor._axis_filter_to_mask(Axis.OBS, filter["obs"], shape[0])
+    except (KeyError, IndexError):
+        raise FilterError("Error parsing filter")
 
     fail=False
     if saveName != "":
-        adata = data_adaptor.data
+        adata = data_adaptor.data[obs_mask].copy()
         X = adata.obsm["X_"+currentLayout]
         adata = adata[np.isnan(X).sum(1)==0].copy()
         name = currentLayout.split(';')[-1]
@@ -369,12 +375,12 @@ def output_data_put(request, data_adaptor):
                 del adata.uns[k]  
 
         try:
-            adata.obs_names = pd.Index(adata.obs["name_0"])
+            adata.obs_names = pd.Index(adata.obs["name_0"].astype('str'))
             del adata.obs["name_0"]
         except:
             pass
         try:
-            adata.var_names = pd.Index(adata.var["name_0"])
+            adata.var_names = pd.Index(adata.var["name_0"].astype('str'))
             del adata.var["name_0"]
         except:
             pass        
@@ -410,15 +416,14 @@ def reload_put(request, data_adaptor):
     f = np.isnan(X).sum(1)==0
     adata = adata[f].copy()
     data_adaptor.data = adata
-    data_adaptor.data_orig = data_adaptor.data_orig[f].copy()
     
     try:
-        data_adaptor.data.obs_names = pd.Index(data_adaptor.data.obs["name_0"])
+        data_adaptor.data.obs_names = pd.Index(data_adaptor.data.obs["name_0"].astype('str'))
         del data_adaptor.data.obs["name_0"]
     except:
         pass
     try:
-        data_adaptor.data.var_names = pd.Index(data_adaptor.data.var["name_0"])
+        data_adaptor.data.var_names = pd.Index(data_adaptor.data.var["name_0"].astype('str'))
         del data_adaptor.data.var["name_0"]
     except:
         pass        
@@ -442,11 +447,7 @@ def rename_obs_put(request, data_adaptor):
     if oldName != "" and newName != "":
         try:
             data_adaptor.data.obs[newName] = data_adaptor.data.obs[oldName]
-            del data_adaptor.data.obs[oldName]
-            
-            data_adaptor.data_orig.obs[newName] = data_adaptor.data_orig.obs[oldName]
-            del data_adaptor.data_orig.obs[oldName]            
-            
+            del data_adaptor.data.obs[oldName]         
             data_adaptor._create_schema()
         except:
             fail=True
@@ -466,7 +467,6 @@ def delete_obs_put(request, data_adaptor):
     if name != "":
         try:
             del data_adaptor.data.obs[name]
-            del data_adaptor.data_orig.obs[name]
             data_adaptor._create_schema()
         except:
             fail=True
@@ -486,14 +486,11 @@ def delete_obsm_put(request, data_adaptor):
         for embName in embNames:
             try:
                 del data_adaptor.data.obsm[f'X_{embName}']
-                del data_adaptor.data_orig.obsm[f'X_{embName}']
             except:
                 pass
             try:
                 del data_adaptor.data.uns[f"N_{embName}"]
                 del data_adaptor.data.uns[f"N_{embName}_mask"]
-                del data_adaptor.data_orig.uns[f"N_{embName}"]
-                del data_adaptor.data_orig.uns[f"N_{embName}_mask"]
             except:
                 pass
 
@@ -515,28 +512,17 @@ def rename_obsm_put(request, data_adaptor):
         for embName in embNames:
             try:
                 X1 = data_adaptor.data.obsm[f'X_{embName}']
-                X2 = data_adaptor.data_orig.obsm[f'X_{embName}']                
                 del data_adaptor.data.obsm[f'X_{embName}']
-                del data_adaptor.data_orig.obsm[f'X_{embName}']
                 data_adaptor.data.obsm[f'X_{embName.replace(oldName,newName)}'] = X1
-                data_adaptor.data_orig.obsm[f'X_{embName.replace(oldName,newName)}'] = X2
             except:
                 pass
             try:
                 X1 = data_adaptor.data.uns[f"N_{embName}"]
                 X2 = data_adaptor.data.uns[f"N_{embName}_mask"]
-                X3 = data_adaptor.data_orig.uns[f"N_{embName}"]
-                X4 = data_adaptor.data_orig.uns[f"N_{embName}_mask"]
-
                 del data_adaptor.data.uns[f"N_{embName}"]
                 del data_adaptor.data.uns[f"N_{embName}_mask"]
-                del data_adaptor.data_orig.uns[f"N_{embName}"]
-                del data_adaptor.data_orig.uns[f"N_{embName}_mask"]
-
                 data_adaptor.data.uns[f"N_{embName.replace(oldName,newName)}"] = X1
                 data_adaptor.data.uns[f"N_{embName.replace(oldName,newName)}_mask"] = X2
-                data_adaptor.data_orig.uns[f"N_{embName.replace(oldName,newName)}"] = X3
-                data_adaptor.data_orig.uns[f"N_{embName.replace(oldName,newName)}_mask"] = X4                
             except:
                 pass
 

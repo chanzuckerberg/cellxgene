@@ -55,6 +55,7 @@ class AnnoMenuCategory extends React.PureComponent {
       createText,
       editText,
       deleteText,
+      disableDelete
     } = this.props;
 
     return (
@@ -97,6 +98,7 @@ class AnnoMenuCategory extends React.PureComponent {
                     data-testid={`${metadataField}:delete-category`}
                     onClick={this.handleDeleteCategory}
                     text={deleteText}
+                    disabled={disableDelete ?? false}
                   />
                 </Menu>
               }

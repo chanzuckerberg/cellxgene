@@ -141,6 +141,9 @@ export const requestSaveAnndataToFile = (saveName) => async (
     const state = getState();
     const { annoMatrix, layoutChoice } = state;
     
+    let cells = annoMatrix.rowIndex.labels();  
+    cells = Array.isArray(cells) ? cells : Array.from(cells);
+
     const annos = []
     const annoNames = []
     
@@ -163,7 +166,8 @@ export const requestSaveAnndataToFile = (saveName) => async (
           saveName: saveName,
           labelNames: annoNames,
           labels: annos,
-          currentLayout: layoutChoice.current
+          currentLayout: layoutChoice.current,
+          filter: { obs: { index: cells } }
         }),
         credentials: "include",
       },

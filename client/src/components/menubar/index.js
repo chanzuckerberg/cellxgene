@@ -411,7 +411,12 @@ class MenuBar extends React.PureComponent {
             </Tooltip>
     
         </ButtonGroup>
-
+        <Subset
+          subsetPossible={subsetPossible}
+          subsetResetPossible={subsetResetPossible}
+          handleSubset={this.handleSubset}
+          handleSubsetReset={this.handleSubsetReset}
+        />
         {disableDiffexp ? null : <DiffexpButtons />}
         <div
             style={{

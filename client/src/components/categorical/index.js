@@ -1,5 +1,5 @@
 import React from "react";
-import { AnchorButton, Tooltip, Position, ButtonGroup, Label, NumericInput } from "@blueprintjs/core";
+import { AnchorButton, Tooltip, Position, NumericInput } from "@blueprintjs/core";
 import { connect } from "react-redux";
 import * as globals from "../../globals";
 import Category from "./category";
@@ -10,7 +10,6 @@ import LabelInput from "../labelInput";
 import { labelPrompt } from "./labelUtil";
 import actions from "../../actions";
 import { Dataframe } from "../../util/dataframe";
-import { keys } from "lodash";
 
 @connect((state) => ({
   writableCategoriesEnabled: state.config?.parameters?.annotations ?? false,
@@ -24,7 +23,8 @@ import { keys } from "lodash";
   reembedController: state.reembedController,
   preprocessController: state.preprocessController,
   refresher: state.sankeySelection.refresher,
-  numChecked: state.sankeySelection.numChecked
+  numChecked: state.sankeySelection.numChecked,
+  layoutChoice: state.layoutChoice
 }))
 class Categories extends React.Component {
   constructor(props) {
@@ -211,7 +211,8 @@ class Categories extends React.Component {
       leidenController,
       reembedController,
       preprocessController,
-      dispatch
+      dispatch,
+      layoutChoice
     } = this.props;
     const ontologyEnabled = ontology?.enabled ?? false;
     const loading = !!leidenController?.pendingFetch || !!reembedController?.pendingFetch || !!preprocessController?.pendingFetch;
@@ -356,7 +357,7 @@ class Categories extends React.Component {
                     data-testid="delete-labels"
                     onClick={this.handleDeleteLabels}
                     intent="primary"
-                    disabled={!deleteEnabled}
+                    disabled={!deleteEnabled || layoutChoice.sankey}
                   >
                     <strong>Delete</strong> labels
                   </AnchorButton>                     

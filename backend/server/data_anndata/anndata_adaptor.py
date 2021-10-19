@@ -207,7 +207,6 @@ class AnndataAdaptor(DataAdaptor):
                 adata.obsm["X_root"] = np.zeros((adata.shape[0],2))
                 adata.obs_names_make_unique()
                 self.data = adata
-                self.data_orig = adata
 
         except ValueError:
             raise DatasetAccessError(
@@ -381,9 +380,7 @@ class AnndataAdaptor(DataAdaptor):
         clusters = np.array(["unassigned"]*mask.size,dtype='object')
         clusters[mask] = result.astype('str')
         
-        self.data.obs[cName] = pd.Categorical(clusters)
-        self.data_orig.obs[cName] = pd.Categorical(clusters)
-        
+        self.data.obs[cName] = pd.Categorical(clusters)        
         return result      
 
     def compute_sankey_df(self, labels, name):
@@ -425,10 +422,11 @@ class AnndataAdaptor(DataAdaptor):
     
     
     def compute_preprocess(self, reembedParams):
-        if 'orig.exprs' not in self.data_orig.layers.keys():
-            self.data_orig.layers['orig.exprs'] = self.data_orig.X
+        if 'orig.exprs' not in self.data.layers.keys(): #this is the first time preprocessing :D
+            self.data.layers['orig.exprs'] = self.data.X
             
-        self.data = self.data_orig.copy()
+        self.data.X = self.data.layers['orig.exprs'].copy()
+        
         adata = self.data
 
         if adata.isbacked:
@@ -715,11 +713,6 @@ class AnndataAdaptor(DataAdaptor):
         self.data.obsp["connectivities"] = nnm
         self.data.uns[f"N_{name}"] = nnm
         self.data.uns[f"N_{name}_mask"] = np.array(list(obs_mask)).flatten()
-        
-        self.data_orig.obsm[f"X_{name}"] = X_umap
-        self.data_orig.obsp["connectivities"] = nnm
-        self.data_orig.uns[f"N_{name}"] = nnm     
-        self.data_orig.uns[f"N_{name}_mask"] = np.array(list(obs_mask)).flatten()
 
         return layout_schema
 

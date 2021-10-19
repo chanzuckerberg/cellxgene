@@ -44,6 +44,7 @@ const LABEL_WIDTH_ANNO = LABEL_WIDTH - ANNO_BUTTON_WIDTH;
     schema,
     crossfilter: state.obsCrossfilter,
     isUserAnno,
+    layoutChoiceSankey: state.layoutChoice.sankey,
     genesets: state.genesets.genesets,
     sankeySelected: state.sankeySelection.categories?.[metadataField] ?? false,
     displaySankey: state.sankeySelection.displaySankey
@@ -230,7 +231,8 @@ class Category extends React.PureComponent {
       colors,
       annoMatrix,
       isUserAnno,
-      sankeySelected
+      sankeySelected,
+      layoutChoiceSankey
     } = this.props;
 
     const checkboxID = `category-select-${metadataField}`;
@@ -293,6 +295,7 @@ class Category extends React.PureComponent {
                   onCategorySankeyClick={this.handleSankeyClick}
                   sankeyCheckboxID={sankeyCheckboxID}
                   sankeySelected={sankeySelected}
+                  layoutChoiceSankey={layoutChoiceSankey}
                 />
               );
             }}
@@ -390,6 +393,7 @@ const CategoryHeader = React.memo(
     onCategoryToggleAllClick,
     sankeySelected,
     onCategorySankeyClick,
+    layoutChoiceSankey
   }) => {
     /*
     Render category name and controls (eg, color-by button).
@@ -468,6 +472,7 @@ const CategoryHeader = React.memo(
             createText="Add a new label to this category"
             editText="Edit this category's name"
             deleteText="Delete this category, all associated labels, and remove all cell assignments"
+            disableDelete={sankeySelected}
           />
 
           <Tooltip
@@ -507,6 +512,7 @@ const CategoryHeader = React.memo(
                 ref={checkboxSankeyRef}
                 checked={sankeySelected}
                 type="checkbox"
+                disabled={layoutChoiceSankey}
               />     
           </Tooltip>     
         </div>
@@ -535,7 +541,8 @@ const CategoryRender = React.memo(
     onCategoryToggleAllClick,
     sankeySelected,
     onCategorySankeyClick,
-    sankeyCheckboxID
+    sankeyCheckboxID,
+    layoutChoiceSankey
   }) => {
     /*
     Render the core of the category, including checkboxes, controls, etc.
@@ -583,6 +590,7 @@ const CategoryRender = React.memo(
             onCategoryMenuKeyPress={onCategoryMenuKeyPress}
             onCategorySankeyClick={onCategorySankeyClick}
             sankeySelected={sankeySelected}
+            layoutChoiceSankey={layoutChoiceSankey}
           />
         </div>
         <div style={{ marginLeft: 26 }}>
