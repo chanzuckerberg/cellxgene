@@ -604,7 +604,6 @@ class Graph extends React.Component {
     const Y = layoutDf.col(currentDimNames[1]).asArray();
 
     const positions = this.computePointPositions(X, Y, modelTF);
-    console.log(colorsProp)
     const colorTable = this.updateColorTable(colorsProp, colorDf);
     const colors = this.computePointColors(colorTable.rgb);
 
