@@ -190,7 +190,7 @@ class DimredPanel extends React.PureComponent {
               <ParameterInput
                 label="Weight mode"
                 param="weightModeSAM"
-                options={["dispersion","rms","combined"]}
+                options={["rms","dispersion","combined"]}
               />    
             </div> 
           </ControlGroup>                 

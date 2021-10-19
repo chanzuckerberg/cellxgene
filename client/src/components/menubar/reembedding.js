@@ -50,6 +50,9 @@ class Reembedding extends React.PureComponent {
         parentName = layoutChoice.current.split(";;")
         parentName.pop()
         parentName = parentName.join(';;');
+        if (!layoutChoice.available.includes(parentName)){
+          parentName="";
+        }
       } else{
         parentName="";
       }

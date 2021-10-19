@@ -171,7 +171,7 @@ export const requestSaveAnndataToFile = (saveName) => async (
         }),
         credentials: "include",
       },
-      60000
+      6000000
     );
     dispatch({
       type: "output data: request start",
@@ -247,7 +247,7 @@ export function requestReloadBackend() {
           }),        
           credentials: "include",
           },
-          60000
+          6000000
       );
       dispatch({
         type: "output data: request start",
@@ -302,7 +302,7 @@ export function requestReloadFullBackend() {
           }),     
           credentials: "include",
           },
-          60000
+          6000000
       );
       dispatch({
         type: "output data: request start",

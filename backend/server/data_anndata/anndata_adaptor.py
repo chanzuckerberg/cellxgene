@@ -600,14 +600,13 @@ class AnndataAdaptor(DataAdaptor):
         if self.data_orig.shape[0] == self.data.shape[0]:
             self.data_orig = self.data
         else:
-            print('Test')
             ixer = pd.Series(data = np.arange(self.data_orig.shape[0]),index = self.data_orig.obs_names)
             ix = ixer[self.data.obs_names].values
 
             rixer = pd.Series(index =np.arange(self.data.shape[0]), data = ix)
 
             for ann_schema in self.schema["annotations"]["obs"]["columns"]:
-                if ann_schema["writable"] and ann_schema["name"] != "name_0":
+                if ann_schema["writable"] and ann_schema["name"] != "name_0" and ann_schema["name"] in self.data.obs.keys():
                     key = ann_schema["name"]
 
                     cl = np.zeros([""]*self.data_orig.shape[0],dtype='object')

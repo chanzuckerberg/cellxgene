@@ -90,7 +90,7 @@ const defaultDimredParams = {
   doSAM: false,
   nnaSAM: 50,
   scaleData: false,
-  weightModeSAM: "dispersion",
+  weightModeSAM: "rms",
   umapMinDist: 0.1,
   dataLayerExpr: "X"
 };
