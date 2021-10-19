@@ -39,11 +39,11 @@ pip install excellxgene
 git clone https://github.com/czbiohub/cellxgene
 cd cellxgene
 ```
-Datasets are stored in example-datasets
+Datasets are stored in `example-dataset`
 
 5. Launch cellxgene with:
 ```
-cellxgene launch example-datasets
+cellxgene launch example-dataset
 ```
 
 
