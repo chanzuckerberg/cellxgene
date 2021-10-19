@@ -11,7 +11,7 @@ with open("backend/server/requirements-prepare.txt") as fh:
 
 setup(
     name="excellxgene",
-    version="1.0.8",
+    version="1.0.9",
     packages=find_packages(),
     url="https://github.com/czbiohub/cellxgene",
     license="MIT",

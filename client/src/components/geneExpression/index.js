@@ -11,7 +11,6 @@ import { AnnoMatrixLoader } from "../../annoMatrix";
 @connect((state) => {
   return {
     genesets: state.genesets.genesets,
-    colorAccessor: state.colors.colorAccessor,
     annoMatrix: state.annoMatrix,
     reembedParams: state.reembedParameters
   };
@@ -55,13 +54,12 @@ class GeneExpression extends React.Component {
   };
 
   render() {
-    const { dispatch, genesets, colorAccessor, annoMatrix, reembedParams } = this.props;
+    const { dispatch, genesets, annoMatrix } = this.props;
     return (
       <div>
         <GenesetHotkeys
           dispatch={dispatch}
           genesets={genesets}
-          colorAccessor={colorAccessor}
         />
         <div>
           <div style={{ display: "flex", marginBottom: 10, justifyContent: "space-between", position: "relative", top: -2 }}>

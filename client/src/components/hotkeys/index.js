@@ -100,7 +100,7 @@ export const DgeHotkeys = (props) => {
   );
 };
 export const GenesetHotkeys = (props) => {
-  const { dispatch, genesets, colorAccessor } = props;
+  const { dispatch, genesets } = props;
   const inputRef = createRef();
   const hotkeys = useMemo(
     () => [
@@ -110,12 +110,10 @@ export const GenesetHotkeys = (props) => {
         label: "Delete the most recent geneset.",
         onKeyDown: async () => {
           const geneset = Array.from(genesets.values())[0].genesetName;
-          if (colorAccessor === geneset) {
-            dispatch({
-              type: "color by geneset mean expression",
-              geneset,
-            });
-          }
+          dispatch({
+            type: "color by nothing",
+            geneset,
+          });
           dispatch(actions.genesetDelete(geneset));
         },
       },

@@ -41,19 +41,23 @@ export function createColorQuery(colorMode, colorByAccessor, schema, genesets) {
       if (!genesets) return null;
 
       const _geneset = genesets.get(colorByAccessor);
-      const _setGenes = [..._geneset.genes.keys()];
+      if (_geneset) {
+        const _setGenes = [..._geneset.genes.keys()];
 
-      return [
-        "X",
-        {
-          summarize: {
-            method: "mean",
-            field: "var",
-            column: varIndex,
-            values: _setGenes,
+        return [
+          "X",
+          {
+            summarize: {
+              method: "mean",
+              field: "var",
+              column: varIndex,
+              values: _setGenes,
+            },
           },
-        },
-      ];
+        ];
+      } else {
+        return null;
+      }      
     }
     default: {
       return null;
