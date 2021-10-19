@@ -29,7 +29,7 @@ conda create -n cxg python=3.7
 conda activate cxg
 ```
 
-3. Install excellxgene with pip (the latest version should be `1.1.1`)
+3. Install excellxgene with pip (the latest version should be `1.1.2`)
 ```
 pip install excellxgene
 ```

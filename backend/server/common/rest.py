@@ -364,7 +364,7 @@ def output_data_put(request, data_adaptor):
         for key in data_adaptor.data.uns.keys():
             if key[:2] == "N_" and "_mask" not in key:
                 temp[key] = data_adaptor.data.uns[key][filt][:,filt]
-            else:
+            elif key[:2] == "N_":
                 temp[key] = data_adaptor.data.uns[key][filt]
 
         adata = data_adaptor.data[filt].copy()
@@ -451,7 +451,7 @@ def reload_put(request, data_adaptor):
     for key in data_adaptor.data.uns.keys():
         if key[:2] == "N_" and "_mask" not in key:
             temp[key] = data_adaptor.data.uns[key][filt][:,filt]
-        else:
+        elif key[:2] == "N_":
             temp[key] = data_adaptor.data.uns[key][filt]
 
     adata = data_adaptor.data[filt].copy()
