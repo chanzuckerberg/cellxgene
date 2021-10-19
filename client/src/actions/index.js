@@ -228,7 +228,11 @@ export function requestDataLayerChange(dataLayer) {
 export function requestReloadBackend() {
   return async (dispatch, getState) => {
     try{
-      const { layoutChoice } = getState()
+      const { annoMatrix, layoutChoice } = getState()
+
+      let cells = annoMatrix.rowIndex.labels();  
+      cells = Array.isArray(cells) ? cells : Array.from(cells);
+
       const af = abortableFetch(
         `${API.prefix}${API.version}reload`,
         {
@@ -239,6 +243,7 @@ export function requestReloadBackend() {
           }),
           body: JSON.stringify({
             currentLayout: layoutChoice.current,
+            filter: { obs: { index: cells } }
           }),        
           credentials: "include",
           },

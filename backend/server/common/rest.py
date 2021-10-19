@@ -409,9 +409,16 @@ def output_data_put(request, data_adaptor):
 def reload_put(request, data_adaptor):
     args = request.get_json()
     currentLayout = args.get("currentLayout",None)
+    filter = args["filter"] if args else None
+    
+    try:
+        shape = data_adaptor.get_shape()
+        obs_mask = data_adaptor._axis_filter_to_mask(Axis.OBS, filter["obs"], shape[0])
+    except (KeyError, IndexError):
+        raise FilterError("Error parsing filter")
 
     fail=False
-    adata = data_adaptor.data
+    adata = data_adaptor.data[obs_mask].copy()
     X = adata.obsm["X_"+currentLayout]
     f = np.isnan(X).sum(1)==0
     adata = adata[f].copy()
