@@ -111,8 +111,7 @@ export const GenesetHotkeys = (props) => {
         onKeyDown: async () => {
           const geneset = Array.from(genesets.values())[0].genesetName;
           dispatch({
-            type: "color by nothing",
-            geneset,
+            type: "color by nothing"
           });
           dispatch(actions.genesetDelete(geneset));
         },

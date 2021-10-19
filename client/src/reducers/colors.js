@@ -96,15 +96,11 @@ const ColorsReducer = (
       };
     }
     case "color by nothing": {
-      const { geneset } = action;
-      const { colorAccessor } = state;
-      if (geneset === colorAccessor){
-        return {
-          ...state,
-          colorMode: null,
-          colorAccessor: null
-        }  
-      }
+      return {
+        ...state,
+        colorMode: null,
+        colorAccessor: null
+      }  
     }
     default: {
       return state;

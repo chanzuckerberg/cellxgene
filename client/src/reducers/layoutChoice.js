@@ -15,7 +15,11 @@ function bestDefaultLayout(layouts) {
 }
 
 function setToDefaultLayout(schema) {
-  const available = schema.layout.obs.map((v) => v.name).sort();
+  let available = schema.layout.obs.map((v) => v.name).sort();
+  if (available.includes("root")){
+    available = available.filter((item) => item !== "root");
+    available.push("root")
+  }
   const current = bestDefaultLayout(available);
   const currentDimNames = schema.layout.obsByName[current].dims;
   return { available, current, currentDimNames };
