@@ -1,5 +1,6 @@
 <img src="./docs/cellxgene-logo.png" width="300">
 
+# Exploratory CellxGene (ExCellxGene)
 This fork implements some of the key features that have been highly requested by the data science team at CZBiohub.
 
 Features include:
@@ -28,7 +29,7 @@ conda create -n cxg python=3.7
 conda activate cxg
 ```
 
-3. Install excellxgene with pip (should be version 1.0.7)
+3. Install excellxgene with pip (the latest version should be `1.0.8`)
 ```
 pip install excellxgene
 ```
