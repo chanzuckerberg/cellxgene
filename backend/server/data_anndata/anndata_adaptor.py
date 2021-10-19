@@ -604,20 +604,39 @@ class AnndataAdaptor(DataAdaptor):
             ix = ixer[self.data.obs_names].values
 
             rixer = pd.Series(index =np.arange(self.data.shape[0]), data = ix)
-
+            keys = []
             for ann_schema in self.schema["annotations"]["obs"]["columns"]:
-                if ann_schema["writable"] and ann_schema["name"] != "name_0" and ann_schema["name"] in self.data.obs.keys():
-                    key = ann_schema["name"]
-
-                    cl = np.zeros([""]*self.data_orig.shape[0],dtype='object')
+                key = ann_schema["name"]
+                keys.append(key)
+                if ann_schema["writable"] and key != "name_0":
+                    if key in self.data_orig.obs.keys():
+                        cl = np.array(list(self.data_orig.obs[key])).astype('str').astype('object')
+                    else:
+                        cl = np.zeros(["unassigned"]*self.data_orig.shape[0],dtype='object')
                     cl[ix] = np.array(list(self.data.obs[key].values)).astype('str')
                     self.data_orig.obs[key] = pd.Categorical(cl)
+            keys2 = list(self.data_orig.obs.keys())
+            for key in keys2:
+                if key not in keys:
+                    try:
+                        del self.data_orig.obs[key]
+                    except:
+                        pass
+
 
             for key in self.data.obsm.keys():
                 obsm = self.data.obsm[key]
                 result = np.full((ixer.size, obsm.shape[1]), np.NaN)
                 result[ix] = obsm
                 self.data_orig.obsm[key] = result
+            
+            keys = list(self.data_orig.obsm.keys())
+            for key in keys:
+                if key not in self.data.obsm.keys():
+                    try:
+                        del self.data_orig.obsm[key]
+                    except:
+                        pass                    
 
             for key in self.data.uns.keys():
                 if key[:2] == "N_" and "_mask" not in key:
@@ -634,6 +653,13 @@ class AnndataAdaptor(DataAdaptor):
                     cl[ix] = mask
                     self.data_orig.uns[key] = mask
                                 
+            keys = list(self.data_orig.uns.keys())
+            for key in keys:
+                if key not in self.data.uns.keys():
+                    try:
+                        del self.data_orig.uns[key]
+                    except:
+                        pass                                 
                 
 
     def compute_embedding(self, method, obsFilter, reembedParams, parentName, embName):
