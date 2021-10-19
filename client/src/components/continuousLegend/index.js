@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import * as d3 from "d3";
-import { interpolateCool } from "d3-scale-chromatic";
+import { interpolateSpectral } from "d3-scale-chromatic";
 
 import {
   createColorTable,
@@ -145,7 +145,7 @@ class ContinuousLegend extends React.Component {
         if (range()[0][0] !== "#") {
           continuous(
             "#continuous_legend",
-            d3.scaleSequential(interpolateCool).domain(colorScale.domain()),
+            d3.scaleSequential(interpolateSpectral).domain(colorScale.domain()),
             colorAccessor
           );
         }

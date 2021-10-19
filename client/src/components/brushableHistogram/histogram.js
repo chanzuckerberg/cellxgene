@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { interpolateCool } from "d3-scale-chromatic";
+import { interpolateSpectral } from "d3-scale-chromatic";
 import * as d3 from "d3";
 
 import maybeScientific from "../../util/maybeScientific";
@@ -50,7 +50,7 @@ const Histogram = ({
       .attr("transform", `translate(${marginLeft},${marginTop})`);
 
     const colorScale = d3
-      .scaleSequential(interpolateCool)
+      .scaleSequential(interpolateSpectral)
       .domain([0, bins.length]);
 
     const histogramScale = d3

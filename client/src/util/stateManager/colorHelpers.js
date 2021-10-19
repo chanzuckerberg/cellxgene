@@ -2,7 +2,7 @@
 Helper functions for the embedded graph colors
 */
 import * as d3 from "d3";
-import { interpolateRainbow, interpolateCool } from "d3-scale-chromatic";
+import { interpolateRainbow, interpolateSpectral } from "d3-scale-chromatic";
 import memoize from "memoize-one";
 import * as globals from "../../globals";
 import parseRGB from "../parseRGB";
@@ -202,7 +202,7 @@ function _createColorsByContinuousMetadata(data, min, max) {
   /* pre-create colors - much faster than doing it for each obs */
   const colors = new Array(colorBins);
   for (let i = 0; i < colorBins; i += 1) {
-    colors[i] = parseRGB(interpolateCool(i / colorBins));
+    colors[i] = parseRGB(interpolateSpectral(i / colorBins));
   }
 
   const nonFiniteColor = parseRGB(globals.nonFiniteCellColor);
