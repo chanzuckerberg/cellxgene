@@ -589,8 +589,7 @@ class AnndataAdaptor(DataAdaptor):
                         pass                    
 
         self.data.X = adata_raw.X
-        if "X" not in self.data.layers.keys():
-            self.data.layers['X'] = adata_raw.X
+        self.data.layers['X'] = adata_raw.X
         self.data.uns=uns
         
         for k in self.data.obsm.keys():
