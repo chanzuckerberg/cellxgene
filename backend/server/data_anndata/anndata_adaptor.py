@@ -597,10 +597,6 @@ class AnndataAdaptor(DataAdaptor):
             result = np.full((filt.size, umap.shape[1]), np.NaN)
             result[filt] = umap[filt]
             self.data.obsm[k] = result
-            if "N_"+k.split('X_')[-1] in self.data.uns.keys():
-                nnm = self.data.uns["N_"+k.split('X_')[-1]]
-                self.data.uns["N_"+k.split('X_')[-1]] = nnm[filt][:,filt]
-                self.data.uns["N_"+k.split('X_')[-1]+"_mask"] = self.data.uns["N_"+k.split('X_')[-1]+"_mask"][filt]
         
         self._save_orig_data()
         self._create_schema()
