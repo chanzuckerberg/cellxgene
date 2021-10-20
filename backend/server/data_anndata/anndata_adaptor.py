@@ -214,6 +214,10 @@ class AnndataAdaptor(DataAdaptor):
                 # cost of significantly slower access to X data.
                 adata.obsm["X_root"] = np.zeros((adata.shape[0],2))
                 adata.obs_names_make_unique()
+                
+                if 'orig.exprs' not in adata.layers.keys(): 
+                    adata.layers['orig.exprs'] = adata.X     
+
                 self.data = adata
                 self.data_orig = adata
 
@@ -432,10 +436,7 @@ class AnndataAdaptor(DataAdaptor):
     
     
     def compute_preprocess(self, reembedParams):
-        if 'orig.exprs' not in self.data.layers.keys(): #this is the first time preprocessing :D
-            self.data.layers['orig.exprs'] = self.data.X
-            
-        self.data.X = self.data.layers['orig.exprs'].copy()
+        self.data.obsm["X_root"] = np.zeros(self.data.obsm["X_root"].shape)+0.5
         
         adata = self.data
 
@@ -504,7 +505,7 @@ class AnndataAdaptor(DataAdaptor):
                     adata_sub_raw.X = adata_sub_raw.layers[dataLayer]        
                 else:
                     adata_sub_raw = AnnData(X=adata_sub.layers[dataLayer])
-                    adata_sub_raw.var_names = adata_sub.raw.var_names
+                    adata_sub_raw.var_names = adata_sub.var_names
                     adata_sub_raw.obs_names = adata_sub.obs_names
                     adata_sub_raw.obs = adata_sub.obs
                     for key in adata_sub.var.keys():
@@ -528,7 +529,10 @@ class AnndataAdaptor(DataAdaptor):
                     if sumNormalizeCells:
                         sc.pp.normalize_total(adata_sub_raw,target_sum=target_sum)
                     if logTransform:
-                        sc.pp.log1p(adata_sub_raw)  
+                        try:
+                            sc.pp.log1p(adata_sub_raw)  
+                        except:
+                            pass
                 else: 
                     cns.extend(np.array(list(adata_sub_raw.obs["name_0"])))
 
@@ -556,7 +560,7 @@ class AnndataAdaptor(DataAdaptor):
                 adata_raw.X = adata_raw.layers[dataLayer]        
             else:
                 adata_raw = AnnData(X=adata.layers[dataLayer])
-                adata_raw.var_names = adata.raw.var_names
+                adata_raw.var_names = adata.var_names
                 adata_raw.obs_names = adata.obs_names
                 adata_raw.obs = adata.obs
                 for key in adata.var.keys():
@@ -579,11 +583,14 @@ class AnndataAdaptor(DataAdaptor):
                 if sumNormalizeCells:
                     sc.pp.normalize_total(adata_raw,target_sum=target_sum)
                 if logTransform:
-                    sc.pp.log1p(adata_raw) 
-
+                    try:
+                        sc.pp.log1p(adata_raw) 
+                    except:
+                        pass                    
 
         self.data.X = adata_raw.X
-        self.data.layers['X'] = adata_raw.X
+        if "X" not in self.data.layers.keys():
+            self.data.layers['X'] = adata_raw.X
         self.data.uns=uns
         
         for k in self.data.obsm.keys():
@@ -591,7 +598,11 @@ class AnndataAdaptor(DataAdaptor):
             result = np.full((filt.size, umap.shape[1]), np.NaN)
             result[filt] = umap[filt]
             self.data.obsm[k] = result
-
+            if "N_"+k.split('X_')[-1] in self.data.uns.keys():
+                nnm = self.data.uns["N_"+k.split('X_')[-1]]
+                self.data.uns["N_"+k.split('X_')[-1]] = nnm[filt][:,filt]
+                self.data.uns["N_"+k.split('X_')[-1]+"_mask"] = self.data.uns["N_"+k.split('X_')[-1]+"_mask"][filt]
+        
         self._save_orig_data()
         self._create_schema()
         return self.get_schema()
