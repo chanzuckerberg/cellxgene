@@ -31,7 +31,7 @@ import LabelInput from "../labelInput";
 class Embedding extends React.PureComponent {
   constructor(props) {
     super(props);
-    this.state = {newLayoutText: ""};
+    this.state = {newLayoutText: "", isEmbeddingExpanded: {"": true}};
   }
   
   handleChangeOrSelect = (name) => {
@@ -39,7 +39,31 @@ class Embedding extends React.PureComponent {
       newLayoutText: name,
     });
   };
-
+  closeAllChildren = (node,tree,expanded) => {
+    const children = tree[node]?.children;    
+    if (children){
+      expanded[node] = false;
+      for (const child of children){
+        this.closeAllChildren(child,tree,expanded)
+      }
+    }
+  }
+  handleEmbeddingExpansionChange = (e,node,val,tree) => {
+    const { isEmbeddingExpanded: newExpanded } = this.state;
+    if (val) {
+      this.closeAllChildren(node,tree,newExpanded)
+      this.setState({
+        isEmbeddingExpanded: {...newExpanded}
+      })      
+    } else {
+      this.setState({
+        isEmbeddingExpanded: {...newExpanded, [node]: true}
+      })
+    }
+    if(e){
+      e.preventDefault()
+    }
+  }
   activateEditLayoutMode = (e, embeddingName) => {
     const { dispatch } = this.props;
     this.setState({
@@ -58,7 +82,7 @@ class Embedding extends React.PureComponent {
   };
   handleEditLayout = (e) => {
     const { dispatch, layoutChoice } = this.props;
-    const { newLayoutText } = this.state
+    const { newLayoutText, isEmbeddingExpanded } = this.state
     const { available } = layoutChoice;
     const toRename = [layoutChoice.layoutNameBeingEdited]
     available.forEach((item) => {
@@ -71,8 +95,11 @@ class Embedding extends React.PureComponent {
     
     toRename.forEach((item) => {
       dispatch({type: "reembed: rename reembedding", embName: item, newName: item.replace(oldName,newName)})
-    })        
-    
+      const val = isEmbeddingExpanded?.[item] ?? false;
+      this.setState({
+        isEmbeddingExpanded: {...isEmbeddingExpanded, [item]: _, [item.replace(oldName,newName)]: val}
+      })
+    })
     if (oldName !== newName) {
       dispatch(actions.requestRenameEmbedding(toRename,oldName,newName))
     }
@@ -82,7 +109,11 @@ class Embedding extends React.PureComponent {
   }
   handleLayoutChoiceChange = (e) => {
     const { dispatch, layoutChoice } = this.props;
+    const { isEmbeddingExpanded } = this.state
     if (layoutChoice.available.includes(e.currentTarget.value) && !layoutChoice.isEditingLayoutName) {
+      this.setState({
+        isEmbeddingExpanded: {...isEmbeddingExpanded, [e.currentTarget.value]: true}
+      })
       dispatch(actions.layoutChoiceAction(e.currentTarget.value));
     } 
   };
@@ -106,7 +137,7 @@ class Embedding extends React.PureComponent {
   }
   render() {
     const { layoutChoice, schema, crossfilter } = this.props;
-    const { newLayoutText } = this.state;
+    const { newLayoutText, isEmbeddingExpanded } = this.state;
     const { annoMatrix } = crossfilter;
     return (
       <ButtonGroup
@@ -163,6 +194,8 @@ class Embedding extends React.PureComponent {
                 layoutChoice={layoutChoice}
                 onDeleteEmbedding={this.handleDeleteEmbedding}
                 activateEditLayoutMode={this.activateEditLayoutMode}
+                isEmbeddingExpanded={isEmbeddingExpanded}
+                handleEmbeddingExpansionChange={this.handleEmbeddingExpansionChange}
               />
               <AnnoDialog
                 isActive={
@@ -222,16 +255,157 @@ const loadAllEmbeddingCounts = async (annoMatrix, available) => {
   
 };
 
+/*
+below function will generate an array with full tree of embeddings.
+but i only want to show PARENT+children, selecting parent should switch to parent's parent. if no parent, padding = 0
 
-const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice, onDeleteEmbedding, activateEditLayoutMode }) => {
-  const { available } = layoutChoice;
+so i can use current indented embedding tree, but the node I give it is going to change based on user's selection.
+
+*/
+
+const IndentedEmbeddingTree = (node,roots,tree,padding, els, currView, onDeleteEmbedding, activateEditLayoutMode, isEmbeddingExpanded, handleEmbeddingExpansionChange) => {
+  const children = tree[node]?.children;
+  els.push(
+    (isEmbeddingExpanded?.[tree[node].parent] ?? tree[tree[node].parent].expandedByDefault) ? <Radio
+      label={`${node.split(';;').at(-1)}: ${tree[node].sizeHint}`}
+      value={node}
+      key={node}
+      style={{
+        display: "flex",
+        verticalAlign: "middle",
+        paddingLeft: `${padding+26}px`
+      }}
+      children={
+      <div style={{
+        paddingLeft: "5px",
+      }}>
+      {children && !(tree[node]?.disable ?? false) ? 
+      <AnchorButton
+        icon={isEmbeddingExpanded?.[node] ?? tree[node].expandedByDefault ? "chevron-down" : "chevron-right"}
+        data-testid={`${node}:expand-embeddings`}
+        onClick={(e) => handleEmbeddingExpansionChange(e,node,isEmbeddingExpanded?.[node] ?? tree[node].expandedByDefault, tree)}
+        minimal
+        style={{
+          cursor: "pointer",
+          marginLeft: "auto",
+          marginTop: "-5px"
+        }}                    
+        /> : null}
+
+        {node !== "root" ?
+      <AnchorButton
+          icon="more"
+          data-testid={`${node}:edit-layout-mode`}
+          onClick={(e) => activateEditLayoutMode(e,node)}
+          minimal
+          style={{
+            cursor: "pointer",
+            marginLeft: "auto",
+            marginTop: "-5px"
+          }}                    
+        /> : null}
+        {node !== currView && node !== "root"  && !roots.includes(node) ?
+
+        <AnchorButton
+          icon="small-cross"
+          minimal
+          style={{
+            cursor: "pointer",
+            marginLeft: "auto",
+            marginTop: "-5px"
+          }}
+          onClick={(e) => onDeleteEmbedding(e,node)}
+        /> : null}  
+      </div> 
+      }
+    />  : null
+  )  
+  if (children){
+    for (const child of children){
+      IndentedEmbeddingTree(child,roots,tree,padding+26, els, currView, onDeleteEmbedding, activateEditLayoutMode, isEmbeddingExpanded, handleEmbeddingExpansionChange)
+    }
+  }
+}
+
+const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice, onDeleteEmbedding, activateEditLayoutMode, isEmbeddingExpanded, handleEmbeddingExpansionChange }) => {
   const [ data, setData ] = React.useState(null)
-  
+  const [ renderedEmbeddingTree, setRenderedEmbeddingTree ] = React.useState(null)
   React.useEffect(() => {
+    const { available } = layoutChoice;
     loadAllEmbeddingCounts(annoMatrix,available).then((res)=>{
       setData(res)
+      if (res) {
+        const name = layoutChoice.current;
+        let parentName;
+        if(name.includes(";;")){
+          parentName = name.replace(`;;${name.split(";;").at(-1)}`,"")
+        } else {
+          parentName = "";
+        }
+    
+        const embeddingTree = {}
+        res.map((summary) => {
+          const { discreteCellIndex, embeddingName: queryName } = summary;
+          let queryParent;
+          if(queryName.includes(";;")){        
+            queryParent = queryName.replace(`;;${queryName.split(";;").at(-1)}`,"")
+          } else {
+            queryParent = "";
+          }
+          
+          const sizeHint = `${discreteCellIndex.size()} cells`;
+          // add queryName to children of queryParent
+          if (embeddingTree?.[queryParent]?.children) { //if children exists on queryParent
+            embeddingTree[queryParent].children.push(queryName)
+          } else if (embeddingTree?.[queryParent]) { // if anything exists on queryParent
+            embeddingTree[queryParent] = {...embeddingTree[queryParent], children: [queryName]}
+          } else { // create new entry for queryParent
+            embeddingTree[queryParent] = {children: [queryName]}
+          }
+
+          const expandedByDefault = (queryParent==="" || queryName === name);
+
+          if (embeddingTree?.[queryName]){ // queryName exists in embeddingTree
+            embeddingTree[queryName] = {...embeddingTree[queryName], sizeHint: sizeHint, expandedByDefault: expandedByDefault, parent: queryParent}
+          } else {
+            embeddingTree[queryName] = {sizeHint: sizeHint, expandedByDefault: expandedByDefault, parent: queryParent}
+          }
+        });      
+        const els = []
+        let iterable;
+        let roots;
+        if (parentName === ""){
+          iterable = embeddingTree[""].children      
+        } else {
+          let currNode = parentName;
+          let iterate = true;
+          roots = [currNode]
+          embeddingTree[currNode].expandedByDefault = true;
+          embeddingTree[currNode].disable = true;
+          while (iterate){
+            if (embeddingTree[currNode].parent === ""){
+              iterate=false;
+            } else {
+              currNode = embeddingTree[currNode].parent
+              embeddingTree[currNode].expandedByDefault = true;
+              embeddingTree[currNode].disable = true;
+              roots.push(currNode)
+            }
+          }
+          iterable = [currNode]
+        }
+        
+        for (const c of iterable){
+          IndentedEmbeddingTree(c,roots??iterable.filter((item)=>item!==c),embeddingTree,0, els, name, onDeleteEmbedding, activateEditLayoutMode, isEmbeddingExpanded, handleEmbeddingExpansionChange)    
+        }
+        setRenderedEmbeddingTree(
+          <RadioGroup onChange={onChange} selectedValue={layoutChoice.current}>
+            {els}
+          </RadioGroup>
+        );
+      }
     })
-  }, [annoMatrix,available]);
+  }, [annoMatrix, layoutChoice, isEmbeddingExpanded]);
 
   if (!data) {
     /* still loading, or errored out - just omit counts (TODO: spinner?) */
@@ -241,151 +415,12 @@ const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice, onDeleteEmbeddin
       </div>
     );
   }
-  if (data) {
-    const name = layoutChoice.current;
-    let parentName;
-    const embName = name;
-    if(name.includes(";;")){
-      parentName = name.replace(`;;${name.split(";;").at(-1)}`,"")
-    } else {
-      parentName = "";
-    }
-    let sizeHintParent;
-    let sizeHintCurrent;
-    const x = data.map((summary) => {
-      const { discreteCellIndex, embeddingName } = summary;
-      const sizeHint = `${discreteCellIndex.size()} cells`;
+  return renderedEmbeddingTree;
 
-      let queryParent;
-      const queryName = embeddingName;
-      if(embeddingName.includes(";;")){        
-        queryParent = embeddingName.replace(`;;${embeddingName.split(";;").at(-1)}`,"")
-      } else {
-        queryParent = "";
-      }      
-      if (queryName === embName) {
-        sizeHintCurrent = sizeHint;
-      }       
-      if (queryName === parentName) {
-        sizeHintParent = sizeHint;
-      }
-      if((parentName === "" && queryParent === "" || queryParent === embName) && available.includes(queryName)){
-        return (
-         
-            <Radio
-              label={`${queryName.split(';;').at(-1)}: ${sizeHint}`}
-              value={embeddingName}
-              key={embeddingName}
-              style={{
-                display: "flex",
-                verticalAlign: "middle",
-              }}
-              children={
-              <div style={{
-                paddingLeft: "5px",
-              }}>
-                {queryName !== "root" ?
-               <AnchorButton
-                  icon="more"
-                  data-testid={`${embeddingName}:edit-category-mode`}
-                  onClick={(e) => activateEditLayoutMode(e,queryName)}
-                  minimal
-                  style={{
-                    cursor: "pointer",
-                    marginLeft: "auto",
-                    marginTop: "-5px"
-                  }}                    
-                /> : null}
-                {queryName !== embName && queryName !== "root" ?
+}
 
-                <AnchorButton
-                  icon="small-cross"
-                  minimal
-                  style={{
-                    cursor: "pointer",
-                    marginLeft: "auto",
-                    marginTop: "-5px"
-                  }}
-                  onClick={(e) => onDeleteEmbedding(e,queryName)}
-                /> : null}  
-              </div> 
-              }
-            />  
-            
-        // add `X` button which deletes embedding for all embeddings that are not present in original schema.
-        // remove all embeddings that are its children 
-        // to figure out: how to delete embeddings from schema.
-        );
-      } else {
-        return null;
-      }
-    });
-    if(parentName !== ""){
-      x.unshift(
-        <Radio
-          label={`${embName.split(';;').at(-1)}: ${sizeHintCurrent}`}
-          value={name}
-          key={name}
-          style={{
-            display: "flex",
-            verticalAlign: "middle",
-          }}          
-          children={
-            <div style={{
-              paddingLeft: "5px",
-            }}>
-              {embName !== "root" ?
-              <AnchorButton
-                icon="more"
-                data-testid={`${embName}:edit-category-mode`}
-                onClick={(e) => activateEditLayoutMode(e,embName)}
-                minimal
-                style={{
-                  cursor: "pointer",
-                  marginLeft: "auto",
-                  marginTop: "-5px"
-                }}                    
-              /> : null}
-            </div>
-          }          
-        />        
-      )
-      x.unshift(
-        <Radio
-          label={`(Parent) ${parentName.split(';;').at(-1)}: ${sizeHintParent}`}
-          value={parentName}
-          key={parentName}
-          style={{
-            display: "flex",
-            verticalAlign: "middle",
-          }}          
-          children={
-            <div style={{
-              paddingLeft: "5px",
-            }}>
-              {parentName !== "root" ?
-              <AnchorButton
-                icon="more"
-                data-testid={`${parentName}:edit-category-mode`}
-                onClick={(e) => activateEditLayoutMode(e,parentName)}
-                minimal
-                style={{
-                  cursor: "pointer",
-                  marginLeft: "auto",
-                  marginTop: "-5px"
-                }}                    
-              /> : null}
-            </div>
-          }               
-        />        
-      )      
-    }
 
-    return (      
-      <RadioGroup onChange={onChange} selectedValue={layoutChoice.current}>
-        {x}
-      </RadioGroup>
-    );
-  }
-  return null;
-};
+
+
+
+
