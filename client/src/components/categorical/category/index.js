@@ -234,7 +234,8 @@ class Category extends React.PureComponent {
       sankeySelected,
       layoutChoiceSankey
     } = this.props;
-
+    const { colorMode } = colors;
+    const continuousColoring = (colorMode === "color by continuous metadata" || colorMode === "color by geneset mean expression" || colorMode =="color by expression")
     const checkboxID = `category-select-${metadataField}`;
     const sankeyCheckboxID = `sankey-select-${metadataField}`;
 
@@ -296,6 +297,7 @@ class Category extends React.PureComponent {
                   sankeyCheckboxID={sankeyCheckboxID}
                   sankeySelected={sankeySelected}
                   layoutChoiceSankey={layoutChoiceSankey}
+                  continuousColoring={continuousColoring}
                 />
               );
             }}
@@ -393,7 +395,8 @@ const CategoryHeader = React.memo(
     onCategoryToggleAllClick,
     sankeySelected,
     onCategorySankeyClick,
-    layoutChoiceSankey
+    layoutChoiceSankey,
+    continuousColoring
   }) => {
     /*
     Render category name and controls (eg, color-by button).
@@ -466,6 +469,14 @@ const CategoryHeader = React.memo(
         {<AnnoDialogEditCategoryName metadataField={metadataField} />}
         {<AnnoDialogAddLabel metadataField={metadataField} />}
         <div>
+          <AnchorButton
+            onClick={onColorChangeClick}
+            active={isColorAccessor}
+            minimal
+            intent={isColorAccessor ? "primary" : "none"}
+            disabled={true}
+            icon="expand-all"
+          />
           <AnnoMenu
             metadataField={metadataField}
             isUserAnno={isUserAnno}
@@ -542,7 +553,8 @@ const CategoryRender = React.memo(
     sankeySelected,
     onCategorySankeyClick,
     sankeyCheckboxID,
-    layoutChoiceSankey
+    layoutChoiceSankey,
+    continuousColoring
   }) => {
     /*
     Render the core of the category, including checkboxes, controls, etc.
@@ -591,6 +603,7 @@ const CategoryRender = React.memo(
             onCategorySankeyClick={onCategorySankeyClick}
             sankeySelected={sankeySelected}
             layoutChoiceSankey={layoutChoiceSankey}
+            continuousColoring={continuousColoring}
           />
         </div>
         <div style={{ marginLeft: 26 }}>
@@ -605,6 +618,7 @@ const CategoryRender = React.memo(
                 colorAccessor={colorAccessor}
                 colorData={colorData}
                 colorTable={colorTable}
+                continuousColoring={continuousColoring}
               />
             ) : null
           }
@@ -628,6 +642,7 @@ const CategoryValueList = React.memo(
     colorAccessor,
     colorData,
     colorTable,
+    continuousColoring,
   }) => {
     const tuples = [...categorySummary.categoryValueIndices];
     /*
