@@ -180,11 +180,12 @@ class CategoryValue extends React.Component {
     If and only if true, update the component
     */
     const { props, state } = this;
-    const { categoryIndex, categorySummary, isSelected } = props;
+    const { categoryIndex, categorySummary, isSelected, sortDirection } = props;
     const {
       categoryIndex: newCategoryIndex,
       categorySummary: newCategorySummary,
       isSelected: newIsSelected,
+      sortDirection: newSortDirection
     } = nextProps;
 
     const label = categorySummary.categoryValues[categoryIndex];
@@ -200,14 +201,13 @@ class CategoryValue extends React.Component {
     const count = categorySummary.categoryValueCounts[categoryIndex];
     const newCount = newCategorySummary.categoryValueCounts[newCategoryIndex];
     const countChanged = count !== newCount;
-
+    const sortDirectionChanged = sortDirection !== newSortDirection
     // If the user edits an annotation that is currently colored-by, colors may be re-assigned.
     // This test is conservative - it may cause re-rendering of entire category (all labels)
     // if any one changes, but only for the currently colored-by category.
     const colorMightHaveChanged =
       nextProps.colorAccessor === nextProps.metadataField &&
       props.categorySummary !== nextProps.categorySummary;
-
     return (
       labelChanged ||
       valueSelectionChange ||
@@ -216,7 +216,8 @@ class CategoryValue extends React.Component {
       editingLabel ||
       dilationChange ||
       countChanged ||
-      colorMightHaveChanged
+      colorMightHaveChanged ||
+      sortDirectionChanged
     );
   };
 
@@ -494,11 +495,10 @@ class CategoryValue extends React.Component {
       isDilated,
       isSelected,
       categorySummary,
-      label,
+      label
     } = this.props;
     const colorScale = colorTable?.scale;
     const ontologyEnabled = ontology?.enabled ?? false;
-
     const { editedLabelText } = this.state;
 
     const count = categorySummary.categoryValueCounts[categoryIndex];
