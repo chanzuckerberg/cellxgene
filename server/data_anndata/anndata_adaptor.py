@@ -274,6 +274,9 @@ class AnndataAdaptor(DataAdaptor):
             df = df[fields]
         return encode_matrix_fbs(df, col_idx=df.columns)
 
+    def get_spatial(self):
+        return self.data.uns["spatial"]
+
     def get_embedding_names(self):
         """
         Return pre-computed embeddings.

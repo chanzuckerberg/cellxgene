@@ -14,6 +14,7 @@ flatten-dict>=0.2.0
 fsspec>=0.4.4,<0.8.0
 gunicorn>=20.0.4
 h5py>=3.0.0
+matplotlib>=3.5.0
 numba>=0.51.2
 numpy>=1.17.5
 packaging>=20.0
