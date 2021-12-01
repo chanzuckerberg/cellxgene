@@ -14,6 +14,7 @@ import {
   createColorTable,
   createColorQuery,
 } from "../../util/stateManager/colorHelpers";
+import _drawSpatialImage from "./drawSpatialImageRegl";
 import * as globals from "../../globals";
 
 import GraphOverlayLayer from "./overlays/graphOverlayLayer";
@@ -87,6 +88,7 @@ class Graph extends React.Component {
     const camera = _camera(canvas);
     const regl = _regl(canvas);
     const drawPoints = _drawPoints(regl);
+    const drawSpatialImage = _drawSpatialImage(regl);
 
     // preallocate webgl buffers
     const pointBuffer = regl.buffer();
@@ -100,6 +102,7 @@ class Graph extends React.Component {
       pointBuffer,
       colorBuffer,
       flagBuffer,
+      drawSpatialImage,
     };
   }
 
@@ -232,6 +235,7 @@ class Graph extends React.Component {
       pointBuffer: null,
       colorBuffer: null,
       flagBuffer: null,
+      drawSpatialImage: null,
 
       // component rendering derived state - these must stay synchronized
       // with the reducer state they were generated from.
@@ -317,7 +321,10 @@ class Graph extends React.Component {
     if (e.type !== "wheel") e.preventDefault();
     if (camera.handleEvent(e, projectionTF)) {
       this.renderCanvas();
-      this.setState((state) => ({ ...state, updateOverlay: !state.updateOverlay }));
+      this.setState((state) => ({
+        ...state,
+        updateOverlay: !state.updateOverlay,
+      }));
     }
   };
 
@@ -509,6 +516,13 @@ class Graph extends React.Component {
     return { toolSVG: newToolSVG, tool, container };
   };
 
+  loadTextureFromUrl = (src) => new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+
   fetchAsyncProps = async (props) => {
     const {
       annoMatrix,
@@ -549,6 +563,10 @@ class Graph extends React.Component {
       colorByData,
       pointDilationData,
       pointDilationLabel
+    );
+
+    this.spatialImage = await this.loadTextureFromUrl(
+      "/api/v0.2/spatial/image"
     );
 
     const { width, height } = viewport;
@@ -721,6 +739,7 @@ class Graph extends React.Component {
       flagBuffer,
       camera,
       projectionTF,
+      drawSpatialImage,
     } = this.state;
     this.renderPoints(
       regl,
@@ -729,7 +748,8 @@ class Graph extends React.Component {
       pointBuffer,
       flagBuffer,
       camera,
-      projectionTF
+      projectionTF,
+      drawSpatialImage
     );
   });
 
@@ -797,7 +817,8 @@ class Graph extends React.Component {
     pointBuffer,
     flagBuffer,
     camera,
-    projectionTF
+    projectionTF,
+    drawSpatialImage
   ) {
     const { annoMatrix } = this.props;
     if (!this.reglCanvas || !annoMatrix) return;
@@ -809,7 +830,7 @@ class Graph extends React.Component {
     regl.poll();
     regl.clear({
       depth: 1,
-      color: [1, 1, 1, 1],
+      color: [0, 0, 0, 0],
     });
     drawPoints({
       distance: camera.distance(),
@@ -820,6 +841,12 @@ class Graph extends React.Component {
       projView,
       nPoints: schema.dataframe.nObs,
       minViewportDimension: Math.min(width, height),
+    });
+    drawSpatialImage({
+      projView,
+      spatialImageAsTexture: regl.texture({
+        data: this.spatialImage,
+      }),
     });
     regl._gl.flush();
   }
@@ -951,32 +978,29 @@ const ErrorLoading = ({ displayName, error, width, height }) => {
   );
 };
 
-const StillLoading = ({ displayName, width, height }) => 
+const StillLoading = ({ displayName, width, height }) => (
   /*
   Render a busy/loading indicator
   */
-   (
+  <div
+    style={{
+      position: "fixed",
+      fontWeight: 500,
+      top: height / 2,
+      width,
+    }}
+  >
     <div
       style={{
-        position: "fixed",
-        fontWeight: 500,
-        top: height / 2,
-        width,
+        display: "flex",
+        justifyContent: "center",
+        justifyItems: "center",
+        alignItems: "center",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          justifyItems: "center",
-          alignItems: "center",
-        }}
-      >
-        <Button minimal loading intent="primary" />
-        <span style={{ fontStyle: "italic" }}>Loading {displayName}</span>
-      </div>
+      <Button minimal loading intent="primary" />
+      <span style={{ fontStyle: "italic" }}>Loading {displayName}</span>
     </div>
-  )
-;
-
+  </div>
+);
 export default Graph;
