@@ -4,6 +4,7 @@ import sys
 from http import HTTPStatus
 import zlib
 import json
+import numpy as np
 
 from flask import make_response, jsonify, current_app, abort, send_file
 from werkzeug.urls import url_unquote
@@ -419,7 +420,8 @@ def spatial_image_get(request, data_adaptor):
         return abort_and_log(HTTPStatus.BAD_REQUEST, f"spatial information does not contain requested resolution '{resolution}'")
 
     response_image = io.BytesIO()
-    matplotlib.pyplot.imsave(response_image, spatial[library_id]["images"][resolution])
+    img = np.flipud(spatial[library_id]["images"][resolution])
+    matplotlib.pyplot.imsave(response_image, img)
     response_image.seek(0)
 
     try:

@@ -2,35 +2,78 @@ export default function drawSpatialImageRegl(regl) {
   return regl({
     frag: `
         precision mediump float;
-        uniform sampler2D texture;
-        varying vec2 uv;
-        void main () {
-          gl_FragColor = texture2D(texture, uv);
+
+        // our texture
+        uniform sampler2D u_image;
+
+        // the texCoords passed in from the vertex shader.
+        varying vec2 v_texCoord;
+
+        void main() {
+            gl_FragColor = texture2D(u_image, v_texCoord);
         }`,
 
     vert: `
-        precision mediump float;
-        attribute vec2 position;
-        varying vec2 uv;
-        const float zMiddle = 0.;
+        attribute vec2 a_position;
+        attribute vec2 a_texCoord;
+
+        uniform vec2 u_resolution;
+
         uniform mat3 projView;
-        
-        vec2 norm(vec2 position) {
-          return ((position - 0.5) * 2.0) * vec2(1., -1.);
-        }
+
+        varying vec2 v_texCoord;
+
         void main() {
-          uv = position;
-          vec3 xy = projView * vec3(norm(position), 1.);
-          gl_Position = vec4(xy.xy, 0, 1.);
+            // convert the rectangle from pixels to 0.0 to 1.0
+            vec3 pos = vec3(a_position, 1.);
+            vec2 zeroToOne = pos.xy / u_resolution;
+
+            // convert from 0->1 to 0->2
+            vec2 zeroToTwo = zeroToOne * 2.0;
+
+            // convert from 0->2 to -1->+1 (clipspace)
+            vec2 clipSpace = zeroToTwo - 1.0;
+
+            vec3 pos2 = projView * vec3(clipSpace, 1.);
+
+            gl_Position = vec4(pos2.xy , 0, 1);
+
+            // pass the texCoord to the fragment shader
+            // The GPU will interpolate this value between points.
+            v_texCoord = a_texCoord;
         }`,
 
     attributes: {
-      position: [-1, 1, -1, -1, 1, -1, 1, -1, 1, 1, -1, 1],
+      a_texCoord: [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0],
+      // a_position: [
+      //     10, 0,
+      //     10 + regl.prop("img_width"), 0,
+      //     10, 0 + regl.prop("img_height"),
+      //     10, 0 + regl.prop("img_height"),
+      //     10 + regl.prop("img_width"), 0,
+      //     10 + regl.prop("img_width"), 0 + regl.prop("img_height"),
+      //     ],
+      a_position: [
+        0,
+        0,
+        0 + 2000,
+        0,
+        0,
+        0 + 2000,
+        0,
+        0 + 2000,
+        0 + 2000,
+        0,
+        0 + 2000,
+        0 + 2000,
+      ],
     },
 
     uniforms: {
       projView: regl.prop("projView"),
-      texture: regl.prop("spatialImageAsTexture"),
+      u_image: regl.prop("spatialImageAsTexture"),
+      color: [1, 0, 0, 1],
+      u_resolution: [2000, 2000],
     },
 
     count: 6,

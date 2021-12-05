@@ -361,6 +361,8 @@ class DataAdaptor(metaclass=ABCMeta):
         translate = 0.5 - ((max - min) / scale / 2)
         normalized_layout = normalized_layout + translate
 
+        print(f"scale {scale}, translate {translate}")
+
         normalized_layout = normalized_layout.astype(dtype=np.float32)
         return normalized_layout
 
@@ -388,6 +390,8 @@ class DataAdaptor(metaclass=ABCMeta):
                 df = pd.concat(layout_data, axis=1, copy=False)
             else:
                 df = pd.DataFrame()
+            # print("##########DF")
+            # print(df)
             fbs = encode_matrix_fbs(df, col_idx=df.columns, row_idx=None)
 
         return fbs

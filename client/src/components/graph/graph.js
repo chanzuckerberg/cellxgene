@@ -114,6 +114,7 @@ class Graph extends React.Component {
     /*
     compute the model coordinate for each point
     */
+    console.log({ X }, { Y });
     const positions = new Float32Array(2 * X.length);
     for (let i = 0, len = X.length; i < len; i += 1) {
       const p = vec2.fromValues(X[i], Y[i]);
@@ -516,7 +517,8 @@ class Graph extends React.Component {
     return { toolSVG: newToolSVG, tool, container };
   };
 
-  loadTextureFromUrl = (src) => new Promise((resolve, reject) => {
+  loadTextureFromUrl = (src) =>
+    new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => resolve(img);
       img.onerror = reject;
@@ -832,6 +834,8 @@ class Graph extends React.Component {
       depth: 1,
       color: [0, 0, 0, 0],
     });
+    console.log({ pointBuffer });
+    console.log({ projView });
     drawPoints({
       distance: camera.distance(),
       color: colorBuffer,
@@ -844,8 +848,12 @@ class Graph extends React.Component {
     });
     drawSpatialImage({
       projView,
+      img_width: this.spatialImage.width,
+      img_height: this.spatialImage.height,
       spatialImageAsTexture: regl.texture({
         data: this.spatialImage,
+        wrapS: "clamp",
+        wrapT: "clamp",
       }),
     });
     regl._gl.flush();
