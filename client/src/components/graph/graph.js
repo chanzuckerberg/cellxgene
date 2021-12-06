@@ -122,6 +122,7 @@ class Graph extends React.Component {
       positions[2 * i] = p[0];
       positions[2 * i + 1] = p[1];
     }
+    console.log({ transformed: positions });
     return positions;
   });
 
@@ -759,6 +760,7 @@ class Graph extends React.Component {
     const { positions, colors, flags, height, width } = asyncProps;
     this.cachedAsyncProps = asyncProps;
     const { pointBuffer, colorBuffer, flagBuffer } = this.state;
+    console.log({ pos2: positions });
     let needToRenderCanvas = false;
 
     if (height !== prevAsyncProps?.height || width !== prevAsyncProps?.width) {

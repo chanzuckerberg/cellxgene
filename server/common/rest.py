@@ -420,7 +420,7 @@ def spatial_image_get(request, data_adaptor):
         return abort_and_log(HTTPStatus.BAD_REQUEST, f"spatial information does not contain requested resolution '{resolution}'")
 
     response_image = io.BytesIO()
-    img = np.flipud(spatial[library_id]["images"][resolution])
+    img = spatial[library_id]["images"][resolution]
     matplotlib.pyplot.imsave(response_image, img)
     response_image.seek(0)
 

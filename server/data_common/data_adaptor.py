@@ -363,7 +363,10 @@ class DataAdaptor(metaclass=ABCMeta):
 
         print(f"scale {scale}, translate {translate}")
 
-        normalized_layout = normalized_layout.astype(dtype=np.float32)
+        A = embedding * 0.17011142
+        A = np.column_stack([A[:, 0] / 1921, A[:, 1] / 2000])
+
+        normalized_layout = A.astype(dtype=np.float32)
         return normalized_layout
 
     def layout_to_fbs_matrix(self, fields):

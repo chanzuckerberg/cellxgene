@@ -56,15 +56,15 @@ export default function drawSpatialImageRegl(regl) {
       a_position: [
         0,
         0,
-        0 + 2000,
+        0 + 1921,
         0,
         0,
         0 + 2000,
         0,
         0 + 2000,
-        0 + 2000,
+        0 + 1921,
         0,
-        0 + 2000,
+        0 + 1921,
         0 + 2000,
       ],
     },
@@ -73,7 +73,8 @@ export default function drawSpatialImageRegl(regl) {
       projView: regl.prop("projView"),
       u_image: regl.prop("spatialImageAsTexture"),
       color: [1, 0, 0, 1],
-      u_resolution: [2000, 2000],
+      u_resolution: [1921, 2000],
+      //   translate:
     },
 
     count: 6,
