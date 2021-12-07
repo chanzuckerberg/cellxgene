@@ -28,6 +28,7 @@ import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
     subsetPossible,
     subsetResetPossible,
     graphInteractionMode: state.controls.graphInteractionMode,
+    imageUnderlay: state.imageUnderlay,
     clipPercentileMin: Math.round(100 * (annoMatrix?.clipRange?.[0] ?? 0)),
     clipPercentileMax: Math.round(100 * (annoMatrix?.clipRange?.[1] ?? 1)),
     userDefinedGenes: state.controls.userDefinedGenes,
@@ -206,6 +207,7 @@ class MenuBar extends React.PureComponent {
       colorAccessor,
       subsetPossible,
       subsetResetPossible,
+      imageUnderlay,
     } = this.props;
     const { pendingClipPercentiles } = this.state;
 
@@ -268,6 +270,26 @@ class MenuBar extends React.PureComponent {
             disabled={!isColoredByCategorical}
           />
         </Tooltip>
+        <ButtonGroup className={styles.menubarButton}>
+          <Tooltip
+            content={"Toggle image"}
+            position="bottom"
+            hoverOpenDelay={globals.tooltipHoverOpenDelay}
+          >
+            <AnchorButton
+              type="button"
+              data-testid="toggle-image-underlay"
+              icon={"media"}
+              active={imageUnderlay.isActive}
+              onClick={() => {
+                dispatch({
+                  type: "toggle image underlay",
+                });
+              }}
+            />
+          </Tooltip>
+        </ButtonGroup>
+
         <ButtonGroup className={styles.menubarButton}>
           <Tooltip
             content={selectionTooltip}

@@ -19,6 +19,7 @@ import genesetsUI from "./genesetsUI";
 import autosave from "./autosave";
 import centroidLabels from "./centroidLabels";
 import pointDialation from "./pointDilation";
+import imageUnderlay from "./imageUnderlay";
 import { gcMiddleware as annoMatrixGC } from "../annoMatrix";
 
 import undoableConfig from "./undoableConfig";
@@ -39,6 +40,7 @@ const Reducer = undoable(
     ["controls", controls],
     ["differential", differential],
     ["centroidLabels", centroidLabels],
+    ["imageUnderlay", imageUnderlay],
     ["pointDilation", pointDialation],
     ["autosave", autosave],
   ]),
