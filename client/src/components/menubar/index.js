@@ -280,6 +280,7 @@ class MenuBar extends React.PureComponent {
               type="button"
               data-testid="toggle-image-underlay"
               icon={"media"}
+              intent={imageUnderlay.isActive ? "primary" : "none"}
               active={imageUnderlay.isActive}
               onClick={() => {
                 dispatch({
