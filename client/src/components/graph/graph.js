@@ -112,23 +112,24 @@ class Graph extends React.Component {
     return !shallowEqual(props.watchProps, prevProps.watchProps);
   }
 
-  computePointPositions = memoize((X, Y, modelTF, spatialMetadata) => {
-    const { imageUnderlay } = this.props;
-    /*
+  computePointPositions = memoize(
+    (X, Y, modelTF, spatialMetadata, imageUnderlay) => {
+      /*
     compute the model coordinate for each point
     */
-    console.log({ X }, { Y });
-    const positions = new Float32Array(2 * X.length);
-    for (let i = 0, len = X.length; i < len; i += 1) {
-      const p = imageUnderlay?.isActive
-        ? this.rescalePointForSpatial(X[i], Y[i], spatialMetadata)
-        : vec2.fromValues(X[i], Y[i]);
-      vec2.transformMat3(p, p, modelTF);
-      positions[2 * i] = p[0];
-      positions[2 * i + 1] = p[1];
+      console.log({ X }, { Y });
+      const positions = new Float32Array(2 * X.length);
+      for (let i = 0, len = X.length; i < len; i += 1) {
+        const p = imageUnderlay?.isActive
+          ? this.rescalePointForSpatial(X[i], Y[i], spatialMetadata)
+          : vec2.fromValues(X[i], Y[i]);
+        vec2.transformMat3(p, p, modelTF);
+        positions[2 * i] = p[0];
+        positions[2 * i + 1] = p[1];
+      }
+      return positions;
     }
-    return positions;
-  });
+  );
 
   computePointColors = memoize((rgb) => {
     /*
@@ -567,6 +568,7 @@ class Graph extends React.Component {
       pointDilation,
       viewport,
       spatial,
+      imageUnderlay,
     } = props.watchProps;
     const { modelTF } = this.state;
 
@@ -576,13 +578,20 @@ class Graph extends React.Component {
       annoMatrix,
       layoutChoice,
       colorsProp,
-      pointDilation
+      pointDilation,
+      imageUnderlay
     );
 
     const { currentDimNames } = layoutChoice;
     const X = layoutDf.col(currentDimNames[0]).asArray();
     const Y = layoutDf.col(currentDimNames[1]).asArray();
-    const positions = this.computePointPositions(X, Y, modelTF, spatial.data);
+    const positions = this.computePointPositions(
+      X,
+      Y,
+      modelTF,
+      spatial.data,
+      imageUnderlay
+    );
 
     const colorTable = this.updateColorTable(colorsProp, colorDf);
     const colors = this.computePointColors(colorTable.rgb);
@@ -615,6 +624,7 @@ class Graph extends React.Component {
       width,
       height,
       spatial,
+      imageUnderlay,
     };
   };
 
@@ -796,7 +806,9 @@ class Graph extends React.Component {
     const { positions, colors, flags, height, width } = asyncProps;
     this.cachedAsyncProps = asyncProps;
     const { pointBuffer, colorBuffer, flagBuffer } = this.state;
-    let needToRenderCanvas = false;
+    let needToRenderCanvas = true;
+
+    console.log("updateReglAndRender");
 
     if (height !== prevAsyncProps?.height || width !== prevAsyncProps?.width) {
       needToRenderCanvas = true;
@@ -857,10 +869,9 @@ class Graph extends React.Component {
     flagBuffer,
     camera,
     projectionTF,
-    drawSpatialImage,
-    imageUnderlay
+    drawSpatialImage
   ) {
-    const { annoMatrix, spatial } = this.props;
+    const { annoMatrix, spatial, imageUnderlay } = this.props;
     if (!this.reglCanvas || !annoMatrix) return;
 
     const { schema } = annoMatrix;
@@ -869,6 +880,8 @@ class Graph extends React.Component {
     const { width, height } = this.reglCanvas;
     const imW = spatial.data.imageWidth;
     const imH = spatial.data.imageHeight;
+
+    console.log({ imageUnderlay });
 
     regl.poll();
     regl.clear({
@@ -911,6 +924,7 @@ class Graph extends React.Component {
       pointDilation,
       crossfilter,
       spatial,
+      imageUnderlay,
     } = this.props;
     const { modelTF, projectionTF, camera, viewport, regl } = this.state;
     const cameraTF = camera?.view()?.slice();
@@ -985,6 +999,7 @@ class Graph extends React.Component {
             crossfilter,
             viewport,
             spatial,
+            imageUnderlay,
           }}
         >
           <Async.Pending initial>
