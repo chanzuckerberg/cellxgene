@@ -363,10 +363,15 @@ class DataAdaptor(metaclass=ABCMeta):
 
         print(f"scale {scale}, translate {translate}")
 
-        A = embedding * 0.17011142
-        A = np.column_stack([A[:, 0] / 1921, A[:, 1] / 2000])
+        # if True: # if visium
+        #     self.data.uns["spatial"]
 
-        normalized_layout = A.astype(dtype=np.float32)
+
+        # adata.uns["spatial"]['V1_Adult_Mouse_Brain']["scalefactors"]["tissue_hires_scalef"]
+        # A = embedding * 0.17011142
+        # A = np.column_stack([A[:, 0] / 1921, A[:, 1] / 2000])
+
+        # normalized_layout = A.astype(dtype=np.float32)
         return normalized_layout
 
     def layout_to_fbs_matrix(self, fields):

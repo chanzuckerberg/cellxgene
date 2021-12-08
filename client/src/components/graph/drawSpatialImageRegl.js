@@ -45,35 +45,15 @@ export default function drawSpatialImageRegl(regl) {
 
     attributes: {
       a_texCoord: [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0],
-      // a_position: [
-      //     10, 0,
-      //     10 + regl.prop("img_width"), 0,
-      //     10, 0 + regl.prop("img_height"),
-      //     10, 0 + regl.prop("img_height"),
-      //     10 + regl.prop("img_width"), 0,
-      //     10 + regl.prop("img_width"), 0 + regl.prop("img_height"),
-      //     ],
-      a_position: [
-        0,
-        0,
-        0 + 1921,
-        0,
-        0,
-        0 + 2000,
-        0,
-        0 + 2000,
-        0 + 1921,
-        0,
-        0 + 1921,
-        0 + 2000,
-      ],
+      a_position: regl.prop("rectCoords"),
     },
 
     uniforms: {
       projView: regl.prop("projView"),
       u_image: regl.prop("spatialImageAsTexture"),
       color: [1, 0, 0, 1],
-      u_resolution: [1921, 2000],
+      u_resolution: [regl.prop("imageWidth"), regl.prop("imageHeight")],
+      image_width: regl.prop("imageWidth"),
       //   translate:
     },
 

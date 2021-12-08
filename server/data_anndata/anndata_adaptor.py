@@ -277,6 +277,40 @@ class AnndataAdaptor(DataAdaptor):
     def get_spatial(self):
         return self.data.uns["spatial"]
 
+    def get_spatial_metadata(self):
+        spatial = self.get_spatial()
+
+        resolution = "hires"
+
+        if len(list(spatial)) == 0:
+            raise Exception("uns does not have spatial information")
+
+        library_id = list(spatial)[0]
+
+        if "images" not in spatial[library_id]:
+            raise Exception("spatial information does not contain images")
+
+        if resolution not in spatial[library_id]["images"]:
+            raise Exception(f"spatial information does not contain requested resolution '{resolution}'")
+
+        scaleref = spatial[library_id]["scalefactors"][f"tissue_{resolution}_scalef"]
+        (h, w, _) = spatial[library_id]["images"][resolution].shape
+
+        A = self.data.obsm["X_spatial"]
+        min = np.nanmin(A, axis=0)
+        max = np.nanmax(A, axis=0)
+        scale = np.amax(max - min)
+        translate = 0.5 - ((max - min) / scale / 2)
+
+        return {
+            "imageWidth": w,
+            "imageHeight": h,
+            "scaleref": scaleref,
+            "inverseScale": int(scale),
+            "inverseTranslate": translate.tolist(),
+            "inverseMin": min.tolist(),
+        }
+
     def get_embedding_names(self):
         """
         Return pre-computed embeddings.

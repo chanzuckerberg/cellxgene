@@ -78,6 +78,7 @@ function createModelTF() {
   colors: state.colors,
   pointDilation: state.pointDilation,
   genesets: state.genesets.genesets,
+  spatial: state.spatial.metadata,
 }))
 class Graph extends React.Component {
   static createReglState(canvas) {
@@ -110,19 +111,20 @@ class Graph extends React.Component {
     return !shallowEqual(props.watchProps, prevProps.watchProps);
   }
 
-  computePointPositions = memoize((X, Y, modelTF) => {
+  computePointPositions = memoize((X, Y, modelTF, spatialMetadata) => {
     /*
     compute the model coordinate for each point
     */
     console.log({ X }, { Y });
     const positions = new Float32Array(2 * X.length);
     for (let i = 0, len = X.length; i < len; i += 1) {
-      const p = vec2.fromValues(X[i], Y[i]);
+      // TODO: Introduce the feature flag here
+      // const p = vec2.fromValues(X[i], Y[i]);
+      const p = this.rescalePointForSpatial(X[i], Y[i], spatialMetadata);
       vec2.transformMat3(p, p, modelTF);
       positions[2 * i] = p[0];
       positions[2 * i + 1] = p[1];
     }
-    console.log({ transformed: positions });
     return positions;
   });
 
@@ -238,6 +240,7 @@ class Graph extends React.Component {
       colorBuffer: null,
       flagBuffer: null,
       drawSpatialImage: null,
+      spatial: null,
 
       // component rendering derived state - these must stay synchronized
       // with the reducer state they were generated from.
@@ -452,6 +455,33 @@ class Graph extends React.Component {
     });
   }
 
+  rescalePointForSpatial = (x, y, spatialMetadata) => {
+    // console.log({spatialMetadata});
+    const translate = vec2.fromValues(
+      spatialMetadata.inverseTranslate[0],
+      spatialMetadata.inverseTranslate[1]
+    );
+    const min = vec2.fromValues(
+      spatialMetadata.inverseMin[0],
+      spatialMetadata.inverseMin[1]
+    );
+    const scalefactor = spatialMetadata.scaleref;
+    const wh = vec2.fromValues(
+      spatialMetadata.imageWidth,
+      spatialMetadata.imageHeight
+    );
+
+    // Apply the inverse transform
+    const p = vec2.fromValues(x, y);
+    vec2.sub(p, p, translate);
+    vec2.scale(p, p, spatialMetadata.inverseScale);
+    vec2.add(p, p, min);
+
+    vec2.scale(p, p, scalefactor);
+    vec2.div(p, p, wh);
+    return p;
+  };
+
   setReglCanvas = (canvas) => {
     this.reglCanvas = canvas;
     this.setState({
@@ -534,8 +564,11 @@ class Graph extends React.Component {
       crossfilter,
       pointDilation,
       viewport,
+      spatial,
     } = props.watchProps;
     const { modelTF } = this.state;
+
+    console.log({ spatial });
 
     const [layoutDf, colorDf, pointDilationDf] = await this.fetchData(
       annoMatrix,
@@ -547,7 +580,7 @@ class Graph extends React.Component {
     const { currentDimNames } = layoutChoice;
     const X = layoutDf.col(currentDimNames[0]).asArray();
     const Y = layoutDf.col(currentDimNames[1]).asArray();
-    const positions = this.computePointPositions(X, Y, modelTF);
+    const positions = this.computePointPositions(X, Y, modelTF, spatial.data);
 
     const colorTable = this.updateColorTable(colorsProp, colorDf);
     const colors = this.computePointColors(colorTable.rgb);
@@ -579,6 +612,7 @@ class Graph extends React.Component {
       flags,
       width,
       height,
+      spatial,
     };
   };
 
@@ -760,7 +794,6 @@ class Graph extends React.Component {
     const { positions, colors, flags, height, width } = asyncProps;
     this.cachedAsyncProps = asyncProps;
     const { pointBuffer, colorBuffer, flagBuffer } = this.state;
-    console.log({ pos2: positions });
     let needToRenderCanvas = false;
 
     if (height !== prevAsyncProps?.height || width !== prevAsyncProps?.width) {
@@ -824,20 +857,21 @@ class Graph extends React.Component {
     projectionTF,
     drawSpatialImage
   ) {
-    const { annoMatrix } = this.props;
+    const { annoMatrix, spatial } = this.props;
     if (!this.reglCanvas || !annoMatrix) return;
 
     const { schema } = annoMatrix;
     const cameraTF = camera.view();
     const projView = mat3.multiply(mat3.create(), projectionTF, cameraTF);
     const { width, height } = this.reglCanvas;
+    const imW = spatial.data.imageWidth;
+    const imH = spatial.data.imageHeight;
+
     regl.poll();
     regl.clear({
       depth: 1,
       color: [0, 0, 0, 0],
     });
-    console.log({ pointBuffer });
-    console.log({ projView });
     drawPoints({
       distance: camera.distance(),
       color: colorBuffer,
@@ -850,8 +884,9 @@ class Graph extends React.Component {
     });
     drawSpatialImage({
       projView,
-      img_width: this.spatialImage.width,
-      img_height: this.spatialImage.height,
+      imageWidth: imW,
+      imageHeight: imH,
+      rectCoords: [0, 0, imW, 0, 0, imH, 0, imH, imW, 0, imW, imH],
       spatialImageAsTexture: regl.texture({
         data: this.spatialImage,
         wrapS: "clamp",
@@ -869,9 +904,13 @@ class Graph extends React.Component {
       layoutChoice,
       pointDilation,
       crossfilter,
+      spatial,
     } = this.props;
     const { modelTF, projectionTF, camera, viewport, regl } = this.state;
     const cameraTF = camera?.view()?.slice();
+
+    console.log("---RENDER");
+    console.log({ props: this.props });
 
     return (
       <div
@@ -939,6 +978,7 @@ class Graph extends React.Component {
             pointDilation,
             crossfilter,
             viewport,
+            spatial,
           }}
         >
           <Async.Pending initial>

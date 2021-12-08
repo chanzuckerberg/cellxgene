@@ -11,6 +11,7 @@ import continuousSelection from "./continuousSelection";
 import graphSelection from "./graphSelection";
 import colors from "./colors";
 import differential from "./differential";
+import spatial from "./spatial";
 import layoutChoice from "./layoutChoice";
 import controls from "./controls";
 import annotations from "./annotations";
@@ -38,6 +39,7 @@ const Reducer = undoable(
     ["colors", colors],
     ["controls", controls],
     ["differential", differential],
+    ["spatial", spatial],
     ["centroidLabels", centroidLabels],
     ["pointDilation", pointDialation],
     ["autosave", autosave],
@@ -51,6 +53,7 @@ const Reducer = undoable(
     "colors",
     "controls",
     "differential",
+    "spatial",
     "layoutChoice",
     "centroidLabels",
     "genesets",

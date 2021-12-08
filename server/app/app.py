@@ -195,6 +195,11 @@ class SpatialImageAPI(Resource):
     def get(self, data_adaptor):
         return common_rest.spatial_image_get(request, data_adaptor)
 
+class SpatialMetaAPI(Resource):
+    @rest_get_data_adaptor
+    def get(self, data_adaptor):
+        return data_adaptor.get_spatial_metadata()
+
 
 def get_api_base_resources(bp_base):
     """Add resources that are accessed from the api url"""
@@ -229,6 +234,7 @@ def get_api_dataroot_resources(bp_dataroot):
     add_resource(LayoutObsAPI, "/layout/obs")
     # Spatial routes
     add_resource(SpatialImageAPI, "/spatial/image")
+    add_resource(SpatialMetaAPI, "/spatial/meta")
     return api
 
 
