@@ -803,10 +803,11 @@ class Graph extends React.Component {
   });
 
   updateReglAndRender(asyncProps, prevAsyncProps) {
-    const { positions, colors, flags, height, width } = asyncProps;
+    const { positions, colors, flags, height, width, imageUnderlay } =
+      asyncProps;
     this.cachedAsyncProps = asyncProps;
     const { pointBuffer, colorBuffer, flagBuffer } = this.state;
-    let needToRenderCanvas = true;
+    let needToRenderCanvas = false;
 
     console.log("updateReglAndRender");
 
@@ -823,6 +824,9 @@ class Graph extends React.Component {
     }
     if (flags !== prevAsyncProps?.flags) {
       flagBuffer({ data: flags, dimension: 1 });
+      needToRenderCanvas = true;
+    }
+    if (imageUnderlay !== prevAsyncProps?.imageUnderlay) {
       needToRenderCanvas = true;
     }
     if (needToRenderCanvas) this.renderCanvas();
