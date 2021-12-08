@@ -16,10 +16,11 @@ import actions from "../../actions";
 import { getDiscreteCellEmbeddingRowIndex } from "../../util/stateManager/viewStackHelpers";
 
 @connect((state) => ({
-    layoutChoice: state.layoutChoice, // TODO: really should clean up naming, s/layout/embedding/g
-    schema: state.annoMatrix?.schema,
-    crossfilter: state.obsCrossfilter,
-  }))
+  imageUnderlay: state.imageUnderlay,
+  layoutChoice: state.layoutChoice, // TODO: really should clean up naming, s/layout/embedding/g
+  schema: state.annoMatrix?.schema,
+  crossfilter: state.obsCrossfilter,
+}))
 class Embedding extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -27,8 +28,18 @@ class Embedding extends React.PureComponent {
   }
 
   handleLayoutChoiceChange = (e) => {
-    const { dispatch } = this.props;
+    const { dispatch, imageUnderlay } = this.props;
     dispatch(actions.layoutChoiceAction(e.currentTarget.value));
+
+    // if we just switched off spatial, if the image is on, turn it off
+    if (
+      imageUnderlay.isActive &&
+      e.target.value !== globals.spatialEmbeddingKeyword
+    ) {
+      dispatch({
+        type: "toggle image underlay",
+      });
+    }
   };
 
   render() {
