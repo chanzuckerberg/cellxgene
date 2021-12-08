@@ -79,6 +79,7 @@ function createModelTF() {
   pointDilation: state.pointDilation,
   genesets: state.genesets.genesets,
   spatial: state.spatial.metadata,
+  imageUnderlay: state.imageUnderlay,
 }))
 class Graph extends React.Component {
   static createReglState(canvas) {
@@ -112,15 +113,16 @@ class Graph extends React.Component {
   }
 
   computePointPositions = memoize((X, Y, modelTF, spatialMetadata) => {
+    const { imageUnderlay } = this.props;
     /*
     compute the model coordinate for each point
     */
     console.log({ X }, { Y });
     const positions = new Float32Array(2 * X.length);
     for (let i = 0, len = X.length; i < len; i += 1) {
-      // TODO: Introduce the feature flag here
-      // const p = vec2.fromValues(X[i], Y[i]);
-      const p = this.rescalePointForSpatial(X[i], Y[i], spatialMetadata);
+      const p = imageUnderlay?.isActive
+        ? this.rescalePointForSpatial(X[i], Y[i], spatialMetadata)
+        : vec2.fromValues(X[i], Y[i]);
       vec2.transformMat3(p, p, modelTF);
       positions[2 * i] = p[0];
       positions[2 * i + 1] = p[1];
@@ -855,7 +857,8 @@ class Graph extends React.Component {
     flagBuffer,
     camera,
     projectionTF,
-    drawSpatialImage
+    drawSpatialImage,
+    imageUnderlay
   ) {
     const { annoMatrix, spatial } = this.props;
     if (!this.reglCanvas || !annoMatrix) return;
@@ -872,6 +875,7 @@ class Graph extends React.Component {
       depth: 1,
       color: [0, 0, 0, 0],
     });
+
     drawPoints({
       distance: camera.distance(),
       color: colorBuffer,
@@ -882,17 +886,19 @@ class Graph extends React.Component {
       nPoints: schema.dataframe.nObs,
       minViewportDimension: Math.min(width, height),
     });
-    drawSpatialImage({
-      projView,
-      imageWidth: imW,
-      imageHeight: imH,
-      rectCoords: [0, 0, imW, 0, 0, imH, 0, imH, imW, 0, imW, imH],
-      spatialImageAsTexture: regl.texture({
-        data: this.spatialImage,
-        wrapS: "clamp",
-        wrapT: "clamp",
-      }),
-    });
+    if (imageUnderlay?.isActive) {
+      drawSpatialImage({
+        projView,
+        imageWidth: imW,
+        imageHeight: imH,
+        rectCoords: [0, 0, imW, 0, 0, imH, 0, imH, imW, 0, imW, imH],
+        spatialImageAsTexture: regl.texture({
+          data: this.spatialImage,
+          wrapS: "clamp",
+          wrapT: "clamp",
+        }),
+      });
+    }
     regl._gl.flush();
   }
 

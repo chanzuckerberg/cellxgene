@@ -52,6 +52,9 @@ const skipOnActions = new Set([
   "geneset: disable add new genes mode",
   "geneset: activate rename geneset mode",
   "geneset: disable rename geneset mode",
+
+  /* spatial */
+  "toggle image underlay",
 ]);
 
 /*
