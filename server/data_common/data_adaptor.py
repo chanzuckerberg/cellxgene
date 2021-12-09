@@ -340,41 +340,65 @@ class DataAdaptor(metaclass=ABCMeta):
         pass
 
     @staticmethod
-    def normalize_embedding(embedding):
+    def normalize_embedding(embedding, spatial = None):
         """Normalize embedding layout to meet client assumptions.
-        Embedding is an ndarray, shape (n_obs, n)., where n is normally 2
+        Embedding is an ndarray, shape (n_obs, n)., where n is normally 2.
+        Note: if spatial data is available, the normalization will be done
+        according to the size of the underlying image
         """
 
+        if spatial is not None:
+
+            # TODO: sync with the code in spatial_data_get
+            resolution = "hires"
+
+            if len(list(spatial)) == 0:
+                raise Exception("uns does not have spatial information")
+
+            library_id = list(spatial)[0]
+
+            if "images" not in spatial[library_id]:
+                raise Exception("spatial information does not contain images")
+
+            if resolution not in spatial[library_id]["images"]:
+                raise Exception(f"spatial information does not contain requested resolution '{resolution}'")
+
+            scaleref = spatial[library_id]["scalefactors"][f"tissue_{resolution}_scalef"]
+            (h, w, _) = spatial[library_id]["images"][resolution].shape
+
+            A = embedding * scaleref
+            A = np.column_stack([A[:, 0] / w, A[:, 1] / h])
+            normalized_layout = A.astype(dtype=np.float32)
+
+        else:
+
         # scale isotropically
-        try:
-            min = np.nanmin(embedding, axis=0)
-            max = np.nanmax(embedding, axis=0)
-        except RuntimeError:
-            # indicates entire array was NaN, which should propagate
-            min = np.NaN
-            max = np.NaN
+            try:
+                min = np.nanmin(embedding, axis=0)
+                max = np.nanmax(embedding, axis=0)
+            except RuntimeError:
+                # indicates entire array was NaN, which should propagate
+                min = np.NaN
+                max = np.NaN
 
-        scale = np.amax(max - min)
-        normalized_layout = (embedding - min) / scale
+            scale = np.amax(max - min)
+            normalized_layout = (embedding - min) / scale
 
-        # translate to center on both axis
-        translate = 0.5 - ((max - min) / scale / 2)
-        normalized_layout = normalized_layout + translate
+            # translate to center on both axis
+            translate = 0.5 - ((max - min) / scale / 2)
+            normalized_layout = normalized_layout + translate
 
-        print(f"scale {scale}, translate {translate}")
+        # print(f"scale {scale}, translate {translate}")
 
         # if True: # if visium
         #     self.data.uns["spatial"]
 
 
         # adata.uns["spatial"]['V1_Adult_Mouse_Brain']["scalefactors"]["tissue_hires_scalef"]
-        # A = embedding * 0.17011142
-        # A = np.column_stack([A[:, 0] / 1921, A[:, 1] / 2000])
 
-        # normalized_layout = A.astype(dtype=np.float32)
         return normalized_layout
 
-    def layout_to_fbs_matrix(self, fields):
+    def layout_to_fbs_matrix(self, fields, spatial = None):
         """
         return specified embeddings as a flatbuffer, using the cellxgene matrix fbs encoding.
 
@@ -390,7 +414,7 @@ class DataAdaptor(metaclass=ABCMeta):
         with ServerTiming.time("layout.query"):
             for ename in embeddings:
                 embedding = self.get_embedding_array(ename, 2)
-                normalized_layout = DataAdaptor.normalize_embedding(embedding)
+                normalized_layout = DataAdaptor.normalize_embedding(embedding, ename == "spatial" and spatial)
                 layout_data.append(pd.DataFrame(normalized_layout, columns=[f"{ename}_0", f"{ename}_1"]))
 
         with ServerTiming.time("layout.encode"):
@@ -398,8 +422,6 @@ class DataAdaptor(metaclass=ABCMeta):
                 df = pd.concat(layout_data, axis=1, copy=False)
             else:
                 df = pd.DataFrame()
-            # print("##########DF")
-            # print(df)
             fbs = encode_matrix_fbs(df, col_idx=df.columns, row_idx=None)
 
         return fbs

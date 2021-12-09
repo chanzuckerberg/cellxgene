@@ -294,7 +294,7 @@ def layout_obs_get(request, data_adaptor):
 
     try:
         return make_response(
-            data_adaptor.layout_to_fbs_matrix(fields), HTTPStatus.OK, {"Content-Type": "application/octet-stream"}
+            data_adaptor.layout_to_fbs_matrix(fields, data_adaptor.get_spatial()), HTTPStatus.OK, {"Content-Type": "application/octet-stream"}
         )
     except (KeyError, DatasetAccessError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
