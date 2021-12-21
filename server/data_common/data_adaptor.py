@@ -372,7 +372,7 @@ class DataAdaptor(metaclass=ABCMeta):
 
         else:
 
-        # scale isotropically
+            # scale isotropically
             try:
                 min = np.nanmin(embedding, axis=0)
                 max = np.nanmax(embedding, axis=0)
@@ -387,14 +387,6 @@ class DataAdaptor(metaclass=ABCMeta):
             # translate to center on both axis
             translate = 0.5 - ((max - min) / scale / 2)
             normalized_layout = normalized_layout + translate
-
-        # print(f"scale {scale}, translate {translate}")
-
-        # if True: # if visium
-        #     self.data.uns["spatial"]
-
-
-        # adata.uns["spatial"]['V1_Adult_Mouse_Brain']["scalefactors"]["tissue_hires_scalef"]
 
         return normalized_layout
 

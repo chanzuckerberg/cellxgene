@@ -116,7 +116,6 @@ class Graph extends React.Component {
     /*
     compute the model coordinate for each point
     */
-    console.log({ X }, { Y });
     const positions = new Float32Array(2 * X.length);
     for (let i = 0, len = X.length; i < len; i += 1) {
       const p = vec2.fromValues(X[i], Y[i]);
@@ -454,33 +453,6 @@ class Graph extends React.Component {
     });
   }
 
-  rescalePointForSpatial = (x, y, spatialMetadata) => {
-    // console.log({spatialMetadata});
-    const translate = vec2.fromValues(
-      spatialMetadata.inverseTranslate[0],
-      spatialMetadata.inverseTranslate[1]
-    );
-    const min = vec2.fromValues(
-      spatialMetadata.inverseMin[0],
-      spatialMetadata.inverseMin[1]
-    );
-    const scalefactor = spatialMetadata.scaleref;
-    const wh = vec2.fromValues(
-      spatialMetadata.imageWidth,
-      spatialMetadata.imageHeight
-    );
-
-    // Apply the inverse transform
-    const p = vec2.fromValues(x, y);
-    vec2.sub(p, p, translate);
-    vec2.scale(p, p, spatialMetadata.inverseScale);
-    vec2.add(p, p, min);
-
-    vec2.scale(p, p, scalefactor);
-    vec2.div(p, p, wh);
-    return p;
-  };
-
   setReglCanvas = (canvas) => {
     this.reglCanvas = canvas;
     this.setState({
@@ -567,8 +539,6 @@ class Graph extends React.Component {
       imageUnderlay,
     } = props.watchProps;
     const { modelTF } = this.state;
-
-    console.log({ spatial });
 
     const [layoutDf, colorDf, pointDilationDf] = await this.fetchData(
       annoMatrix,
@@ -873,8 +843,6 @@ class Graph extends React.Component {
     const imW = spatial.data.imageWidth;
     const imH = spatial.data.imageHeight;
 
-    console.log({ imageUnderlay });
-
     regl.poll();
     regl.clear({
       depth: 1,
@@ -920,9 +888,6 @@ class Graph extends React.Component {
     } = this.props;
     const { modelTF, projectionTF, camera, viewport, regl } = this.state;
     const cameraTF = camera?.view()?.slice();
-
-    console.log("---RENDER");
-    console.log({ props: this.props });
 
     return (
       <div
