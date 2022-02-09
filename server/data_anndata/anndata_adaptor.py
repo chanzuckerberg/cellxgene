@@ -241,7 +241,7 @@ class AnndataAdaptor(DataAdaptor):
                 raise DatasetAccessError(f"Data matrix in {self.data.X.dtype} format is not supported in backed mode."
                                          " Please reload without --backed, or convert matrix to float32")
             warnings.warn(
-                f"Anndata data matrix is in unsupported {self.data.X.dtype} format so will be recast to float32"
+                f"Anndata data matrix is in unsupported {self.data.X.dtype} format -- will be cast to float32"
             )
             self.data.X = self.data.X.astype(np.float32)
         for ax in Axis:
