@@ -236,6 +236,14 @@ class AnndataAdaptor(DataAdaptor):
             warnings.warn(
                 f"Anndata data matrix is in {self.data.X.dtype} format not float32. " f"Precision may be truncated."
             )
+        if self.data.X.dtype < np.float32:
+            if self.data.isbacked:
+                raise DatasetAccessError(f"Data matrix in {self.data.X.dtype} format is not supported in backed mode."
+                                         " Please reload without --backed, or convert matrix to float32")
+            warnings.warn(
+                f"Anndata data matrix is in unsupported {self.data.X.dtype} format so will be recast to float32"
+            )
+            self.data.X = self.data.X.astype(np.float32)
         for ax in Axis:
             curr_axis = getattr(self.data, str(ax))
             for ann in curr_axis:
