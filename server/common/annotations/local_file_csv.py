@@ -95,13 +95,14 @@ class AnnotationsLocalFile(Annotations):
 
             fname = self._get_celllabels_filename(data_adaptor)
             self._backup(fname)
+            locator = DataLocator(fname)
             if not df.empty:
-                with open(fname, "w", newline="") as f:
+                with locator.open("w") as f:
                     if header is not None:
                         f.write(header)
                     df.to_csv(f)
             else:
-                open(fname, "w").close()
+                locator.open("w").close()
 
             # update the cache
             self.last_label_fname = fname
@@ -157,9 +158,9 @@ class AnnotationsLocalFile(Annotations):
 
             fname = self._get_genesets_filename(data_adaptor)
             self._backup(fname)
-            with open(fname, "w", newline="") as f:
-                f.write(header)
-                f.write(self.gene_sets_to_csv(gene_sets))
+            locator = DataLocator(fname)
+            with locator.open("w") as f:
+                f.write(header + self.gene_sets_to_csv(gene_sets))
 
             # update the cache
             self.last_geneset_fname = fname
