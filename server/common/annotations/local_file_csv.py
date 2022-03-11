@@ -62,21 +62,26 @@ class AnnotationsLocalFile(Annotations):
         self.check_user_annotations_enabled()  # raises
 
         fname = self._get_celllabels_filename(data_adaptor)
+        empty_labels = pd.DataFrame()
+        if fname is None:
+            return empty_labels
+
         with self.label_lock:
-            if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
-                # returned the cached labels if possible, otherwise read them from the file
-                if fname == self.last_label_fname:
-                    return self.last_labels
-                else:
-                    labels = pd.read_csv(
-                        fname, dtype="category", index_col=0, header=0, comment="#", keep_default_na=False
-                    )
-                    # update the cache
-                    self.last_label_fname = fname
-                    self.last_labels = labels
-                    return labels
-            else:
-                return pd.DataFrame()
+            locator = DataLocator(fname)
+            if not locator.exists() or locator.size() == 0:
+                return empty_labels
+
+            if fname == self.last_label_fname:
+                return self.last_labels
+
+            with locator.open() as f:
+                labels = pd.read_csv(f, dtype="category", index_col=0, header=0, comment="#", keep_default_na=False)
+
+            # update the cache
+            self.last_label_fname = fname
+            self.last_labels = labels
+            return labels
+
 
     def write_labels(self, df, data_adaptor):
         self.check_user_annotations_enabled()  # raises
