@@ -57,7 +57,7 @@ class Annotations(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def write_gene_sets(self, gs, data_adaptor):
+    def write_gene_sets(self, gs, tid, data_adaptor):
         """Write the gene sets (gs) to a persistent storage such that it can later be read"""
         pass
 
