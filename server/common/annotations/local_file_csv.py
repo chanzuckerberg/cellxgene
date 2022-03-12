@@ -7,6 +7,7 @@ from hashlib import blake2b
 
 import pandas as pd
 from flask import session
+from fsspec import AbstractFileSystem
 
 from server import __version__ as cellxgene_version
 from server.app.session import get_user_id
@@ -117,9 +118,14 @@ class AnnotationsLocalFile(Annotations):
         fname = self._get_genesets_filename(data_adaptor)
         gene_sets = {}
         tid = None
+
+        if fname is None:
+            return (gene_sets, tid)
+
         with self.gene_sets_lock:
             tid = self.last_geneset_tid  # inside the critical section
-            if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
+            locator = DataLocator(fname)
+            if locator.exists() and locator.size() > 0:
                 # return the cached genesets if possible, otherwise read from file and validate them
                 if fname == self.last_geneset_fname:
                     gene_sets = self.last_geneset
@@ -187,7 +193,10 @@ class AnnotationsLocalFile(Annotations):
 
         output_file = self.label_output_file or self.gene_sets_output_file
         if output_file:
-            return os.path.dirname(os.path.abspath(output_file))
+            if str.startswith(output_file, 's3://'):
+                return os.path.dirname(output_file)
+            else:
+                return os.path.dirname(os.path.abspath(output_file))
 
         return os.getcwd()
 
@@ -229,31 +238,36 @@ class AnnotationsLocalFile(Annotations):
         root, ext = os.path.splitext(fname)
         backup_dir = f"{root}-backups"
 
+        locator = DataLocator(fname)
+
         # Make sure there is work to do
-        if not os.path.exists(fname):
+        if not locator.exists():
             return
 
+        fs: AbstractFileSystem = locator.fs
         # Ensure backup_dir exists
-        if not os.path.exists(backup_dir):
-            os.mkdir(backup_dir)
+        fs.mkdirs(backup_dir, exist_ok=True)
 
         # Save current file to backup_dir
+
         fname_base = os.path.basename(fname)
         fname_base_root, fname_base_ext = os.path.splitext(fname_base)
         # don't use ISO standard time format, as it contains characters illegal on some filesytems.
         nowish = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
         backup_fname = os.path.join(backup_dir, f"{fname_base_root}-{nowish}{fname_base_ext}")
-        if os.path.exists(backup_fname):
-            os.remove(backup_fname)
-        os.rename(fname, backup_fname)
+
+        if fs.exists(backup_fname):
+            fs.delete(backup_fname)
+
+        fs.rename(fname, backup_fname)
 
         # prune the backup_dir to max number of backup files, keeping the most recent backups
-        backups = list(filter(lambda s: s.startswith(fname_base_root), os.listdir(backup_dir)))
-        excess_count = len(backups) - max_backups
-        if excess_count > 0:
-            backups.sort()
-            for bu in backups[0:excess_count]:
-                os.remove(os.path.join(backup_dir, bu))
+        backups = list(filter(lambda s: s.startswith(backup_dir + '/' + fname_base_root), fs.ls(backup_dir)))
+
+        # sorting to drop the oldest
+        redundant_backups = list(sorted(backups, reverse=True))[max_backups:]
+        for bu in redundant_backups:
+            fs.delete(bu)
 
     def update_parameters(self, parameters, data_adaptor):
         params = {}
