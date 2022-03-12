@@ -52,8 +52,10 @@ class DataLocator:
             self.fs = fsspec.filesystem(self.protocol)
 
     def __repr__(self):
-        return f"DataLocator(protocol={self.protocol}, cname={self.cname}, "
-        f"path={self.path}, uri_or_path={self.uri_or_path})"
+        return (
+            f"DataLocator(protocol={self.protocol}, cname={self.cname}, "
+            f"path={self.path}, uri_or_path={self.uri_or_path})"
+        )
 
     @staticmethod
     def _get_protocol_and_path(uri_or_path):
