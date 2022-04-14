@@ -52,8 +52,10 @@ class DataLocator:
             self.fs = fsspec.filesystem(self.protocol)
 
     def __repr__(self):
-        return f"DataLocator(protocol={self.protocol}, cname={self.cname}, "
-        f"path={self.path}, uri_or_path={self.uri_or_path})"
+        return (
+            f"DataLocator(protocol={self.protocol}, cname={self.cname}, "
+            f"path={self.path}, uri_or_path={self.uri_or_path})"
+        )
 
     @staticmethod
     def _get_protocol_and_path(uri_or_path):
@@ -65,6 +67,10 @@ class DataLocator:
                 return protocol, path
         return None, uri_or_path
 
+    @staticmethod
+    def strip_protocol(uri_or_path):
+        return DataLocator._get_protocol_and_path(uri_or_path)[1]
+
     def exists(self):
         return self.fs.exists(self.cname)
 
@@ -72,7 +78,7 @@ class DataLocator:
         return self.fs.size(self.cname)
 
     def lastmodtime(self):
-        """ return datetime object representing last modification time, or None if unavailable """
+        """return datetime object representing last modification time, or None if unavailable"""
         info = self.fs.info(self.cname)
         if self.islocal() and info is not None:
             return datetime.fromtimestamp(info["mtime"])
@@ -92,8 +98,8 @@ class DataLocator:
     def isfile(self):
         return self.fs.isfile(self.cname)
 
-    def open(self, *args):
-        return self.fs.open(self.uri_or_path, *args)
+    def open(self, *args, **kwargs):
+        return self.fs.open(self.uri_or_path, *args, **kwargs)
 
     def islocal(self):
         return self.protocol is None or self.protocol == "file"

@@ -7,6 +7,7 @@ from hashlib import blake2b
 
 import pandas as pd
 from flask import session
+from fsspec import AbstractFileSystem
 
 from server import __version__ as cellxgene_version
 from server.app.session import get_user_id
@@ -62,21 +63,27 @@ class AnnotationsLocalFile(Annotations):
         self.check_user_annotations_enabled()  # raises
 
         fname = self._get_celllabels_filename(data_adaptor)
+        empty_labels = pd.DataFrame()
+        if fname is None:
+            return empty_labels
+
         with self.label_lock:
-            if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
-                # returned the cached labels if possible, otherwise read them from the file
-                if fname == self.last_label_fname:
-                    return self.last_labels
-                else:
-                    labels = pd.read_csv(
-                        fname, dtype="category", index_col=0, header=0, comment="#", keep_default_na=False
-                    )
-                    # update the cache
-                    self.last_label_fname = fname
-                    self.last_labels = labels
-                    return labels
-            else:
-                return pd.DataFrame()
+            locator = DataLocator(fname)
+            if not locator.exists() or locator.size() == 0:
+                return empty_labels
+
+            # return the cached labels if possible
+            if fname == self.last_label_fname:
+                return self.last_labels
+
+            # otherwise, read labels from file
+            with locator.open() as f:
+                labels = pd.read_csv(f, dtype="category", index_col=0, header=0, comment="#", keep_default_na=False)
+
+            # update the cache
+            self.last_label_fname = fname
+            self.last_labels = labels
+            return labels
 
     def write_labels(self, df, data_adaptor):
         self.check_user_annotations_enabled()  # raises
@@ -95,13 +102,12 @@ class AnnotationsLocalFile(Annotations):
 
             fname = self._get_celllabels_filename(data_adaptor)
             self._backup(fname)
-            if not df.empty:
-                with open(fname, "w", newline="") as f:
+            locator = DataLocator(fname)
+            with locator.open("w") as f:
+                if not df.empty:
                     if header is not None:
                         f.write(header)
                     df.to_csv(f)
-            else:
-                open(fname, "w").close()
 
             # update the cache
             self.last_label_fname = fname
@@ -109,26 +115,32 @@ class AnnotationsLocalFile(Annotations):
 
     def read_gene_sets(self, data_adaptor, context=None):
         fname = self._get_genesets_filename(data_adaptor)
-        gene_sets = {}
-        tid = None
+        empty_gene_sets = {}
+
         with self.gene_sets_lock:
             tid = self.last_geneset_tid  # inside the critical section
-            if fname is not None and os.path.exists(fname) and os.path.getsize(fname) > 0:
-                # return the cached genesets if possible, otherwise read from file and validate them
-                if fname == self.last_geneset_fname:
-                    gene_sets = self.last_geneset
-                else:
-                    # read
-                    gene_sets = read_gene_sets_tidycsv(DataLocator(fname), context)
+            if fname is None:
+                return (empty_gene_sets, tid)
 
-                    # validate
-                    gene_sets = data_adaptor.check_new_gene_sets(gene_sets, context)
+            locator = DataLocator(fname)
+            if not locator.exists() or locator.size() == 0:
+                return (empty_gene_sets, tid)
 
-                    # update cache
-                    self.last_geneset_fname = fname
-                    self.last_geneset = gene_sets
+            # return the cached genesets if possible, otherwise read from file and validate them
+            if fname == self.last_geneset_fname:
+                return (self.last_geneset, tid)
 
-        return (gene_sets, tid)
+            # read
+            gene_sets = read_gene_sets_tidycsv(locator, context)
+
+            # validate
+            gene_sets = data_adaptor.check_new_gene_sets(gene_sets, context)
+
+            # update cache
+            self.last_geneset_fname = fname
+            self.last_geneset = gene_sets
+
+            return (gene_sets, tid)
 
     def write_gene_sets(self, gene_sets, tid, data_adaptor):
         self.check_gene_sets_save_enabled()  # raises
@@ -157,9 +169,9 @@ class AnnotationsLocalFile(Annotations):
 
             fname = self._get_genesets_filename(data_adaptor)
             self._backup(fname)
-            with open(fname, "w", newline="") as f:
-                f.write(header)
-                f.write(self.gene_sets_to_csv(gene_sets))
+            locator = DataLocator(fname)
+            with locator.open("w", newline="") as f:
+                f.write(header + self.gene_sets_to_csv(gene_sets))
 
             # update the cache
             self.last_geneset_fname = fname
@@ -181,7 +193,7 @@ class AnnotationsLocalFile(Annotations):
 
         output_file = self.label_output_file or self.gene_sets_output_file
         if output_file:
-            return os.path.dirname(os.path.abspath(output_file))
+            return os.path.dirname(DataLocator(output_file).abspath())
 
         return os.getcwd()
 
@@ -220,34 +232,37 @@ class AnnotationsLocalFile(Annotations):
             1. fname -> backup_dir/fname-TIME
             2. delete excess files in backup_dir
         """
-        root, ext = os.path.splitext(fname)
-        backup_dir = f"{root}-backups"
+        locator = DataLocator(fname)
+        fs: AbstractFileSystem = locator.fs  # Handle to underlying fsspec file system
 
         # Make sure there is work to do
-        if not os.path.exists(fname):
+        if not locator.exists():
             return
 
+        root, ext = os.path.splitext(locator.abspath())
+        backup_dir = f"{root}-backups"
+
         # Ensure backup_dir exists
-        if not os.path.exists(backup_dir):
-            os.mkdir(backup_dir)
+        fs.mkdirs(backup_dir, exist_ok=True)
 
         # Save current file to backup_dir
         fname_base = os.path.basename(fname)
         fname_base_root, fname_base_ext = os.path.splitext(fname_base)
-        # don't use ISO standard time format, as it contains characters illegal on some filesytems.
+        # don't use ISO standard time format, as it contains characters illegal on some filesystems.
         nowish = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
         backup_fname = os.path.join(backup_dir, f"{fname_base_root}-{nowish}{fname_base_ext}")
-        if os.path.exists(backup_fname):
-            os.remove(backup_fname)
-        os.rename(fname, backup_fname)
+        if fs.exists(backup_fname):
+            fs.delete(backup_fname)
+        fs.rename(fname, backup_fname)
 
         # prune the backup_dir to max number of backup files, keeping the most recent backups
-        backups = list(filter(lambda s: s.startswith(fname_base_root), os.listdir(backup_dir)))
-        excess_count = len(backups) - max_backups
-        if excess_count > 0:
-            backups.sort()
-            for bu in backups[0:excess_count]:
-                os.remove(os.path.join(backup_dir, bu))
+        backup_path_prefix = DataLocator.strip_protocol(os.path.join(backup_dir, fname_base_root + "-"))
+        backups = list(filter(lambda s: s.startswith(backup_path_prefix), fs.ls(backup_dir)))
+
+        # sorting to drop the oldest
+        excess_backups = list(sorted(backups, reverse=True))[max_backups:]
+        for bu in excess_backups:
+            fs.delete(bu)
 
     def update_parameters(self, parameters, data_adaptor):
         params = {}
