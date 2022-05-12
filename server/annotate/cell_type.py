@@ -29,4 +29,3 @@ def annotate(dataset: AnnData, models: Dict[str, CellTypeTissueModel], output_h5
     # TODO: necessary to partition into AnnData-per-tissue, then invoke model on each partitioned AnnData object, then reconstitute into a single AnnData
     # TODO: record model metadata (version) in AnnData
     return dataset
-
