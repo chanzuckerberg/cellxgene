@@ -1,1 +1,2 @@
 scvi-tools
+scanpy==1.9.1

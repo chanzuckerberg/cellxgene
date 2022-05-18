@@ -3,7 +3,6 @@ import sys
 
 import click
 
-from server.annotate.annotation_types import AnnotationType
 from server.common.utils.utils import sort_options
 
 
@@ -27,31 +26,60 @@ def annotate_args(func):
     help="The input H5AD file containing the missing annotations.",
 )
 @click.option(
-    "-a",
-    "--annotation-type",
-    type=click.Choice([t.value for t in AnnotationType]),
-    default=AnnotationType.CELL_TYPE.value,
-    help="The type of annotation to perform. This model to be used will be inferred from the annotation type.",
+    "-m",
+    "--model-url",
+    help="The URL of the model used to prediction annotated labels. May be a local filesystem directory "
+         "or S3 path (s3://)"
 )
 @click.option(
-    "-c",
-    "--annotation-column",
-    type=str,
-    default="cell_tissue_ontology_term_id",
-    help="The annotation column to be added.",
+    "-l",
+    "--h5ad-layer",
+    help="If specified, raw counts will be read from the AnnData layer of the specified name. If unspecified, "
+         "raw counts will be read from `X` matrix, unless 'raw.X' exists, in which case that will be used."
+
 )
+# TODO: Useful if we want to support multiple tissue types (for cell type annotation models)
+# @click.option(
+#     "-r",
+#     "--model-repository",
+#     help="The base URL of the model repository. Maybe a local filesystem directory or S3 path (s3://)"
+# )
+# TODO: Useful if we want to support other, future annotation types, beyond "Cell Type"
+# @click.option(
+#     "-a",
+#     "--annotation-type",
+#     type=click.Choice([t.value for t in AnnotationType]),
+#     default=AnnotationType.CELL_TYPE.value,
+#     help="The type of annotation to perform. This model to be used will be inferred from the annotation type.",
+# )
+@click.option(
+    "-c",
+    "--annotation-column-prefix",
+    type=str,
+    default="cxg_predicted_cell_type_",
+    help="A prefix used to form the names of new `obs` annotation columns that will store the predicted annotation "
+         "values and confidence scores."
+)
+# @click.option(
+#     "-s",
+#     "--annotation-column-suffix",
+#     type=str,
+#     help="An optional suffix used to form the names of new `obs` annotation columns that will store the predicted "
+#          "annotation values and confidence scores. This can be used to allow multiple annotation predictions to be "
+#          "run on a single AnnData object."
+# )
 @click.option(
     "-u",
     "--update-h5ad-file",
     is_flag=True,
     help="Flag indicating whether to update the input h5ad file with annotation values.  This option is mutually "
-    "exclusive with --output-h5ad-file. ",
+    "exclusive with --output-h5ad-file.",
 )
 @click.option(
     "-o",
     "--output-h5ad-file",
     help="The output H5AD file that will contain the generated annotation values. This option is mutually "
-    "exclusive with --update-h5ad-file. ",
+    "exclusive with --update-h5ad-file.",
 )
 @click.help_option("--help", "-h", help="Show this message and exit.")
 def annotate(**cli_args):
