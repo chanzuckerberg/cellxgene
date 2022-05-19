@@ -5,6 +5,7 @@ from typing import Any
 
 import click
 import scanpy
+from server.annotate.annotation_types import AnnotationType
 
 from server.annotate import cell_type
 from server.common.utils.data_locator import DataLocator
@@ -18,8 +19,6 @@ def annotate_args(func):
         return func(*args, **kwargs)
 
     return wrapper
-
-
 
 
 @sort_options
@@ -53,18 +52,18 @@ def annotate_args(func):
 #     help="The base URL of the model repository. Maybe a local filesystem directory or S3 path (s3://)"
 # )
 # TODO: Useful if we want to support other, future annotation types, beyond "Cell Type"
-# @click.option(
-#     "-a",
-#     "--annotation-type",
-#     type=click.Choice([t.value for t in AnnotationType]),
-#     default=AnnotationType.CELL_TYPE.value,
-#     help="The type of annotation to perform. This model to be used will be inferred from the annotation type.",
-# )
+@click.option(
+    "-a",
+    "--annotation-type",
+    type=click.Choice([t.value for t in AnnotationType]),
+    default=AnnotationType.CELL_TYPE.value,
+    help="The type of annotation to perform. This model to be used will be inferred from the annotation type.",
+)
 @click.option(
     "-c",
     "--annotation-column-prefix",
     type=str,
-    default="cxg_predicted_cell_type_",
+    default="cxg_predicted_",
     help="A prefix used to form the names of new `obs` annotation columns that will store the predicted annotation "
          "values and confidence scores."
 )
@@ -98,13 +97,16 @@ def annotate(**cli_args):
 
     query_dataset = scanpy.read_h5ad(cli_args['input_h5ad_file'])
     model = _fetch_model(cli_args['model_url'])
+    annotation_column_name = cli_args.get('annotation_column_prefix', '') + \
+                             cli_args.get('annotation_type', '') + \
+                             cli_args.get('annotation_column_suffix', '')
 
-    cell_type.annotate(query_dataset, model, annotation_column_name_prefix=cli_args['annotation_column_prefix'])
+    cell_type.annotate(query_dataset, model, annotation_column_name=annotation_column_name)
 
-    # If no --output-h5ad-file option, this will write back to the input file
-    query_dataset.write_h5ad(cli_args['output_h5ad_file'])
+    output_h5ad_file = cli_args['input_h5ad_file'] if cli_args['update_h5ad_file'] else cli_args['output_h5ad_file']
+    query_dataset.write_h5ad(output_h5ad_file)
 
-    print("added annotations to {query_dataset.filename}")
+    print(f"added annotations to {output_h5ad_file}")
 
 
 def _validate_options(cli_args):

@@ -37,7 +37,7 @@ def retrieve_model(model_url: str) -> SCANVI:
         return model
 
 
-def annotate(query_dataset: AnnData, model: SCANVI, annotation_column_name_prefix: str) -> None:
+def annotate(query_dataset: AnnData, model: SCANVI, annotation_column_name: str) -> None:
     input_dataset = prepare_query_dataset(query_dataset, model)
 
     # TODO: necessary to partition into AnnData-per-tissue, then invoke model on each partitioned AnnData object,
@@ -46,7 +46,7 @@ def annotate(query_dataset: AnnData, model: SCANVI, annotation_column_name_prefi
     # TODO: record model metadata (version) in AnnData
     predictions = model.predict(input_dataset)
 
-    query_dataset.obs[f"{annotation_column_name_prefix}"] = pd.Categorical(predictions)
+    query_dataset.obs[f"{annotation_column_name}"] = pd.Categorical(predictions)
     # TODO: How do obtain confidence scores?
     # query_dataset.obs[f"{annotation_column_name_prefix}_confidence"] = ???
 
