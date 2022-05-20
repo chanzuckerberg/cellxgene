@@ -5,6 +5,8 @@ from typing import Any
 
 import click
 import scanpy
+from click import BadParameter
+
 from server.annotate.annotation_types import AnnotationType
 
 from server.annotate import cell_type
@@ -29,12 +31,14 @@ def annotate_args(func):
 @click.option(
     "-i",
     "--input-h5ad-file",
+    required=True,
     type=str,
     help="The input H5AD file containing the missing annotations.",
 )
 @click.option(
     "-m",
     "--model-url",
+    required=True,
     help="The URL of the model used to prediction annotated labels. May be a local filesystem directory "
          "or S3 path (s3://)"
 )
@@ -43,7 +47,6 @@ def annotate_args(func):
     "--h5ad-layer",
     help="If specified, raw counts will be read from the AnnData layer of the specified name. If unspecified, "
          "raw counts will be read from `X` matrix, unless 'raw.X' exists, in which case that will be used."
-
 )
 # TODO: Useful if we want to support discoverability of models
 # @click.option(
@@ -63,18 +66,17 @@ def annotate_args(func):
     "-c",
     "--annotation-column-prefix",
     type=str,
-    default="cxg_predicted_",
+    default="cxg_predicted",
     help="A prefix used to form the names of new `obs` annotation columns that will store the predicted annotation "
          "values and confidence scores."
 )
 @click.option(
     "-n",
     "--run-name",
-    "--annotation-column-suffix",
     type=str,
-    help="An optional suffix used to form the names of new `obs` annotation columns that will store the predicted "
-         "annotation values and confidence scores. This can be used to allow multiple annotation predictions to be "
-         "run on a single AnnData object."
+    help="An optional run name that will be used as a suffix to form the names of new `obs` annotation columns that "
+         "will store the predicted annotation values and confidence scores. This can be used to allow multiple "
+         "annotation predictions to be run on a single AnnData object."
 )
 @click.option(
     "-u",
@@ -97,16 +99,20 @@ def annotate(**cli_args):
 
     query_dataset = scanpy.read_h5ad(cli_args['input_h5ad_file'])
     model = _fetch_model(cli_args['model_url'])
-    annotation_column_name = cli_args.get('annotation_column_prefix', '') + \
-                             cli_args.get('annotation_type', '') + \
-                             cli_args.get('annotation_column_suffix', '')
+    annotation_column_name = '_'.join(filter(None,
+                                             [cli_args.get('annotation_column_prefix'),
+                                              cli_args.get('annotation_type'),
+                                              cli_args.get('run_name')]))
 
-    cell_type.annotate(query_dataset, model, annotation_column_name=annotation_column_name)
+    if cli_args['annotation_type'] == AnnotationType.CELL_TYPE.value:
+        cell_type.annotate(query_dataset, model, annotation_column_name=annotation_column_name)
+    else:
+        raise BadParameter(f"unknown annotation type {cli_args['annotation_type']}")
 
     output_h5ad_file = cli_args['input_h5ad_file'] if cli_args['update_h5ad_file'] else cli_args['output_h5ad_file']
     query_dataset.write_h5ad(output_h5ad_file)
 
-    print(f"added annotations to {output_h5ad_file}")
+    print(f"added annotations to {output_h5ad_file} in obs column '{annotation_column_name}'")
 
 
 def _validate_options(cli_args):

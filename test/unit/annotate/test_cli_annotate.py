@@ -11,7 +11,7 @@ from test.unit.annotate.fixtures.cell_type_annotate_model_fixture import build_f
 
 class TestCliAnnotate(unittest.TestCase):
 
-    def test__output_h5ad_file_option__writes_new_file(self):
+    def test__local_model_file__loads(self):
         query_dataset_file_path = write_query_dataset(100, 10)
         model_file_path = write_model(build_fake_model({"x", "y", "z"}))
 
@@ -21,7 +21,19 @@ class TestCliAnnotate(unittest.TestCase):
                                      '--output-h5ad-file', f"{query_dataset_file_path}.output"])
 
         self.assertEqual(0, result.exit_code, "runs successfully")
-        self.assertTrue(os.path.isfile(f"{query_dataset_file_path}.output"), "output file written")
+
+    @unittest.skipUnless(os.getenv('TEST_REMOTE_MODEL_URL'), 'remote model url env var missing')
+    # For testing with a real model stores in a remote location (e.g. S3), if available. We don't want to setup a fake
+    # S3 service, so this test is intended to be run in an ad hoc fashion if related code changes have been made.
+    def test__s3_model_file__loads(self):
+        query_dataset_file_path = write_query_dataset(100, 10)
+
+        result = CliRunner().invoke(annotate,
+                                    ['--input-h5ad-file', query_dataset_file_path,
+                                     '--model-url', os.getenv('TEST_REMOTE_MODEL_URL'),
+                                     '--output-h5ad-file', f"{query_dataset_file_path}.output"])
+
+        self.assertEqual(0, result.exit_code, "runs successfully")
 
     def test__update_h5ad_file_option__updates_input_file(self):
         query_dataset_file_path = write_query_dataset(100, 10)
@@ -34,6 +46,22 @@ class TestCliAnnotate(unittest.TestCase):
 
         self.assertEqual(0, result.exit_code, "runs successfully")
         self.assertIsNotNone(scanpy.read_h5ad(query_dataset_file_path).obs['cxg_predicted_cell_type'])
+
+    def test__annotation_column_options__writes_correct_output_column_name(self):
+        query_dataset_file_path = write_query_dataset(100, 10)
+        model_file_path = write_model(build_fake_model({"x", "y", "z"}))
+
+        result = CliRunner().invoke(annotate,
+                                    ['--input-h5ad-file', query_dataset_file_path,
+                                     '--model-url', model_file_path,
+                                     '--update-h5ad-file',
+                                     '--annotation-column-prefix', 'test_prefix',
+                                     '--run-name', 'test_run'])
+
+        self.assertEqual(0, result.exit_code, "runs successfully")
+        self.assertIn('test_prefix_cell_type_test_run', scanpy.read_h5ad(query_dataset_file_path).obs.keys())
+
+    # TODO: Test S3 model locations (probably not possible)
 
 
 if __name__ == '__main__':
