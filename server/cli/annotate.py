@@ -48,6 +48,13 @@ def annotate_args(func):
     help="If specified, raw counts will be read from the AnnData layer of the specified name. If unspecified, "
          "raw counts will be read from `X` matrix, unless 'raw.X' exists, in which case that will be used."
 )
+@click.option(
+    "-g",
+    "--gene-column-name",
+    help="The name of the `var` column that contains gene identifiers. The values in this column will be used to match "
+         "genes between the query and reference datasets. If not specified, the gene identifiers are expected to exist "
+         "in `var.index`."
+)
 # TODO: Useful if we want to support discoverability of models
 # @click.option(
 #     "-r",
@@ -105,7 +112,8 @@ def annotate(**cli_args):
                                               cli_args.get('run_name')]))
 
     if cli_args['annotation_type'] == AnnotationType.CELL_TYPE.value:
-        cell_type.annotate(query_dataset, model, annotation_column_name=annotation_column_name)
+        cell_type.annotate(query_dataset, model, annotation_column_name=annotation_column_name,
+                           gene_col_name=cli_args['gene_column_name'])
     else:
         raise BadParameter(f"unknown annotation type {cli_args['annotation_type']}")
 
