@@ -47,9 +47,6 @@ def annotate(query_dataset: AnnData, model: SCANVI, annotation_column_name: str,
     input_dataset = prepare_query_dataset(query_dataset, model, gene_col_name,
                                           min_common_gene_count=min_common_gene_count)
 
-    # TODO: necessary to partition into AnnData-per-tissue, then invoke model on each partitioned AnnData object,
-    #  then reconstitute into a single AnnData
-    #
     # TODO: record model metadata (version) in AnnData
     predictions = model.predict(input_dataset)
 
