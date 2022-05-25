@@ -27,9 +27,9 @@ class FakeModel:
         return random.choices(list(self.predicted_labels), k=ad.shape[0])
 
 
-def write_query_dataset(obs_size: int, var_size: int) -> PathLike:
+def write_query_dataset(obs_size: int, gene_identifiers=None) -> PathLike:
     query_dataset_file_path = mkstemp()[1]
-    build_dataset(obs_size, var_size).write_h5ad(query_dataset_file_path)
+    build_dataset(obs_size, gene_identifiers).write_h5ad(query_dataset_file_path)
     return query_dataset_file_path
 
 

@@ -50,7 +50,7 @@ def annotate(query_dataset: AnnData, model: SCANVI, annotation_column_name: str,
     # TODO: record model metadata (version) in AnnData
     predictions = model.predict(input_dataset)
 
-    query_dataset.obs[f"{annotation_column_name}"] = pd.Categorical(predictions)
+    query_dataset.obs[annotation_column_name] = pd.Categorical(predictions)
     # TODO: How do obtain confidence scores?
     # query_dataset.obs[f"{annotation_column_name_prefix}_confidence"] = ???
 

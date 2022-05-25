@@ -6,15 +6,16 @@ from click.testing import CliRunner
 
 from server.cli.annotate import annotate
 from test.unit.annotate.fixtures.cell_type_annotate_model_fixture import write_model, \
-    write_query_dataset, FakeModel
+    write_query_dataset, FakeModel, build_dataset
 
 
 class TestCliAnnotate(unittest.TestCase):
 
     def test__local_model_file__loads(self):
-        query_dataset_file_path = write_query_dataset(100, 10)
+        query_dataset_file_path = write_query_dataset(100, gene_identifiers=['a', 'b', 'c'])
         labels = {"x", "y", "z"}
-        model_file_path = write_model(FakeModel(labels))
+        ref_dataset = build_dataset(1000, gene_identifiers=['a', 'b', 'c'])
+        model_file_path = write_model(FakeModel(labels, ref_dataset))
 
         result = CliRunner().invoke(annotate,
                                     ['--input-h5ad-file', query_dataset_file_path,

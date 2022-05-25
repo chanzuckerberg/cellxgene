@@ -4,8 +4,10 @@ import sys
 from typing import Any
 
 import click
-import scanpy
+import scanpy as sc
+from anndata import AnnData
 from click import BadParameter
+from numpy import unique
 
 from server.annotate.annotation_types import AnnotationType
 
@@ -61,12 +63,14 @@ def annotate_args(func):
 #     "--model-repository",
 #     help="The base URL of the model repository. Maybe a local filesystem directory or S3 path (s3://)"
 # )
-# TODO: Useful if we want to support other, future annotation types, beyond "Cell Type"
+# TODO: Useful if we want to support other, future annotation types, beyond "Cell Type". Currently hidden
 @click.option(
     "-a",
     "--annotation-type",
     type=click.Choice([t.value for t in AnnotationType]),
     default=AnnotationType.CELL_TYPE.value,
+    show_default=True,
+    hidden=True,  # Remove if we add support for more annotation types
     help="The type of annotation to perform. This model to be used will be inferred from the annotation type.",
 )
 @click.option(
@@ -74,8 +78,9 @@ def annotate_args(func):
     "--annotation-column-prefix",
     type=str,
     default="cxg_predicted",
-    help="A prefix used to form the names of new `obs` annotation columns that will store the predicted annotation "
-         "values and confidence scores."
+    show_default=True,
+    help="An optional prefix used to form the names of new `obs` annotation columns that will store the predicted "
+         "annotation values and confidence scores."
 )
 @click.option(
     "-n",
@@ -104,7 +109,7 @@ def annotate(**cli_args):
 
     _validate_options(cli_args)
 
-    query_dataset = scanpy.read_h5ad(cli_args['input_h5ad_file'])
+    query_dataset = sc.read_h5ad(cli_args['input_h5ad_file'])
     model = _fetch_model(cli_args['model_url'])
     annotation_column_name = '_'.join(filter(None,
                                              [cli_args.get('annotation_column_prefix'),
@@ -113,7 +118,8 @@ def annotate(**cli_args):
 
     if cli_args['annotation_type'] == AnnotationType.CELL_TYPE.value:
         cell_type.annotate(query_dataset, model, annotation_column_name=annotation_column_name,
-                           gene_col_name=cli_args['gene_column_name'])
+                           gene_col_name=cli_args['gene_column_name'],
+                           min_common_gene_count=1)  # TODO
     else:
         raise BadParameter(f"unknown annotation type {cli_args['annotation_type']}")
 
