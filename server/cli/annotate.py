@@ -103,6 +103,17 @@ def annotate_args(func):
     help="The output H5AD file that will contain the generated annotation values. This option is mutually "
     "exclusive with --update-h5ad-file.",
 )
+@click.option(
+    "--min-common-gene-pct",
+    default=80,
+    type=click.IntRange(0, 100, min_open=True),
+    show_default=True,
+    help="The percentage of reference dataset genes that must also exist in the query dataset. This command will abort "
+         "if there are fewer genes found to be in common. Common genes will be determined by matching the var.index "
+         "column values of the reference and query datasets, unless the --gene-column-name option is specified, in "
+         "which case the reference dataset's var.index will matched to the specified column in the query dataset's "
+         "`obs.var` axis. exclusive with --update-h5ad-file."
+)
 @click.help_option("--help", "-h", help="Show this message and exit.")
 def annotate(**cli_args):
     print(cli_args)
@@ -115,11 +126,12 @@ def annotate(**cli_args):
                                              [cli_args.get('annotation_column_prefix'),
                                               cli_args.get('annotation_type'),
                                               cli_args.get('run_name')]))
+    min_common_gene_count = model.adata.shape[1] * cli_args.get('min_common_gene_pct') // 100
 
     if cli_args['annotation_type'] == AnnotationType.CELL_TYPE.value:
         cell_type.annotate(query_dataset, model, annotation_column_name=annotation_column_name,
                            gene_col_name=cli_args['gene_column_name'],
-                           min_common_gene_count=1)  # TODO
+                           min_common_gene_count=min_common_gene_count)
     else:
         raise BadParameter(f"unknown annotation type {cli_args['annotation_type']}")
 

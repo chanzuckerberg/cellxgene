@@ -13,9 +13,8 @@ class TestCliAnnotate(unittest.TestCase):
 
     def test__local_model_file__loads(self):
         query_dataset_file_path = write_query_dataset(100, gene_identifiers=['a', 'b', 'c'])
-        labels = {"x", "y", "z"}
         ref_dataset = build_dataset(1000, gene_identifiers=['a', 'b', 'c'])
-        model_file_path = write_model(FakeModel(labels, ref_dataset))
+        model_file_path = write_model(FakeModel(ref_dataset=ref_dataset))
 
         result = CliRunner().invoke(annotate,
                                     ['--input-h5ad-file', query_dataset_file_path,
@@ -38,22 +37,21 @@ class TestCliAnnotate(unittest.TestCase):
         self.assertEqual(0, result.exit_code, "runs successfully")
 
     def test__update_h5ad_file_option__updates_input_file(self):
-        query_dataset_file_path = write_query_dataset(100, 10)
-        labels = {"x", "y", "z"}
-        model_file_path = write_model(FakeModel(labels))
+        query_dataset_file_path = write_query_dataset(100)
+        model_file_path = write_model(FakeModel())
 
         result = CliRunner().invoke(annotate,
                                     ['--input-h5ad-file', query_dataset_file_path,
                                      '--model-url', model_file_path,
                                      '--update-h5ad-file'])
 
+        print(result.output)
         self.assertEqual(0, result.exit_code, "runs successfully")
         self.assertIsNotNone(scanpy.read_h5ad(query_dataset_file_path).obs['cxg_predicted_cell_type'])
 
     def test__annotation_column_options__writes_correct_output_column_name(self):
-        query_dataset_file_path = write_query_dataset(100, 10)
-        labels = {"x", "y", "z"}
-        model_file_path = write_model(FakeModel(labels))
+        query_dataset_file_path = write_query_dataset(100)
+        model_file_path = write_model(FakeModel())
 
         result = CliRunner().invoke(annotate,
                                     ['--input-h5ad-file', query_dataset_file_path,
@@ -65,7 +63,55 @@ class TestCliAnnotate(unittest.TestCase):
         self.assertEqual(0, result.exit_code, "runs successfully")
         self.assertIn('test_prefix_cell_type_test_run', scanpy.read_h5ad(query_dataset_file_path).obs.keys())
 
-    # TODO: Test S3 model locations (probably not possible)
+    def test__min_common_gene_pct_option__aborts_if_violated(self):
+        query_dataset_file_path = write_query_dataset(10, gene_identifiers=[f'gene_{i}' for i in range(49)])
+        ref_dataset = build_dataset(10, gene_identifiers=[f'gene_{i}' for i in range(100)])
+        model_file_path = write_model(FakeModel(ref_dataset=ref_dataset))
+
+        result = CliRunner().invoke(annotate,
+                                    ['--input-h5ad-file', query_dataset_file_path,
+                                     '--model-url', model_file_path,
+                                     '--update-h5ad-file',
+                                     '--min-common-gene-pct', '50',
+                                     '--run-name', 'test_run'])
+
+        self.assertNotEqual(0, result.exit_code, "aborts if --min-common-gene-pct violated")
+        self.assertEqual(
+            'There are only 49 genes in common between the query and reference datasets, but at least 50 are required',
+            str(result.exception))
+
+
+    def test__min_common_gene_pct_option__succeeds_if_boundary_value_satisfied(self):
+        query_dataset_file_path = write_query_dataset(10, gene_identifiers=[f'gene_{i}' for i in range(51)])
+        ref_dataset = build_dataset(10, gene_identifiers=[f'gene_{i}' for i in range(100)])
+        model_file_path = write_model(FakeModel(ref_dataset=ref_dataset))
+
+        result = CliRunner().invoke(annotate,
+                                    ['--input-h5ad-file', query_dataset_file_path,
+                                     '--model-url', model_file_path,
+                                     '--update-h5ad-file',
+                                     '--min-common-gene-pct', '50',
+                                     '--run-name', 'test_run'])
+
+        self.assertEqual(0, result.exit_code, "succeeds if --min-common-gene-pct satisfied")
+
+    def test__min_common_gene_pct_option__validates_value(self):
+        required_options = ['--input-h5ad-file', 'dummy',
+                            '--model-url', 'dummy',
+                            '--update-h5ad-file',
+                            '--run-name', 'test_run']
+
+        result = CliRunner().invoke(annotate, required_options + ['--min-common-gene-pct', '0'])
+
+        self.assertNotEqual(0, result.exit_code, "validates --min-common-gene-pct > 0")
+        self.assertIn("Error: Invalid value for '--min-common-gene-pct': 0 is not in the range 0<x<=100.",
+                      result.output)
+
+        result = CliRunner().invoke(annotate, required_options + ['--min-common-gene-pct', '101'])
+
+        self.assertNotEqual(0, result.exit_code, "validates --min-common-gene-pct <= 100")
+        self.assertIn("Error: Invalid value for '--min-common-gene-pct': 101 is not in the range 0<x<=100.",
+                      result.output)
 
 
 if __name__ == '__main__':

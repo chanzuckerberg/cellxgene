@@ -18,7 +18,11 @@ def write_model(model) -> PathLike:
 
 
 class FakeModel:
-    def __init__(self, predicted_labels_, ref_dataset: pd.DataFrame = None):
+    def __init__(self, predicted_labels_=None, ref_dataset: pd.DataFrame = None):
+        if predicted_labels_ is None:
+            predicted_labels_ = {'cell_type_0'}
+        if ref_dataset is None:
+            ref_dataset = build_dataset(10)
         self.predicted_labels = predicted_labels_
         self.original_label_key = 'training_label'
         self.adata = ref_dataset
