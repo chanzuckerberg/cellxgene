@@ -116,19 +116,23 @@ def annotate_args(func):
 )
 @click.help_option("--help", "-h", help="Show this message and exit.")
 def annotate(**cli_args):
-    print(cli_args)
-
     _validate_options(cli_args)
 
+    print(f"Reading query dataset {cli_args['input_h5ad_file']}...")
     query_dataset = sc.read_h5ad(cli_args['input_h5ad_file'])
+
+    print(f"Loading model from {cli_args['model_url']}...")
     model = _fetch_model(cli_args['model_url'])
+
     annotation_column_name = '_'.join(filter(None,
                                              [cli_args.get('annotation_column_prefix'),
                                               cli_args.get('annotation_type'),
                                               cli_args.get('run_name')]))
+
     min_common_gene_count = model.adata.shape[1] * cli_args.get('min_common_gene_pct') // 100
 
     if cli_args['annotation_type'] == AnnotationType.CELL_TYPE.value:
+        print("Annotating {cli_args['input_h5ad_file'} with {cli_args['annotation_type']}...")
         cell_type.annotate(query_dataset, model, annotation_column_name=annotation_column_name,
                            gene_col_name=cli_args['gene_column_name'],
                            min_common_gene_count=min_common_gene_count)
@@ -138,7 +142,7 @@ def annotate(**cli_args):
     output_h5ad_file = cli_args['input_h5ad_file'] if cli_args['update_h5ad_file'] else cli_args['output_h5ad_file']
     query_dataset.write_h5ad(output_h5ad_file)
 
-    print(f"added annotations to {output_h5ad_file} in obs column '{annotation_column_name}'")
+    print(f"Added annotations to {output_h5ad_file} in obs column '{annotation_column_name}'")
 
 
 def _validate_options(cli_args):
