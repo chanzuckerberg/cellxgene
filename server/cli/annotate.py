@@ -156,6 +156,7 @@ def _validate_options(cli_args):
 
 
 def _fetch_model(model_url) -> Any:
+    # TODO: cache models locally for faster repeated usage
     model_url_locator = DataLocator(model_url)
     if not model_url_locator.exists():
         raise f"model file '{model_url}' not found"
