@@ -573,7 +573,7 @@ class Graph extends React.Component {
     );
 
     this.spatialImage = await this.loadTextureFromUrl(
-      "/api/v0.2/spatial/image"
+      `${globals.API.prefix}${globals.API.version}spatial/image`
     );
 
     const { width, height } = viewport;
