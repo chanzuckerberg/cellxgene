@@ -3,8 +3,7 @@ const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const TerserJSPlugin = require("terser-webpack-plugin");
-const CleanCss = require("clean-css");
-const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
@@ -29,8 +28,8 @@ const prodConfig = {
     minimize: true,
     minimizer: [
       new TerserJSPlugin({}),
-      new OptimizeCSSAssetsPlugin({
-        cssProcessor: CleanCss,
+      new CssMinimizerPlugin({
+        minify: CssMinimizerPlugin.cleanCssMinify,
       }),
     ],
   },
