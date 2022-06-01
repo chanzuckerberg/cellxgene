@@ -111,6 +111,12 @@ def annotate_args(func):
          "which case the reference dataset's var.index will matched to the specified column in the query dataset's "
          "`obs.var` axis. exclusive with --update-h5ad-file."
 )
+@click.option(
+    "--model-cache-dir",
+    default=".models_cache",
+    help="Local directory used to store model files that are retrieved from a remote location. Model files will "
+         "be read from this directory first, if they exist, to avoid repeating large downloads."
+)
 @click.help_option("--help", "-h", help="Show this message and exit.")
 def annotate(**cli_args):
     _validate_options(cli_args)
@@ -119,7 +125,7 @@ def annotate(**cli_args):
     query_dataset = sc.read_h5ad(cli_args['input_h5ad_file'])
 
     print(f"Loading model from {cli_args['model_url']}...")
-    model = _fetch_model(cli_args['model_url'])
+    model = _fetch_model(cli_args['model_url'], model_cache_dir=cli_args['model_cache_dir'])
 
     annotation_column_name = '_'.join(filter(None,
                                              [cli_args.get('annotation_column_prefix'),
@@ -129,7 +135,7 @@ def annotate(**cli_args):
     min_common_gene_count = model.adata.shape[1] * cli_args.get('min_common_gene_pct') // 100
 
     if cli_args['annotation_type'] == AnnotationType.CELL_TYPE.value:
-        print("Annotating {cli_args['input_h5ad_file'} with {cli_args['annotation_type']}...")
+        print(f"Annotating {cli_args['input_h5ad_file']} with {cli_args['annotation_type']}...")
         cell_type.annotate(query_dataset, model, annotation_column_name=annotation_column_name,
                            gene_col_name=cli_args['gene_column_name'],
                            min_common_gene_count=min_common_gene_count)
@@ -155,9 +161,8 @@ def _validate_options(cli_args):
         sys.exit(1)
 
 
-def _fetch_model(model_url) -> Any:
-    # TODO: cache models locally for faster repeated usage
-    model_url_locator = DataLocator(model_url)
+def _fetch_model(model_url, model_cache_dir=None) -> Any:
+    model_url_locator = DataLocator(model_url, local_cache_dir=model_cache_dir)
     if not model_url_locator.exists():
         raise f"model file '{model_url}' not found"
 

@@ -34,14 +34,6 @@ class CellTypeTissueModel:
 #     return CellTypeTissueModel(tissue_type_ontology_term_id, model_url=model_url, model=retrieve_model(model_url))
 
 
-def retrieve_model(model_url: str) -> SCANVI:
-    with DataLocator(uri_or_path=model_url).open("rb") as f:
-        model = pickle.load(f)
-        if not isinstance(model, SCANVI):
-            raise "invalid model object at {model_url}: expected type SCANVI, got {model.type}"
-        return model
-
-
 def record_prediction_run_metadata(query_dataset: AnnData, annotation_column_name: str, model_url: str):
     query_dataset.uns.setdefault('cxg_predictions', {})[annotation_column_name] = {'model_url': model_url}
 
