@@ -5,15 +5,12 @@ from typing import Any
 
 import click
 import scanpy as sc
-from anndata import AnnData
 from click import BadParameter
-from numpy import unique
-
-from server.annotate.annotation_types import AnnotationType
 
 from server.annotate import cell_type
+from server.annotate.annotation_types import AnnotationType
+from server.annotate.cell_type import record_prediction_run_metadata
 from server.common.utils.data_locator import DataLocator
-
 from server.common.utils.utils import sort_options
 
 
@@ -136,6 +133,9 @@ def annotate(**cli_args):
         cell_type.annotate(query_dataset, model, annotation_column_name=annotation_column_name,
                            gene_col_name=cli_args['gene_column_name'],
                            min_common_gene_count=min_common_gene_count)
+
+        record_prediction_run_metadata(query_dataset, annotation_column_name, cli_args['model_url'])
+
     else:
         raise BadParameter(f"unknown annotation type {cli_args['annotation_type']}")
 

@@ -1,5 +1,7 @@
 import os.path
 import unittest
+from unittest import mock
+from unittest.mock import patch
 
 import scanpy
 from click.testing import CliRunner
@@ -112,6 +114,23 @@ class TestCliAnnotate(unittest.TestCase):
         self.assertNotEqual(0, result.exit_code, "validates --min-common-gene-pct <= 100")
         self.assertIn("Error: Invalid value for '--min-common-gene-pct': 101 is not in the range 0<x<=100.",
                       result.output)
+
+    def test__adds_metadata(self):
+        query_dataset_file_path = write_query_dataset(1)
+
+        mock_fetch = mock.Mock()
+        mock_fetch.return_value = FakeModel()
+        with patch('server.cli.annotate._fetch_model', mock_fetch):
+            result = CliRunner().invoke(annotate,
+                                        ['--input-h5ad-file', str(query_dataset_file_path),
+                                         '--model-url', 'http://model_respository.org/annotation/cell_type/model1.pkl',
+                                         '--update-h5ad-file',
+                                         '--run-name', 'test_run'])
+
+        self.assertEqual(0, result.exit_code)  # sanity check
+        ad = scanpy.read_h5ad(query_dataset_file_path)
+        self.assertEqual('http://model_respository.org/annotation/cell_type/model1.pkl',
+                         ad.uns['cxg_predictions']['cxg_predicted_cell_type_test_run']['model_url'])
 
 
 if __name__ == '__main__':

@@ -42,15 +42,19 @@ def retrieve_model(model_url: str) -> SCANVI:
         return model
 
 
+def record_prediction_run_metadata(query_dataset: AnnData, annotation_column_name: str, model_url: str):
+    query_dataset.uns.setdefault('cxg_predictions', {})[annotation_column_name] = {'model_url': model_url}
+
+
 def annotate(query_dataset: AnnData, model: SCANVI, annotation_column_name: str, gene_col_name: Optional[str] = None,
              min_common_gene_count=100) -> None:
     input_dataset = prepare_query_dataset(query_dataset, model, gene_col_name,
                                           min_common_gene_count=min_common_gene_count)
 
-    # TODO: record model metadata (version) in AnnData
     predictions = model.predict(input_dataset)
 
     query_dataset.obs[annotation_column_name] = pd.Categorical(predictions)
+
     # TODO: How do obtain confidence scores?
     # query_dataset.obs[f"{annotation_column_name_prefix}_confidence"] = ???
 
