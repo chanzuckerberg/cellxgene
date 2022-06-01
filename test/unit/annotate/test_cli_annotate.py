@@ -128,9 +128,27 @@ class TestCliAnnotate(unittest.TestCase):
                                          '--run-name', 'test_run'])
 
         self.assertEqual(0, result.exit_code)  # sanity check
+
         ad = scanpy.read_h5ad(query_dataset_file_path)
         self.assertEqual('http://model_respository.org/annotation/cell_type/model1.pkl',
                          ad.uns['cxg_predictions']['cxg_predicted_cell_type_test_run']['model_url'])
+
+    def test__metadata__appends_existing(self):
+        query_dataset_file_path = write_query_dataset(1)
+        ad = scanpy.read_h5ad(str(query_dataset_file_path))
+        ad.uns['existing_metadata'] = {"keep_me": "please"}
+        ad.write_h5ad(query_dataset_file_path)
+
+        result = CliRunner().invoke(annotate,
+                                    ['--input-h5ad-file', str(query_dataset_file_path),
+                                     '--model-url', str(write_model(FakeModel())),
+                                     '--update-h5ad-file',
+                                     '--run-name', 'test_run'])
+
+        self.assertEqual(0, result.exit_code)  # sanity check
+
+        ad = scanpy.read_h5ad(query_dataset_file_path)
+        self.assertTrue('existing_metadata' in ad.uns)
 
 
 if __name__ == '__main__':
