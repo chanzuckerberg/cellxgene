@@ -139,8 +139,9 @@ function _getEmbeddingRowOffsets(baseRowIndex, embeddingDf) {
 
   Currently assumes that there will be onl two dimensions in the embedding.
   */
-  const X = embeddingDf.icol(0).asArray();
-  const Y = embeddingDf.icol(1).asArray();
+  const { icol } = embeddingDf;
+  const X = icol(0).asArray();
+  const Y = icol(1).asArray();
   const offsets = new Int32Array(X.length);
   let numOffsets = 0;
 
