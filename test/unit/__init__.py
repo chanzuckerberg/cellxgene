@@ -113,7 +113,7 @@ def start_test_server(command_line_args=[], app_config=None, env=None):
     elif "--port" in command_line_args:
         port = int(command_line_args[command_line_args.index("--port") + 1])
     else:
-        start = random.randint(DEFAULT_SERVER_PORT, 2 ** 16 - 1)
+        start = random.randint(DEFAULT_SERVER_PORT, 2**16 - 1)
         port = int(os.environ.get("CXG_SERVER_PORT", start))
         port = find_available_port("localhost", port)
         command += ["--port=%d" % port]

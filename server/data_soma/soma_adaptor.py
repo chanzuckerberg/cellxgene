@@ -1,11 +1,16 @@
 import warnings
 import tiledbsc
+import numpy as np
 
 import server.common.compute.diffexp_generic as diffexp_generic
 import server.common.compute.estimate_distribution as estimate_distribution
 from server.common.errors import PrepareError, DatasetAccessError
 from server.common.colors import convert_anndata_category_colors_to_cxg_category_colors
 from server.common.fbs.matrix import encode_matrix_fbs
+from server.common.constants import Axis, MAX_LAYOUTS, XApproximateDistribution
+from server.common.utils.type_conversion_utils import get_schema_type_hint_of_array
+from server.data_common.data_adaptor import DataAdaptor
+
 
 class SomaAdaptor(DataAdaptor):
     def __init__(self, data_locator, app_config=None, dataset_config=None):
@@ -19,14 +24,14 @@ class SomaAdaptor(DataAdaptor):
     def pre_load_validation(data_locator):
         # Using same logic as anndata_adaptor
         if data_locator.islocal():
-        # if data locator is local, apply file system conventions and other "cheap"
-        # validation checks.  If a URI, defer until we actually fetch the data and
-        # try to read it.  Many of these tests don't make sense for URIs (eg, extension-
-        # based typing).
-        if not data_locator.exists():
-            raise DatasetAccessError("does not exist")
-        if not data_locator.isfile():
-            raise DatasetAccessError("is not a file")
+            # if data locator is local, apply file system conventions and other "cheap"
+            # validation checks.  If a URI, defer until we actually fetch the data and
+            # try to read it.  Many of these tests don't make sense for URIs (eg, extension-
+            # based typing).
+            if not data_locator.exists():
+                raise DatasetAccessError("does not exist")
+            if not data_locator.isfile():
+                raise DatasetAccessError("is not a file")
 
     @staticmethod
     def open(data_locator, app_config, dataset_config):
@@ -116,7 +121,7 @@ class SomaAdaptor(DataAdaptor):
         if name is None:
             return self.original_obs_index
         else:
-            return self.data.obs[name]
+            return self.data.obs.df()[name]
 
     def get_obs_columns(self):
         return self.data.obs.df().columns
@@ -132,14 +137,37 @@ class SomaAdaptor(DataAdaptor):
     def cleanup(self):
         pass
 
-    @abstractmethod
+    def _create_schema(self):
+        self.schema = {
+            "dataframe": {
+                "nObs": self.cell_count,
+                "nVar": self.gene_count,
+                **get_schema_type_hint_of_array(self.data.X.df()),
+            },
+            "annotations": {
+                "obs": {"index": self.parameters.get("obs_names"), "columns": []},
+                "var": {"index": self.parameters.get("var_names"), "columns": []},
+            },
+            "layout": {"obs": []},
+        }
+        for ax in Axis:
+            curr_axis = getattr(self.data.X, str(ax))
+            for ann in curr_axis:
+                ann_schema = {"name": ann, "writable": False}
+                ann_schema.update(get_schema_type_hint_of_array(curr_axis[ann]))
+                self.schema["annotations"][ax]["columns"].append(ann_schema)
+
+        for layout in self.get_embedding_names():
+            layout_schema = {"name": layout, "type": "float32", "dims": [f"{layout}_0", f"{layout}_1"]}
+            self.schema["layout"]["obs"].append(layout_schema)
+
     def get_schema(self):
         """
         Return current schema
         """
-        pass
+        return self.schema
 
-    def annotation_to_fbs_matrix(self, axis, field=None, uid=None):
+    def annotation_to_fbs_matrix(self, axis, fields=None, labels=None):
         """
         Gets annotation value for each observation
         :param axis: string obs or var
@@ -165,8 +193,100 @@ class SomaAdaptor(DataAdaptor):
             lfc_cutoff = self.dataset_config.diffexp__lfc_cutoff
         return diffexp_generic.diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff)
 
+    def _is_valid_layout(self, arr):
+        """return True if this layout data is a valid array for front-end presentation:
+        * ndarray, dtype float/int/uint
+        * with shape (n_obs, >= 2)
+        * with all values finite or NaN (no +Inf or -Inf)
+        """
+        is_valid = type(arr) == np.ndarray and arr.dtype.kind in "fiu"
+        is_valid = is_valid and arr.shape[0] == self.data.obs.shape[0] and arr.shape[1] >= 2
+        is_valid = is_valid and not np.any(np.isinf(arr)) and not np.all(np.isnan(arr))
+        return is_valid
+
     def _load_data(self, data_locator):
-        pass
+        try:
+            # there is no guarantee data_locator indicates a local file. If we get a non-local object,
+            # make a copy in tmp, and delete it after we load into memory.
+            with data_locator.local_handle() as lh:
+                self.data = tiledbsc.SOMA(lh)
+
+        except ValueError:
+            raise DatasetAccessError("Data must be in the SOMA format.")
+        except MemoryError:
+            raise DatasetAccessError("Out of memory - file is too large for available memory.")
+        except Exception:
+            raise DatasetAccessError(
+                "Folder not found or is inaccessible. Folder must be in SOMA format."
+                "Please check your input and try again."
+            )
+
+    def is_data_unique(self):
+        obs_names = self.get_obs_keys()
+        var_names = self.get_var_keys()
+        return len(set(obs_names)) == len(obs_names) and len(set(var_names)) == len(var_names)
 
     def _validate_and_initialize(self):
-        pass
+        if not self.is_data_unique:
+            raise KeyError("All annotation column names must be unique.")
+
+        shape = self.get_shape()
+        self._alias_annotation_names()
+        self.cell_count = shape[0]
+        self.gene_count = shape[1]
+        self._create_schema()
+
+        if self.dataset_config.X_approximate_distribution == "auto":
+            self.get_X_approximate_distribution()
+        else:
+            self.X_approximate_distribution = self.dataset_config.X_approximate_distribution
+
+        # heuristic
+        n_values = shape[0] * shape[1]
+        if n_values > 5e8:
+            self.parameters.update({"diffexp_may_be_slow": True})
+
+    def _alias_annotation_names(self):
+        """
+        The front-end relies on the existance of a unique, human-readable
+        index for obs & var (eg, var is typically gene name, obs the cell name).
+        The user can specify these via the --obs-names and --var-names config.
+        If they are not specified, use the existing index to create them, giving
+        the resulting column a unique name (eg, "name").
+
+        In both cases, enforce that the result is unique, and communicate the
+        index column name to the front-end via the obs_names and var_names config
+        (which is incorporated into the schema).
+        """
+        self.original_obs_index = self.get_obs_columns()
+
+        for (ax_name, var_name) in ((Axis.OBS, "obs"), (Axis.VAR, "var")):
+            config_name = f"single_dataset__{var_name}_names"
+            parameter_name = f"{var_name}_names"
+            name = getattr(self.server_config, config_name)
+            df_axis = getattr(self.data, str(ax_name)).df()
+            if name is None:
+                # Default: create unique names from index
+                if not df_axis.index.is_unique:
+                    raise KeyError(
+                        f"Values in {ax_name}.index must be unique. "
+                        "Please prepare data to contain unique index values, or specify an "
+                        "alternative with --{ax_name}-name."
+                    )
+                name = self._create_unique_column_name(df_axis.columns, "name_")
+                self.parameters[parameter_name] = name
+                # reset index to simple range; alias name to point at the
+                # previously specified index.
+                df_axis.rename_axis(name, inplace=True)
+                df_axis.reset_index(inplace=True)
+            elif name in df_axis.columns:
+                # User has specified alternative column for unique names, and it exists
+                if not df_axis[name].is_unique:
+                    raise KeyError(
+                        f"Values in {ax_name}.{name} must be unique. " "Please prepare data to contain unique values."
+                    )
+                df_axis.reset_index(drop=True, inplace=True)
+                self.parameters[parameter_name] = name
+            else:
+                # user specified a non-existent column name
+                raise KeyError(f"Annotation name {name}, specified in --{ax_name}-name does not exist.")

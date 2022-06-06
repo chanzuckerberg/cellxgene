@@ -48,12 +48,12 @@ def _cache_control(always, **cache_kwargs):
 
 
 def cache_control(**cache_kwargs):
-    """ config driven """
+    """config driven"""
     return _cache_control(False, **cache_kwargs)
 
 
 def cache_control_always(**cache_kwargs):
-    """ always generate headers, regardless of the config """
+    """always generate headers, regardless of the config"""
     return _cache_control(True, **cache_kwargs)
 
 
@@ -228,7 +228,7 @@ def get_api_dataroot_resources(bp_dataroot):
 class Server:
     @staticmethod
     def _before_adding_routes(app, app_config):
-        """ will be called before routes are added, during __init__.  Subclass protocol """
+        """will be called before routes are added, during __init__.  Subclass protocol"""
         pass
 
     def __init__(self, app_config):

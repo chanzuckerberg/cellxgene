@@ -136,7 +136,7 @@ def write_gene_sets_tidycsv(f, genesets):
 
 
 def summarizeQueryHash(raw_query):
-    """ generate a cache key (hash) from the raw query string """
+    """generate a cache key (hash) from the raw query string"""
     return hashlib.sha1(raw_query).hexdigest()
 
 

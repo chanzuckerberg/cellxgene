@@ -7,7 +7,7 @@ from test import PROJECT_ROOT, random_string
 
 
 class TestPlugins(unittest.TestCase):
-    """ Test plugin import functionality """
+    """Test plugin import functionality"""
 
     plugins_dir = f"{PROJECT_ROOT}/test/plugins"
     test_plugin_path = f"{plugins_dir}/foo.py"

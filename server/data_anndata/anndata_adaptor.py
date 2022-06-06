@@ -238,8 +238,10 @@ class AnndataAdaptor(DataAdaptor):
             )
         if self.data.X.dtype < np.float32:
             if self.data.isbacked:
-                raise DatasetAccessError(f"Data matrix in {self.data.X.dtype} format is not supported in backed mode."
-                                         " Please reload without --backed, or convert matrix to float32")
+                raise DatasetAccessError(
+                    f"Data matrix in {self.data.X.dtype} format is not supported in backed mode."
+                    " Please reload without --backed, or convert matrix to float32"
+                )
             warnings.warn(
                 f"Anndata data matrix is in unsupported {self.data.X.dtype} format -- will be cast to float32"
             )
