@@ -22,3 +22,5 @@ PyYAML>=5.4  # CVE-2020-14343
 scipy>=1.4
 requests>=2.22.0
 s3fs==0.4.2
+# Below is tiledbsc library for SOMA functionality
+tiledbsc @ git+https://github.com/single-cell-data/TileDB-SingleCell.git@main#subdirectory=apis/python
