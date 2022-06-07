@@ -7,6 +7,7 @@ from http import HTTPStatus
 
 class MatrixDataType(Enum):
     H5AD = "h5ad"
+    SOMA = "soma"
     UNKNOWN = "unknown"
 
 
@@ -33,10 +34,16 @@ class MatrixDataLoader(object):
             from server.data_anndata.anndata_adaptor import AnndataAdaptor
 
             self.matrix_type = AnndataAdaptor
+        elif self.matrix_data_type == MatrixDataType.SOMA:
+            from server.data_soma.soma_adaptor import SomaAdaptor
+
+            self.matrix_type = SomaAdaptor
 
     def __matrix_data_type(self):
         if self.location.path.endswith(".h5ad"):
             return MatrixDataType.H5AD
+        elif "tiledb-data" in self.location.path: # TODO: find a more reliable check of this being SOMA data
+            return MatrixDataType.SOMA
         else:
             return MatrixDataType.UNKNOWN
 

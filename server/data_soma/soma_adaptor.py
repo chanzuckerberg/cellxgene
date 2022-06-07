@@ -30,8 +30,8 @@ class SomaAdaptor(DataAdaptor):
             # based typing).
             if not data_locator.exists():
                 raise DatasetAccessError("does not exist")
-            if not data_locator.isfile():
-                raise DatasetAccessError("is not a file")
+            if data_locator.isfile():
+                raise DatasetAccessError("is not a folder")
 
     @staticmethod
     def open(data_locator, app_config, dataset_config):
@@ -71,7 +71,7 @@ class SomaAdaptor(DataAdaptor):
             layout_name = f"X_{layout}"
             if layout_name not in obsm_keys:
                 warnings.warn(f"Ignoring unknown layout name: {layout}.")
-            elif not self._is_valid_layout(self.data.obsm[layout_name]):
+            elif not self._is_valid_layout(self.data.obsm[layout_name].df().to_numpy()):
                 warnings.warn(f"Ignoring layout due to malformed shape or data type: {layout}")
             else:
                 valid_layouts.append(layout)
@@ -90,8 +90,14 @@ class SomaAdaptor(DataAdaptor):
     def get_X_array(self, obs_mask=None, var_mask=None):
         """return the X array, possibly filtered by obs_mask or var_mask.
         the return type is either ndarray or scipy.sparse.spmatrix."""
-        arr = self.data.X.data.df().to_numpy()
-        return arr[obs_mask, var_mask]
+        obs_ids = self.get_obs_keys()
+        var_ids = self.get_var_keys()
+        if obs_mask is not None and var_mask is not None:
+            obs_ids = obs_ids[obs_mask]
+            var_ids = var_ids[var_mask]
+            return self.data.X.data.df(obs_ids, var_ids).to_numpy().transpose()
+        else:
+            return self.data.X.data.df().to_numpy().transpose()
 
     def get_X_approximate_distribution(self) -> XApproximateDistribution:
         """return the approximate distribution of the X matrix."""
@@ -105,7 +111,7 @@ class SomaAdaptor(DataAdaptor):
 
     def get_shape(self):
         """return the shape of the data matrix X"""
-        return self.data.X.shape()
+        return self.data.X.data.shape()
 
     def query_var_array(self, term_var):
         return getattr(self.data.var.df(), term_var)
@@ -142,7 +148,7 @@ class SomaAdaptor(DataAdaptor):
             "dataframe": {
                 "nObs": self.cell_count,
                 "nVar": self.gene_count,
-                **get_schema_type_hint_of_array(self.data.X.df()),
+                **get_schema_type_hint_of_array(self.data.X.data.df().to_numpy()),
             },
             "annotations": {
                 "obs": {"index": self.parameters.get("obs_names"), "columns": []},
@@ -151,11 +157,11 @@ class SomaAdaptor(DataAdaptor):
             "layout": {"obs": []},
         }
         for ax in Axis:
-            curr_axis = getattr(self.data.X, str(ax))
-            for ann in curr_axis:
-                ann_schema = {"name": ann, "writable": False}
-                ann_schema.update(get_schema_type_hint_of_array(curr_axis[ann]))
-                self.schema["annotations"][ax]["columns"].append(ann_schema)
+            curr_axis = getattr(self.data, str(ax)).df()
+            for soma in curr_axis:
+                soma_schema = {"name": soma, "writable": False}
+                soma_schema.update(get_schema_type_hint_of_array(curr_axis[soma]))
+                self.schema["annotations"][ax]["columns"].append(soma_schema)
 
         for layout in self.get_embedding_names():
             layout_schema = {"name": layout, "type": "float32", "dims": [f"{layout}_0", f"{layout}_1"]}
@@ -200,7 +206,7 @@ class SomaAdaptor(DataAdaptor):
         * with all values finite or NaN (no +Inf or -Inf)
         """
         is_valid = type(arr) == np.ndarray and arr.dtype.kind in "fiu"
-        is_valid = is_valid and arr.shape[0] == self.data.obs.shape[0] and arr.shape[1] >= 2
+        is_valid = is_valid and arr.shape[0] == self.data.obs.shape()[0] and arr.shape[1] >= 2
         is_valid = is_valid and not np.any(np.isinf(arr)) and not np.all(np.isnan(arr))
         return is_valid
 
@@ -290,3 +296,15 @@ class SomaAdaptor(DataAdaptor):
             else:
                 # user specified a non-existent column name
                 raise KeyError(f"Annotation name {name}, specified in --{ax_name}-name does not exist.")
+
+    def _create_unique_column_name(self, df, col_name_prefix):
+        """given the columns of a dataframe, and a name prefix, return a column name which
+        does not exist in the dataframe, AND which is prefixed by `prefix`
+
+        The approach is to append a numeric suffix, starting at zero and increasing by
+        one, until an unused name is found (eg, prefix_0, prefix_1, ...).
+        """
+        suffix = 0
+        while f"{col_name_prefix}{suffix}" in df:
+            suffix += 1
+        return f"{col_name_prefix}{suffix}"
