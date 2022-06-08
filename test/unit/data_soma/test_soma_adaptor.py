@@ -52,7 +52,9 @@ class SomaAdaptorTest(unittest.TestCase):
         self.assertEqual(self.data.cell_count, 2638)
         self.assertEqual(self.data.gene_count, 1838)
         epsilon = 0.000_005
-        self.assertTrue(self.data.data.X.data.df().to_numpy()[0, 0] - -0.186_725_91 < epsilon) # different hardcoded check than Anndata's test
+        self.assertTrue(
+            self.data.data.X.data.df().to_numpy()[0, 0] - -0.186_725_91 < epsilon
+        )  # different hardcoded check than Anndata's test
 
     def test_mandatory_annotations(self):
         obs_index_col_name = self.data.get_schema()["annotations"]["obs"]["index"]
@@ -86,17 +88,25 @@ class SomaAdaptorTest(unittest.TestCase):
         fbs = self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
         data = decode_fbs.decode_matrix_FBS(fbs)
         self.assertEqual(data["n_rows"], 2638)
-        self.assertEqual(data["n_cols"], 95) # different order of indices than Anndata leads to different results when using integer indices
+        self.assertEqual(
+            data["n_cols"], 95
+        )  # different order of indices than Anndata leads to different results when using integer indices
 
     def test_obs_and_var_names(self):
-        self.assertEqual(np.sum(self.data.get_var_df()[self.data.get_schema()["annotations"]["var"]["index"]].isna()), 0)
-        self.assertEqual(np.sum(self.data.get_obs_df()[self.data.get_schema()["annotations"]["obs"]["index"]].isna()), 0)
+        self.assertEqual(
+            np.sum(self.data.get_var_df()[self.data.get_schema()["annotations"]["var"]["index"]].isna()), 0
+        )
+        self.assertEqual(
+            np.sum(self.data.get_obs_df()[self.data.get_schema()["annotations"]["obs"]["index"]].isna()), 0
+        )
 
     def test_get_colors(self):
-        self.assertEqual(self.data.get_colors(), pbmc3k_processed_colors) # different order of colors than Anndata
+        self.assertEqual(self.data.get_colors(), pbmc3k_processed_colors)  # different order of colors than Anndata
 
     def test_get_schema(self):
-        with open(f"{FIXTURES_ROOT}/SOMA_schema.json") as fh: # have to use a different schema than Anndata because tiledbsc return df with different datatypes
+        with open(
+            f"{FIXTURES_ROOT}/SOMA_schema.json"
+        ) as fh:  # have to use a different schema than Anndata because tiledbsc return df with different datatypes
             schema = json.load(fh)
             self.assertDictEqual(self.data.get_schema(), schema)
 
@@ -203,7 +213,7 @@ class SomaAdaptorTest(unittest.TestCase):
         data = decode_fbs.decode_matrix_FBS(fbs)
         self.assertEqual(data["n_rows"], 2638)
         self.assertEqual(data["n_cols"], 1)
-        self.assertEqual(data["col_idx"], [1260]) # different than Anndata because order is not preserved
+        self.assertEqual(data["col_idx"], [1260])  # different than Anndata because order is not preserved
 
         filter_ = {
             "filter": {"var": {"annotation_value": [{"name": var_index_col_name, "values": ["SPEN", "TYMP", "PRMT2"]}]}}
@@ -212,4 +222,6 @@ class SomaAdaptorTest(unittest.TestCase):
         data = decode_fbs.decode_matrix_FBS(fbs)
         self.assertEqual(data["n_rows"], 2638)
         self.assertEqual(data["n_cols"], 3)
-        self.assertTrue((data["col_idx"] == [1168, 1500, 1700]).all()) # different than Anndata because order is not preserved
+        self.assertTrue(
+            (data["col_idx"] == [1168, 1500, 1700]).all()
+        )  # different than Anndata because order is not preserved

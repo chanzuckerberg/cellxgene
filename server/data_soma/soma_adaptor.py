@@ -1,5 +1,4 @@
 import warnings
-import pandas
 import tiledbsc
 import numpy as np
 
@@ -93,16 +92,16 @@ class SomaAdaptor(DataAdaptor):
         the return type is either ndarray or scipy.sparse.spmatrix."""
         obs_ids = self.data.obs.df().index.to_numpy()
         var_ids = self.data.var.df().index.to_numpy()
-        
+
         df = None
         obs_ids = obs_ids[obs_mask] if obs_mask is not None else None
         var_ids = var_ids[var_mask] if var_mask is not None else None
 
         # df = self.data.X.data.df(obs_ids, var_ids).reset_index() -> This tiledbsc function does not seem to work
         df = self.data.X.data.df().reset_index()
-        df = df.loc[df['obs_id'].isin(obs_ids)] if obs_ids is not None else df
-        df = df.loc[df['var_id'].isin(var_ids)] if var_ids is not None else df
-        df = df.set_index(['obs_id', 'var_id'])['value'].unstack().reset_index()
+        df = df.loc[df["obs_id"].isin(obs_ids)] if obs_ids is not None else df
+        df = df.loc[df["var_id"].isin(var_ids)] if var_ids is not None else df
+        df = df.set_index(["obs_id", "var_id"])["value"].unstack().reset_index()
         df = df.set_index("obs_id")
         return df.to_numpy()
 
@@ -214,7 +213,6 @@ class SomaAdaptor(DataAdaptor):
         else:
             df = self.data.var.df()
             df.insert(0, self.schema["annotations"]["var"]["index"], self.data.var.df().index)
-
 
         if fields is not None and len(fields) > 0:
             df = df[fields]

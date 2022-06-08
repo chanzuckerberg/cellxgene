@@ -42,7 +42,7 @@ class MatrixDataLoader(object):
     def __matrix_data_type(self):
         if self.location.path.endswith(".h5ad"):
             return MatrixDataType.H5AD
-        elif "tiledb-data" in self.location.path: # TODO: find a more reliable check of this being SOMA data
+        elif "tiledb-data" in self.location.path:  # TODO: find a more reliable check of this being SOMA data
             return MatrixDataType.SOMA
         else:
             return MatrixDataType.UNKNOWN

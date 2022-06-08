@@ -232,6 +232,7 @@ def convert_anndata_category_colors_to_cxg_category_colors(data):
         )
     return cxg_colors
 
+
 def convert_soma_category_colors_to_cxg_category_colors(data):
     """
     Convert color information from soma files to the cellxgene color data format.
@@ -253,6 +254,9 @@ def convert_soma_category_colors_to_cxg_category_colors(data):
 
         # create the cellxgene color entry for this category
         cxg_colors[category_name] = dict(
-            zip(data.obs.df()[category_name].astype('category').cat.categories, [convert_color_to_hex_format(c[0]) for c in data.uns[uns_key].to_matrix()])
+            zip(
+                data.obs.df()[category_name].astype("category").cat.categories,
+                [convert_color_to_hex_format(c[0]) for c in data.uns[uns_key].to_matrix()],
+            )
         )
     return cxg_colors

@@ -1,6 +1,6 @@
 # =======
 # TileDB-singlecell cannot convert 16 bit .h5ad files,
-# so assume for now that SOMA data cannot use 16 bit data. 
+# so assume for now that SOMA data cannot use 16 bit data.
 # This test is not needed then since such a file could not exist.
 # ========
 

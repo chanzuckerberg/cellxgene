@@ -71,7 +71,6 @@ class SomaDataLocatorAdaptorTest(unittest.TestCase):
         data = SomaAdaptor(locator, config)
         self.stdAsserts(data)
 
-
     # TODO: using SOMA with a TileDB URI is not tested yet
     # def test_url_https(self):
     #     url = "https://raw.githubusercontent.com/chanzuckerberg/cellxgene/main/example-dataset/pbmc3k.h5ad"
