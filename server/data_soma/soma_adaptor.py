@@ -1,4 +1,5 @@
 import warnings
+import pandas
 import tiledbsc
 import numpy as np
 
@@ -92,12 +93,16 @@ class SomaAdaptor(DataAdaptor):
         the return type is either ndarray or scipy.sparse.spmatrix."""
         obs_ids = self.get_obs_keys()
         var_ids = self.get_var_keys()
+        df = None
         if obs_mask is not None and var_mask is not None:
             obs_ids = obs_ids[obs_mask]
             var_ids = var_ids[var_mask]
-            return self.data.X.data.df(obs_ids, var_ids).to_numpy().transpose()
+            df = self.data.X.data.df(obs_ids, var_ids).reset_index()
         else:
-            return self.data.X.data.df().to_numpy().transpose()
+            df = self.data.X.data.df().reset_index()
+        df = df.set_index(['obs_id', 'var_id'])['value'].unstack().reset_index()
+        df = df.set_index("obs_id")
+        return df.to_numpy()
 
     def get_X_approximate_distribution(self) -> XApproximateDistribution:
         """return the approximate distribution of the X matrix."""
@@ -185,11 +190,16 @@ class SomaAdaptor(DataAdaptor):
                 df = self.data.obs.df().join(labels, self.parameters.get("obs_names"))
             else:
                 df = self.data.obs.df()
+                df.insert(0, self.schema["annotations"]["obs"]["index"], self.data.obs.df().index)
         else:
             df = self.data.var.df()
+            df.insert(0, self.schema["annotations"]["var"]["index"], self.data.var.df().index)
+
 
         if fields is not None and len(fields) > 0:
             df = df[fields]
+
+        df.index = range(df.shape[0])
         return encode_matrix_fbs(df, col_idx=df.columns)
 
     def compute_diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff):
