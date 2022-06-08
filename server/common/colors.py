@@ -231,3 +231,28 @@ def convert_anndata_category_colors_to_cxg_category_colors(data):
             zip(data.obs[category_name].cat.categories, [convert_color_to_hex_format(c) for c in data.uns[uns_key]])
         )
     return cxg_colors
+
+def convert_soma_category_colors_to_cxg_category_colors(data):
+    """
+    Convert color information from soma files to the cellxgene color data format.
+
+    :param data: the anndata file
+    :return: cellxgene color data structure as described above
+    """
+    cxg_colors = dict()
+    color_key_suffix = "_colors"
+    for uns_key in data.uns.keys():
+        # find uns array that describes colors for a category
+        if not uns_key.endswith(color_key_suffix):
+            continue
+
+        # check to see if we actually have observations for that category
+        category_name = uns_key[: -len(color_key_suffix)]
+        if category_name not in data.obs.keys():
+            continue
+
+        # create the cellxgene color entry for this category
+        cxg_colors[category_name] = dict(
+            zip(data.obs.df()[category_name].astype('category').cat.categories, [convert_color_to_hex_format(c[0]) for c in data.uns[uns_key].to_matrix()])
+        )
+    return cxg_colors

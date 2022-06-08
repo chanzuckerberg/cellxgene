@@ -6,7 +6,7 @@ import numpy as np
 import server.common.compute.diffexp_generic as diffexp_generic
 import server.common.compute.estimate_distribution as estimate_distribution
 from server.common.errors import PrepareError, DatasetAccessError
-from server.common.colors import convert_anndata_category_colors_to_cxg_category_colors
+from server.common.colors import convert_soma_category_colors_to_cxg_category_colors
 from server.common.fbs.matrix import encode_matrix_fbs
 from server.common.constants import Axis, MAX_LAYOUTS, XApproximateDistribution
 from server.common.utils.type_conversion_utils import get_schema_type_hint_of_array
@@ -85,21 +85,23 @@ class SomaAdaptor(DataAdaptor):
 
     def get_embedding_array(self, ename, dims=2):
         """return an numpy array for the given pre-computed embedding name."""
-        full_embedding = self.data.obsm[f"X_{ename}"]
+        full_embedding = self.data.obsm[f"X_{ename}"].df().to_numpy()
         return full_embedding[:, 0:dims]
 
     def get_X_array(self, obs_mask=None, var_mask=None):
         """return the X array, possibly filtered by obs_mask or var_mask.
         the return type is either ndarray or scipy.sparse.spmatrix."""
-        obs_ids = self.get_obs_keys()
-        var_ids = self.get_var_keys()
+        obs_ids = self.data.obs.df().index.to_numpy()
+        var_ids = self.data.var.df().index.to_numpy()
+        
         df = None
-        if obs_mask is not None and var_mask is not None:
-            obs_ids = obs_ids[obs_mask]
-            var_ids = var_ids[var_mask]
-            df = self.data.X.data.df(obs_ids, var_ids).reset_index()
-        else:
-            df = self.data.X.data.df().reset_index()
+        obs_ids = obs_ids[obs_mask] if obs_mask is not None else None
+        var_ids = var_ids[var_mask] if var_mask is not None else None
+
+        # df = self.data.X.data.df(obs_ids, var_ids).reset_index() -> This tiledbsc function does not seem to work
+        df = self.data.X.data.df().reset_index()
+        df = df.loc[df['obs_id'].isin(obs_ids)] if obs_ids is not None else df
+        df = df.loc[df['var_id'].isin(var_ids)] if var_ids is not None else df
         df = df.set_index(['obs_id', 'var_id'])['value'].unstack().reset_index()
         df = df.set_index("obs_id")
         return df.to_numpy()
@@ -119,13 +121,13 @@ class SomaAdaptor(DataAdaptor):
         return self.data.X.data.shape()
 
     def query_var_array(self, term_var):
-        return getattr(self.data.var.df(), term_var)
+        return self.get_var_df()[term_var]
 
     def query_obs_array(self, term_var):
-        return getattr(self.data.obs.df(), term_var)
+        return self.get_obs_df()[term_var]
 
     def get_colors(self):
-        return convert_anndata_category_colors_to_cxg_category_colors(self.data)
+        return convert_soma_category_colors_to_cxg_category_colors(self.data)
 
     def get_obs_index(self):
         name = self.server_config.single_dataset__obs_names
@@ -145,6 +147,18 @@ class SomaAdaptor(DataAdaptor):
         # return list of keys
         return self.data.var.keys()
 
+    def get_obs_df(self):
+        # get obs dataframe in the usual format, indexed by integer indices, not obs_id
+        df = self.data.obs.df()
+        df = df.rename_axis(self.get_schema()["annotations"]["obs"]["index"]).reset_index()
+        return df
+
+    def get_var_df(self):
+        # get var dataframe in the usual format, indexed by integer indices, not var_id
+        df = self.data.var.df()
+        df = df.rename_axis(self.get_schema()["annotations"]["var"]["index"]).reset_index()
+        return df
+
     def cleanup(self):
         pass
 
@@ -162,7 +176,13 @@ class SomaAdaptor(DataAdaptor):
             "layout": {"obs": []},
         }
         for ax in Axis:
-            curr_axis = getattr(self.data, str(ax)).df()
+            curr_axis = None
+            if str(ax) == "obs":
+                curr_axis = self.get_obs_df()
+            elif str(ax) == "var":
+                curr_axis = self.get_var_df()
+            else:
+                raise RuntimeError("Invalid axis: %s." % str(ax))
             for soma in curr_axis:
                 soma_schema = {"name": soma, "writable": False}
                 soma_schema.update(get_schema_type_hint_of_array(curr_axis[soma]))
