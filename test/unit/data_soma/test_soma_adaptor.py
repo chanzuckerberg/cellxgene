@@ -24,19 +24,19 @@ Test the SOMA adaptor using the pbmc3k data set.
     ("data_locator", "backed", "X_approximate_distribution"),
     [
         (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed", False, "auto"),
-        # (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSC-gz_processed", False, "auto"),
-        # (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSR-gz_processed", False, "auto"),
-        # (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed", True, "auto"),
-        # (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSC-gz_processed", True, "auto"),
-        # (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSR-gz_processed", True, "auto"),
-        # (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed", False, "normal"),
-        # (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSC-gz_processed", False, "normal"),
-        # (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSR-gz_processed", False, "normal"),
-        # (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed", True, "normal"),
-        # (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSC-gz_processed", True, "normal"),
-        # (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSR-gz_processed", True, "normal"),
-        # (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k_64_processed", False, "auto"),  # 64 bit conversion tests
-        # (f"{FIXTURES_ROOT}/pbmc3k_16.h5ad", False, "auto"),  # 16 bit conversion tests are not needed for SOMA since it doesn't support 16 bit data as of now
+        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSC-gz_processed", False, "auto"),
+        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSR-gz_processed", False, "auto"),
+        (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed", True, "auto"),
+        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSC-gz_processed", True, "auto"),
+        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSR-gz_processed", True, "auto"),
+        (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed", False, "normal"),
+        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSC-gz_processed", False, "normal"),
+        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSR-gz_processed", False, "normal"),
+        (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed", True, "normal"),
+        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSC-gz_processed", True, "normal"),
+        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSR-gz_processed", True, "normal"),
+        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k_64_processed", False, "auto"),  # 64 bit conversion tests
+        (f"{FIXTURES_ROOT}/pbmc3k_16.h5ad", False, "auto"),  # 16 bit conversion tests are not needed for SOMA since it doesn't support 16 bit data as of now
     ],
 )
 class SomaAdaptorTest(unittest.TestCase):
