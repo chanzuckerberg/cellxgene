@@ -68,12 +68,13 @@ def annotate_args(func):
 )
 @click.option(
     "-c",
-    "--annotation-column-prefix",
+    "--annotation-prefix",
     type=str,
-    default="cxg_predicted",
+    default="cxg",
     show_default=True,
-    help="An optional prefix used to form the names of new `obs` annotation columns that will store the predicted "
-         "annotation values and confidence scores."
+    help="An optional prefix used to form the names: 1) new `obs` annotation columns that will store the predicted "
+         "annotation values and confidence scores, 2) `obsm` embeddings (reference and umap embedding), and "
+         "3) `uns` metadata for the prediction operation"
 )
 @click.option(
     "-n",
@@ -121,10 +122,10 @@ def annotate(**cli_args):
     print(f"Reading query dataset {cli_args['input_h5ad_file']}...")
     query_dataset = sc.read_h5ad(cli_args['input_h5ad_file'])
 
-    annotation_column_name = '_'.join(filter(None,
-                                             [cli_args.get('annotation_column_prefix'),
-                                              cli_args.get('annotation_type'),
-                                              cli_args.get('run_name')]))
+    annotation_prefix = '_'.join(filter(None,
+                                        [cli_args.get('annotation_prefix'),
+                                         cli_args.get('annotation_type'),
+                                         cli_args.get('run_name')]))
 
     model_url = cli_args.get('model_url')
     model_cache_dir = cli_args.get('model_cache_dir')
@@ -135,7 +136,7 @@ def annotate(**cli_args):
         cell_type.annotate(query_dataset=query_dataset,
                            model_url=model_url,
                            model_cache_dir=model_cache_dir,
-                           annotation_column_name=annotation_column_name,
+                           annotation_prefix=annotation_prefix,
                            gene_column_name=cli_args.get('gene_column_name'),
                            counts_layer=cli_args.get('counts_layer'),
                            )
@@ -144,8 +145,6 @@ def annotate(**cli_args):
 
     output_h5ad_file = cli_args['input_h5ad_file'] if cli_args['update_h5ad_file'] else cli_args['output_h5ad_file']
     query_dataset.write_h5ad(output_h5ad_file)
-
-    print(f"Added annotations to {output_h5ad_file} in obs column '{annotation_column_name}'")
 
 
 def _validate_options(cli_args):
