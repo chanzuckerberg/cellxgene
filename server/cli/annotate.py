@@ -72,7 +72,7 @@ def annotate_args(func):
     type=str,
     default="cxg",
     show_default=True,
-    help="An optional prefix used to form the names: 1) new `obs` annotation columns that will store the predicted "
+    help="An optional prefix used to form the names of: 1) new `obs` annotation columns that will store the predicted "
          "annotation values and confidence scores, 2) `obsm` embeddings (reference and umap embedding), and "
          "3) `uns` metadata for the prediction operation"
 )
