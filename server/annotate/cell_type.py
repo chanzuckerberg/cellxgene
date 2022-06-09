@@ -1,8 +1,10 @@
 from os import path
+from typing import List
 
 import xgboost as xgb
 from anndata import AnnData
 from pandas import DataFrame
+from scipy.sparse import spmatrix
 
 from server.annotate.util import fetch_model
 
@@ -71,21 +73,18 @@ from anndata import AnnData
 warnings.simplefilter(action="ignore", category=FutureWarning)
 warnings.simplefilter(action="ignore", category=UserWarning)
 
-# import scarches as sca
 import numpy as np
 import pandas as pd
-
-# sc.logging.print_versions()
 
 # Parameters
 early_stopping_kwargs_scarches = {
     'early_stopping': True,
     'early_stopping_monitor': 'elbo_train',  # 'elbo_validation'
-    # TODO: reinstate
     # 'early_stopping_patience': 10,
     # 'early_stopping_min_delta': 0.001,
+    # TODO: for quicker dev-cycle manual testing
     'early_stopping_patience': 1,
-    'early_stopping_min_delta': 100
+    'early_stopping_min_delta': 10
 }
 
 plan_kwargs = {
@@ -96,20 +95,27 @@ plan_kwargs = {
 }
 
 
-# TODO: move gene column logic outside this func
-def extract_raw_counts_adata(ad, raw_counts_layer_name, gene_column_name) -> AnnData:
+def extract_raw_counts_adata(ad, raw_counts_layer_name) -> spmatrix:
     if raw_counts_layer_name:
-        X = ad.layers[raw_counts_layer_name]
+        return ad.layers[raw_counts_layer_name]
     elif ad.raw:
-        X = ad.raw.X
+        return ad.raw.X
     else:
-        X = ad.X
+        return ad.X
 
+
+def extract_gene_names(ad, gene_column_name) -> List[str]:
     var_names = ad.var[gene_column_name] if gene_column_name else ad.var_names
     var_names_upcased = [n.upper() for n in var_names]  # TODO: probably wrong to upcase, are HGNC names case-sensitive?
-    return AnnData(X=X,
-                   var=pd.DataFrame(index=var_names_upcased),
-                   obs=pd.DataFrame(index=ad.obs_names))
+    return var_names_upcased
+
+
+def build_query_dataset(adata, counts_layer, gene_column_name):
+    raw_counts = extract_raw_counts_adata(adata, counts_layer)
+    gene_names = extract_gene_names(adata, gene_column_name)
+    return AnnData(X=raw_counts,
+                   var=pd.DataFrame(index=gene_names),
+                   obs=pd.DataFrame(index=adata.obs_names))
 
 
 def prep_query_data(adata, model,
@@ -127,7 +133,7 @@ def prep_query_data(adata, model,
     Input:
         * `adata`: A query AnnData object with count data stored in adata.layers
         * `model_path`: The HLCA reference model directory
-        * `counts_layer`: The name of the layer containing count data
+        * `counts_layer`: The name of the layer containing count data. If None, uses raw.X, if available, otherwise X
         * `dataset_name`: (Optional) The name of the dataset
 
     Output:
@@ -157,7 +163,7 @@ def prep_query_data(adata, model,
     if not isinstance(dataset_name, str):
         raise TypeError('`dataset_name` should be a string!')
 
-    adata_query = extract_raw_counts_adata(adata, counts_layer, gene_column_name)
+    adata_query = build_query_dataset(adata, counts_layer, gene_column_name)
 
     if np.any(adata_query.X.sum(1) < 200):  # TODO: parameterize
         raise ValueError('Cells with fewer than 200 counts in the data.\n'
