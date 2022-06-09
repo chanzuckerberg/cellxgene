@@ -1,3 +1,4 @@
+import warnings
 from os import path
 from typing import List
 
@@ -8,17 +9,26 @@ from anndata import AnnData
 from pandas import DataFrame
 from scipy.sparse import spmatrix
 
+warnings.simplefilter(action="ignore", category=FutureWarning)
+warnings.simplefilter(action="ignore", category=UserWarning)
+
+import numpy as np
+import pandas as pd
+
+
 from server.annotate.util import fetch_model
 
 
 def annotate(query_dataset, annotation_prefix, model_cache_dir, model_url,
              counts_layer, gene_column_name):
     cell_type_classifier_model_path, reference_embedding_model_path = fetch_models(model_url, model_cache_dir)
+
     query_dataset_prepped = prep_query_data(query_dataset,
                                             reference_embedding_model_path,
                                             counts_layer=counts_layer,
                                             gene_column_name=gene_column_name,
                                             dataset_name=str(query_dataset.filename))
+
     query_dataset_reference_embedding = map_to_ref(query_dataset_prepped, reference_embedding_model_path,
                                                    # TODO: use_gpu=cli_args['use_gpu']
                                                    )
@@ -27,7 +37,9 @@ def annotate(query_dataset, annotation_prefix, model_cache_dir, model_url,
     obs_predictions = predict(query_dataset_prepped,
                               query_dataset_reference_embedding,
                               cell_type_classifier_model_path=cell_type_classifier_model_path,
-                              annotation_column_name=f"{annotation_prefix}_predicted")
+                              annotation_column_name=f"{annotation_prefix}_predicted",
+                              # TODO: use_gpu=cli_args['use_gpu']
+                              )
     query_dataset.obs = pd.concat([query_dataset.obs, obs_predictions], axis=1)
 
     generate_query_dataset_umap(query_dataset, annotation_prefix)
@@ -79,20 +91,10 @@ def predict(query_dataset: AnnData,
     return query_dataset.obs
 
 
-import warnings
-
-from anndata import AnnData
-
-warnings.simplefilter(action="ignore", category=FutureWarning)
-warnings.simplefilter(action="ignore", category=UserWarning)
-
-import numpy as np
-import pandas as pd
-
 # Parameters
 early_stopping_kwargs_scarches = {
     'early_stopping': True,
-    'early_stopping_monitor': 'elbo_train',  # 'elbo_validation'
+    'early_stopping_monitor': 'elbo_train',
     # 'early_stopping_patience': 10,
     # 'early_stopping_min_delta': 0.001,
     # TODO: for quicker dev-cycle manual testing
@@ -194,24 +196,22 @@ def prep_query_data(adata, model,
     return adata_query
 
 
-def map_to_ref(adata_query,
+def map_to_ref(query_dataset,
                model_path,
                use_gpu=False,
                train_kwargs=early_stopping_kwargs_scarches,
                plan_kwargs=plan_kwargs,
-               output_model=False
-               ) -> nparray:
+               ) -> np.ndarray:
     """
     A function to map the query data to the reference atlas
 
     Input:
-        * adata_query: An AnnData object that has been prepped by the `prep_query_data` function
+        * query_dataset: An AnnData object that has been prepped by the `prep_query_data` function
         * model_path: The HLCA reference model directory
         * max_epochs: The maximum number of epochs for reference training (Default: 500)
         * use_gpu: Boolean flag whether to use gpu for training (Default: True)
         * train_kwargs: Keyword arguments passed to `scvi.model.SCANVI.train()` for early stopping
         * plan_kwargs: Dictionary of training plan keyword arguments passed to `scvi.model.SCANVI.train()`
-        * output_model: Boolean flag whether to output the trained query model (Default: False)
 
     Output:
         A numpy.ndarray containing the embedding coordinates of the query data in the HLCA latent space.
@@ -222,7 +222,7 @@ def map_to_ref(adata_query,
 
     # Load query data into the model
     vae_q = scvi.model.SCANVI.load_query_data(
-            adata_query,
+            query_dataset,
             model_path,
             freeze_dropout=True,
     )
@@ -238,20 +238,19 @@ def map_to_ref(adata_query,
 
     emb = vae_q.get_latent_representation()
 
-    if output_model:
-        return emb, vae_q
-    else:
-        return emb
+    return emb
 
 
-def project_labels(adata, cell_type_classifier_model, embedding_coords,
+def project_labels(query_dataset: AnnData,
+                   cell_type_classifier_model: xgb.XGBClassifier,
+                   embedding_coords: np.ndarray,
                    annotation_column_name='pred_labels'):
     """
     A function that projects predicted labels onto the query dataset, along with uncertainty scores.
     Performs in-place update of the adata object, adding columns to the `obs` DataFrame.
 
     Input:
-        * adata: The query `AnnData` object which was mapped to the HLCA reference
+        * query_dataset: The query `AnnData` object which was mapped to the HLCA reference
         * model_file: Path to the classification model file
         * embedding_coords: A numpy.ndarray of the latent space embedding coordinates of the
                             query data mapped to the HLCA reference. This is output by the
@@ -262,71 +261,22 @@ def project_labels(adata, cell_type_classifier_model, embedding_coords,
         Nothing is output, the passed anndata is modified inplace
 
     """
-    # TODO: Checks
-    # - model_file
-    # - adata instance
-    # - embedding coords type np.ndarray
-
     # TODO: uncertainty threshold 0.5
 
     # Set up query data
-    q_emb_df = pd.DataFrame(data=embedding_coords, index=adata.obs_names)
+    q_emb_df = pd.DataFrame(data=embedding_coords, index=query_dataset.obs_names)
 
     # Predict labels
-    adata.obs[annotation_column_name] = cell_type_classifier_model.predict(q_emb_df)
+    query_dataset.obs[annotation_column_name] = cell_type_classifier_model.predict(q_emb_df)
 
     # Predict probabilities
     probs = cell_type_classifier_model.predict_proba(q_emb_df)
 
     # Format probabilities
-    df_probs = pd.DataFrame(probs, columns=cell_type_classifier_model.classes_, index=adata.obs_names)
+    df_probs = pd.DataFrame(probs, columns=cell_type_classifier_model.classes_, index=query_dataset.obs_names)
 
     # TODO: Check this! Does that selected max correspond to the label that was predicted?
-    adata.obs[annotation_column_name + "_uncertainty"] = 1 - df_probs.max(1)
+    query_dataset.obs[annotation_column_name + "_uncertainty"] = 1 - df_probs.max(1)
 
     # TODO: Update caller to copy this to output AnnData object, if we desired this
     # adata.uns[annotation_column_name + '_uncertainty'] = df_probs
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC # Test script
-
-# if __name__ == '__main__':
-#     # User input
-#     folder = '/dbfs/users/mluecken/hlca'
-#     query_file = folder + '/query_data/tab_sapiens_prep.h5ad'
-#     dataset_name = 'Tabula_Sapiens'  # Not required
-#     ref_model_path = folder + "/reintegration/scanvi_model_accuracy"  # THIS IS THE MODEL DIRECTORY!
-#     classif_model_file = ref_model_path + "/classifier.pkl"
-#
-#     # Load query data
-#     query_data = sc.read(query_file)
-#
-#     adata_query_prep = prep_query_data(query_data, ref_model_path, dataset_name=dataset_name)
-#
-#     emb = map_to_ref(adata_query_prep, ref_model_path)
-#
-#     project_labels(query_data, classif_model_file, emb, prediction_key='predictions')
-#
-#     # Visualize results
-#     # This code does query umap generation
-#
-#     query_data.obsm["X_scANVI_new"] = emb
-#     sc.pp.neighbors(query_data, use_rep='X_scANVI_new')
-#     sc.tl.umap(query_data)
-#
-#     sc.pl.umap(query_data, color=['cell_type', 'predictions'], ncols=1, hspace=1.25)
-#
-#     # # Plot confusion matrix
-#     # df = query_data.obs.groupby(['predictions', 'cell_type']).size().unstack(fill_value=0)
-#     # norm_df = df / df.sum(axis=0)
-#     #
-#     # plt.figure(figsize=(8, 8))
-#     # _ = plt.pcolor(norm_df)
-#     # _ = plt.xticks(np.arange(0.5, len(df.columns), 1), df.columns, rotation=90)
-#     # _ = plt.yticks(np.arange(0.5, len(df.index), 1), df.index)
-#     # plt.xlabel("Observed")
-#     # plt.ylabel("Predicted")
-#
-#     query_data.uns['predictions_uncertainty']
