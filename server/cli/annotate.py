@@ -1,7 +1,5 @@
 import functools
-import pickle
 import sys
-from typing import Any
 
 import click
 import scanpy as sc
@@ -9,8 +7,6 @@ from click import BadParameter
 
 from server.annotate import cell_type
 from server.annotate.annotation_types import AnnotationType
-from server.annotate.cell_type import record_prediction_run_metadata
-from server.common.utils.data_locator import DataLocator
 from server.common.utils.utils import sort_options
 
 
@@ -43,7 +39,7 @@ def annotate_args(func):
 )
 @click.option(
     "-l",
-    "--h5ad-layer",
+    "--counts-layer",
     help="If specified, raw counts will be read from the AnnData layer of the specified name. If unspecified, "
          "raw counts will be read from `X` matrix, unless 'raw.X' exists, in which case that will be used."
 )
@@ -100,17 +96,18 @@ def annotate_args(func):
     help="The output H5AD file that will contain the generated annotation values. This option is mutually "
     "exclusive with --update-h5ad-file.",
 )
-@click.option(
-    "--min-common-gene-pct",
-    default=80,
-    type=click.IntRange(0, 100, min_open=True),
-    show_default=True,
-    help="The percentage of reference dataset genes that must also exist in the query dataset. This command will abort "
-         "if there are fewer genes found to be in common. Common genes will be determined by matching the var.index "
-         "column values of the reference and query datasets, unless the --gene-column-name option is specified, in "
-         "which case the reference dataset's var.index will matched to the specified column in the query dataset's "
-         "`obs.var` axis. exclusive with --update-h5ad-file."
-)
+# This is fixed by scArches: scvi/model/base/_archesmixin.py:203
+# @click.option(
+#     "--min-common-gene-pct",
+#     default=80,
+#     type=click.IntRange(0, 100, min_open=True),
+#     show_default=True,
+#     help="The percentage of reference dataset genes that must also exist in the query dataset. This command will abort "
+#          "if there are fewer genes found to be in common. Common genes will be determined by matching the var.index "
+#          "column values of the reference and query datasets, unless the --gene-column-name option is specified, in "
+#          "which case the reference dataset's var.index will matched to the specified column in the query dataset's "
+#          "`obs.var` axis. exclusive with --update-h5ad-file."
+# )
 @click.option(
     "--model-cache-dir",
     default=".models_cache",
@@ -124,24 +121,24 @@ def annotate(**cli_args):
     print(f"Reading query dataset {cli_args['input_h5ad_file']}...")
     query_dataset = sc.read_h5ad(cli_args['input_h5ad_file'])
 
-    print(f"Loading model from {cli_args['model_url']}...")
-    model = _fetch_model(cli_args['model_url'], model_cache_dir=cli_args['model_cache_dir'])
-
     annotation_column_name = '_'.join(filter(None,
                                              [cli_args.get('annotation_column_prefix'),
                                               cli_args.get('annotation_type'),
                                               cli_args.get('run_name')]))
 
-    min_common_gene_count = model.adata.shape[1] * cli_args.get('min_common_gene_pct') // 100
+    model_url = cli_args.get('model_url')
+    model_cache_dir = cli_args.get('model_cache_dir')
+
+    print(f"Annotating {cli_args.get('input_h5ad_file')} with {cli_args.get('annotation_type')}...")
 
     if cli_args['annotation_type'] == AnnotationType.CELL_TYPE.value:
-        print(f"Annotating {cli_args['input_h5ad_file']} with {cli_args['annotation_type']}...")
-        cell_type.annotate(query_dataset, model, annotation_column_name=annotation_column_name,
-                           gene_col_name=cli_args['gene_column_name'],
-                           min_common_gene_count=min_common_gene_count)
-
-        record_prediction_run_metadata(query_dataset, annotation_column_name, cli_args['model_url'])
-
+        cell_type.annotate(query_dataset=query_dataset,
+                           model_url=model_url,
+                           model_cache_dir=model_cache_dir,
+                           annotation_column_name=annotation_column_name,
+                           gene_column_name=cli_args.get('gene_column_name'),
+                           counts_layer=cli_args.get('counts_layer'),
+                           )
     else:
         raise BadParameter(f"unknown annotation type {cli_args['annotation_type']}")
 
@@ -159,15 +156,6 @@ def _validate_options(cli_args):
     if not (cli_args["update_h5ad_file"] or cli_args["output_h5ad_file"]):
         click.echo("--update_h5ad_file or --output_h5ad_file must be specified")
         sys.exit(1)
-
-
-def _fetch_model(model_url, model_cache_dir=None) -> Any:
-    model_url_locator = DataLocator(model_url, local_cache_dir=model_cache_dir)
-    if not model_url_locator.exists():
-        raise f"model file '{model_url}' not found"
-
-    with model_url_locator.open() as f:
-        return pickle.load(f)
 
 
 if __name__ == "__main__":

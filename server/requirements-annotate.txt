@@ -1,2 +1,5 @@
 scvi-tools
-scanpy==1.9.1
+scanpy[leiden]==1.9.1
+pytorch
+# Version matters for serialized model compatibility
+xgboost==1.5.2

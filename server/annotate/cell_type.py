@@ -1,138 +1,313 @@
-import pickle
-from dataclasses import dataclass
-from typing import Optional
+from os import path
 
-import anndata
-import numpy as np
-import pandas as pd
+import xgboost as xgb
 from anndata import AnnData
-# from scvi.models import SCANVI
 from pandas import DataFrame
-from scvi.model import SCANVI
-import scanpy as sc
 
-from server.common.utils.data_locator import DataLocator
+from server.annotate.util import fetch_model
 
 
-@dataclass
-class CellTypeTissueModel:
-    tissue_type_ontology_term_id: str
-    model_url: str
-    model: SCANVI
+def annotate(query_dataset, annotation_column_name, model_cache_dir, model_url,
+             counts_layer, gene_column_name):
+    cell_type_classifier_model_path, reference_embedding_model_path = fetch_models(model_url, model_cache_dir)
+    query_dataset_prepped = prep_query_data(query_dataset,
+                                            reference_embedding_model_path,
+                                            counts_layer=counts_layer,
+                                            gene_column_name=gene_column_name,
+                                            dataset_name=str(query_dataset.filename))
+    obs_predictions = predict(query_dataset_prepped,
+                              reference_embedding_model_path,
+                              cell_type_classifier_model_path,
+                              annotation_column_name=annotation_column_name,
+                              # TODO: use_gpu=cli_args['use_gpu'],
+                              )
+    query_dataset.obs = pd.concat([query_dataset.obs, obs_predictions], axis=1)
+    record_prediction_run_metadata(query_dataset, annotation_column_name, model_url)
 
 
-# def extract_tissue_types(dataset: AnnData) -> Set[str]:
-#     """
-#     Returns distinct set of tissue type ontology term IDs.
-#     """
-#     pass
+def fetch_models(model_url, model_cache_dir=None):
+    print(f"Loading models from {model_url}...")
+    # Note: scvi also provides remote fetching & local caching of models, but we'll use our own solution here since
+    # we have to do this anyway for the XGBoost model.
+    reference_embedding_model_path = path.dirname(
+            fetch_model(path.join(model_url, 'model.pt'),
+                        model_cache_dir=model_cache_dir))  # TODO: use URL util lib
 
+    cell_type_classifier_model_path = fetch_model(path.join(model_url, 'classifier.xgb'),
+                                                  model_cache_dir=model_cache_dir)  # TODO: use URL util lib
 
-# @functools.cache
-# def lookup_model(model_repository_base_url: str, tissue_type_ontology_term_id: str) -> CellTypeTissueModel:
-#     model_url = os.path.join(model_repository_base_url, tissue_type_ontology_term_id, ".pkl")
-#     return CellTypeTissueModel(tissue_type_ontology_term_id, model_url=model_url, model=retrieve_model(model_url))
+    return cell_type_classifier_model_path, reference_embedding_model_path
 
 
 def record_prediction_run_metadata(query_dataset: AnnData, annotation_column_name: str, model_url: str):
     query_dataset.uns.setdefault('cxg_predictions', {})[annotation_column_name] = {'model_url': model_url}
 
 
-def annotate(query_dataset: AnnData, model: SCANVI, annotation_column_name: str, gene_col_name: Optional[str] = None,
-             min_common_gene_count=100) -> None:
-    input_dataset = prepare_query_dataset(query_dataset, model, gene_col_name,
-                                          min_common_gene_count=min_common_gene_count)
+def predict(query_dataset: AnnData,
+            reference_embedding_model_path,
+            cell_type_classifier_model_path,
+            annotation_column_name: str,
+            use_gpu: bool = False
+            ) -> DataFrame:
+    """
+    Returns `obs` DataFrame with prediction columns appended
+    """
+    tree_method = 'gpu_hist' if use_gpu else 'hist'
+    cell_type_classifier_model = xgb.XGBClassifier(tree_method=tree_method, objective='multi:softprob')
+    cell_type_classifier_model.load_model(fname=cell_type_classifier_model_path)
 
-    predictions = model.predict(input_dataset)
+    query_dataset_embedding = map_to_ref(query_dataset, reference_embedding_model_path, use_gpu=use_gpu)
 
-    query_dataset.obs[annotation_column_name] = pd.Categorical(predictions)
+    project_labels(query_dataset, cell_type_classifier_model, query_dataset_embedding,
+                   annotation_column_name=annotation_column_name)
 
-    # TODO: How do obtain confidence scores?
-    # query_dataset.obs[f"{annotation_column_name_prefix}_confidence"] = ???
+    return query_dataset.obs
 
 
-def extract_raw_counts_adata(ad, raw_counts_layer_name) -> AnnData:
+import warnings
+
+from anndata import AnnData
+
+warnings.simplefilter(action="ignore", category=FutureWarning)
+warnings.simplefilter(action="ignore", category=UserWarning)
+
+# import scarches as sca
+import numpy as np
+import pandas as pd
+
+# sc.logging.print_versions()
+
+# Parameters
+early_stopping_kwargs_scarches = {
+    'early_stopping': True,
+    'early_stopping_monitor': 'elbo_train',  # 'elbo_validation'
+    # TODO: reinstate
+    # 'early_stopping_patience': 10,
+    # 'early_stopping_min_delta': 0.001,
+    'early_stopping_patience': 1,
+    'early_stopping_min_delta': 100
+}
+
+plan_kwargs = {
+    "reduce_lr_on_plateau": True,
+    "lr_patience": 8,
+    "lr_factor": 0.1,
+    "weight_decay": 0,
+}
+
+
+# TODO: move gene column logic outside this func
+def extract_raw_counts_adata(ad, raw_counts_layer_name, gene_column_name) -> AnnData:
     if raw_counts_layer_name:
         X = ad.layers[raw_counts_layer_name]
-        var = ad.var
     elif ad.raw:
         X = ad.raw.X
-        var = ad.raw.var
     else:
         X = ad.X
-        var = ad.var
-    return AnnData(X=X, obs=ad.obs, var=var)
+
+    var_names = ad.var[gene_column_name] if gene_column_name else ad.var_names
+    var_names_upcased = [n.upper() for n in var_names]  # TODO: probably wrong to upcase, are HGNC names case-sensitive?
+    return AnnData(X=X,
+                   var=pd.DataFrame(index=var_names_upcased),
+                   obs=pd.DataFrame(index=ad.obs_names))
 
 
-# TODO: this should be part of the model's logic; note that build_raw_counts_adata() has been copied from the
-#  training pipeline code
-def prepare_query_dataset(query_dataset: AnnData, model, gene_col_name: str,
-                          raw_counts_input_layer_name: str = None,
-                          min_common_gene_count: int = 1500) -> AnnData:
-    raw_counts = extract_raw_counts_adata(query_dataset, raw_counts_input_layer_name)
-    prepared = make_congruent_genes(raw_counts, model.adata.var, min_common_gene_count, gene_col_name)
-
-    # Add obs annotation column with same name of the one that was used at training time to hold the labeled values.
-    # This needs to exist at prediction time, since it existed at training time.
-    prepared.obs[model.original_label_key] = ''
-
-    return prepared
-
-
-def find_common_genes_mask(query_dataset_var: DataFrame, ref_genes_var: DataFrame, gene_col_name):
+def prep_query_data(adata, model,
+                    counts_layer='counts',
+                    gene_column_name=None,
+                    dataset_name='query_data'):  # prep adata object for ref mapping; output -> prepped query object
     """
-    Find common genes between query dataset and reference dataset, given the `var` objects from each.
-    Uses the gene identifiers from the query dataset that are found in the specified column name, `gene_col_name`.
-    If `gene_col_name` is None, then gene identifiers will be taken from `index`. Returns a mask of the
-    query_dataset_var rows indicating which rows are in common.
+    A function to prepare the `AnnData` object for reference mapping to the HCLA
+
+    Note: other reference models may have other requirements, such as:
+        * count data stored in a different location (not a layer?)
+        * size_factors stored or to be computed
+        * feature names no HGNC gene names
+
+    Input:
+        * `adata`: A query AnnData object with count data stored in adata.layers
+        * `model_path`: The HLCA reference model directory
+        * `counts_layer`: The name of the layer containing count data
+        * `dataset_name`: (Optional) The name of the dataset
+
+    Output:
+        A prepared `AnnData` object that can be loaded into `map_to_ref` for reference mapping
     """
-    query_gene_identifiers = query_dataset_var[gene_col_name] if gene_col_name else query_dataset_var.index
-    return query_gene_identifiers.isin(ref_genes_var.index)
+    import scanpy as sc
+    import scvi
+
+    # Note: ct_key, batch_key, and unlabeled_category are reference-model-specific
+    #       => this would need to be stored somewhere (or standardized)
+    ct_key = 'ann_finest_level'
+    batch_key = "dataset"
+    unlabeled_category = "unlabeled"
+
+    # Prep query anndata
+    # Checks:
+    # - cells have >= 200 counts -> done
+    # - layers['counts'] exists -> done
+    # - test type of input
+
+    # To implement:
+    # - var names are gene names -> how to test? Just check some examples?
+    # - layer contains non-negative integers
+    if not isinstance(adata, sc.AnnData):
+        raise TypeError(f'`adata` should contain an AnnData object!')
+
+    if not isinstance(dataset_name, str):
+        raise TypeError('`dataset_name` should be a string!')
+
+    adata_query = extract_raw_counts_adata(adata, counts_layer, gene_column_name)
+
+    if np.any(adata_query.X.sum(1) < 200):  # TODO: parameterize
+        raise ValueError('Cells with fewer than 200 counts in the data.\n'
+                         'Please filter your data with `sc.pp.filter_cells()` prior to reference mapping.')
+
+    adata_query.obs[batch_key] = dataset_name
+    adata_query.obs[ct_key] = unlabeled_category
+
+    # Prepare AnnData object to match to scANVI query data
+    scvi.model.SCANVI.prepare_query_anndata(adata_query, model)
+
+    # Add back the required layer
+    adata_query.layers['counts'] = adata_query.X
+
+    return adata_query
 
 
-# adapted from: https://github.com/LungCellAtlas/mapping_data_to_the_HLCA/blob/8bc80dee2c22945dd078514d23916eb186a878c9/scripts/data_import_and_cleaning.py#L29
-def make_congruent_genes(query_dataset: AnnData, ref_genes_var: DataFrame, min_common_gene_count: int,
-                         gene_col_name: Optional[str] = None) -> AnnData:
-    common_genes_mask = find_common_genes_mask(query_dataset.var, ref_genes_var, gene_col_name)
+def map_to_ref(adata_query,
+               model_path,
+               use_gpu=False,
+               train_kwargs=early_stopping_kwargs_scarches,
+               plan_kwargs=plan_kwargs,
+               output_model=False
+               ):  # map the query object to the reference; output -> embedding coordinates, optional: trained model
+    """
+    A function to map the query data to the reference atlas
 
-    n_common_genes = np.count_nonzero(common_genes_mask)
-    n_ref_genes = ref_genes_var.shape[0]
+    Input:
+        * adata_query: An AnnData object that has been prepped by the `prep_query_data` function
+        * model_path: The HLCA reference model directory
+        * max_epochs: The maximum number of epochs for reference training (Default: 500)
+        * use_gpu: Boolean flag whether to use gpu for training (Default: True)
+        * train_kwargs: Keyword arguments passed to `scvi.model.SCANVI.train()` for early stopping
+        * plan_kwargs: Dictionary of training plan keyword arguments passed to `scvi.model.SCANVI.train()`
+        * output_model: Boolean flag whether to output the trained query model (Default: False)
 
-    if n_common_genes < min_common_gene_count:
-        raise ValueError(
-                f"There are only {n_common_genes} genes in common between the query and reference datasets, "
-                f"but at least {min_common_gene_count} are required")
+    Output:
+        A numpy.ndarray containing the embedding coordinates of the query data in the HLCA latent space.
+        If `output_model` is set to True, then the trained reference model is also output
 
-    print(f"{n_common_genes} genes detected; {n_ref_genes} genes in reference dataset")
+    """
+    import scvi
 
-    # make query dataset congruent with reference dataset along the var axis, removing and padding genes as needed
+    # Load query data into the model
+    vae_q = scvi.model.SCANVI.load_query_data(
+            adata_query,
+            model_path,
+            freeze_dropout=True,
+    )
 
-    # remove extraneous genes from query dataset
-    query_dataset_subset = query_dataset[:, common_genes_mask].copy()
+    # Train scArches model for query mapping
+    vae_q.train(
+            max_epochs=500,
+            plan_kwargs=plan_kwargs,
+            **train_kwargs,
+            check_val_every_n_epoch=1,
+            use_gpu=use_gpu,
+    )
 
-    # add missing genes to query dataset
-    if n_common_genes < n_ref_genes:
-        # Pad object with 0-valued gene expression vectors, if needed
-        print(f'Not all genes were recovered, filling in zeros for {n_ref_genes - n_common_genes} missing genes...')
-        genes_missing = set(ref_genes_var.index).difference(set(query_dataset_subset.var_names))
-        query_dataset_congruent = pad_dataset_var(query_dataset_subset, genes_missing)
+    emb = vae_q.get_latent_representation()
+
+    if output_model:
+        return emb, vae_q
     else:
-        query_dataset_congruent = query_dataset_subset
-
-    # re-order query dataset var axis to match reference dataset var axis ordering
-    # TODO: Necessary? Does scANVI depend upon ordering of var columns?
-    if gene_col_name:
-        query_dataset_congruent.var.set_index(gene_col_name, inplace=True)
-
-    return query_dataset_congruent[:, ref_genes_var.index].copy()
+        return emb
 
 
-# noinspection PyPep8Naming
-def pad_dataset_var(query_dataset_subset, genes_to_add):
-    X_padded_genes = pd.DataFrame(data=np.zeros((query_dataset_subset.shape[0], len(genes_to_add))),
-                                  index=query_dataset_subset.obs_names, columns=genes_to_add)
-    adata_padded_genes = sc.AnnData(X_padded_genes)
-    query_dataset_congruent = anndata.concat([query_dataset_subset, adata_padded_genes],
-                                             axis=1, join='outer',
-                                             index_unique=None, merge='unique')
-    return query_dataset_congruent
+def project_labels(adata, cell_type_classifier_model, embedding_coords,
+                   annotation_column_name='pred_labels'):
+    """
+    A function that projects predicted labels onto the query dataset, along with uncertainty scores.
+    Performs in-place update of the adata object, adding columns to the `obs` DataFrame.
+
+    Input:
+        * adata: The query `AnnData` object which was mapped to the HLCA reference
+        * model_file: Path to the classification model file
+        * embedding_coords: A numpy.ndarray of the latent space embedding coordinates of the
+                            query data mapped to the HLCA reference. This is output by the
+                            `map_to_ref()` function
+        * prediction_key: Column name in `adata.obs` where to store the predicted labels
+
+    Output:
+        Nothing is output, the passed anndata is modified inplace
+
+    """
+    # TODO: Checks
+    # - model_file
+    # - adata instance
+    # - embedding coords type np.ndarray
+
+    # TODO: uncertainty threshold 0.5
+
+    # Set up query data
+    q_emb_df = pd.DataFrame(data=embedding_coords, index=adata.obs_names)
+
+    # Predict labels
+    adata.obs[annotation_column_name] = cell_type_classifier_model.predict(q_emb_df)
+
+    # Predict probabilities
+    probs = cell_type_classifier_model.predict_proba(q_emb_df)
+
+    # Format probabilities
+    df_probs = pd.DataFrame(probs, columns=cell_type_classifier_model.classes_, index=adata.obs_names)
+
+    # TODO: Check this! Does that selected max correspond to the label that was predicted?
+    adata.obs[annotation_column_name + "_uncertainty"] = 1 - df_probs.max(1)
+
+    # TODO: Update caller to copy this to output AnnData object, if we desired this
+    # adata.uns[annotation_column_name + '_uncertainty'] = df_probs
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC # Test script
+
+# if __name__ == '__main__':
+#     # User input
+#     folder = '/dbfs/users/mluecken/hlca'
+#     query_file = folder + '/query_data/tab_sapiens_prep.h5ad'
+#     dataset_name = 'Tabula_Sapiens'  # Not required
+#     ref_model_path = folder + "/reintegration/scanvi_model_accuracy"  # THIS IS THE MODEL DIRECTORY!
+#     classif_model_file = ref_model_path + "/classifier.pkl"
+#
+#     # Load query data
+#     query_data = sc.read(query_file)
+#
+#     adata_query_prep = prep_query_data(query_data, ref_model_path, dataset_name=dataset_name)
+#
+#     emb = map_to_ref(adata_query_prep, ref_model_path)
+#
+#     project_labels(query_data, classif_model_file, emb, prediction_key='predictions')
+#
+#     # Visualize results
+#     # This code does query umap generation
+#
+#     query_data.obsm["X_scANVI_new"] = emb
+#     sc.pp.neighbors(query_data, use_rep='X_scANVI_new')
+#     sc.tl.umap(query_data)
+#
+#     sc.pl.umap(query_data, color=['cell_type', 'predictions'], ncols=1, hspace=1.25)
+#
+#     # # Plot confusion matrix
+#     # df = query_data.obs.groupby(['predictions', 'cell_type']).size().unstack(fill_value=0)
+#     # norm_df = df / df.sum(axis=0)
+#     #
+#     # plt.figure(figsize=(8, 8))
+#     # _ = plt.pcolor(norm_df)
+#     # _ = plt.xticks(np.arange(0.5, len(df.columns), 1), df.columns, rotation=90)
+#     # _ = plt.yticks(np.arange(0.5, len(df.index), 1), df.index)
+#     # plt.xlabel("Observed")
+#     # plt.ylabel("Predicted")
+#
+#     query_data.uns['predictions_uncertainty']
