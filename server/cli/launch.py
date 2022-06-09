@@ -133,7 +133,7 @@ def dataset_args(func):
         "--backed",
         "-b",
         is_flag=True,
-        default=DEFAULT_CONFIG.server_config.adaptor__anndata_adaptor__backed,
+        default=DEFAULT_CONFIG.server_config.adaptor__soma_adaptor__backed,
         show_default=False,
         help="Load anndata in file-backed mode. " "This may save memory, but may result in slower overall performance.",
     )
@@ -371,7 +371,7 @@ def launch(
             single_dataset__about=about,
             single_dataset__obs_names=obs_names,
             single_dataset__var_names=var_names,
-            adaptor__anndata_adaptor__backed=backed,
+            adaptor__soma_adaptor__backed=backed,
         )
         cli_config.update_dataset_config(
             app__scripts=scripts,

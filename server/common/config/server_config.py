@@ -36,7 +36,7 @@ class ServerConfig(BaseConfig):
 
             self.data_locator__s3__region_name = default_config["data_locator"]["s3"]["region_name"]
 
-            self.adaptor__anndata_adaptor__backed = default_config["adaptor"]["anndata_adaptor"]["backed"]
+            self.adaptor__soma_adaptor__backed = default_config["adaptor"]["soma_adaptor"]["backed"]
 
             self.limits__diffexp_cellcount_max = default_config["limits"]["diffexp_cellcount_max"]
             self.limits__column_request_max = default_config["limits"]["column_request_max"]
@@ -151,7 +151,7 @@ class ServerConfig(BaseConfig):
                 )
 
     def handle_adaptor(self):
-        self.validate_correct_type_of_configuration_attribute("adaptor__anndata_adaptor__backed", bool)
+        self.validate_correct_type_of_configuration_attribute("adaptor__soma_adaptor__backed", bool)
 
     def handle_limits(self):
         self.validate_correct_type_of_configuration_attribute("limits__diffexp_cellcount_max", (type(None), int))
