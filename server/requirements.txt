@@ -23,4 +23,4 @@ scipy>=1.4
 requests>=2.22.0
 s3fs==0.4.2
 # Below is a testing tiledbsc library for SOMA functionality
-tiledbsc @ git+https://github.com/roaga/TileDB-SingleCell.git@roaga/M1-reqs-test#subdirectory=apis/python
+tiledbsc @ git+https://github.com/roaga/TileDB-SingleCell.git@roaga/m1-reqs#subdirectory=apis/python

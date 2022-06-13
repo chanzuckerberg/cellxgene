@@ -29,7 +29,7 @@ server:
       region_name: true
 
   adaptor:
-    soma_adaptor:
+    anndata_adaptor:
       backed: false
 
   limits:
