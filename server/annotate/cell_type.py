@@ -1,3 +1,5 @@
+import os.path
+import tempfile
 import warnings
 from os import path
 from typing import List
@@ -9,6 +11,8 @@ from anndata import AnnData
 from pandas import DataFrame
 from scipy.sparse import spmatrix
 
+from server.common.utils.data_locator import DataLocator
+
 warnings.simplefilter(action="ignore", category=FutureWarning)
 warnings.simplefilter(action="ignore", category=UserWarning)
 
@@ -16,27 +20,36 @@ import numpy as np
 import pandas as pd
 
 
-from server.annotate.util import fetch_model
-
-
 def annotate(query_dataset, annotation_prefix, model_cache_dir, model_url,
              counts_layer, gene_column_name):
-    cell_type_classifier_model_path, reference_embedding_model_path = fetch_models(model_url, model_cache_dir)
+    cell_type_classifier_model_locator = DataLocator(path.join(model_url, 'classifier.xgb'),
+                                                     local_cache_dir=model_cache_dir)
+    reference_embedding_model_locator = DataLocator(path.join(model_url, 'model.pt'),
+                                                    local_cache_dir=model_cache_dir)
 
-    query_dataset_prepped = prep_query_data(query_dataset,
-                                            reference_embedding_model_path,
-                                            counts_layer=counts_layer,
-                                            gene_column_name=gene_column_name,
-                                            dataset_name=str(query_dataset.filename))
+    # Retrieve (possibly) remote model file and cache locally. Then place the model file in a temp dir with the
+    # specific 'model.pt' file name in order to appease scArches' model loading logic, which expects the directory of
+    # the model, not the full path to the model.pt file. While scArches appears to have it own support for caching
+    # remote files, it doesn't seem to work.
+    with reference_embedding_model_locator.open() as f_in, tempfile.TemporaryDirectory() as d:
+        with open(os.path.join(d, 'model.pt'), "wb") as f_out:
+            f_out.write(f_in.read())
 
-    query_dataset_reference_embedding = map_to_ref(query_dataset_prepped, reference_embedding_model_path,
-                                                   # TODO: use_gpu=cli_args['use_gpu']
-                                                   )
-    query_dataset.obsm[annotation_prefix] = query_dataset_reference_embedding
+        query_dataset_prepped = prep_query_data(query_dataset,
+                                                d,
+                                                counts_layer=counts_layer,
+                                                gene_column_name=gene_column_name,
+                                                dataset_name=str(query_dataset.filename))
+
+        query_dataset_reference_embedding = map_to_ref(query_dataset_prepped,
+                                                       d,
+                                                       # TODO: use_gpu=cli_args['use_gpu']
+                                                       )
+        query_dataset.obsm[annotation_prefix] = query_dataset_reference_embedding
 
     obs_predictions = predict(query_dataset_prepped,
                               query_dataset_reference_embedding,
-                              cell_type_classifier_model_path=cell_type_classifier_model_path,
+                              cell_type_classifier_model_locator,
                               annotation_column_name=f"{annotation_prefix}_predicted",
                               # TODO: use_gpu=cli_args['use_gpu']
                               )
@@ -54,27 +67,13 @@ def generate_query_dataset_umap(query_dataset, annotation_prefix):
     query_dataset.obsm[f"X_{annotation_prefix}_umap"] = query_dataset_with_umap.obsm['X_umap']
 
 
-def fetch_models(model_url, model_cache_dir=None):
-    print(f"Loading models from {model_url}...")
-    # Note: scvi also provides remote fetching & local caching of models, but we'll use our own solution here since
-    # we have to do this anyway for the XGBoost model.
-    reference_embedding_model_path = path.dirname(
-            fetch_model(path.join(model_url, 'model.pt'),
-                        model_cache_dir=model_cache_dir))  # TODO: use URL util lib
-
-    cell_type_classifier_model_path = fetch_model(path.join(model_url, 'classifier.xgb'),
-                                                  model_cache_dir=model_cache_dir)  # TODO: use URL util lib
-
-    return cell_type_classifier_model_path, reference_embedding_model_path
-
-
 def record_prediction_run_metadata(query_dataset: AnnData, annotation_prefix: str, model_url: str):
     query_dataset.uns[f"{annotation_prefix}_predictions"] = {'model_url': model_url}
 
 
 def predict(query_dataset: AnnData,
             query_dataset_embedding,
-            cell_type_classifier_model_path,
+            cell_type_classifier_model_locator: DataLocator,
             annotation_column_name: str,
             use_gpu: bool = False
             ) -> DataFrame:
@@ -83,7 +82,8 @@ def predict(query_dataset: AnnData,
     """
     tree_method = 'gpu_hist' if use_gpu else 'hist'
     cell_type_classifier_model = xgb.XGBClassifier(tree_method=tree_method, objective='multi:softprob')
-    cell_type_classifier_model.load_model(fname=cell_type_classifier_model_path)
+    with cell_type_classifier_model_locator.local_handle() as fname:
+        cell_type_classifier_model.load_model(fname=fname)
 
     project_labels(query_dataset, cell_type_classifier_model, query_dataset_embedding,
                    annotation_column_name=annotation_column_name)
