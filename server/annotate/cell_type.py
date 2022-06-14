@@ -4,7 +4,6 @@ import warnings
 from os import path
 from typing import List
 
-import nparray as nparray
 import scanpy as sc
 import xgboost as xgb
 from anndata import AnnData
