@@ -3,6 +3,7 @@ from enum import Enum
 from server.common.utils.data_locator import DataLocator
 from server.common.errors import DatasetAccessError
 from http import HTTPStatus
+import os
 
 
 class MatrixDataType(Enum):
@@ -42,7 +43,7 @@ class MatrixDataLoader(object):
     def __matrix_data_type(self):
         if self.location.path.endswith(".h5ad"):
             return MatrixDataType.H5AD
-        elif "tiledb-data" in self.location.path:  # TODO: find a more reliable check of this being SOMA data
+        elif not self.location.isfile() and os.path.exists(self.location.path + "/__tiledb_group.tdb"):
             return MatrixDataType.SOMA
         else:
             return MatrixDataType.UNKNOWN

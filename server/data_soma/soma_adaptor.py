@@ -47,7 +47,8 @@ class SomaAdaptor(DataAdaptor):
 
     def get_library_versions(self):
         """return a dictionary of library name to library versions"""
-        return dict(tiledbsc=str(tiledbsc.__version__))
+        # return dict(tiledbsc=str(tiledbsc.__version__))
+        return dict(tiledbsc="0.0.0") # TODO: version information in tiledbsc library is broken
 
     def get_embedding_names(self):
         """
@@ -97,7 +98,7 @@ class SomaAdaptor(DataAdaptor):
         obs_ids = obs_ids[obs_mask] if obs_mask is not None else None
         var_ids = var_ids[var_mask] if var_mask is not None else None
 
-        # df = self.data.X.data.df(obs_ids, var_ids).reset_index() -> This tiledbsc function does not seem to work
+        # df = self.data.X.data.df(obs_ids, var_ids).reset_index() -> TODO: this tiledbsc function does not seem to work
         df = self.data.X.data.df().reset_index()
         df = df.loc[df["obs_id"].isin(obs_ids)] if obs_ids is not None else df
         df = df.loc[df["var_id"].isin(var_ids)] if var_ids is not None else df

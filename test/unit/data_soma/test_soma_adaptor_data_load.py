@@ -65,6 +65,7 @@ class SomaDataLocatorAdaptorTest(unittest.TestCase):
 
     def test_posix_file(self):
         locator = DataLocator("example-dataset/tiledb-data/pbmc3k_processed")
+        self.assertEqual(SomaAdaptor.file_size(locator), 480)
         config = self.get_basic_config()
         config.update_server_config(single_dataset__datapath=locator.path)
         config.complete_config()
