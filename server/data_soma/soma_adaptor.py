@@ -84,7 +84,7 @@ class SomaAdaptor(DataAdaptor):
         return valid_layouts[0:MAX_LAYOUTS]
 
     def get_embedding_array(self, ename, dims=2):
-        """return an numpy array for the given pre-computed embedding name."""
+        """return a numpy array for the given pre-computed embedding name."""
         full_embedding = self.data.obsm[f"X_{ename}"].df().to_numpy()
         return full_embedding[:, 0:dims]
 
