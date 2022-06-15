@@ -1,5 +1,4 @@
-scvi-tools
+scvi-tools==0.16.4
 scanpy[leiden]==1.9.1
-torch
-# Version matters for serialized model compatibility
+torch==1.11.0
 xgboost==1.5.2
