@@ -48,7 +48,7 @@ class SomaAdaptor(DataAdaptor):
     def get_library_versions(self):
         """return a dictionary of library name to library versions"""
         # return dict(tiledbsc=str(tiledbsc.__version__))
-        return dict(tiledbsc="0.0.0") # TODO: version information in tiledbsc library is broken
+        return dict(tiledbsc="0.0.0")  # TODO: version information in tiledbsc library is broken
 
     def get_embedding_names(self):
         """
@@ -89,16 +89,16 @@ class SomaAdaptor(DataAdaptor):
         return full_embedding[:, 0:dims]
 
     def get_X_array(self, obs_mask=None, var_mask=None):
-        """return the X array, possibly filtered by obs_mask or var_mask.
-        the return type is either ndarray or scipy.sparse.spmatrix."""
+        """return the X array, possibly filtered by obs_mask or var_mask."""
         obs_ids = self.data.obs.df().index.to_numpy()
         var_ids = self.data.var.df().index.to_numpy()
 
-        df = None
         obs_ids = obs_ids[obs_mask] if obs_mask is not None else None
         var_ids = var_ids[var_mask] if var_mask is not None else None
 
-        # df = self.data.X.data.df(obs_ids, var_ids).reset_index() -> TODO: this tiledbsc function does not seem to work
+        # TODO: below tiledbsc function fails with:
+        # "tiledb.cc.TileDBError: [TileDB::Subarray] Error: Cannot add range; Range must be fixed-sized"
+        # df = self.data.X.data.df(obs_ids, var_ids).reset_index()
         df = self.data.X.data.df().reset_index()
         df = df.loc[df["obs_id"].isin(obs_ids)] if obs_ids is not None else df
         df = df.loc[df["var_id"].isin(var_ids)] if var_ids is not None else df
@@ -123,8 +123,8 @@ class SomaAdaptor(DataAdaptor):
     def query_var_array(self, term_var):
         return self.get_var_df()[term_var]
 
-    def query_obs_array(self, term_var):
-        return self.get_obs_df()[term_var]
+    def query_obs_array(self, term_obs):
+        return self.get_obs_df()[term_obs]
 
     def get_colors(self):
         return convert_soma_category_colors_to_cxg_category_colors(self.data)
