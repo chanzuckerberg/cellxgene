@@ -5,7 +5,7 @@ from server.common.utils.data_locator import DataLocator
 from server.data_soma.soma_adaptor import SomaAdaptor
 from server.common.config.app_config import AppConfig
 from test import PROJECT_ROOT
-
+from test.unit.data_soma.dataset_handler import decompress_dataset
 
 class SomaDataLoadAdaptorTest(unittest.TestCase):
     """
@@ -13,7 +13,8 @@ class SomaDataLoadAdaptorTest(unittest.TestCase):
     """
 
     def setUp(self):
-        self.data_file = DataLocator(f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed")
+        path = decompress_dataset(f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed.zip", "pbmc3k_processed")
+        self.data_file = DataLocator(path)
         config = AppConfig()
         config.update_server_config(single_dataset__datapath=self.data_file.path)
         config.update_server_config(app__flask_secret_key="secret")
@@ -64,7 +65,8 @@ class SomaDataLocatorAdaptorTest(unittest.TestCase):
         self.assertEqual(data.gene_count, 1838)
 
     def test_posix_file(self):
-        locator = DataLocator("example-dataset/tiledb-data/pbmc3k_processed")
+        path = decompress_dataset(f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed.zip", "pbmc3k_processed")
+        locator = DataLocator(path)
         self.assertEqual(SomaAdaptor.file_size(locator), 480)
         config = self.get_basic_config()
         config.update_server_config(single_dataset__datapath=locator.path)

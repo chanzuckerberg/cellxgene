@@ -54,3 +54,7 @@ client/.eslintcache
 
 # E2E Testing
 ignoreE2E*
+
+# Unit Testing Temporary Files
+test/fixtures/tiledb-data/decompressed
+test/fixtures/tmp_dir

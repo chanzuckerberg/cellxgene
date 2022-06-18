@@ -11,11 +11,12 @@ from server.common.errors import FilterError
 from server.data_soma.soma_adaptor import SomaAdaptor
 from test import FIXTURES_ROOT
 from test.unit import app_config
-
+from test.unit.data_soma.dataset_handler import decompress_dataset
 
 class NaNSomaTest(unittest.TestCase):
     def setUp(self):
-        self.data_locator = DataLocator(f"{FIXTURES_ROOT}/tiledb-data/nan_processed")
+        path = decompress_dataset(f"{FIXTURES_ROOT}/tiledb-data/nan_processed.zip", "nan_processed")
+        self.data_locator = DataLocator(path)
         self.config = app_config(self.data_locator.path)
 
         with warnings.catch_warnings():

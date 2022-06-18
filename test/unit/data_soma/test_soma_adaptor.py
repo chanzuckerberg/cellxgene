@@ -14,6 +14,7 @@ from server.data_soma.soma_adaptor import SomaAdaptor
 from test import PROJECT_ROOT, FIXTURES_ROOT
 from test.unit import app_config
 from test.fixtures.fixtures import pbmc3k_processed_colors
+from test.unit.data_soma.dataset_handler import decompress_dataset
 
 """
 Test the SOMA adaptor using the pbmc3k data set.
@@ -21,32 +22,33 @@ Test the SOMA adaptor using the pbmc3k data set.
 
 
 @parameterized_class(
-    ("data_locator", "backed", "X_approximate_distribution"),
+    ("path", "name", "backed", "X_approximate_distribution"),
     [
-        (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed", False, "auto"),
-        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSC-gz_processed", False, "auto"),
-        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSR-gz_processed", False, "auto"),
-        (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed", True, "auto"),
-        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSC-gz_processed", True, "auto"),
-        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSR-gz_processed", True, "auto"),
-        (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed", False, "normal"),
-        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSC-gz_processed", False, "normal"),
-        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSR-gz_processed", False, "normal"),
-        (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed", True, "normal"),
-        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSC-gz_processed", True, "normal"),
-        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSR-gz_processed", True, "normal"),
-        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k_64_processed", False, "auto"),  # 64 bit conversion tests
-        # (f"{FIXTURES_ROOT}/pbmc3k_16.h5ad", False, "auto"),  # 16 bit conversion tests are not needed for SOMA since it doesn't support 16 bit data as of now
+        (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed.zip", "pbmc3k_processed", False, "auto"),
+        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSC-gz_processed.zip", "pbmc3k-CSC-gz_processed", False, "auto"),
+        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSR-gz_processed.zip", "pbmc3k-CSR-gz_processed", False, "auto"),
+        (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed.zip", "pbmc3k_processed", True, "auto"),
+        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSC-gz_processed.zip", "pbmc3k-CSC-gz_processed", True, "auto"),
+        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSR-gz_processed.zip", "pbmc3k-CSR-gz_processed", True, "auto"),
+        (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed.zip", "pbmc3k_processed", False, "normal"),
+        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSC-gz_processed.zip", "pbmc3k-CSC-gz_processed", False, "normal"),
+        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSR-gz_processed.zip", "pbmc3k-CSR-gz_processed", False, "normal"),
+        (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed.zip", "pbmc3k_processed", True, "normal"),
+        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSC-gz_processed.zip", "pbmc3k-CSC-gz_processed", True, "normal"),
+        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSR-gz_processed.zip", "pbmc3k-CSR-gz_processed", True, "normal"),
+        (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k_64_processed.zip", "pbmc3k_64_processed", False, "auto"),  # 64 bit conversion tests
+        # (f"{FIXTURES_ROOT}/pbmc3k_16.h5ad", False, "auto"),  # 16 bit conversion tests are not needed until SOMA supports float16 data
     ],
 )
 class SomaAdaptorTest(unittest.TestCase):
     def setUp(self):
+        path = decompress_dataset(self.path, self.name)
         config = app_config(
-            self.data_locator,
+            path,
             self.backed,
             extra_dataset_config=dict(X_approximate_distribution=self.X_approximate_distribution),
         )
-        self.data = SomaAdaptor(DataLocator(self.data_locator), config)
+        self.data = SomaAdaptor(DataLocator(path), config)
 
     def test_init(self):
         self.assertEqual(self.data.cell_count, 2638)
