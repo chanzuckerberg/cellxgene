@@ -22,6 +22,5 @@ PyYAML>=5.4  # CVE-2020-14343
 scipy>=1.4
 requests>=2.22.0
 s3fs==0.4.2
-# A testing tiledbsc library for SOMA functionality, through GitHub since unavailable on PyPi.
-tiledbsc @ git+https://github.com/roaga/TileDB-SingleCell.git@roaga/m1-reqs#subdirectory=apis/python
-# tiledbsc @ git+https://github.com/single-cell-data/TileDB-SingleCell.git#subdirectory=apis/python
+# A testing tiledbsc library for SOMA functionality, through GitHub since unavailable on PyPi for now.
+tiledbsc @ git+https://github.com/single-cell-data/TileDB-SingleCell.git#subdirectory=apis/python
