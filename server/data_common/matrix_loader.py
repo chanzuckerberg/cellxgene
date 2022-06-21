@@ -4,6 +4,7 @@ from server.common.utils.data_locator import DataLocator
 from server.common.errors import DatasetAccessError
 from http import HTTPStatus
 import os
+import tiledbsc
 
 
 class MatrixDataType(Enum):
@@ -43,7 +44,7 @@ class MatrixDataLoader(object):
     def __matrix_data_type(self):
         if self.location.path.endswith(".h5ad"):
             return MatrixDataType.H5AD
-        elif not self.location.isfile() and os.path.exists(self.location.path + "/__tiledb_group.tdb"):
+        elif tiledbsc.util.is_soma(self.location.path):
             return MatrixDataType.SOMA
         else:
             return MatrixDataType.UNKNOWN
