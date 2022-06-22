@@ -13,10 +13,10 @@ if __name__ == "__main__":
     # run performance testing
     # best to run from root cellxgene dir and run `export PYTHONPATH=.` first
 
-    NUMBER = 1
+    NUMBER = 10
     soma_params = [
         (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed.zip", "pbmc3k_processed", False, "auto"),
-        (f"{FIXTURES_ROOT}/tiledb-data/large_dataset_processed.zip", "large_dataset_processed", False, "auto"),
+        # (f"{FIXTURES_ROOT}/tiledb-data/large_dataset_processed.zip", "large_dataset_processed", False, "auto"),
         # (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSC-gz_processed.zip", "pbmc3k-CSC-gz_processed", False, "auto"),
         # (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSR-gz_processed.zip", "pbmc3k-CSR-gz_processed", False, "auto"),
         # (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed.zip", "pbmc3k_processed", True, "auto"),
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     ]
     anndata_params = [
         (f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad", False, "auto"),
-        (f"{FIXTURES_ROOT}/large_dataset.h5ad", False, "auto"),
+        # (f"{FIXTURES_ROOT}/large_dataset.h5ad", False, "auto"),
         # (f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad", False, "auto"),
         # (f"{FIXTURES_ROOT}/pbmc3k-CSR-gz.h5ad", False, "auto"),
         # (f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad", True, "auto"),
@@ -94,6 +94,6 @@ if __name__ == "__main__":
     for soma, anndata, soma_params, anndata_params in zip(soma_times, anndata_times, soma_params, anndata_params):
         print(f"SOMA    - {soma}")
         print(f"Anndata - {anndata}")
-        print(f"Tests - [load, embedarr, filter, xdist]")
+        print(f"Tests - [load, embednames, embedarr, filter, xdist]")
         print(f"SOMA params = {soma_params}, Anndata params = {anndata_params}")
         print("----------")
