@@ -65,63 +65,8 @@ class AnndataAdaptor(DataAdaptor):
     def get_library_versions(self):
         return dict(anndata=str(anndata.__version__))
 
-    @staticmethod
-    def _create_unique_column_name(df, col_name_prefix):
-        """given the columns of a dataframe, and a name prefix, return a column name which
-        does not exist in the dataframe, AND which is prefixed by `prefix`
-
-        The approach is to append a numeric suffix, starting at zero and increasing by
-        one, until an unused name is found (eg, prefix_0, prefix_1, ...).
-        """
-        suffix = 0
-        while f"{col_name_prefix}{suffix}" in df:
-            suffix += 1
-        return f"{col_name_prefix}{suffix}"
-
-    def _alias_annotation_names(self):
-        """
-        The front-end relies on the existance of a unique, human-readable
-        index for obs & var (eg, var is typically gene name, obs the cell name).
-        The user can specify these via the --obs-names and --var-names config.
-        If they are not specified, use the existing index to create them, giving
-        the resulting column a unique name (eg, "name").
-
-        In both cases, enforce that the result is unique, and communicate the
-        index column name to the front-end via the obs_names and var_names config
-        (which is incorporated into the schema).
-        """
-        self.original_obs_index = self.data.obs.index
-
-        for (ax_name, var_name) in ((Axis.OBS, "obs"), (Axis.VAR, "var")):
-            config_name = f"single_dataset__{var_name}_names"
-            parameter_name = f"{var_name}_names"
-            name = getattr(self.server_config, config_name)
-            df_axis = getattr(self.data, str(ax_name))
-            if name is None:
-                # Default: create unique names from index
-                if not df_axis.index.is_unique:
-                    raise KeyError(
-                        f"Values in {ax_name}.index must be unique. "
-                        "Please prepare data to contain unique index values, or specify an "
-                        "alternative with --{ax_name}-name."
-                    )
-                name = self._create_unique_column_name(df_axis.columns, "name_")
-                self.parameters[parameter_name] = name
-                # reset index to simple range; alias name to point at the
-                # previously specified index.
-                df_axis.rename_axis(name, inplace=True)
-                df_axis.reset_index(inplace=True)
-            elif name in df_axis.columns:
-                # User has specified alternative column for unique names, and it exists
-                if not df_axis[name].is_unique:
-                    raise KeyError(
-                        f"Values in {ax_name}.{name} must be unique. " "Please prepare data to contain unique values."
-                    )
-                df_axis.reset_index(drop=True, inplace=True)
-                self.parameters[parameter_name] = name
-            else:
-                # user specified a non-existent column name
-                raise KeyError(f"Annotation name {name}, specified in --{ax_name}-name does not exist.")
+    def get_df_axis(self, ax_name):
+        return getattr(self.data, str(ax_name))
 
     def _create_schema(self):
         self.schema = {
@@ -320,13 +265,6 @@ class AnndataAdaptor(DataAdaptor):
     def get_embedding_array(self, ename, dims=2):
         full_embedding = self.data.obsm[f"X_{ename}"]
         return full_embedding[:, 0:dims]
-
-    def compute_diffexp_ttest(self, maskA, maskB, top_n=None, lfc_cutoff=None):
-        if top_n is None:
-            top_n = self.dataset_config.diffexp__top_n
-        if lfc_cutoff is None:
-            lfc_cutoff = self.dataset_config.diffexp__lfc_cutoff
-        return diffexp_generic.diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff)
 
     def get_colors(self):
         return convert_anndata_category_colors_to_cxg_category_colors(self.data)
