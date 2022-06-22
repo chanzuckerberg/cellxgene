@@ -13,9 +13,10 @@ if __name__ == "__main__":
     # run performance testing
     # best to run from root cellxgene dir and run `export PYTHONPATH=.` first
 
-    NUMBER = 5
+    NUMBER = 1
     soma_params = [
         (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed.zip", "pbmc3k_processed", False, "auto"),
+        (f"{FIXTURES_ROOT}/tiledb-data/large_dataset_processed.zip", "large_dataset_processed", False, "auto"),
         # (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSC-gz_processed.zip", "pbmc3k-CSC-gz_processed", False, "auto"),
         # (f"{FIXTURES_ROOT}/tiledb-data/pbmc3k-CSR-gz_processed.zip", "pbmc3k-CSR-gz_processed", False, "auto"),
         # (f"{PROJECT_ROOT}/example-dataset/tiledb-data/pbmc3k_processed.zip", "pbmc3k_processed", True, "auto"),
@@ -31,6 +32,7 @@ if __name__ == "__main__":
     ]
     anndata_params = [
         (f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad", False, "auto"),
+        (f"{FIXTURES_ROOT}/large_dataset.h5ad", False, "auto"),
         # (f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad", False, "auto"),
         # (f"{FIXTURES_ROOT}/pbmc3k-CSR-gz.h5ad", False, "auto"),
         # (f"{PROJECT_ROOT}/example-dataset/pbmc3k.h5ad", True, "auto"),
@@ -71,21 +73,17 @@ if __name__ == "__main__":
         time_soma_embednames = timeit.timeit("data_soma.get_embedding_names()", 'from __main__ import data_soma', number=NUMBER) / NUMBER
         time_anndata_embednames = timeit.timeit("data_anndata.get_embedding_names()", 'from __main__ import data_anndata', number=NUMBER) / NUMBER
 
-        time_soma_embedarr = timeit.timeit("data_soma.get_embedding_array('pca')", 'from __main__ import data_soma', number=NUMBER) / NUMBER
-        time_anndata_embedarr = timeit.timeit("data_anndata.get_embedding_array('pca')", 'from __main__ import data_anndata', number=NUMBER) / NUMBER
+        time_soma_embedarr = timeit.timeit("data_soma.get_embedding_array('umap')", 'from __main__ import data_soma', number=NUMBER) / NUMBER
+        time_anndata_embedarr = timeit.timeit("data_anndata.get_embedding_array('umap')", 'from __main__ import data_anndata', number=NUMBER) / NUMBER
 
-        filter_ = {
-            "filter": {"var": {"annotation_value": [{"name": "n_cells", "min": 10}], "index": [1, 99, [200, 300]]}}
-        }
-        time_soma_filter = timeit.timeit("data_soma.data_frame_to_fbs_matrix(filter_['filter'], 'var')", 'from __main__ import data_soma, filter_', number=NUMBER) / NUMBER
-        time_anndata_filter = timeit.timeit("data_anndata.data_frame_to_fbs_matrix(filter_['filter'], 'var')", 'from __main__ import data_anndata, filter_', number=NUMBER) / NUMBER
+        time_soma_xarr = timeit.timeit("data_soma.get_X_array()", 'from __main__ import data_soma', number=NUMBER) / NUMBER
+        time_anndata_xarr = timeit.timeit("data_anndata.get_X_array()", 'from __main__ import data_anndata', number=NUMBER) / NUMBER
 
         time_soma_xdist = timeit.timeit("data_soma.get_X_approximate_distribution()", 'from __main__ import data_soma', number=NUMBER) / NUMBER
         time_anndata_xdist = timeit.timeit("data_anndata.get_X_approximate_distribution()", 'from __main__ import data_anndata', number=NUMBER) / NUMBER
 
-
-        coll_soma = [time_soma_load, time_soma_embednames, time_soma_embedarr, time_soma_filter, time_soma_xdist]
-        coll_anndata = [time_anndata_load, time_anndata_embednames, time_anndata_embedarr, time_anndata_filter, time_anndata_xdist]
+        coll_soma = [time_soma_load, time_soma_embednames, time_soma_embedarr, time_soma_xarr, time_soma_xdist]
+        coll_anndata = [time_anndata_load, time_anndata_embednames, time_anndata_embedarr, time_anndata_xarr, time_anndata_xdist]
         soma_times.append(coll_soma)
         anndata_times.append(coll_anndata)
 
@@ -96,6 +94,6 @@ if __name__ == "__main__":
     for soma, anndata, soma_params, anndata_params in zip(soma_times, anndata_times, soma_params, anndata_params):
         print(f"SOMA    - {soma}")
         print(f"Anndata - {anndata}")
-        print(f"Tests - [load, embednames, embedarr, filter, xdist]")
+        print(f"Tests - [load, embedarr, filter, xdist]")
         print(f"SOMA params = {soma_params}, Anndata params = {anndata_params}")
         print("----------")
