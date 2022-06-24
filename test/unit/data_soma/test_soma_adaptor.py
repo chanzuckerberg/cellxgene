@@ -66,16 +66,6 @@ class SomaAdaptorTest(unittest.TestCase):
         self.assertIn(var_index_col_name, self.data.get_var_df())
         self.assertEqual(list(self.data.get_var_df().index), list(range(1838)))
 
-    # Test not needed because SOMA handles data types
-    # @pytest.mark.filterwarnings("ignore:SOMA data matrix")
-    # def test_data_type(self):
-    #     # don't run the test on the more exotic data types, as they don't
-    #     # support the astype() interface (used by this test, but not underlying app)
-    #     if isinstance(self.data.data.X, np.ndarray):
-    #         self.data.data.X = self.data.data.X.astype("float64")
-    #         with self.assertWarns(UserWarning):
-    #             self.data._validate_data_types()
-
     def test_filter_idx(self):
         filter_ = {"filter": {"var": {"index": [1, 99, [200, 300]]}}}
         fbs = self.data.data_frame_to_fbs_matrix(filter_["filter"], "var")
@@ -111,15 +101,6 @@ class SomaAdaptorTest(unittest.TestCase):
         ) as fh:  # have to use a different schema than Anndata because tiledbsc return df with different datatypes
             schema = json.load(fh)
             self.assertDictEqual(self.data.get_schema(), schema)
-
-    # This test doesn't work since TileDB-singlecell doesn't let you manually modify part of the dataset
-    # def test_schema_produces_error(self):
-    #     self.data.data.obs["time"] = pd.Series(
-    #         list([time.time() for i in range(self.data.cell_count)]),
-    #         dtype="datetime64[ns]",
-    #     )
-    #     with pytest.raises(TypeError):
-    #         self.data._create_schema()
 
     def test_layout(self):
         fbs = self.data.layout_to_fbs_matrix(fields=None)
