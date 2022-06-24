@@ -115,6 +115,11 @@ def annotate_args(func):
     help="Local directory used to store model files that are retrieved from a remote location. Model files will "
          "be read from this directory first, if they exist, to avoid repeating large downloads."
 )
+@click.option(
+    "--use-gpu/--no-use-gpu",
+    default=True,
+    help="Whether to use a GPU for annotation operations (highly recommended, if available)."
+)
 @click.help_option("--help", "-h", help="Show this message and exit.")
 def annotate(**cli_args):
     _validate_options(cli_args)
@@ -139,7 +144,7 @@ def annotate(**cli_args):
                            annotation_prefix=annotation_prefix,
                            gene_column_name=cli_args.get('gene_column_name'),
                            counts_layer=cli_args.get('counts_layer'),
-                           )
+                           use_gpu=cli_args['use_gpu'])
     else:
         raise BadParameter(f"unknown annotation type {cli_args['annotation_type']}")
 

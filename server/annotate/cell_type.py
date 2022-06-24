@@ -20,7 +20,7 @@ import pandas as pd
 
 
 def annotate(query_dataset, annotation_prefix, model_cache_dir, model_url,
-             counts_layer, gene_column_name):
+             counts_layer, gene_column_name, use_gpu: bool = False):
     cell_type_classifier_model_locator = DataLocator(path.join(model_url, 'classifier.xgb'),
                                                      local_cache_dir=model_cache_dir)
     reference_embedding_model_locator = DataLocator(path.join(model_url, 'model.pt'),
@@ -42,16 +42,14 @@ def annotate(query_dataset, annotation_prefix, model_cache_dir, model_url,
 
         query_dataset_reference_embedding = map_to_ref(query_dataset_prepped,
                                                        d,
-                                                       # TODO: use_gpu=cli_args['use_gpu']
-                                                       )
+                                                       use_gpu)
         query_dataset.obsm[annotation_prefix] = query_dataset_reference_embedding
 
     obs_predictions = predict(query_dataset_prepped,
                               query_dataset_reference_embedding,
                               cell_type_classifier_model_locator,
                               annotation_column_name=f"{annotation_prefix}_predicted",
-                              # TODO: use_gpu=cli_args['use_gpu']
-                              )
+                              use_gpu=use_gpu)
     query_dataset.obs = pd.concat([query_dataset.obs, obs_predictions], axis=1)
 
     generate_query_dataset_umap(query_dataset, annotation_prefix)
@@ -92,13 +90,14 @@ def predict(query_dataset: AnnData,
 
 # Parameters
 early_stopping_kwargs_scarches = {
+    'enable_progress_bar': True,  # Fix for when using torch nightly build
     'early_stopping': True,
     'early_stopping_monitor': 'elbo_train',
     # 'early_stopping_patience': 10,
     # 'early_stopping_min_delta': 0.001,
     # TODO: for quicker dev-cycle manual testing
     'early_stopping_patience': 1,
-    'early_stopping_min_delta': 150
+    'early_stopping_min_delta': 150,
 }
 
 plan_kwargs = {
@@ -232,7 +231,7 @@ def map_to_ref(query_dataset,
             plan_kwargs=plan_kwargs,
             **train_kwargs,
             check_val_every_n_epoch=1,
-            use_gpu=use_gpu,
+            use_gpu=use_gpu # 'mps:0'  # TODO: use_gpu,
     )
 
     emb = vae_q.get_latent_representation()
