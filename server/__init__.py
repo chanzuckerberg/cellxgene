@@ -2,7 +2,7 @@ import logging
 import sys
 from server.common.utils.utils import import_plugins
 
-__version__ = "1.0.1-annotate-exp-0.1.0"
+__version__ = "1.1.0-dev2"
 display_version = "cellxgene v" + __version__
 
 try:
