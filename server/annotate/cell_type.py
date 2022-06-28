@@ -43,8 +43,7 @@ def annotate(query_dataset, annotation_prefix, model_cache_dir, model_url,
         query_dataset_reference_embedding = map_to_ref(query_dataset_prepped,
                                                        tmp_ref_emb_model_dir,
                                                        use_gpu,
-                                                       train_kwargs_overrides=(early_stopping_kwargs_scarches |
-                                                                               train_param_overrides))
+                                                       train_kwargs_overrides=train_param_overrides)
         query_dataset.obsm[annotation_prefix] = query_dataset_reference_embedding
 
     obs_predictions = predict(query_dataset_prepped,
