@@ -30,18 +30,18 @@ def annotate(query_dataset, annotation_prefix, model_cache_dir, model_url,
     # specific 'model.pt' file name in order to appease scArches' model loading logic, which expects the directory of
     # the model, not the full path to the model.pt file. While scArches appears to have it own support for caching
     # remote files, it doesn't seem to work.
-    with reference_embedding_model_locator.open() as f_in, tempfile.TemporaryDirectory() as d:
-        with open(os.path.join(d, 'model.pt'), "wb") as f_out:
+    with reference_embedding_model_locator.open() as f_in, tempfile.TemporaryDirectory() as tmp_ref_emb_model_dir:
+        with open(os.path.join(tmp_ref_emb_model_dir, 'model.pt'), "wb") as f_out:
             f_out.write(f_in.read())
 
         query_dataset_prepped = prep_query_data(query_dataset,
-                                                d,
+                                                tmp_ref_emb_model_dir,
                                                 counts_layer=counts_layer,
                                                 gene_column_name=gene_column_name,
                                                 dataset_name=str(query_dataset.filename))
 
         query_dataset_reference_embedding = map_to_ref(query_dataset_prepped,
-                                                       d,
+                                                       tmp_ref_emb_model_dir,
                                                        use_gpu)
         query_dataset.obsm[annotation_prefix] = query_dataset_reference_embedding
 
@@ -131,7 +131,8 @@ def build_query_dataset(adata, counts_layer, gene_column_name):
                    obs=pd.DataFrame(index=adata.obs_names))
 
 
-def prep_query_data(adata, model,
+def prep_query_data(adata,
+                    model_dir,
                     counts_layer='counts',
                     gene_column_name=None,
                     dataset_name='query_data'):  # prep adata object for ref mapping; output -> prepped query object
@@ -186,7 +187,7 @@ def prep_query_data(adata, model,
     adata_query.obs[ct_key] = unlabeled_category
 
     # Prepare AnnData object to match to scANVI query data
-    scvi.model.SCANVI.prepare_query_anndata(adata_query, model)
+    scvi.model.SCANVI.prepare_query_anndata(adata_query, model_dir)
 
     # Add back the required layer
     adata_query.layers['counts'] = adata_query.X
