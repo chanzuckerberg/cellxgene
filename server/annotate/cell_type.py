@@ -228,10 +228,10 @@ def map_to_ref(query_dataset,
     # Train scArches model for query mapping
     vae_q.train(
             max_epochs=500,
-            plan_kwargs=(plan_kwargs | plan_kwargs_overrides),
-            **(early_stopping_kwargs_scarches | train_kwargs_overrides),
             check_val_every_n_epoch=1,
-            use_gpu=use_gpu # 'mps:0'  # TODO: use_gpu,
+            use_gpu=use_gpu,
+            plan_kwargs={**plan_kwargs, **plan_kwargs_overrides},
+            **({**early_stopping_kwargs_scarches, **train_kwargs_overrides}),
     )
 
     emb = vae_q.get_latent_representation()
