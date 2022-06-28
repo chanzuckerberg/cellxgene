@@ -20,7 +20,7 @@ import pandas as pd
 
 
 def annotate(query_dataset, annotation_prefix, model_cache_dir, model_url,
-             counts_layer, gene_column_name, use_gpu: bool = False):
+             counts_layer, gene_column_name, use_gpu: bool = False, train_param_overrides: bool = False):
     cell_type_classifier_model_locator = DataLocator(path.join(model_url, 'classifier.xgb'),
                                                      local_cache_dir=model_cache_dir)
     reference_embedding_model_locator = DataLocator(path.join(model_url, 'model.pt'),
@@ -42,7 +42,9 @@ def annotate(query_dataset, annotation_prefix, model_cache_dir, model_url,
 
         query_dataset_reference_embedding = map_to_ref(query_dataset_prepped,
                                                        tmp_ref_emb_model_dir,
-                                                       use_gpu)
+                                                       use_gpu,
+                                                       train_kwargs_overrides=(early_stopping_kwargs_scarches |
+                                                                               train_param_overrides))
         query_dataset.obsm[annotation_prefix] = query_dataset_reference_embedding
 
     obs_predictions = predict(query_dataset_prepped,
@@ -93,11 +95,8 @@ early_stopping_kwargs_scarches = {
     'enable_progress_bar': True,  # Fix for when using torch nightly build
     'early_stopping': True,
     'early_stopping_monitor': 'elbo_train',
-    # 'early_stopping_patience': 10,
-    # 'early_stopping_min_delta': 0.001,
-    # TODO: for quicker dev-cycle manual testing
-    'early_stopping_patience': 1,
-    'early_stopping_min_delta': 150,
+    'early_stopping_patience': 10,
+    'early_stopping_min_delta': 0.001,
 }
 
 plan_kwargs = {
@@ -198,8 +197,8 @@ def prep_query_data(adata,
 def map_to_ref(query_dataset,
                model_path,
                use_gpu=False,
-               train_kwargs=early_stopping_kwargs_scarches,
-               plan_kwargs=plan_kwargs,
+               train_kwargs_overrides={},
+               plan_kwargs_overrides={},
                ) -> np.ndarray:
     """
     A function to map the query data to the reference atlas
@@ -229,8 +228,8 @@ def map_to_ref(query_dataset,
     # Train scArches model for query mapping
     vae_q.train(
             max_epochs=500,
-            plan_kwargs=plan_kwargs,
-            **train_kwargs,
+            plan_kwargs=(plan_kwargs | plan_kwargs_overrides),
+            **(early_stopping_kwargs_scarches | train_kwargs_overrides),
             check_val_every_n_epoch=1,
             use_gpu=use_gpu # 'mps:0'  # TODO: use_gpu,
     )

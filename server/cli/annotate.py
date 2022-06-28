@@ -1,4 +1,5 @@
 import functools
+import json
 import sys
 
 import click
@@ -120,6 +121,11 @@ def annotate_args(func):
     default=True,
     help="Whether to use a GPU for annotation operations (highly recommended, if available)."
 )
+@click.option(
+    "--scarches-train-param-overrides",
+    default='{}',
+    hidden=True
+)
 @click.help_option("--help", "-h", help="Show this message and exit.")
 def annotate(**cli_args):
     _validate_options(cli_args)
@@ -144,7 +150,9 @@ def annotate(**cli_args):
                            annotation_prefix=annotation_prefix,
                            gene_column_name=cli_args.get('gene_column_name'),
                            counts_layer=cli_args.get('counts_layer'),
-                           use_gpu=cli_args['use_gpu'])
+                           use_gpu=cli_args['use_gpu'],
+                           train_param_overrides=json.loads(cli_args['scarches_train_param_overrides'])
+                           )
     else:
         raise BadParameter(f"unknown annotation type {cli_args['annotation_type']}")
 
