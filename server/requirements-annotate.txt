@@ -1,0 +1,4 @@
+scvi-tools==0.16.4
+scanpy[leiden]==1.9.1
+torch==1.11.0
+xgboost==1.6.1
