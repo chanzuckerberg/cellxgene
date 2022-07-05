@@ -44,7 +44,7 @@ class MatrixDataLoader(object):
     def __matrix_data_type(self):
         if self.location.path.endswith(".h5ad"):
             return MatrixDataType.H5AD
-        elif tiledbsc.util.is_soma(self.location.path):
+        elif tiledbsc.util.is_soma_collection(self.location.path):
             return MatrixDataType.SOMA
         else:
             return MatrixDataType.UNKNOWN
