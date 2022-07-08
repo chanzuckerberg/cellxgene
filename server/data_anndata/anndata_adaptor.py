@@ -173,7 +173,7 @@ class AnndataAdaptor(DataAdaptor):
             )
         except MemoryError:
             raise DatasetAccessError("Out of memory - file is too large for available memory.")
-        except Exception as e:
+        except Exception:
             import traceback
             message = (
                 "File not found or is inaccessible. File must be an .h5ad object. "
