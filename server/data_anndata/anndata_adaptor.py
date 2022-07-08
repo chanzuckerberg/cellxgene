@@ -173,11 +173,15 @@ class AnndataAdaptor(DataAdaptor):
             )
         except MemoryError:
             raise DatasetAccessError("Out of memory - file is too large for available memory.")
-        except Exception:
-            raise DatasetAccessError(
+        except Exception as e:
+            import traceback
+            message = (
                 "File not found or is inaccessible. File must be an .h5ad object. "
                 "Please check your input and try again."
-            )
+                )
+            if self.server_config.app__verbose:
+                message += f"\n{traceback.format_exc()}"
+            raise DatasetAccessError(message)
 
     def _validate_and_initialize(self):
         if anndata_version_is_pre_070():
