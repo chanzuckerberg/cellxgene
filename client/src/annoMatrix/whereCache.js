@@ -91,9 +91,12 @@ export function _whereCacheCreate(field, query, columnLabels) {
 	*/
   if (typeof query !== "object") return null;
 
-  const { where, summarize } = query;
-  if (where) {
-    const { field: queryField, column: queryColumn, value: queryValue } = where;
+  if (query.where) {
+    const {
+      field: queryField,
+      column: queryColumn,
+      value: queryValue,
+    } = query.where;
     return {
       where: {
         [field]: {
@@ -104,13 +107,13 @@ export function _whereCacheCreate(field, query, columnLabels) {
       },
     };
   }
-  if (summarize) {
+  if (query.summarize) {
     const {
       method,
       field: queryField,
       column: queryColumn,
       values: queryValues,
-    } = summarize;
+    } = query.summarize;
     const queryValueHash = _hashStringValues(queryValues);
     return {
       summarize: {
