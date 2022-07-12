@@ -1,12 +1,11 @@
 from typing import Tuple
-import numba
 import concurrent.futures
 import numpy as np
 from scipy import sparse
 from server.common.constants import XApproximateDistribution
 
 
-@numba.njit(error_model="numpy", nogil=True)
+# @numba.njit(error_model="numpy", nogil=True)
 def min_max_fast(arr: np.ndarray) -> Tuple[float, float]:
     """Return (min, max) values for the ndarray."""
 
