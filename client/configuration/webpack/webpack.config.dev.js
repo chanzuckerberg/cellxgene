@@ -1,7 +1,6 @@
 const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const ScriptExtHtmlWebpackPlugin = require("script-ext-html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const { merge } = require("webpack-merge");
@@ -56,9 +55,6 @@ const devConfig = {
         NODE_ENV: process.env.NODE_ENV || "development",
         CXG_SERVER_PORT: process.env.CXG_SERVER_PORT || "5005",
       }),
-    }),
-    new ScriptExtHtmlWebpackPlugin({
-      async: "obsolete",
     }),
   ],
   infrastructureLogging: {
