@@ -1,4 +1,6 @@
 import functools
+import os.path
+import shutil
 import sys
 
 import click
@@ -6,6 +8,7 @@ import mlflow
 from click import BadParameter
 
 from server.annotate.annotation_types import AnnotationType
+from server.common.utils.data_locator import DataLocator
 from server.common.utils.utils import sort_options
 
 
@@ -131,20 +134,15 @@ def annotate(**cli_args):
                                          cli_args.get('annotation_type'),
                                          cli_args.get('run_name')]))
 
-    model_url = cli_args.get('model_url')
-
     output_h5ad_file = cli_args['input_h5ad_file'] if cli_args['update_h5ad_file'] else cli_args['output_h5ad_file']
 
-    # TODO: cache model locally
-    # TODO: tar mlflow model
-    # model_cache_dir = cli_args.get('model_cache_dir')
-    # DataLocator(path.join(model_url, 'mlflow_model'),
-    #             local_cache_dir=model_cache_dir)
+    model_url = cli_args.get('model_url')
+    local_model_path = retrieve_model(cli_args.get('model_cache_dir'), model_url)
 
     print(f"Annotating {cli_args.get('input_h5ad_file')} with {cli_args.get('annotation_type')}...")
 
     if cli_args['annotation_type'] == AnnotationType.CELL_TYPE.value:
-        cell_type_annot_model = mlflow.pyfunc.load_model(model_url)
+        cell_type_annot_model = mlflow.pyfunc.load_model(local_model_path)
         cell_type_annot_model.predict(dict(query_dataset_h5ad_path=cli_args.get('input_h5ad_file'),
                                            output_h5ad_path=output_h5ad_file,
                                            annotation_prefix=annotation_prefix,
@@ -154,8 +152,20 @@ def annotate(**cli_args):
                                            organism=cli_args.get('organism'),
                                            use_gpu=cli_args.get('use_gpu'),
                                            train_param_overrides=None))
+        print(f"Wrote annotations to {cli_args.get('output_h5ad_file')}")
     else:
         raise BadParameter(f"unknown annotation type {cli_args['annotation_type']}")
+
+
+
+def retrieve_model(model_cache_dir, model_url):
+    local_cache_model_path = os.path.join(model_cache_dir, os.path.splitext(os.path.basename(model_url))[0])
+    if not os.path.exists(local_cache_model_path):
+        # download from remote source
+        with DataLocator(model_url).local_handle() as model_archive_local_path:
+            # unpack archive to local cache dir
+            shutil.unpack_archive(model_archive_local_path, local_cache_model_path)
+    return local_cache_model_path
 
 
 def _validate_options(cli_args):
