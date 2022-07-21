@@ -4,11 +4,12 @@ import os.path
 import shlex
 import shutil
 import subprocess
-from subprocess import STDOUT
 import sys
+from io import StringIO
+from subprocess import STDOUT, PIPE
+from tempfile import TemporaryFile, NamedTemporaryFile
 
 import click
-import mlflow
 import pandas as pd
 from click import BadParameter
 
@@ -159,30 +160,34 @@ def annotate(**cli_args):
                             classifier=cli_args.get('classifier'),
                             organism=cli_args.get('organism'),
                             use_gpu=cli_args.get('use_gpu'))
-        # Drop args that have values of `None` as these will cause problems when passing into MLflow predict, since it ultimately gets converted into 1-row Pandas DataFrame (None is interpreted as a float type column!)
+        # Drop args that have values of `None` as these will cause problems when passing into MLflow predict, since it
+        # ultimately gets converted into 1-row Pandas DataFrame (None is interpreted as a float type column!)
         predict_args = dict([(k, v) for k, v in predict_args.items() if v is not None])
+        print(predict_args)
 
         # Invoke prediction using MLflow cli, as a separate process.
         # This fully prepares the Python environment that is needed for executing the model.
         # The Python environment will be reused after it is setup once.
         # TODO: instruct user to run `mlflow models prepare-env` as one-time install step
-        predict_cmd = f"mlflow models predict --env-manager virtualenv -m {local_model_path} -t json -j records"
-        print(predict_cmd)
-        predict_input_json = pd.DataFrame([predict_args]).to_json(orient='records')
-        print(predict_input_json)
-        # TODO: tail output
-        result = subprocess.run(args=shlex.split(predict_cmd),
-                                input=predict_input_json, text=True,
-                                capture_output=True)
-        print(result.stdout)
-        if result.returncode == 0:
-            print(f"Wrote annotations to {cli_args.get('output_h5ad_file')}")
-        else:
-            print(result.stderr)
-            print(f"Annotation failed!")
+        with NamedTemporaryFile(buffering=0) as predict_args_file:
+            pd.DataFrame([json.dumps(predict_args)]).to_csv(predict_args_file, index=None)
+            predict_cmd = f"mlflow models predict --env-manager virtualenv -m {local_model_path} -t csv -i {predict_args_file.name}"
+            print(predict_cmd)
+            predict_args_file.seek(0)
+            print(predict_args_file.readlines())
+            predict_args_file.seek(0)
+            p = subprocess.Popen(args=shlex.split(predict_cmd),
+                                 stdin=predict_args_file, text=True, bufsize=0,
+                                 stdout=PIPE, stderr=STDOUT)
+            for line in p.stdout:
+                print(line.rstrip())
+            if p.returncode == 0:
+                print(f"Wrote annotations to {cli_args.get('output_h5ad_file')}")
+            else:
+                print(p.stderr)
+                print(f"Annotation failed!")
     else:
         raise BadParameter(f"unknown annotation type {cli_args['annotation_type']}")
-
 
 
 def retrieve_model(model_cache_dir, model_url, use_cache=True):
