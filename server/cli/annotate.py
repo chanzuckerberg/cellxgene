@@ -1,10 +1,15 @@
 import functools
+import json
 import os.path
+import shlex
 import shutil
+import subprocess
+from subprocess import STDOUT
 import sys
 
 import click
 import mlflow
+import pandas as pd
 from click import BadParameter
 
 from server.annotate.annotation_types import AnnotationType
@@ -106,6 +111,10 @@ def annotate_args(func):
          "be read from this directory first, if they exist, to avoid repeating large downloads."
 )
 @click.option(
+    "--use-model-cache/--no-use-model-cache",
+    default=True
+)
+@click.option(
     "--use-gpu/--no-use-gpu",
     default=True,
     help="Whether to use a GPU for annotation operations (highly recommended, if available)."
@@ -137,34 +146,56 @@ def annotate(**cli_args):
     output_h5ad_file = cli_args['input_h5ad_file'] if cli_args['update_h5ad_file'] else cli_args['output_h5ad_file']
 
     model_url = cli_args.get('model_url')
-    local_model_path = retrieve_model(cli_args.get('model_cache_dir'), model_url)
+    local_model_path = retrieve_model(cli_args.get('model_cache_dir'), model_url, cli_args.get('use_model_cache'))
 
     print(f"Annotating {cli_args.get('input_h5ad_file')} with {cli_args.get('annotation_type')}...")
 
     if cli_args['annotation_type'] == AnnotationType.CELL_TYPE.value:
-        cell_type_annot_model = mlflow.pyfunc.load_model(local_model_path)
-        cell_type_annot_model.predict(dict(query_dataset_h5ad_path=cli_args.get('input_h5ad_file'),
-                                           output_h5ad_path=output_h5ad_file,
-                                           annotation_prefix=annotation_prefix,
-                                           counts_layer=cli_args.get('counts_layer'),
-                                           gene_column_name=cli_args.get('gene_column_name'),
-                                           classifier=cli_args.get('classifier'),
-                                           organism=cli_args.get('organism'),
-                                           use_gpu=cli_args.get('use_gpu'),
-                                           train_param_overrides=None))
-        print(f"Wrote annotations to {cli_args.get('output_h5ad_file')}")
+        predict_args = dict(query_dataset_h5ad_path=cli_args.get('input_h5ad_file'),
+                            output_h5ad_path=output_h5ad_file,
+                            annotation_prefix=annotation_prefix,
+                            counts_layer=cli_args.get('counts_layer'),
+                            gene_column_name=cli_args.get('gene_column_name'),
+                            classifier=cli_args.get('classifier'),
+                            organism=cli_args.get('organism'),
+                            use_gpu=cli_args.get('use_gpu'))
+        # Drop args that have values of `None` as these will cause problems when passing into MLflow predict, since it ultimately gets converted into 1-row Pandas DataFrame (None is interpreted as a float type column!)
+        predict_args = dict([(k, v) for k, v in predict_args.items() if v is not None])
+
+        # Invoke prediction using MLflow cli, as a separate process.
+        # This fully prepares the Python environment that is needed for executing the model.
+        # The Python environment will be reused after it is setup once.
+        # TODO: instruct user to run `mlflow models prepare-env` as one-time install step
+        predict_cmd = f"mlflow models predict --env-manager virtualenv -m {local_model_path} -t json -j records"
+        print(predict_cmd)
+        predict_input_json = pd.DataFrame([predict_args]).to_json(orient='records')
+        print(predict_input_json)
+        # TODO: tail output
+        result = subprocess.run(args=shlex.split(predict_cmd),
+                                input=predict_input_json, text=True,
+                                capture_output=True)
+        print(result.stdout)
+        if result.returncode == 0:
+            print(f"Wrote annotations to {cli_args.get('output_h5ad_file')}")
+        else:
+            print(result.stderr)
+            print(f"Annotation failed!")
     else:
         raise BadParameter(f"unknown annotation type {cli_args['annotation_type']}")
 
 
 
-def retrieve_model(model_cache_dir, model_url):
+def retrieve_model(model_cache_dir, model_url, use_cache=True):
     local_cache_model_path = os.path.join(model_cache_dir, os.path.splitext(os.path.basename(model_url))[0])
-    if not os.path.exists(local_cache_model_path):
+    if not os.path.exists(local_cache_model_path) or not use_cache:
+        print(f'Retrieving model from {model_url}')
         # download from remote source
         with DataLocator(model_url).local_handle() as model_archive_local_path:
             # unpack archive to local cache dir
             shutil.unpack_archive(model_archive_local_path, local_cache_model_path)
+    else:
+        print(f'Using cached model at {local_cache_model_path}')
+
     return local_cache_model_path
 
 
