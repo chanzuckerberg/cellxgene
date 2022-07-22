@@ -5,9 +5,8 @@ import shlex
 import shutil
 import subprocess
 import sys
-from io import StringIO
 from subprocess import STDOUT, PIPE
-from tempfile import TemporaryFile, NamedTemporaryFile
+from tempfile import NamedTemporaryFile
 
 import click
 import pandas as pd
@@ -163,7 +162,6 @@ def annotate(**cli_args):
         # Drop args that have values of `None` as these will cause problems when passing into MLflow predict, since it
         # ultimately gets converted into 1-row Pandas DataFrame (None is interpreted as a float type column!)
         predict_args = dict([(k, v) for k, v in predict_args.items() if v is not None])
-        print(predict_args)
 
         # Invoke prediction using MLflow cli, as a separate process.
         # This fully prepares the Python environment that is needed for executing the model.
@@ -187,8 +185,7 @@ def annotate(**cli_args):
             if p.returncode == 0:
                 print(f"Wrote annotations to {cli_args.get('output_h5ad_file')}")
             else:
-                print(p.stderr)
-                print(f"Annotation failed! exit code={p.returncode}")
+                raise f"Annotation failed! exit code={p.returncode}"
     else:
         raise BadParameter(f"unknown annotation type {cli_args['annotation_type']}")
 
