@@ -168,24 +168,27 @@ def annotate(**cli_args):
         # Invoke prediction using MLflow cli, as a separate process.
         # This fully prepares the Python environment that is needed for executing the model.
         # The Python environment will be reused after it is setup once.
-        # TODO: instruct user to run `mlflow models prepare-env` as one-time install step
         with NamedTemporaryFile(buffering=0) as predict_args_file:
+            # write the mlflow predict arguments to a csv file, which will be passed to mlflow cmd
             pd.DataFrame([json.dumps(predict_args)]).to_csv(predict_args_file, index=None)
+            predict_args_file.seek(0)
+
+            # run mlflow prediction in subprocess
             predict_cmd = f"mlflow models predict --env-manager virtualenv -m {local_model_path} -t csv -i {predict_args_file.name}"
-            print(predict_cmd)
-            predict_args_file.seek(0)
-            print(predict_args_file.readlines())
-            predict_args_file.seek(0)
             p = subprocess.Popen(args=shlex.split(predict_cmd),
                                  stdin=predict_args_file, text=True, bufsize=0,
                                  stdout=PIPE, stderr=STDOUT)
+
+            # display mlflow process output as it runs
             for line in p.stdout:
                 print(line.rstrip())
+
+            p.wait()
             if p.returncode == 0:
                 print(f"Wrote annotations to {cli_args.get('output_h5ad_file')}")
             else:
                 print(p.stderr)
-                print(f"Annotation failed!")
+                print(f"Annotation failed! exit code={p.returncode}")
     else:
         raise BadParameter(f"unknown annotation type {cli_args['annotation_type']}")
 
