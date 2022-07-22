@@ -11,10 +11,10 @@ flask-server-timing>=0.1.2
 flask-talisman>=0.7.0
 flatbuffers>=1.11.0,<2.0.0 # cellxgene is not compatible with 2.0.0. Requires migration
 flatten-dict>=0.2.0
-fsspec>=0.4.4 #TODO: ok to remove ',<0.8.0'?
+fsspec>=0.4.4,<0.8.0
 gunicorn>=20.0.4
 h5py>=3.0.0
-numba==0.55.2
+numba>=0.51.2
 numpy>=1.17.5
 packaging>=20.0
 pandas>=1.0,!=1.1  # pandas 1.1 breaks tests, https://github.com/pandas-dev/pandas/issues/35446

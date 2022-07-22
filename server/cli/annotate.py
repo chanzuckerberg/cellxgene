@@ -147,7 +147,7 @@ def annotate(**cli_args):
     output_h5ad_file = cli_args['input_h5ad_file'] if cli_args['update_h5ad_file'] else cli_args['output_h5ad_file']
 
     model_url = cli_args.get('model_url')
-    local_model_path = retrieve_model(cli_args.get('model_cache_dir'), model_url, cli_args.get('use_model_cache'))
+    local_model_path = _retrieve_model(cli_args.get('model_cache_dir'), model_url, cli_args.get('use_model_cache'))
 
     print(f"Annotating {cli_args.get('input_h5ad_file')} with {cli_args.get('annotation_type')}...")
 
@@ -193,7 +193,7 @@ def annotate(**cli_args):
         raise BadParameter(f"unknown annotation type {cli_args['annotation_type']}")
 
 
-def retrieve_model(model_cache_dir, model_url, use_cache=True):
+def _retrieve_model(model_cache_dir, model_url, use_cache=True):
     local_cache_model_path = os.path.join(model_cache_dir, os.path.splitext(os.path.basename(model_url))[0])
     if not os.path.exists(local_cache_model_path) or not use_cache:
         print(f'Retrieving model from {model_url}')

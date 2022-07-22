@@ -6,8 +6,6 @@ import boto3
 import botocore
 from urllib.parse import urlparse
 
-from fsspec.implementations.cached import WholeFileCacheFileSystem
-
 
 class DataLocator:
     """
@@ -30,7 +28,7 @@ class DataLocator:
 
     """
 
-    def __init__(self, uri_or_path, region_name=None, local_cache_dir=None):
+    def __init__(self, uri_or_path, region_name=None):
         if isinstance(uri_or_path, DataLocator):
             locator = uri_or_path
             self.uri_or_path = locator.uri_or_path
@@ -45,15 +43,13 @@ class DataLocator:
 
         # fsspec.filesystem will throw RuntimeError if the protocol is unsupported
         if self.protocol == "s3":
-            boto_config_kwargs = {}
             if region_name:
-                boto_config_kwargs[region_name] = region_name
-            self.fs = fsspec.filesystem(self.protocol, listings_expiry_time=30, config_kwargs=boto_config_kwargs)
+                config_kwargs = dict(region_name=region_name)
+                self.fs = fsspec.filesystem(self.protocol, listings_expiry_time=30, config_kwargs=config_kwargs)
+            else:
+                self.fs = fsspec.filesystem(self.protocol, listings_expiry_time=30)
         else:
             self.fs = fsspec.filesystem(self.protocol)
-
-        if local_cache_dir:
-            self.fs = WholeFileCacheFileSystem(fs=self.fs, cache_storage=local_cache_dir)
 
     def __repr__(self):
         return (
