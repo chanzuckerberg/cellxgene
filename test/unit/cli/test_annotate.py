@@ -53,6 +53,11 @@ class TestCliAnnotate(unittest.TestCase):
                       result.stdout,
                       "inputs passed correctly")
 
+# TODO:
+# Test annotate cli args more comprehensively
+# Test server.cli.annotate._validate_options
+# Test model caching feature works
+# Test model loading from s3 works (maybe w/just a real model)
 
 if __name__ == '__main__':
     unittest.main()

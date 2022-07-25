@@ -1,0 +1,14 @@
+#!/usr/bin/expect -f
+
+set h5ad [lindex $argv 0]
+puts "$h5ad"
+
+spawn cellxgene launch $h5ad
+
+set timeout 10
+expect -indices -re "Please go to (http:\/\/localhost:\[0-9\]+)" {
+    set url $expect_out(1,string)
+    exec >@stdout 2>@stderr open $url
+}
+
+interact
