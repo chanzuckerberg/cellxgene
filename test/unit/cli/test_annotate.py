@@ -8,7 +8,6 @@ from test.unit.cli.mlflow_model_fixture import FakeModel, write_model
 
 
 class TestCliAnnotate(unittest.TestCase):
-
     def test__annotate__loads_and_runs(self):
         """
         Invokes the `annotate` subcommand of cellxgene CLI, using a CliRunner() programmatic invocation.
@@ -33,10 +32,17 @@ class TestCliAnnotate(unittest.TestCase):
         model = FakeModel()
         model_file_path = write_model(model)
 
-        result = CliRunner().invoke(annotate,
-                                    ['--input-h5ad-file', query_dataset_file_path,
-                                     '--model-url', model_file_path,
-                                     '--output-h5ad-file', f"{query_dataset_file_path}.output"])
+        result = CliRunner().invoke(
+            annotate,
+            [
+                "--input-h5ad-file",
+                query_dataset_file_path,
+                "--model-url",
+                model_file_path,
+                "--output-h5ad-file",
+                f"{query_dataset_file_path}.output",
+            ],
+        )
 
         # to help debugging, show the output from the CliRunner and MLflow stdout
         if result.exit_code:
@@ -45,13 +51,16 @@ class TestCliAnnotate(unittest.TestCase):
         self.assertEqual(0, result.exit_code, "runs successfully")
 
         # The FakeModel will print it inputs to stdout, as "MODEL_INPUT={...}", allowing us to assert that it received valid inputs.
-        self.assertIn('MODEL_INPUT={'
-                      f'"query_dataset_h5ad_path": "{query_dataset_file_path}", '
-                      f'"output_h5ad_path": "{query_dataset_file_path}.output", '
-                      '"annotation_prefix": "cxg_cell_type", "classifier": "fine", '
-                      '"organism": "Homo sapiens", "use_gpu": true}',
-                      result.stdout,
-                      "inputs passed correctly")
+        self.assertIn(
+            "MODEL_INPUT={"
+            f'"query_dataset_h5ad_path": "{query_dataset_file_path}", '
+            f'"output_h5ad_path": "{query_dataset_file_path}.output", '
+            '"annotation_prefix": "cxg_cell_type", "classifier": "fine", '
+            '"organism": "Homo sapiens", "use_gpu": true}',
+            result.stdout,
+            "inputs passed correctly",
+        )
+
 
 # TODO:
 # Test annotate cli args more comprehensively
@@ -59,5 +68,5 @@ class TestCliAnnotate(unittest.TestCase):
 # Test model caching feature works
 # Test model loading from s3 works (maybe w/just a real model)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

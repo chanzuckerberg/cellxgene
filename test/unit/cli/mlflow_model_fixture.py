@@ -18,4 +18,4 @@ class FakeModel(mlflow.pyfunc.PythonModel):
         # useful for validating the input in a test, noting that this model will be invoked in a subprocess
         print(f"MODEL_INPUT={model_input.iloc[0][0]}")
 
-        return None #[self.input_to_output[model_input[i]] for i in range(len(model_input))]
+        return None  # [self.input_to_output[model_input[i]] for i in range(len(model_input))]
