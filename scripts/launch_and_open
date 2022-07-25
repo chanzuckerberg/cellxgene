@@ -1,5 +1,7 @@
 #!/usr/bin/expect -f
 
+# Mac only! (depends upon `open` command)
+
 set h5ad [lindex $argv 0]
 puts "$h5ad"
 
