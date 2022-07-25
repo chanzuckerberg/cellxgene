@@ -17,10 +17,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: |
           git fetch --depth=1 origin +${{github.base_ref}}
-      - name: Set up Python 3.7
-#        uses: actions/setup-python@v1
-#        with:
-#          python-version: 3.7
+      - name: Set up Python 3.7 (pyenv)
         uses: gabrielfalcao/pyenv-action@v9
         with:
           default: 3.7
