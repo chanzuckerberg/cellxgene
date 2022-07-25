@@ -18,13 +18,9 @@ jobs:
       - run: |
           git fetch --depth=1 origin +${{github.base_ref}}
       - name: Set up Python 3.7
-#        uses: actions/setup-python@v1
-#        with:
-#          python-version: 3.7
-        uses: gabrielfalcao/pyenv-action@v9
+        uses: actions/setup-python@v1
         with:
-          default: 3.7
-          command: pip install -U pip  # upgrade pip after installing python
+          python-version: 3.7
       - name: Node cache
         uses: actions/cache@v1
         with:
@@ -50,10 +46,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+      - name: Set up Python 3.7 (pyenv)  # pyenv need for mlflow in cli annotate tests
+        uses: gabrielfalcao/pyenv-action@v9
         with:
-          python-version: 3.7
+          default: 3.7
+          command: pip install -U pip  # upgrade pip after installing python
       - name: Python cache
         uses: actions/cache@v1
         with:
