@@ -18,9 +18,13 @@ jobs:
       - run: |
           git fetch --depth=1 origin +${{github.base_ref}}
       - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+#        uses: actions/setup-python@v1
+#        with:
+#          python-version: 3.7
+        uses: gabrielfalcao/pyenv-action@v9
         with:
-          python-version: 3.7
+          default: 3.7
+          command: pip install -U pip  # upgrade pip after installing python
       - name: Node cache
         uses: actions/cache@v1
         with:
