@@ -4,6 +4,7 @@ from os.path import splitext, isdir
 from server.common.annotations.local_file_csv import AnnotationsLocalFile
 from server.common.config.base_config import BaseConfig
 from server.common.errors import ConfigurationError, AnnotationsError
+from server.common.utils.data_locator import DataLocator
 from server.data_common.matrix_loader import MatrixDataLoader
 
 
@@ -127,11 +128,16 @@ class DatasetConfig(BaseConfig):
             if lf_ext and lf_ext != ".csv":
                 raise ConfigurationError(f"genesets file type must be .csv: {genesets_filename}")
 
-        if dirname is not None and not isdir(dirname):
-            try:
-                os.mkdir(dirname)
-            except OSError:
-                raise ConfigurationError("Unable to create directory specified by --user-generated-data-dir")
+        # TODO: move this to AnnotationsLocalFile and rename that class
+        if dirname is not None:
+            if not DataLocator(dirname).islocal():
+                # remote object stores only support objects but not directories, do nothing
+                pass
+            elif not isdir(dirname):
+                try:
+                    os.mkdir(dirname)
+                except OSError:
+                    raise ConfigurationError("Unable to create directory specified by --user-generated-data-dir")
 
         anno_config = {
             "user-annotations": self.user_annotations__enable,

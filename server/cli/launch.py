@@ -447,3 +447,6 @@ def launch(
         if e.errno == errno.EADDRINUSE:
             raise click.ClickException("Port is in use, please specify an open port using the --port flag.") from e
         raise
+
+if __name__ == '__main__':
+    launch(
