@@ -128,7 +128,6 @@ class DatasetConfig(BaseConfig):
             if lf_ext and lf_ext != ".csv":
                 raise ConfigurationError(f"genesets file type must be .csv: {genesets_filename}")
 
-        # TODO: move this to AnnotationsLocalFile and rename that class
         if dirname is not None:
             if not DataLocator(dirname).islocal():
                 # remote object stores only support objects but not directories, do nothing
