@@ -18,4 +18,3 @@ class FakeModel(mlflow.pyfunc.PythonModel):
         # this stdout output is useful for validating the input in a test, noting that this model will be invoked in a
         # subprocess, so stdout is one means of communicating information back to the test code
         print(f"__MODEL_INPUT__={model_input.iloc[0][0]}")
-

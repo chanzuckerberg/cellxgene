@@ -170,8 +170,10 @@ def annotate(**cli_args):
             predict_args_file.seek(0)
 
             # run mlflow prediction in subprocess
-            predict_cmd = f"mlflow models predict --env-manager virtualenv -m {local_model_path} " \
-                          f"-t csv -i {predict_args_file.name}"
+            predict_cmd = (
+                f"mlflow models predict --env-manager conda -m {local_model_path} "
+                f"-t csv -i {predict_args_file.name}"
+            )
             p = subprocess.Popen(
                 args=shlex.split(predict_cmd), stdin=predict_args_file, text=True, bufsize=0, stdout=PIPE, stderr=STDOUT
             )
