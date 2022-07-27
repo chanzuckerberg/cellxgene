@@ -61,6 +61,31 @@ class TestCliAnnotate(unittest.TestCase):
             "inputs passed correctly",
         )
 
+    def test__annotate__verifies_mutually_exclusive_options(self):
+        required_options = ["--input-h5ad-file", "some.h5ad", "--model-url", "some_url"]
+        result = CliRunner().invoke(
+            annotate,
+            required_options + [],
+        )
+
+        self.assertNotEqual(0, result.exit_code, "aborts with non-success code")
+        self.assertIn(
+            "--update_h5ad_file or --output_h5ad_file must be specified",
+            result.stdout,
+            "error message displayed",
+        )
+
+        result = CliRunner().invoke(
+            annotate, required_options + ["--output-h5ad-file", "some_arg", "--update-h5ad-file"]
+        )
+
+        self.assertNotEqual(0, result.exit_code, "aborts with non-success code")
+        self.assertIn(
+            "--update_h5ad_file and --output_h5ad_file are mutually exclusive",
+            result.stdout,
+            "error message displayed",
+        )
+
 
 # TODO:
 # Test annotate cli args more comprehensively
