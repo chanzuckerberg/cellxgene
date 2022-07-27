@@ -50,9 +50,9 @@ class TestCliAnnotate(unittest.TestCase):
 
         self.assertEqual(0, result.exit_code, "runs successfully")
 
-        # The FakeModel will print it inputs to stdout, as "MODEL_INPUT={...}", allowing us to assert that it received valid inputs.
+        # The FakeModel will print it inputs to stdout, as "__MODEL_INPUT__={...}", allowing us to assert that it received valid inputs.
         self.assertIn(
-            "MODEL_INPUT={"
+            "__MODEL_INPUT__={"
             f'"query_dataset_h5ad_path": "{query_dataset_file_path}", '
             f'"output_h5ad_path": "{query_dataset_file_path}.output", '
             '"annotation_prefix": "cxg_cell_type", "classifier": "fine", '

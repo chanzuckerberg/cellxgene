@@ -14,8 +14,8 @@ class FakeModel(mlflow.pyfunc.PythonModel):
     def __init__(self, input_to_output: dict = {}):
         self.input_to_output = input_to_output
 
-    def predict(self, context, model_input):
-        # useful for validating the input in a test, noting that this model will be invoked in a subprocess
-        print(f"MODEL_INPUT={model_input.iloc[0][0]}")
+    def predict(self, context, model_input) -> None:
+        # this stdout output is useful for validating the input in a test, noting that this model will be invoked in a
+        # subprocess, so stdout is one means of communicating information back to the test code
+        print(f"__MODEL_INPUT__={model_input.iloc[0][0]}")
 
-        return None  # [self.input_to_output[model_input[i]] for i in range(len(model_input))]
