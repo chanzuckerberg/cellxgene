@@ -104,12 +104,6 @@ def annotate_args(func):
     help="The output H5AD file that will contain the generated annotation values. This option is mutually "
     "exclusive with --update-h5ad-file.",
 )
-@click.option(
-    "--model-cache-dir",
-    default=".models_cache",
-    help="Local directory used to store model files that are retrieved from a remote location. Model files will "
-    "be read from this directory first, if they exist, to avoid repeating large downloads.",
-)
 @click.option("--use-model-cache/--no-use-model-cache", default=True)
 @click.option(
     "--use-gpu/--no-use-gpu",
@@ -119,15 +113,31 @@ def annotate_args(func):
 # TODO: This is a cell type model-specific arg, so not ideal to specify here as a hardcoded option
 @click.option(
     "--classifier",
-    default="fine",
-    help="{fine, coarse, 1, 2, 3, ...}",  # TODO
+    default="default",
+    help="For cell type annotation, the classifier level to use. The classifier is model-dependent, so refer to "
+         "documentation for the specified model for valid values.",
 )
 # TODO: This is a cell type model-specific arg, so not ideal to specify here as a hardcoded option
 @click.option(
     "--organism",
     type=click.Choice(["Homo sapiens", "Mus musculus"], case_sensitive=True),
     default="Homo sapiens",
-    help="",  # TODO
+    help="For cell type annotation, the organism of the dataset. Used to normalize gene names to HGLC conventions when "
+         "an annotation model has been trained using data from different organism.",
+)
+@click.option(
+    "--model-cache-dir",
+    default=".models_cache",
+    help="Local directory used to store model files that are retrieved from a remote location. Model files will "
+    "be read from this directory first, if they exist, to avoid repeating large downloads.",
+)
+@click.option(
+    "--mlflow-env-manager",
+    choices=["virtualenv", "conda", "local"],
+    default="virtualenv",
+    help="Annotation model prediction will be installed and executed in the specified type of environment. MacOS users "
+         "on Apple Silicon (arm64, M1, M2, etc.) are recommended to use 'conda' to avoid Python package installation "
+         "errors. If 'conda' is specified then cellxgene must also have been installed within a conda environment",
 )
 @click.help_option("--help", "-h", help="Show this message and exit.")
 def annotate(**cli_args):
@@ -171,8 +181,10 @@ def annotate(**cli_args):
 
             # run mlflow prediction in subprocess
             predict_cmd = (
-                f"mlflow models predict --env-manager conda -m {local_model_path} "
-                f"-t csv -i {predict_args_file.name}"
+                f"mlflow models predict "
+                f"--env-manager {cli_args['mlflow_env_manager']} "
+                f"--model-uri {local_model_path} "
+                f"--content-type csv --input-path {predict_args_file.name}"
             )
             p = subprocess.Popen(
                 args=shlex.split(predict_cmd), stdin=predict_args_file, text=True, bufsize=0, stdout=PIPE, stderr=STDOUT
