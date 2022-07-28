@@ -133,7 +133,7 @@ def annotate_args(func):
 )
 @click.option(
     "--mlflow-env-manager",
-    choices=["virtualenv", "conda", "local"],
+    type=click.Choice(["virtualenv", "conda", "local"]),
     default="virtualenv",
     help="Annotation model prediction will be installed and executed in the specified type of environment. MacOS users "
          "on Apple Silicon (arm64, M1, M2, etc.) are recommended to use 'conda' to avoid Python package installation "

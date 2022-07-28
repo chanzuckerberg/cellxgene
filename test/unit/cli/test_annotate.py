@@ -55,7 +55,7 @@ class TestCliAnnotate(unittest.TestCase):
             "__MODEL_INPUT__={"
             f'"query_dataset_h5ad_path": "{query_dataset_file_path}", '
             f'"output_h5ad_path": "{query_dataset_file_path}.output", '
-            '"annotation_prefix": "cxg_cell_type", "classifier": "fine", '
+            '"annotation_prefix": "cxg_cell_type", "classifier": "default", '
             '"organism": "Homo sapiens", "use_gpu": true}',
             result.stdout,
             "inputs passed correctly",
