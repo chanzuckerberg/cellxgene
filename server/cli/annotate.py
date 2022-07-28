@@ -115,7 +115,7 @@ def annotate_args(func):
     "--classifier",
     default="default",
     help="For cell type annotation, the classifier level to use. The classifier is model-dependent, so refer to "
-         "documentation for the specified model for valid values.",
+    "documentation for the specified model for valid values.",
 )
 # TODO: This is a cell type model-specific arg, so not ideal to specify here as a hardcoded option
 @click.option(
@@ -123,7 +123,7 @@ def annotate_args(func):
     type=click.Choice(["Homo sapiens", "Mus musculus"], case_sensitive=True),
     default="Homo sapiens",
     help="For cell type annotation, the organism of the dataset. Used to normalize gene names to HGLC conventions when "
-         "an annotation model has been trained using data from different organism.",
+    "an annotation model has been trained using data from different organism.",
 )
 @click.option(
     "--model-cache-dir",
@@ -136,8 +136,8 @@ def annotate_args(func):
     type=click.Choice(["virtualenv", "conda", "local"]),
     default="virtualenv",
     help="Annotation model prediction will be installed and executed in the specified type of environment. MacOS users "
-         "on Apple Silicon (arm64, M1, M2, etc.) are recommended to use 'conda' to avoid Python package installation "
-         "errors. If 'conda' is specified then cellxgene must also have been installed within a conda environment",
+    "on Apple Silicon (arm64, M1, M2, etc.) are recommended to use 'conda' to avoid Python package installation "
+    "errors. If 'conda' is specified then cellxgene must also have been installed within a conda environment",
 )
 @click.help_option("--help", "-h", help="Show this message and exit.")
 def annotate(**cli_args):
