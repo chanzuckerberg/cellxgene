@@ -18,7 +18,7 @@ jobs:
       - run: |
           git fetch --depth=1 origin +${{github.base_ref}}
       - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
       - name: Node cache
@@ -47,7 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
       - name: Python cache
@@ -78,7 +78,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
       - name: Python cache
@@ -109,7 +109,7 @@ jobs:
   #   steps:
   #     - uses: actions/checkout@v2
   #     - name: Set up Python 3.7
-  #       uses: actions/setup-python@v1
+  #       uses: actions/setup-python@v4
   #       with:
   #         python-version: 3.7
   #     - name: Python cache
