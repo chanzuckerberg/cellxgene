@@ -28,7 +28,7 @@ class TestCliAnnotate(unittest.TestCase):
         helps!
         """
 
-        query_dataset_file_path = mkstemp()
+        _, query_dataset_file_path = mkstemp()
         model = FakeModel()
         model_file_path = write_model(model)
 
