@@ -113,10 +113,9 @@ class DataLocator:
         # do our best to create a file with the same.
         ext = os.path.splitext(self.path)
         suffix = None if ext[1] == "" else ext[1]
-        with self.open() as src, tempfile.NamedTemporaryFile(prefix="cellxgene_", suffix=suffix, delete=False) as tmp:
-            tmp.write(src.read())
+        with tempfile.NamedTemporaryFile(prefix="cellxgene_", suffix=suffix, delete=False) as tmp:
+            self.fs.download(self.uri_or_path, tmp.name)
             tmp.close()
-            src.close()
             tmp_path = tmp.name
             return LocalFilePath(tmp_path, delete=True)
 
