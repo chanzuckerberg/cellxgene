@@ -198,7 +198,7 @@ def annotate(**cli_args):
             if p.returncode == 0:
                 print(f"Wrote annotations to {cli_args.get('output_h5ad_file')}")
             else:
-                print(f"Annotation failed!")
+                print("Annotation failed!")
     else:
         raise BadParameter(f"unknown annotation type {cli_args['annotation_type']}")
 
