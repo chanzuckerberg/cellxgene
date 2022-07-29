@@ -1,10 +1,22 @@
+import os
+import shutil
 import unittest
-from tempfile import mkstemp
+from tempfile import mkstemp, TemporaryDirectory
 
+import mlflow
 from click.testing import CliRunner
 
 from server.cli.annotate import annotate
-from test.unit.cli.mlflow_model_fixture import FakeModel, write_model
+from test.unit.cli.fixtures.mlflow_model_fixture import FakeModel
+
+
+def write_model(model) -> str:
+    with TemporaryDirectory() as mlflow_model_dir:
+        fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures')
+        mlflow.pyfunc.save_model(mlflow_model_dir,
+                                 loader_module='fixtures',
+                                 code_path=[fixtures_path])
+        return shutil.make_archive(mkstemp()[1], "zip", mlflow_model_dir)
 
 
 class TestCliAnnotate(unittest.TestCase):
@@ -29,8 +41,7 @@ class TestCliAnnotate(unittest.TestCase):
         """
 
         _, query_dataset_file_path = mkstemp()
-        model = FakeModel()
-        model_file_path = write_model(model)
+        model_file_path = write_model(FakeModel())
 
         result = CliRunner().invoke(
             annotate,
