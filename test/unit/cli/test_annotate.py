@@ -41,6 +41,9 @@ class TestCliAnnotate(unittest.TestCase):
                 model_file_path,
                 "--output-h5ad-file",
                 f"{query_dataset_file_path}.output",
+                # avoid having mflow create conda env or virtualenv when in test env;
+                # this avoids making pip remote requests and is also faster
+                "--mlflow-env-manager", "local"
             ],
         )
 
