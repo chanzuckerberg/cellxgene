@@ -46,10 +46,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.7 (pyenv)  # pyenv needed for mlflow in cli annotate tests
+        uses: gabrielfalcao/pyenv-action@v9
         with:
-          python-version: 3.7
+          default: 3.7
+          command: pip install -U pip  # upgrade pip after installing python
+      - run: pip install virtualenv  # virtualenv needed for mlflow in cli annotate tests
       - name: Python cache
         uses: actions/cache@v1
         with:

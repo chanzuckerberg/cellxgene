@@ -3,5 +3,6 @@ recursive-include server/common/web/static *
 
 include server/requirements.txt
 include server/requirements-prepare.txt
+include server/requirements-annotate.txt
 include server/converters/schema/hgnc_complete_set.txt.gz
 include server/converters/schema/schema_definitions/*
