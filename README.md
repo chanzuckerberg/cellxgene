@@ -19,15 +19,15 @@ Whether you need to visualize one thousand cells or one million, CELLxGENE Annot
 
 [The CZ CELLxGENE Annotate documentation is your one-stop-shop for information about CELLxGENE Annotate](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/README.md)! You may be particularly interested in:
 
-- Seeing [what CELLxGENE Annotate can do](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/explore-data/explorer-tutorials.md)
-- Learning more about CELLxGENE [installation](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/install.md) and [usage](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/quick-start.md#quick-start-1)
-- [Preparing your own data](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/data-reqs.md) for use in CELLxGENE Annotate
+- Seeing [what Annotate can do](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/explore-data/explorer-tutorials.md)
+- Learning more about Annotate [installation](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/install.md) and [usage](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/quick-start.md#quick-start-1)
+- [Preparing your own data](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/data-reqs.md) for use in Annotate
 - Checking out [our roadmap](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/roadmap.md) for future development
-- [Contributing](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/contribute.md) to CELLxGENE Annotate
+- [Contributing](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/contribute.md) to Annotate
 
 ### Quick start
 
-To install CELLxGENE Annotate you need Python 3.6+. We recommend [installing CELLxGENE Annotate into a conda or virtual environment.](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/install.md)
+To install CELLxGENE Annotate you need Python 3.6+. We recommend [installing Annotate into a conda or virtual environment.](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/install.md)
 
 Install the package.
 
@@ -35,13 +35,13 @@ Install the package.
 pip install cellxgene
 ```
 
-Launch CELLxGENE Annotate with an example [anndata](https://anndata.readthedocs.io/en/latest/) file
+Launch Annotate with an example [anndata](https://anndata.readthedocs.io/en/latest/) file
 
 ```bash
 cellxgene launch https://cellxgene-example-data.czi.technology/pbmc3k.h5ad
 ```
 
-To explore more datasets already formatted for CELLxGENE Annotate, check out the [Demo data](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/quick-start.md#example-datasets) or
+To explore more datasets already formatted for Annotate, check out the [Demo data](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/quick-start.md#example-datasets) or
 see [Preparing your data](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/data-reqs.md) to learn more about formatting your own
 data for CELLxGENE Annotate.
 
@@ -77,7 +77,7 @@ As such, we encourage other scientific tool builders in academia or industry to 
 this project. All code is freely available for reuse under the [MIT license](https://opensource.org/licenses/MIT).
 
 
-Before extending CELLxGENE, we encourage you to reach out to us with ideas or questions. It might be possible that an 
+Before extending CELLxGENE Annotate, we encourage you to reach out to us with ideas or questions. It might be possible that an 
 extension could be directly contributed, which would make it available for a wider audience, or that it's on our 
 [roadmap](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/roadmap.md) and under active development. 
 

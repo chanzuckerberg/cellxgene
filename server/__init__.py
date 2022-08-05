@@ -3,7 +3,7 @@ import sys
 from server.common.utils.utils import import_plugins
 
 __version__ = "1.0.1"
-display_version = "CellxGene v" + __version__
+display_version = "cellxgene v" + __version__
 
 try:
     import_plugins("server.plugins")
