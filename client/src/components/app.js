@@ -41,7 +41,7 @@ class App extends React.Component {
     const { loading, error, graphRenderCounter } = this.props;
     return (
       <Container>
-        <Helmet title="CELLxGENE | Annotate" />
+        <Helmet title="CELL&times;GENE | Annotate" />
         {loading ? (
           <div
             style={{
