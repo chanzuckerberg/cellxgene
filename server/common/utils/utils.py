@@ -98,8 +98,7 @@ def custom_format_warning(msg, *args, **kwargs):
 
 
 def jsonify_strict(data):
-    return json.dumps(data, cls=StrictJSONEncoder, allow_nan=False)
-
+    return StrictJSONEncoder().encode(data)
 
 def import_plugins(plugin_module):
     """
