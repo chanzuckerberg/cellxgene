@@ -54,5 +54,5 @@ class TestJsonifyStrict(unittest.TestCase):
         # the actual test!
         self.assertEqual(
             jsonify_strict(values),
-            '{"floating": [100.0, 101.0, 102.0], "integer": [0, 1, 2, 3, 4, 5, 6, 7]}',
+            '{"integer": [0, 1, 2, 3, 4, 5, 6, 7], "floating": [100.0, 101.0, 102.0]}',
         )
