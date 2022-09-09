@@ -27,8 +27,7 @@ def annotate_args(func):
 
 @sort_options
 @click.command(
-    short_help="Annotate H5AD file columns. Run `cellxgene annotate --help` for more information.",
-    options_metavar="<options>",
+    options_metavar="<options>"
 )
 @click.argument(
     "input_h5ad_file",
@@ -147,7 +146,7 @@ def annotate_args(func):
 @click.help_option("--help", "-h", help="Show this message and exit.")
 def annotate(**cli_args):
     """
-    BLARGH
+    Add predicted annotations to an H5AD file. Run `cellxgene annotate --help` for more information.
     """
     _validate_options(cli_args)
 
