@@ -49,7 +49,6 @@ def annotate_args(func):
 )
 @click.option(
     "-o",
-    # "--output",
     "--output-h5ad-file",
     default="",
     help="The output H5AD file that will contain the generated annotation values.",
@@ -60,7 +59,7 @@ def annotate_args(func):
     default=False,
     is_flag=True,
     help="Overwrite the H5AD input file, adding the predicted annotation values. For safety, you must specify this "
-    "flag if the --output option is not specified.",
+    "flag if the --output-h5ad-file option is not specified.",
     show_default=True,
 )
 @click.option(
