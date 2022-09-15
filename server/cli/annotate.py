@@ -4,7 +4,7 @@ import os.path
 import shlex
 import shutil
 import subprocess
-import sys
+from os.path import isfile
 from subprocess import STDOUT, PIPE
 from tempfile import NamedTemporaryFile
 
@@ -27,22 +27,41 @@ def annotate_args(func):
 
 @sort_options
 @click.command(
-    short_help="Annotate H5AD file columns. Run `cellxgene annotation --help` for more information.",
-    options_metavar="<options>",
+    options_metavar="<options>"
 )
-@click.option(
-    "-i",
-    "--input-h5ad-file",
+@click.argument(
+    "input_h5ad_file",
+    type=click.Path(exists=True, dir_okay=False, readable=True),
+    nargs=1,
+    metavar="<path to H5AD input file>",
     required=True,
-    type=str,
-    help="The input H5AD file containing the missing annotations.",
 )
 @click.option(
     "-m",
     "--model-url",
+    # Making this a required "option", rather than an "argument", since we support automatic model selection in the
+    # future, in which case the user would not need to specify this option at all and we can make it optional at
+    # that time.
     required=True,
     help="The URL of the model used to prediction annotated labels. May be a local filesystem directory "
     "or S3 path (s3://)",
+)
+@click.option(
+    "-o",
+    "--output-h5ad-file",
+    default="",
+    help="The output H5AD file that will contain the generated annotation values. If this option is not provided, "
+         "the input file will be overwritten to include the new annotations; in this case you must specify "
+         "--overwrite.",
+    metavar="<filename>",
+)
+@click.option(
+    "--overwrite",
+    default=False,
+    is_flag=True,
+    help="Allow overwriting of the specified H5AD output file, if it exists. For safety, you must specify this "
+         "flag if the specified output file already exists or if the --output-h5ad-file option is not provided.",
+    show_default=True,
 )
 @click.option(
     "-l",
@@ -53,8 +72,8 @@ def annotate_args(func):
 @click.option(
     "-g",
     "--gene-column-name",
-    help="The name of the `var` column that contains gene identifiers. The values in this column will be used to match "
-    "genes between the query and reference datasets. If not specified, the gene identifiers are expected to exist "
+    help="The name of the `var` column that contains gene names. The values in this column will be used to match "
+    "genes between the query and reference datasets. If not specified, the gene names are expected to exist "
     "in `var.index`.",
 )
 # TODO: Useful if we want to support discoverability of models
@@ -90,19 +109,6 @@ def annotate_args(func):
     help="An optional run name that will be used as a suffix to form the names of new `obs` annotation columns that "
     "will store the predicted annotation values and confidence scores. This can be used to allow multiple "
     "annotation predictions to be run on a single AnnData object.",
-)
-@click.option(
-    "-u",
-    "--update-h5ad-file",
-    is_flag=True,
-    help="Flag indicating whether to update the input h5ad file with annotation values.  This option is mutually "
-    "exclusive with --output-h5ad-file.",
-)
-@click.option(
-    "-o",
-    "--output-h5ad-file",
-    help="The output H5AD file that will contain the generated annotation values. This option is mutually "
-    "exclusive with --update-h5ad-file.",
 )
 @click.option("--use-model-cache/--no-use-model-cache", default=True)
 @click.option(
@@ -141,6 +147,9 @@ def annotate_args(func):
 )
 @click.help_option("--help", "-h", help="Show this message and exit.")
 def annotate(**cli_args):
+    """
+    Add predicted annotations to an H5AD file. Run `cellxgene annotate --help` for more information.
+    """
     _validate_options(cli_args)
 
     print(f"Reading query dataset {cli_args['input_h5ad_file']}...")
@@ -149,7 +158,11 @@ def annotate(**cli_args):
         filter(None, [cli_args.get("annotation_prefix"), cli_args.get("annotation_type"), cli_args.get("run_name")])
     )
 
-    output_h5ad_file = cli_args["input_h5ad_file"] if cli_args["update_h5ad_file"] else cli_args["output_h5ad_file"]
+    output_h5ad_file = (
+        cli_args["input_h5ad_file"]
+        if cli_args["overwrite"] and not cli_args["output_h5ad_file"]
+        else cli_args["output_h5ad_file"]
+    )
 
     model_url = cli_args.get("model_url")
     local_model_path = _retrieve_model(cli_args.get("model_cache_dir"), model_url, cli_args.get("use_model_cache"))
@@ -196,7 +209,7 @@ def annotate(**cli_args):
 
             p.wait()
             if p.returncode == 0:
-                print(f"Wrote annotations to {cli_args.get('output_h5ad_file')}")
+                print(f"Wrote annotations to {output_h5ad_file}")
             else:
                 print("Annotation failed!")
     else:
@@ -218,13 +231,11 @@ def _retrieve_model(model_cache_dir, model_url, use_cache=True):
 
 
 def _validate_options(cli_args):
-    # TODO(atolopko): Use cloup library for this logic
-    if cli_args["update_h5ad_file"] and cli_args["output_h5ad_file"]:
-        click.echo("--update_h5ad_file and --output_h5ad_file are mutually exclusive")
-        sys.exit(1)
-    if not (cli_args["update_h5ad_file"] or cli_args["output_h5ad_file"]):
-        click.echo("--update_h5ad_file or --output_h5ad_file must be specified")
-        sys.exit(1)
+    output = cli_args["output_h5ad_file"]
+    overwrite = cli_args["overwrite"]
+
+    if isfile(output) and not overwrite:
+        raise click.UsageError(f"Cannot overwrite existing file {output}, try using the flag --overwrite")
 
 
 if __name__ == "__main__":
