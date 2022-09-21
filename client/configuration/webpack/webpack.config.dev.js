@@ -33,7 +33,7 @@ const devConfig = {
         options: {
           name: "static/assets/[name].[ext]",
           // (thuang): This is needed to make sure @font url path is '/static/assets/'
-          publicPath: "/",
+          publicPath: "..",
         },
       },
     ],
