@@ -58,10 +58,11 @@ function _maskToList(mask) {
   if (!mask) {
     return null;
   }
-  const list = new Int32Array(mask.length);
+  const [...m] = mask;
+  const list = new Int32Array(m.length);
   let elems = 0;
-  for (let i = 0, l = mask.length; i < l; i += 1) {
-    if (mask[i]) {
+  for (let i = 0, l = m.length; i < l; i += 1) {
+    if (m[i]) {
       list[elems] = i;
       elems += 1;
     }

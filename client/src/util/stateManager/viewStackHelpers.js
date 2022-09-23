@@ -137,10 +137,13 @@ function _getEmbeddingRowOffsets(baseRowIndex, embeddingDf) {
     - if the embedding contains NaN coordinates, return a rowIndex
       that contains only the rows with discrete valued coordinates.
 
-  Currently assumes that there will be onl two dimensions in the embedding.
+  Currently assumes that there will be only two dimensions in the embedding.
   */
+  // eslint-disable-next-line react/destructuring-assignment -- destructuring fails
   const X = embeddingDf.icol(0).asArray();
+  // eslint-disable-next-line react/destructuring-assignment -- destructuring fails
   const Y = embeddingDf.icol(1).asArray();
+
   const offsets = new Int32Array(X.length);
   let numOffsets = 0;
 

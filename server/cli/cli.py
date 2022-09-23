@@ -1,5 +1,6 @@
 import click
 
+from .annotate import annotate
 from .launch import launch
 from .prepare import prepare
 from .upgrade import log_upgrade_check
@@ -31,4 +32,5 @@ def cli(upgrade_check):
 
 
 cli.add_command(launch)
+cli.add_command(annotate)
 cli.add_command(prepare)
