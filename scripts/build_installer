@@ -1,0 +1,9 @@
+# experimental
+# TODO: add to makefile, if to be officially supported
+
+pip install pyinstaller
+
+make pydist && \
+pyinstaller --name cellxgene-app --add-data build/server/common/web/static:static --add-data build/server/common/web/:server/common/web/ --hidden-import anndata build/server/cli/launch.py --hidden-import s3fs --one-file -y
+
+./dist/cellxgene-app --user-generated-data-dir s3://atolopko-tmp/cellxgene_desktop  ~/cxg/cellxgene/minilungAnnotated.h5ad

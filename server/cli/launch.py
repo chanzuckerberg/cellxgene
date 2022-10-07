@@ -135,7 +135,8 @@ def dataset_args(func):
         is_flag=True,
         default=DEFAULT_CONFIG.server_config.adaptor__anndata_adaptor__backed,
         show_default=False,
-        help="Load anndata in file-backed mode. " "This may save memory, but may result in slower overall performance.",
+        help="Load anndata in file-backed mode. " 
+             "This may save memory, but may result in slower overall performance.",
     )
     @click.option(
         "--title",
@@ -297,7 +298,8 @@ class CliLaunchServer(Server):
 
 @sort_options
 @click.command(
-    short_help="Launch the cellxgene data viewer. " "Run `cellxgene launch --help` for more information.",
+    short_help="Launch the cellxgene data viewer. " 
+               "Run `cellxgene launch --help` for more information.",
     options_metavar="<options>",
 )
 @launch_args
@@ -447,3 +449,7 @@ def launch(
         if e.errno == errno.EADDRINUSE:
             raise click.ClickException("Port is in use, please specify an open port using the --port flag.") from e
         raise
+
+
+if __name__ == '__main__':
+    launch()

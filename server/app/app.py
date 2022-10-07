@@ -1,5 +1,7 @@
 import datetime
 import logging
+import os
+import sys
 from functools import wraps
 
 from flask import (
@@ -256,10 +258,17 @@ class Server:
         bp_api = Blueprint("api", __name__, url_prefix=f"{api_path}{api_version}")
         resources = get_api_dataroot_resources(bp_api)
         self.app.register_blueprint(resources.blueprint)
+        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+            static_files_dir = os.path.join(sys._MEIPASS, 'static')
+        else:
+            static_files_dir = "../common/web/static"
+
+        print(f'{static_files_dir=}')
+
         self.app.add_url_rule(
             "/static/<path:filename>",
             "static_assets",
-            view_func=lambda filename: send_from_directory("../common/web/static", filename),
+            view_func=lambda filename: send_from_directory(static_files_dir, filename),
             methods=["GET"],
         )
 
