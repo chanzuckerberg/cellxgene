@@ -1,7 +1,7 @@
 import os
 import shutil
 import unittest
-from tempfile import mkstemp, TemporaryDirectory
+from tempfile import mkstemp, TemporaryDirectory, NamedTemporaryFile
 
 import mlflow
 from click.testing import CliRunner
@@ -12,10 +12,8 @@ from test.unit.cli.fixtures.mlflow_model_fixture import FakeModel
 
 def write_model(model) -> str:
     with TemporaryDirectory() as mlflow_model_dir:
-        fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures')
-        mlflow.pyfunc.save_model(mlflow_model_dir,
-                                 loader_module='fixtures',
-                                 code_path=[fixtures_path])
+        fixtures_path = os.path.join(os.path.dirname(__file__), "fixtures")
+        mlflow.pyfunc.save_model(mlflow_model_dir, loader_module="fixtures", code_path=[fixtures_path])
         return shutil.make_archive(mkstemp()[1], "zip", mlflow_model_dir)
 
 
@@ -46,7 +44,6 @@ class TestCliAnnotate(unittest.TestCase):
         result = CliRunner().invoke(
             annotate,
             [
-                "--input-h5ad-file",
                 query_dataset_file_path,
                 "--model-url",
                 model_file_path,
@@ -54,7 +51,8 @@ class TestCliAnnotate(unittest.TestCase):
                 f"{query_dataset_file_path}.output",
                 # avoid having mflow create conda env or virtualenv when in test env;
                 # this avoids making pip remote requests and is also faster
-                "--mlflow-env-manager", "local"
+                "--mlflow-env-manager",
+                "local",
             ],
         )
 
@@ -74,31 +72,52 @@ class TestCliAnnotate(unittest.TestCase):
             result.stdout,
             "inputs passed correctly",
         )
-
-    def test__annotate__verifies_mutually_exclusive_options(self):
-        required_options = ["--input-h5ad-file", "some.h5ad", "--model-url", "some_url"]
-        result = CliRunner().invoke(
-            annotate,
-            required_options + [],
-        )
-
-        self.assertNotEqual(0, result.exit_code, "aborts with non-success code")
         self.assertIn(
-            "--update_h5ad_file or --output_h5ad_file must be specified",
+            f"Wrote annotations to {query_dataset_file_path}.output",
             result.stdout,
-            "error message displayed",
+            "success message is correct",
         )
 
-        result = CliRunner().invoke(
-            annotate, required_options + ["--output-h5ad-file", "some_arg", "--update-h5ad-file"]
-        )
+    def test__annotate__requires_overwrite_option_when_output_file_exists(self):
 
-        self.assertNotEqual(0, result.exit_code, "aborts with non-success code")
-        self.assertIn(
-            "--update_h5ad_file and --output_h5ad_file are mutually exclusive",
-            result.stdout,
-            "error message displayed",
-        )
+        with NamedTemporaryFile() as input_h5ad, NamedTemporaryFile() as existing_file:
+            required_options = [input_h5ad.name, "--output-h5ad-file", existing_file.name, "--model-url", "some_url"]
+            result = CliRunner().invoke(
+                annotate,
+                required_options + [],
+            )
+
+            self.assertNotEqual(0, result.exit_code, "aborts with non-success code")
+            self.assertIn(
+                "try using the flag --overwrite",
+                result.stdout,
+                "error message displayed",
+            )
+
+    def test__annotate__overwrite_option_allows_overwrite_of_existing_output_file(self):
+        model_file_path = write_model(FakeModel())
+
+        with NamedTemporaryFile() as existing_file:
+            required_options = [
+                existing_file.name,
+                "--output-h5ad-file",
+                existing_file.name,
+                "--overwrite",
+                "--model-url",
+                model_file_path,
+            ]
+            result = CliRunner().invoke(
+                annotate,
+                required_options + [],
+            )
+
+            print(result.stdout)
+            self.assertNotEqual(1, result.exit_code, "aborts with non-success code")
+            self.assertIn(
+                f"Wrote annotations to {existing_file.name}",
+                result.stdout,
+                "success message is correct on output file overwrite",
+            )
 
 
 # TODO:

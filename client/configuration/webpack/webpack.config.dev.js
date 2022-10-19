@@ -9,6 +9,7 @@ const sharedConfig = require("./webpack.config.shared");
 const babelOptions = require("../babel/babel.dev");
 
 const fonts = path.resolve("src/fonts");
+const images = path.resolve("src/images");
 const nodeModules = path.resolve("node_modules");
 
 const devConfig = {
@@ -28,11 +29,11 @@ const devConfig = {
       {
         test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2|otf)$/i,
         loader: "file-loader",
-        include: [nodeModules, fonts],
+        include: [nodeModules, fonts, images],
         options: {
           name: "static/assets/[name].[ext]",
           // (thuang): This is needed to make sure @font url path is '/static/assets/'
-          publicPath: "/",
+          publicPath: "..",
         },
       },
     ],

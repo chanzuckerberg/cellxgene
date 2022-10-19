@@ -26,14 +26,14 @@ Steps must be run from the project directory and in a virtual env with all the d
 3. In the release branch, run `make create-release-candidate PART=[major | minor | patch]`. This will bump the version and create a release *candidate* version (e.g. `0.3.0-rc.0`).
 4. Commit changes, push the new branch to origin and open a `DO NOT MERGE` draft PR, which will run tests on your branch. We will use this PR later
 5. Upload the release candidate to Test PyPI by running the command `make release-candidate-to-test-pypi`. (Make sure you are registered for PyPI and Test PyPI and you have write access to the cellxgene PyPI package for both).
-6. Verify the release candidate in a fresh virtual environment by running `make install-release-test` which installs the cellxgene build you just uploaded to Test PyPI. The PM should do this too.
+6. Verify the release candidate in a fresh virtual environment by running `VERSION=<X>.<Y>.<Z>rc.<#> make install-release-test` which installs the cellxgene build you just uploaded to Test PyPI (note that the version value does not include a dash `-`!). The PM should do this too. Note that you may need to run `hash -r` to ensure the cellxgene executable that was just installed is found in your shell path.
 7. If you find errors with the release candidate, fix them in main, rebase, and run `make recreate-release-candidate` to increment the release candidate version (i.e. `0.3.0-rc.0` -> `0.3.0-rc.1`). Then go back to Steps 5 and 6 to re-upload and re-test the new release candidate.
 8. If everything looks good, push the release to Test PyPI without the release candidate tag by running the command `make release-final-to-test-pypi` (i.e. `0.3.0-rc.1` -> `0.3.0`).
     - **NOTE:** Once you push the final release version to Test PyPI, you cannot ever re-upload the build again. If you need to make changes to the build, you will have to "burn" the version number and bump the part again and go back to step 1 with a brand new version number. For example, if you upload `0.3.0` to Test PyPI and realize there's a bug, you will have to create a new version `0.4.0` and there will be no `0.3.0` version of cellxgene. This is why testing the release candidate is very important.
 9. Publish the open draft PR for the release and conduct a PR review.
 10. Merge to the `main` branch.
 11. Publish to PyPI (prod) (assuming you that you have registered for PyPI, and that you have write access to the cellxgene pypi package) by running `make release-final`.
-12. Test the installation in a fresh virtual environment by running `pip install --no-cache-dir cellxgene`.
+12. Test the installation in a fresh virtual environment by running `pip install --no-cache-dir cellxgene`. Note that you may need to run `hash -r` to ensure the cellxgene executable that was just installed is found in your shell path.
 13. Create Github release using the version number and release notes ([instructions](https://help.github.com/articles/creating-releases/)):
      - Draft new release
      - Type version name matching release version number from (1)
