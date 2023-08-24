@@ -12,6 +12,7 @@ jobs:
     steps:
       - uses: actions/stale@v5
         with:
+          days-before-issue-stale: -1 # Do not mark any issues as stale
           days-before-pr-stale: 14
           days-before-pr-close: 3
           stale-pr-message: "This PR has not seen any activity in the past 2 weeks; if no one comments or reviews it in the next 3 days, this PR will be closed."
