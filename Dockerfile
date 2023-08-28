@@ -1,4 +1,4 @@
-FROM ubuntu:bionic
+FROM ubuntu:jammy
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
