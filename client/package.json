@@ -133,7 +133,6 @@
     "lodash.map": "^4.6.0",
     "lodash.zip": "^4.2.0",
     "mini-css-extract-plugin": "^1.5.0",
-    "obsolete-webpack-plugin": "^0.5.6",
     "prettier": "^2.0.5",
     "puppeteer": "^8.0.0",
     "rimraf": "^3.0.2",
@@ -142,7 +141,8 @@
     "webpack": "^5.88.2",
     "webpack-cli": "^4.6.0",
     "webpack-dev-middleware": "^4.1.0",
-    "webpack-merge": "^5.0.9"
+    "webpack-merge": "^5.0.9",
+    "webpack-obsolete-plugin": "^1.0.5"
   },
   "jest": {
     "testMatch": [
