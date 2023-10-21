@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const ObsoleteWebpackPlugin = require("obsolete-webpack-plugin");
+const ObsoleteWebpackPlugin = require("webpack-obsolete-plugin");
 
 const src = path.resolve("src");
 const nodeModules = path.resolve("node_modules");

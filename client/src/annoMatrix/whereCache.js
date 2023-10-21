@@ -52,7 +52,7 @@ import { _getColumnDimensionNames } from "./schema";
 import { _hashStringValues } from "./query";
 
 export function _whereCacheGet(whereCache, schema, field, query) {
-  /* 
+  /*
 	query will either be an where query (object) or a column name (string).
 
 	Return array of column labels or undefined.
@@ -169,5 +169,6 @@ function __whereCacheMerge(dst, src) {
 }
 
 export function _whereCacheMerge(...caches) {
+  // eslint-disable-next-line compat/compat -- not using web APIs
   return caches.reduce(__whereCacheMerge, {});
 }
