@@ -6,7 +6,7 @@ import zlib
 import json
 
 from flask import make_response, jsonify, current_app, abort
-from werkzeug.urls import url_unquote
+from urllib.parse import quote as url_unquote
 
 from server.common.config.client_config import get_client_config
 from server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
