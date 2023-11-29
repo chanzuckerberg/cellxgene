@@ -21,7 +21,7 @@ class ConfigTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        os.makedirs(cls.tmp_fixtures_directory)
+        os.makedirs(cls.tmp_fixtures_directory, exist_ok=True)
 
     def custom_server_config(
         self,

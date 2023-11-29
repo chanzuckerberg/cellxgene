@@ -56,7 +56,6 @@ class TestExternalConfig(ConfigTests):
             self.assertFalse(data_config["config"]["parameters"]["disable-diffexp"])
 
     def test_environment_variable_errors(self):
-
         # no name
         app_config = AppConfig()
         app_config.external_config.environment = [dict(required=True, path=["this", "is", "a", "path"])]

@@ -145,7 +145,7 @@ class AnnotationsLocalFile(Annotations):
     def write_gene_sets(self, gene_sets, tid, data_adaptor):
         self.check_gene_sets_save_enabled()  # raises
 
-        if type(tid) != int or tid < 0:
+        if type(tid) is not int or tid < 0:
             raise ValueError("tid must be a positive integer")
 
         # may raise
@@ -175,7 +175,7 @@ class AnnotationsLocalFile(Annotations):
 
             # update the cache
             self.last_geneset_fname = fname
-            self.last_geneset = gene_sets if type(gene_sets) == dict else {g["geneset_name"]: g for g in gene_sets}
+            self.last_geneset = gene_sets if isinstance(gene_sets, dict) else {g["geneset_name"]: g for g in gene_sets}
 
     def _get_userdata_idhash(self, data_adaptor):
         """

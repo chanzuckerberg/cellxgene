@@ -92,7 +92,7 @@ class AnndataAdaptor(DataAdaptor):
         """
         self.original_obs_index = self.data.obs.index
 
-        for (ax_name, var_name) in ((Axis.OBS, "obs"), (Axis.VAR, "var")):
+        for ax_name, var_name in ((Axis.OBS, "obs"), (Axis.VAR, "var")):
             config_name = f"single_dataset__{var_name}_names"
             parameter_name = f"{var_name}_names"
             name = getattr(self.server_config, config_name)
@@ -175,10 +175,11 @@ class AnndataAdaptor(DataAdaptor):
             raise DatasetAccessError("Out of memory - file is too large for available memory.")
         except Exception:
             import traceback
+
             message = (
                 "File not found or is inaccessible. File must be an .h5ad object. "
                 "Please check your input and try again."
-                )
+            )
             if self.server_config.app__verbose:
                 message += f"\n{traceback.format_exc()}"
             raise DatasetAccessError(message)
@@ -218,7 +219,7 @@ class AnndataAdaptor(DataAdaptor):
         * with shape (n_obs, >= 2)
         * with all values finite or NaN (no +Inf or -Inf)
         """
-        is_valid = type(arr) == np.ndarray and arr.dtype.kind in "fiu"
+        is_valid = type(arr) is np.ndarray and arr.dtype.kind in "fiu"
         is_valid = is_valid and arr.shape[0] == self.data.n_obs and arr.shape[1] >= 2
         is_valid = is_valid and not np.any(np.isinf(arr)) and not np.all(np.isnan(arr))
         return is_valid
@@ -242,8 +243,10 @@ class AnndataAdaptor(DataAdaptor):
             )
         if self.data.X.dtype < np.float32:
             if self.data.isbacked:
-                raise DatasetAccessError(f"Data matrix in {self.data.X.dtype} format is not supported in backed mode."
-                                         " Please reload without --backed, or convert matrix to float32")
+                raise DatasetAccessError(
+                    f"Data matrix in {self.data.X.dtype} format is not supported in backed mode."
+                    " Please reload without --backed, or convert matrix to float32"
+                )
             warnings.warn(
                 f"Anndata data matrix is in unsupported {self.data.X.dtype} format -- will be cast to float32"
             )
@@ -299,7 +302,7 @@ class AnndataAdaptor(DataAdaptor):
         layouts = self.dataset_config.embeddings__names
 
         if layouts is None or len(layouts) == 0:
-            layouts = [key[2:] for key in self.data.obsm_keys() if type(key) == str and key.startswith("X_")]
+            layouts = [key[2:] for key in self.data.obsm_keys() if type(key) is str and key.startswith("X_")]
 
         # remove invalid layouts
         valid_layouts = []

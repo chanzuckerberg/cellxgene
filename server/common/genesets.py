@@ -136,7 +136,7 @@ def write_gene_sets_tidycsv(f, genesets):
 
 
 def summarizeQueryHash(raw_query):
-    """ generate a cache key (hash) from the raw query string """
+    """generate a cache key (hash) from the raw query string"""
     return hashlib.sha1(raw_query).hexdigest()
 
 
@@ -187,7 +187,7 @@ def validate_gene_sets(genesets, var_names, context=None):
     # 1. check gene set character set and format
     illegal_name = re.compile(r"^\s|  |[\u0000-\u001F\u007F-\uFFFF]|\s$")
     for name in geneset_names:
-        if type(name) != str or len(name) == 0:
+        if type(name) is not str or len(name) == 0:
             raise KeyError("Gene set names must be non-null string.")
         if illegal_name.search(name):
             messagefn(

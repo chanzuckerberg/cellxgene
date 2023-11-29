@@ -2,7 +2,7 @@ name: Compatibility Tests
 
 on:
   schedule:
-    - cron: '0 8 7 * 2'
+    - cron: "0 8 7 * 2"
   push:
     branches:
       - main
@@ -46,78 +46,78 @@ jobs:
         # add anndata pinned version test for subset of matrix configurations,
         # in order to reduce matrix cross-product explosion
         include:
-          - python-version: 3.8
+          - python-version: 3.9
             cellxgene_build: latest
             # TODO: dynamically use the literal version in requirements.txt,
             # to avoid having to update this in manually in the future
             # TODO: Do not bother running this if anndata latest version
             # matches this pinned version, to avoid a redundant test
-            anndata_version: '==0.7.6'
+            anndata_version: "==0.10.3"
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Cache env vars
-      run: echo "PIP_CACHE=`python -m pip cache dir`" >> $GITHUB_ENV
-    - name: Cache env vars (MacOS)
-      if: startsWith(matrix.os, 'macos')
-      run: echo "BREW_CACHE=`brew --cache`" >> $GITHUB_ENV
-    # FIXME: Only working for Linux
-    - name: Python cache
-      uses: actions/cache@v1
-      with:
-        path: ${{ env.PIP_CACHE }}
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-    - name: Node cache
-      uses: actions/cache@v1
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
-    - name: Brew cache (MacOS)
-      if: startsWith(matrix.os, 'macos')
-      uses: actions/cache@v1
-      with:
-        path: ${{ env.BREW_CACHE }}
-        key: ${{ runner.os }}-brew-
-    - name: Install dependencies (Ubuntu Linux)
-      if: startsWith(matrix.os, 'ubuntu')
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libhdf5-serial-dev
-    - name: Install dependencies (MacOS)
-      if: startsWith(matrix.os, 'macos')
-      run: brew install hdf5
-    - name: Install cellxgene from `main` branch
-      if: matrix.cellxgene_build == 'main'
-      run: |
-        pip install -r server/requirements-dev.txt
-        make pydist install-dist
-    - name: Install cellxgene from latest release (pypi.org)
-      if: matrix.cellxgene_build == 'latest'
-      run: |
-        pip install --upgrade cellxgene
-        # install the additional dev requirements on top of what is in the
-        # cellxgene pip package, which are needed for testing, but otherwise
-        # keep same pip pkg versions as in the cxg release
-        sed -i'' -e 's/-r requirements.txt//' server/requirements-dev.txt
-        pip install -r server/requirements-dev.txt
-    - name: Install anndata version per matrix variable
-      run: pip install anndata${{ matrix.anndata_version }}
-    - name: Install node
-      run: make dev-env-client
-    # Run different types of test separately, to facilitate troubleshooting
-    - name: Unit Tests - client
-      run: make unit-test-client
-    - name: Unit Tests - server
-      run: make unit-test-server
-    - name: Smoke Tests
-      run: make smoke-test
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Cache env vars
+        run: echo "PIP_CACHE=`python -m pip cache dir`" >> $GITHUB_ENV
+      - name: Cache env vars (MacOS)
+        if: startsWith(matrix.os, 'macos')
+        run: echo "BREW_CACHE=`brew --cache`" >> $GITHUB_ENV
+      # FIXME: Only working for Linux
+      - name: Python cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.PIP_CACHE }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Node cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Brew cache (MacOS)
+        if: startsWith(matrix.os, 'macos')
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.BREW_CACHE }}
+          key: ${{ runner.os }}-brew-
+      - name: Install dependencies (Ubuntu Linux)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libhdf5-serial-dev
+      - name: Install dependencies (MacOS)
+        if: startsWith(matrix.os, 'macos')
+        run: brew install hdf5
+      - name: Install cellxgene from `main` branch
+        if: matrix.cellxgene_build == 'main'
+        run: |
+          pip install -r server/requirements-dev.txt
+          make pydist install-dist
+      - name: Install cellxgene from latest release (pypi.org)
+        if: matrix.cellxgene_build == 'latest'
+        run: |
+          pip install --upgrade cellxgene
+          # install the additional dev requirements on top of what is in the
+          # cellxgene pip package, which are needed for testing, but otherwise
+          # keep same pip pkg versions as in the cxg release
+          sed -i'' -e 's/-r requirements.txt//' server/requirements-dev.txt
+          pip install -r server/requirements-dev.txt
+      - name: Install anndata version per matrix variable
+        run: pip install anndata${{ matrix.anndata_version }}
+      - name: Install node
+        run: make dev-env-client
+      # Run different types of test separately, to facilitate troubleshooting
+      - name: Unit Tests - client
+        run: make unit-test-client
+      - name: Unit Tests - server
+        run: make unit-test-server
+      - name: Smoke Tests
+        run: make smoke-test
     # FIXME: Fails intermittently. See https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/cellxgene/2415
     # - name: Smoke Tests with Annotations
     #   run: make smoke-test-annotations

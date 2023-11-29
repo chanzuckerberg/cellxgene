@@ -6,12 +6,12 @@ from server.common.rest import _query_parameter_to_filter
 
 
 def _qsparse(qs):
-    """ emulate what Flask/Werkzeug do to our QS """
+    """emulate what Flask/Werkzeug do to our QS"""
     return MultiDict(parse_qs(qs))
 
 
 class FilterParseTests(unittest.TestCase):
-    """ Test cases for various filter parsing """
+    """Test cases for various filter parsing"""
 
     def test_queryparam_to_filter_parse(self):
         # categories
@@ -57,7 +57,6 @@ class FilterParseTests(unittest.TestCase):
         )
 
     def test_queryparam_to_filter_errors(self):
-
         # should raise FilterError
         filter_errors = [
             "foo=bar",  # no axis

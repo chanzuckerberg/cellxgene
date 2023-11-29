@@ -19,7 +19,7 @@ import server.common.fbs.NetEncoding.Uint32Array as Uint32Array
 
 # Serialization helper
 def serialize_column(builder, typed_arr):
-    """ Serialize NetEncoding.Column """
+    """Serialize NetEncoding.Column"""
 
     (u_type, u_value) = typed_arr
     Column.ColumnStart(builder)
@@ -30,7 +30,7 @@ def serialize_column(builder, typed_arr):
 
 # Serialization helper
 def serialize_matrix(builder, n_rows, n_cols, columns, col_idx):
-    """ Serialize NetEncoding.Matrix """
+    """Serialize NetEncoding.Matrix"""
 
     Matrix.MatrixStart(builder)
     Matrix.MatrixAddNRows(builder, n_rows)

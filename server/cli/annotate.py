@@ -26,9 +26,7 @@ def annotate_args(func):
 
 
 @sort_options
-@click.command(
-    options_metavar="<options>"
-)
+@click.command(options_metavar="<options>")
 @click.argument(
     "input_h5ad_file",
     type=click.Path(exists=True, dir_okay=False, readable=True),
@@ -51,8 +49,8 @@ def annotate_args(func):
     "--output-h5ad-file",
     default="",
     help="The output H5AD file that will contain the generated annotation values. If this option is not provided, "
-         "the input file will be overwritten to include the new annotations; in this case you must specify "
-         "--overwrite.",
+    "the input file will be overwritten to include the new annotations; in this case you must specify "
+    "--overwrite.",
     metavar="<filename>",
 )
 @click.option(
@@ -60,7 +58,7 @@ def annotate_args(func):
     default=False,
     is_flag=True,
     help="Allow overwriting of the specified H5AD output file, if it exists. For safety, you must specify this "
-         "flag if the specified output file already exists or if the --output-h5ad-file option is not provided.",
+    "flag if the specified output file already exists or if the --output-h5ad-file option is not provided.",
     show_default=True,
 )
 @click.option(
