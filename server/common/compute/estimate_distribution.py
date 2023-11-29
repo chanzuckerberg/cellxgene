@@ -97,7 +97,7 @@ def estimate_approximate_distribution(X) -> XApproximateDistribution:
     if Xdata.size > CHUNKSIZE:
         min_val = max_val = Xdata[0]
         with concurrent.futures.ThreadPoolExecutor() as tp:
-            for (_min, _max) in tp.map(min_max, [Xdata[i : i + CHUNKSIZE] for i in range(0, Xdata.size, CHUNKSIZE)]):
+            for _min, _max in tp.map(min_max, [Xdata[i : i + CHUNKSIZE] for i in range(0, Xdata.size, CHUNKSIZE)]):
                 min_val = min(_min, min_val)
                 max_val = max(_max, max_val)
 

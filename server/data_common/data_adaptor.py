@@ -154,7 +154,7 @@ class DataAdaptor(metaclass=ABCMeta):
         parameters.update(self.parameters)
 
     def _index_filter_to_mask(self, filter, count):
-        mask = np.zeros((count,), dtype=np.bool)
+        mask = np.zeros((count,), dtype="bool")
         for i in filter:
             if isinstance(i, list):
                 mask[i[0] : i[1]] = True
@@ -163,7 +163,7 @@ class DataAdaptor(metaclass=ABCMeta):
         return mask
 
     def _axis_filter_to_mask(self, axis, filter, count):
-        mask = np.ones((count,), dtype=np.bool)
+        mask = np.ones((count,), dtype="bool")
         if "index" in filter:
             mask = np.logical_and(mask, self._index_filter_to_mask(filter["index"], count))
         if "annotation_value" in filter:
@@ -172,7 +172,7 @@ class DataAdaptor(metaclass=ABCMeta):
         return mask
 
     def _annotation_filter_to_mask(self, axis, filter, count):
-        mask = np.ones((count,), dtype=np.bool)
+        mask = np.ones((count,), dtype="bool")
         for v in filter:
             name = v["name"]
             if axis == Axis.VAR:

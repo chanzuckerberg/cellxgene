@@ -56,7 +56,7 @@ def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp
 
     # degrees of freedom for Welch's t-test
     with np.errstate(divide="ignore", invalid="ignore"):
-        dof = sum_vn ** 2 / (vnA ** 2 / (nA - 1) + vnB ** 2 / (nB - 1))
+        dof = sum_vn**2 / (vnA**2 / (nA - 1) + vnB**2 / (nB - 1))
     dof[np.isnan(dof)] = 1
 
     # Welch's t-test score calculation

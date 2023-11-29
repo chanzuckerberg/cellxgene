@@ -6,7 +6,7 @@ import zlib
 import json
 
 from flask import make_response, jsonify, current_app, abort
-from werkzeug.urls import url_unquote
+from urllib.parse import unquote
 
 from server.common.config.client_config import get_client_config
 from server.common.constants import Axis, DiffExpMode, JSON_NaN_to_num_warning_msg
@@ -64,22 +64,22 @@ def _query_parameter_to_filter(args):
             axis, name = key.split(":")
             if axis not in ("obs", "var"):
                 raise FilterError("unknown filter axis")
-            name = url_unquote(name)
+            name = unquote(name)
             current = filters[axis].setdefault(name, {"name": name})
 
             val_split = value.split(",")
             if len(val_split) == 1:
                 if "min" in current or "max" in current:
                     raise FilterError("do not mix range and value filters")
-                value = url_unquote(value)
+                value = unquote(value)
                 values = current.setdefault("values", [])
                 values.append(value)
 
             elif len(val_split) == 2:
                 if len(current) > 1:
                     raise FilterError("duplicate range specification")
-                min = url_unquote(val_split[0])
-                max = url_unquote(val_split[1])
+                min = unquote(val_split[0])
+                max = unquote(val_split[1])
                 if min != "*":
                     current["min"] = float(min)
                 if max != "*":
@@ -379,7 +379,7 @@ def summarize_var_helper(request, data_adaptor, key, raw_query):
             HTTPStatus.OK,
             {"Content-Type": "application/octet-stream"},
         )
-    except (ValueError) as e:
+    except ValueError as e:
         return abort(HTTPStatus.NOT_FOUND, description=str(e))
     except (UnsupportedSummaryMethod, FilterError) as e:
         return abort(HTTPStatus.BAD_REQUEST, description=str(e))

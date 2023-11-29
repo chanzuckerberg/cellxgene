@@ -58,7 +58,7 @@ class DataLocatorAdaptorTest(unittest.TestCase):
         return config
 
     def stdAsserts(self, data):
-        """ run these each time we load the data """
+        """run these each time we load the data"""
         self.assertIsNotNone(data)
         self.assertEqual(data.cell_count, 2638)
         self.assertEqual(data.gene_count, 1838)

@@ -106,7 +106,7 @@ class CorporaAPITest(unittest.TestCase):
 
 
 class CorporaRESTAPITest(unittest.TestCase):
-    """ Confirm endpoints reflect Corpora-specific features """
+    """Confirm endpoints reflect Corpora-specific features"""
 
     @classmethod
     def setCorporaFields(cls, path):
