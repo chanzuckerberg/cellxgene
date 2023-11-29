@@ -72,24 +72,18 @@ class TestDatasetConfig(ConfigTests):
             config.dataset_config.handle_app()
 
     def test_handle_user_annotations__instantiates_user_annotations_class_correctly(self):
-        config = self.get_config(
-            enable_users_annotations="true", annotation_type="local_file_csv"
-        )
+        config = self.get_config(enable_users_annotations="true", annotation_type="local_file_csv")
         config.server_config.complete_config(self.context)
         config.dataset_config.handle_user_annotations(self.context)
         self.assertIsInstance(config.dataset_config.user_annotations, AnnotationsLocalFile)
 
-        config = self.get_config(
-            enable_users_annotations="true", annotation_type="NOT_REAL"
-        )
+        config = self.get_config(enable_users_annotations="true", annotation_type="NOT_REAL")
         config.server_config.complete_config(self.context)
         with self.assertRaises(ConfigurationError):
             config.dataset_config.handle_user_annotations(self.context)
 
     def test_handle_local_file_csv_annotations__sets_dir_if_not_passed_in(self):
-        config = self.get_config(
-            enable_users_annotations="true", annotation_type="local_file_csv"
-        )
+        config = self.get_config(enable_users_annotations="true", annotation_type="local_file_csv")
         config.server_config.complete_config(self.context)
         config.dataset_config.handle_local_file_csv_annotations(self.context)
         self.assertIsInstance(config.dataset_config.user_annotations, AnnotationsLocalFile)

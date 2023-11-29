@@ -50,7 +50,7 @@ class BaseConfig(object):
                     f"Invalid type for attribute: {attrname}, expected types ({tnames}), got {type(val).__name__}"
                 )
         else:
-            if type(val) != vtype:
+            if type(val) is not vtype:
                 raise ConfigurationError(
                     f"Invalid type for attribute: {attrname}, "
                     f"expected type {vtype.__name__}, got {type(val).__name__}"
@@ -70,7 +70,7 @@ class BaseConfig(object):
             if not hasattr(self, key):
                 raise ConfigurationError(f"unknown config parameter {key}.")
             try:
-                if type(value) == tuple:
+                if type(value) is tuple:
                     # convert tuple values to list values
                     value = list(value)
                 setattr(self, key, value)

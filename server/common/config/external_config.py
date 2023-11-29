@@ -29,7 +29,7 @@ class ExternalConfig(BaseConfig):
             if name is None:
                 raise ConfigurationError("environment: 'name' is missing")
             required = envdict.get("required", False)
-            if type(required) != bool:
+            if type(required) is not bool:
                 raise ConfigurationError("environment: 'required' must be a bool")
             path = envdict.get("path")
             if path is None:

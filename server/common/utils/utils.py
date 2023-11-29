@@ -8,7 +8,7 @@ import socket
 from urllib.parse import urlsplit, urljoin
 
 import numpy as np
-from flask import json
+import json
 
 from server.common.errors import ConfigurationError
 
@@ -99,6 +99,7 @@ def custom_format_warning(msg, *args, **kwargs):
 
 def jsonify_strict(data):
     return StrictJSONEncoder().encode(data)
+
 
 def import_plugins(plugin_module):
     """
