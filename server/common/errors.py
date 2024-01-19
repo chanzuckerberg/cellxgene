@@ -20,6 +20,18 @@ class RequestException(CellxgeneException):
         self.status_code = status_code or self.default_status_code
 
 
+class TombstoneException(RequestException):
+    """Base class for tombstoned dataset exception."""
+
+    # The default status code is 302 (Found) for redirect
+    default_status_code = HTTPStatus.FOUND
+
+    def __init__(self, message, collection_id, dataset_id, status_code=None):  # type: ignore
+        super().__init__(message, status_code)  # type: ignore
+        self.collection_id = collection_id
+        self.dataset_id = dataset_id
+
+
 def define_exception(name, doc):
     globals()[name] = type(name, (CellxgeneException,), dict(__doc__=doc))
 
@@ -27,6 +39,8 @@ def define_exception(name, doc):
 def define_request_exception(name, doc, default_status_code=HTTPStatus.BAD_REQUEST):
     globals()[name] = type(name, (RequestException,), dict(__doc__=doc, default_status_code=default_status_code))
 
+def define_tombstone_exception(name, doc, default_status_code=HTTPStatus.FOUND):  # type: ignore
+    globals()[name] = type(name, (TombstoneException,), dict(__doc__=doc, default_status_code=default_status_code))
 
 define_request_exception("FilterError", "Raised when filter is malformed")
 define_request_exception("JSONEncodingValueError", "Raised when data cannot be encoded into json")
@@ -52,3 +66,9 @@ define_exception("ConfigurationError", "Raised when checking configuration error
 define_exception("PrepareError", "Raised when data is misprepared")
 define_exception("ObsoleteRequest", "Raised when the request is no longer valid.")
 define_exception("UnsupportedSummaryMethod", "Raised when a gene set summary method is unknown or unsupported.")
+
+# Define TombstoneException Errors
+define_tombstone_exception(  # type: ignore
+    "TombstoneError",
+    "Raised when a user attempts to view a tombstoned dataset",
+)

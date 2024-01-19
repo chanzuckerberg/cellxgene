@@ -25,6 +25,9 @@ from server.common.errors import (
 from server.common.genesets import summarizeQueryHash
 from server.common.fbs.matrix import decode_matrix_fbs
 
+from server.data_anndata.anndata_adaptor import AnndataAdaptor
+from server.data_cxg.cxg_dataset import CxgDataset
+
 
 def abort_and_log(code, logmsg, loglevel=logging.DEBUG, include_exc_info=False):
     """
@@ -128,6 +131,10 @@ def config_get(app_config, data_adaptor):
 
 def annotations_obs_get(request, data_adaptor):
     fields = request.args.getlist("annotation-name", None)
+    nBins = request.args.get("nbins", None)
+    if nBins is not None:
+        nBins = int(nBins)
+
     num_columns_requested = len(data_adaptor.get_obs_keys()) if len(fields) == 0 else len(fields)
     if data_adaptor.server_config.exceeds_limit("column_request_max", num_columns_requested):
         return abort(HTTPStatus.BAD_REQUEST)
@@ -136,11 +143,14 @@ def annotations_obs_get(request, data_adaptor):
         return abort(HTTPStatus.NOT_ACCEPTABLE)
 
     try:
-        labels = None
-        annotations = data_adaptor.dataset_config.user_annotations
-        if annotations.user_annotations_enabled():
-            labels = annotations.read_labels(data_adaptor)
-        fbs = data_adaptor.annotation_to_fbs_matrix(Axis.OBS, fields, labels)
+        if isinstance(data_adaptor, AnndataAdaptor):
+            labels = None
+            annotations = data_adaptor.dataset_config.user_annotations
+            if annotations.user_annotations_enabled():
+                labels = annotations.read_labels(data_adaptor)
+            fbs = data_adaptor.annotation_to_fbs_matrix(Axis.OBS, fields, labels)
+        elif isinstance(data_adaptor, CxgDataset):
+            fbs = data_adaptor.annotation_to_fbs_matrix(Axis.OBS, fields, num_bins=nBins)
         return make_response(fbs, HTTPStatus.OK, {"Content-Type": "application/octet-stream"})
     except KeyError as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)

@@ -9,6 +9,7 @@ from urllib.parse import urlsplit, urljoin
 
 import numpy as np
 import json
+from json import JSONEncoder
 
 from server.common.errors import ConfigurationError
 
@@ -65,7 +66,7 @@ def path_join(base, *urls):
     return btpl._replace(path=path).geturl()
 
 
-class StrictJSONEncoder(json.JSONEncoder):
+class StrictJSONEncoder(JSONEncoder):
     """
     Custom JSON encoder set-up performing two tasks:
     1. Strict JSON conformance with non-finite floats (NaN, +/-Inf) via allow_nan=False
@@ -90,7 +91,7 @@ class StrictJSONEncoder(json.JSONEncoder):
             return float(obj)
         if isinstance(obj, np.integer):
             return int(obj)
-        return json.JSONEncoder.default(self, obj)
+        return JSONEncoder.default(self, obj)
 
 
 def custom_format_warning(msg, *args, **kwargs):
@@ -99,6 +100,10 @@ def custom_format_warning(msg, *args, **kwargs):
 
 def jsonify_strict(data):
     return StrictJSONEncoder().encode(data)
+
+
+def jsonify_numpy(data):
+    return json.dumps(data, cls=StrictJSONEncoder, allow_nan=False)
 
 
 def import_plugins(plugin_module):

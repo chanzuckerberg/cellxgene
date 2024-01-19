@@ -3,6 +3,7 @@ include common.mk
 BUILDDIR := build
 CLIENTBUILD := $(BUILDDIR)/client
 SERVERBUILD := $(BUILDDIR)/server
+WHEELBUILD := $(BUILDDIR)/lib/server
 CLEANFILES :=  $(BUILDDIR)/ client/build build dist cellxgene.egg-info
 
 PART ?= patch
@@ -218,3 +219,9 @@ install-dist: uninstall
 uninstall:
 	pip uninstall -y cellxgene || :
 
+build_wheel: build                                                                       
+	$(call copy_client_assets,$(CLIENTBUILD),$(WHEELBUILD))                              
+
+pywheel:                                                                                 
+	NODE_OPTIONS=--openssl-legacy-provider $(MAKE) build_wheel
+	python3 setup.py bdist_wheel -d wheel

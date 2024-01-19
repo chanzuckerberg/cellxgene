@@ -11,7 +11,7 @@ import server.common.compute.estimate_distribution as estimate_distribution
 from server.common.colors import convert_anndata_category_colors_to_cxg_category_colors
 from server.common.constants import Axis, MAX_LAYOUTS, XApproximateDistribution
 from server.common.corpora import corpora_get_props_from_anndata
-from server.common.errors import PrepareError, DatasetAccessError
+from server.common.errors import PrepareError, DatasetAccessError, FilterError, ExceedsLimitError
 from server.common.utils.type_conversion_utils import get_schema_type_hint_of_array
 from server.data_common.data_adaptor import DataAdaptor
 from server.common.fbs.matrix import encode_matrix_fbs
@@ -275,6 +275,26 @@ class AnndataAdaptor(DataAdaptor):
                             f"--max-category-items option to 500, this will hide categorical "
                             f"annotations with more than 500 categories in the UI"
                         )
+
+    def data_frame_to_fbs_matrix(self, filter, axis):
+        if axis != Axis.VAR:
+            raise ValueError("Only VAR dimension access is supported")
+
+        try:
+            obs_selector, var_selector = self._filter_to_mask(filter)
+        except (KeyError, IndexError, TypeError, AttributeError):
+            raise FilterError("Error parsing filter")
+
+        if obs_selector is not None:
+            raise FilterError("filtering on obs unsupported")
+
+        num_columns = self.get_shape()[1] if var_selector is None else np.count_nonzero(var_selector)
+        if self.server_config.exceeds_limit("column_request_max", num_columns):
+            raise ExceedsLimitError("Requested dataframe columns exceed column request limit")
+
+        X = self.get_X_array(obs_selector, var_selector)
+        col_idx = np.nonzero([] if var_selector is None else var_selector)[0]
+        return encode_matrix_fbs(X, col_idx=col_idx, row_idx=None)
 
     def annotation_to_fbs_matrix(self, axis, fields=None, labels=None):
         if axis == Axis.OBS:

@@ -26,7 +26,7 @@ server:
       #   if true, then the s3 location is automatically determined from the datapath or dataroot.
       #   if false/null, then do not set.
       #   if a string, then use that value (e.g. us-east-1).
-      region_name: true
+      region_name: false
 
   adaptor:
     anndata_adaptor:
@@ -68,6 +68,32 @@ dataset:
     top_n: 10
 
   X_approximate_distribution: auto
+
+default_dataset:
+  app:
+    # Scripts can be a list of either file names (string) or dicts containing keys src, integrity and crossorigin.
+    # these will be injected into the index template as script tags with these attributes set.
+    scripts: []
+    # Inline scripts are a list of file names, where the contents of the file will be injected into the index.
+    inline_scripts: []
+
+    about_legal_tos: null
+    about_legal_privacy: null
+
+  presentation:
+    max_categories: 1000
+    custom_colors: true
+
+  embeddings:
+    names : []
+
+  diffexp:
+    enable: true
+    lfc_cutoff: 0.01
+    top_n: 10
+    count: 15
+
+  X_approximate_distribution: normal # currently fixed config
 
 external:
   # You can retrieve configuration parameters from this config file, the environment,

@@ -17,7 +17,7 @@ clean:
 
 .PHONY: ci
 ci:
-	npm ci
+	npm ci --legacy-peer-deps
 
 .PHONY: install
 install:

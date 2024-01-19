@@ -1,0 +1,76 @@
+ARG PYTHON__V=3.11
+
+FROM python:${PYTHON__V}-slim-bookworm AS base
+
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+
+ARG PYTHON__V
+ENV NUMPY__V=1.24.4
+ENV PYTHONPATH=/usr/local/lib/python${PYTHON__V}/site-packages/
+# ------------------------------------------------------------------------------
+FROM base AS builder
+
+ENV LLVM_CONFIG=/usr/lib/llvm14/bin/llvm-config
+
+# Build dependencies
+RUN apt-get update                    && \
+    apt-get -y install bash              && \
+    apt-get -y install build-essential   && \
+    apt-get -y install jq                && \
+    apt-get -y install git               && \
+    apt-get -y install libhdf5-dev       && \
+    apt-get -y install python3-pkgconfig && \
+    apt-get -y install python3-dev       && \
+    apt-get -y install nodejs            && \
+    apt-get -y install npm               && \
+    apt-get -y install llvm-dev          && \
+    apt-get -y install libblas-dev       && \
+    apt-get -y install cpio
+
+
+# Python build dependencies
+RUN python3 -m pip install -U pip        && \
+    python3 -m pip install -U Cython     && \
+    python3 -m pip install -U setuptools && \
+    python3 -m pip install -U wheel
+
+# Numpy needs to be explicitly installed else numba build will fail during
+# installation of the requirements
+RUN ln -s locale.h /usr/include/xlocale.h && \
+    python3 -m pip install numpy==$NUMPY__V
+
+# Needed so that numpy shared objects appear in the path
+RUN ln -s ${PYTHONPATH}numpy/core/include/numpy /usr/local/include/numpy
+
+WORKDIR /
+COPY ./server/requirements.txt requirements.txt
+
+RUN pip install -r requirements.txt
+
+COPY . /cellxgene
+WORKDIR /cellxgene
+
+RUN make pywheel && \
+    pip install wheel/cellxgene*.whl
+
+# Add user: cellxgeneuser, -> gives ownership over /data 
+ARG UID=1000
+ARG GID=1000
+
+RUN mkdir /data                           && \
+    addgroup --gid "${GID}" cellxgeneuser && \
+    adduser --no-create-home                 \
+            --disabled-password              \
+            --uid "${UID}" --gid "${GID}"    \
+            cellxgeneuser                 && \
+    chown -R cellxgeneuser:cellxgeneuser /data
+
+RUN rm -rf /cellxgene/*
+RUN chown -R cellxgeneuser:cellxgeneuser /cellxgene
+
+USER cellxgeneuser
+RUN touch /tmp/debug
+
+ENTRYPOINT ["cellxgene"]
+CMD ["launch", "--help"]

@@ -7,7 +7,12 @@ from server_timing import Timing as ServerTiming
 
 from server.common.config.app_config import AppConfig
 from server.common.constants import Axis, XApproximateDistribution
-from server.common.errors import FilterError, JSONEncodingValueError, ExceedsLimitError, UnsupportedSummaryMethod
+from server.common.errors import (
+    FilterError,
+    ExceedsLimitError,
+    JSONEncodingValueError,
+    UnsupportedSummaryMethod
+)
 from server.common.utils.utils import jsonify_strict
 from server.common.fbs.matrix import encode_matrix_fbs
 from server.common.genesets import validate_gene_sets
@@ -74,6 +79,7 @@ class DataAdaptor(metaclass=ABCMeta):
 
     def get_X_approximate_distribution(self) -> XApproximateDistribution:
         """return the approximate distribution of the X matrix."""
+        # TODO: test
         return XApproximateDistribution.NORMAL
 
     @abstractmethod
@@ -276,24 +282,7 @@ class DataAdaptor(metaclass=ABCMeta):
         * currently only supports access on VAR axis
         * currently only supports filtering on VAR axis
         """
-        if axis != Axis.VAR:
-            raise ValueError("Only VAR dimension access is supported")
-
-        try:
-            obs_selector, var_selector = self._filter_to_mask(filter)
-        except (KeyError, IndexError, TypeError, AttributeError):
-            raise FilterError("Error parsing filter")
-
-        if obs_selector is not None:
-            raise FilterError("filtering on obs unsupported")
-
-        num_columns = self.get_shape()[1] if var_selector is None else np.count_nonzero(var_selector)
-        if self.server_config.exceeds_limit("column_request_max", num_columns):
-            raise ExceedsLimitError("Requested dataframe columns exceed column request limit")
-
-        X = self.get_X_array(obs_selector, var_selector)
-        col_idx = np.nonzero([] if var_selector is None else var_selector)[0]
-        return encode_matrix_fbs(X, col_idx=col_idx, row_idx=None)
+        pass
 
     def diffexp_topN(self, obsFilterA, obsFilterB, top_n=None):
         """
@@ -336,7 +325,7 @@ class DataAdaptor(metaclass=ABCMeta):
             raise JSONEncodingValueError("Error encoding differential expression to JSON")
 
     @abstractmethod
-    def compute_diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff):
+    def compute_diffexp_ttest(self, maskA, maskB, top_n, lfc_cutoff, selector_lists=False):
         pass
 
     @staticmethod
@@ -399,7 +388,7 @@ class DataAdaptor(metaclass=ABCMeta):
             lastmod = None
         return lastmod
 
-    def summarize_var(self, method, filter, query_hash):
+    def summarize_var(self, method, filter, query_hash, num_bins=None):
         if method != "mean":
             raise UnsupportedSummaryMethod("Unknown gene set summary method.")
 

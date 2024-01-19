@@ -133,7 +133,7 @@ def guess_at_mem_needed(matrix):
     return guess
 
 
-def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
+def encode_matrix_fbs(matrix, row_idx=None, col_idx=None, num_bins=None):
     """
     Given a 2D DataFrame, ndarray or sparse equivalent, create and return a Matrix flatbuffer.
 
@@ -148,6 +148,9 @@ def encode_matrix_fbs(matrix, row_idx=None, col_idx=None):
         raise ValueError("row indexing not supported for FBS Matrix")
     if matrix.ndim != 2:
         raise ValueError("FBS Matrix must be 2D")
+
+    if sparse.issparse(matrix):
+        matrix = matrix.A
 
     (n_rows, n_cols) = matrix.shape
 

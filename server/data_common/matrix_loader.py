@@ -7,6 +7,7 @@ from http import HTTPStatus
 
 class MatrixDataType(Enum):
     H5AD = "h5ad"
+    CXG = "cxg"
     UNKNOWN = "unknown"
 
 
@@ -31,12 +32,16 @@ class MatrixDataLoader(object):
 
         if self.matrix_data_type == MatrixDataType.H5AD:
             from server.data_anndata.anndata_adaptor import AnndataAdaptor
-
             self.matrix_type = AnndataAdaptor
+        elif self.matrix_data_type == MatrixDataType.CXG:
+            from server.data_cxg.cxg_dataset import CxgDataset
+            self.matrix_type = CxgDataset
 
     def __matrix_data_type(self):
         if self.location.path.endswith(".h5ad"):
             return MatrixDataType.H5AD
+        elif self.location.path.endswith((".cxg", ".cxg/")):
+            return MatrixDataType.CXG
         else:
             return MatrixDataType.UNKNOWN
 
@@ -54,3 +59,8 @@ class MatrixDataLoader(object):
     def open(self, app_config, dataset_config=None):
         # create and return a DataAdaptor object
         return self.matrix_type.open(self.location, app_config, dataset_config)
+
+    def validate_and_open(self):
+        # create and return a DataAdaptor object
+        self.pre_load_validation()
+        return self.open()
