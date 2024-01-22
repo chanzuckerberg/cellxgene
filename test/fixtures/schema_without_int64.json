@@ -1,0 +1,394 @@
+{
+    "dataframe": {
+      "nObs": 2504,
+      "nVar": 36503,
+      "type": "float32"
+    },
+    "annotations": {
+      "obs": {
+        "columns": [
+          {
+            "name": "name_0",
+            "writable": false,
+            "type": "string"
+          },
+          {
+            "name": "mapped_reference_assembly",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "GRCh38"
+            ]
+          },
+          {
+            "name": "mapped_reference_annotation",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "GENCODE 32"
+            ]
+          },
+          {
+            "name": "alignment_software",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "Cell Ranger spaceranger v1.2.0"
+            ]
+          },
+          {
+            "name": "donor_id",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "P47"
+            ]
+          },
+          {
+            "name": "self_reported_ethnicity_ontology_term_id",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "HANCESTRO:0568"
+            ]
+          },
+          {
+            "name": "donor_living_at_sample_collection",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "True"
+            ]
+          },
+          {
+            "name": "donor_menopausal_status",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "premenopausal"
+            ]
+          },
+          {
+            "name": "organism_ontology_term_id",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "NCBITaxon:9606"
+            ]
+          },
+          {
+            "name": "sample_uuid",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "697c4439-470b-49c0-958f-111dfbb0d1a9"
+            ]
+          },
+          {
+            "name": "sample_preservation_method",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "OCT embedding"
+            ]
+          },
+          {
+            "name": "tissue_ontology_term_id",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "UBERON:0000310"
+            ]
+          },
+          {
+            "name": "development_stage_ontology_term_id",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "HsapDv:0000204"
+            ]
+          },
+          {
+            "name": "sample_derivation_process",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "resection"
+            ]
+          },
+          {
+            "name": "sample_source",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "Baylor College of Medicine"
+            ]
+          },
+          {
+            "name": "donor_BMI_at_collection",
+            "writable": false,
+            "type": "float32"
+          },
+          {
+            "name": "tissue_section_uuid",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "5e7bab8b-2ac0-4bff-9112-ae809ef00da1"
+            ]
+          },
+          {
+            "name": "tissue_section_thickness",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "12 μm"
+            ]
+          },
+          {
+            "name": "library_uuid",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "2be92144-d599-4a39-b99e-83ee1e551443"
+            ]
+          },
+          {
+            "name": "assay_ontology_term_id",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "EFO:0010961"
+            ]
+          },
+          {
+            "name": "sequencing_platform",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "Illumina NovaSeq 6000"
+            ]
+          },
+          {
+            "name": "is_primary_data",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              true
+            ]
+          },
+          {
+            "name": "cell_type_ontology_term_id",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "CL:0000057",
+              "CL:0000236",
+              "CL:0000669",
+              "CL:0002138",
+              "CL:0002139",
+              "CL:0002326",
+              "CL:0002327",
+              "CL:0002617"
+            ]
+          },
+          {
+            "name": "author_cell_type",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "ST1-Adipo",
+              "ST2-B",
+              "ST3-Fibro",
+              "ST4-LumHR",
+              "ST5-LumSec",
+              "ST6-LumSec/Basal",
+              "ST7-Lymphatic",
+              "ST8-Vas/Peri",
+              "ST9-Vascular"
+            ]
+          },
+          {
+            "name": "disease_ontology_term_id",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "PATO:0000461"
+            ]
+          },
+          {
+            "name": "sex_ontology_term_id",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "PATO:0000383"
+            ]
+          },
+          {
+            "name": "nCount_Spatial",
+            "writable": false,
+            "type": "float32"
+          },
+          {
+            "name": "nFeature_Spatial",
+            "writable": false,
+            "type": "int32"
+          },
+          {
+            "name": "nCount_SCT",
+            "writable": false,
+            "type": "float32"
+          },
+          {
+            "name": "nFeature_SCT",
+            "writable": false,
+            "type": "int32"
+          },
+          {
+            "name": "suspension_type",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "na"
+            ]
+          },
+          {
+            "name": "cell_type",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "B cell",
+              "adipocyte of breast",
+              "endothelial cell of lymphatic vessel",
+              "endothelial cell of vascular tree",
+              "fibroblast",
+              "luminal epithelial cell of mammary gland",
+              "mammary gland epithelial cell",
+              "pericyte"
+            ]
+          },
+          {
+            "name": "assay",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "Visium Spatial Gene Expression"
+            ]
+          },
+          {
+            "name": "disease",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "normal"
+            ]
+          },
+          {
+            "name": "organism",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "Homo sapiens"
+            ]
+          },
+          {
+            "name": "sex",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "female"
+            ]
+          },
+          {
+            "name": "tissue",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "breast"
+            ]
+          },
+          {
+            "name": "self_reported_ethnicity",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "African American"
+            ]
+          },
+          {
+            "name": "development_stage",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "mature stage"
+            ]
+          }
+        ],
+        "index": "name_0"
+      },
+      "var": {
+        "columns": [
+          {
+            "name": "name_0",
+            "writable": false,
+            "type": "string"
+          },
+          {
+            "name": "feature_is_filtered",
+            "writable": false,
+            "type": "boolean"
+          },
+          {
+            "name": "feature_name",
+            "writable": false,
+            "type": "string"
+          },
+          {
+            "name": "feature_reference",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "NCBITaxon:9606"
+            ]
+          },
+          {
+            "name": "feature_biotype",
+            "writable": false,
+            "type": "categorical",
+            "categories": [
+              "gene"
+            ]
+          }
+        ],
+        "index": "name_0"
+      }
+    },
+    "layout": {
+      "obs": [
+        {
+          "name": "pca",
+          "type": "float32",
+          "dims": [
+            "pca_0",
+            "pca_1"
+          ]
+        },
+        {
+          "name": "spatial",
+          "type": "float32",
+          "dims": [
+            "spatial_0",
+            "spatial_1"
+          ]
+        },
+        {
+          "name": "umap",
+          "type": "float32",
+          "dims": [
+            "umap_0",
+            "umap_1"
+          ]
+        }
+      ]
+    }
+  }

@@ -1,0 +1,1422 @@
+{
+    "metadata": {
+        "collection_contact_email": "tallulandrews@gmail.com",
+        "collection_contact_name": "Tallulah Andrews",
+        "collection_datasets": [
+            {
+                "assay": [
+                    {
+                        "label": "10x 3' v2",
+                        "ontology_term_id": "EFO:0009899"
+                    },
+                    {
+                        "label": "10x 3' v3",
+                        "ontology_term_id": "EFO:0009922"
+                    }
+                ],
+                "cell_count": 73295,
+                "cell_type": [
+                    {
+                        "label": "B cell",
+                        "ontology_term_id": "CL:0000236"
+                    },
+                    {
+                        "label": "Kupffer cell",
+                        "ontology_term_id": "CL:0000091"
+                    },
+                    {
+                        "label": "blood vessel endothelial cell",
+                        "ontology_term_id": "CL:0000071"
+                    },
+                    {
+                        "label": "centrilobular region hepatocyte",
+                        "ontology_term_id": "CL:0019029"
+                    },
+                    {
+                        "label": "cholangiocyte",
+                        "ontology_term_id": "CL:1000488"
+                    },
+                    {
+                        "label": "endothelial cell of pericentral hepatic sinusoid",
+                        "ontology_term_id": "CL:0019022"
+                    },
+                    {
+                        "label": "erythroid lineage cell",
+                        "ontology_term_id": "CL:0000764"
+                    },
+                    {
+                        "label": "hepatic stellate cell",
+                        "ontology_term_id": "CL:0000632"
+                    },
+                    {
+                        "label": "inflammatory macrophage",
+                        "ontology_term_id": "CL:0000863"
+                    },
+                    {
+                        "label": "midzonal region hepatocyte",
+                        "ontology_term_id": "CL:0019028"
+                    },
+                    {
+                        "label": "natural killer cell",
+                        "ontology_term_id": "CL:0000623"
+                    },
+                    {
+                        "label": "periportal region hepatocyte",
+                        "ontology_term_id": "CL:0019026"
+                    }
+                ],
+                "collection_id": "44531dd9-1388-4416-a117-af0a99de2294",
+                "created_at": 1702328276.003046,
+                "dataset_assets": [
+                    {
+                        "created_at": 0,
+                        "dataset_id": "91f6c485-8f24-4617-9b68-125d7051bc04",
+                        "filename": "raw.h5ad",
+                        "filetype": "RAW_H5AD",
+                        "id": "010eba6c-b8a3-4542-8dd1-b3c62934b794",
+                        "s3_uri": "s3://corpora-data-prod/91f6c485-8f24-4617-9b68-125d7051bc04/raw.h5ad",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "91f6c485-8f24-4617-9b68-125d7051bc04",
+                        "filename": "local.h5ad",
+                        "filetype": "H5AD",
+                        "id": "ad8c85b0-6f05-4ef1-9232-b4bf06932dce",
+                        "s3_uri": "s3://corpora-data-prod/91f6c485-8f24-4617-9b68-125d7051bc04/local.h5ad",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "91f6c485-8f24-4617-9b68-125d7051bc04",
+                        "filename": "local.rds",
+                        "filetype": "RDS",
+                        "id": "579e7cee-0ce4-46fd-bbbc-2d8c290e3510",
+                        "s3_uri": "s3://corpora-data-prod/91f6c485-8f24-4617-9b68-125d7051bc04/local.rds",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "91f6c485-8f24-4617-9b68-125d7051bc04",
+                        "filename": "",
+                        "filetype": "CXG",
+                        "id": "e5b0e2c6-177e-4cec-9c08-0557f86458a3",
+                        "s3_uri": "s3://hosted-cellxgene-prod/91f6c485-8f24-4617-9b68-125d7051bc04.cxg/",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    }
+                ],
+                "dataset_deployments": [
+                    {
+                        "url": "https://cellxgene.cziscience.com/e/ddb22b3d-a75c-4dd1-9730-dff7fc8ca530.cxg/"
+                    }
+                ],
+                "development_stage": [
+                    {
+                        "label": "human adult stage",
+                        "ontology_term_id": "HsapDv:0000087"
+                    },
+                    {
+                        "label": "mature stage",
+                        "ontology_term_id": "HsapDv:0000204"
+                    }
+                ],
+                "disease": [
+                    {
+                        "label": "normal",
+                        "ontology_term_id": "PATO:0000461"
+                    }
+                ],
+                "donor_id": [
+                    "C41",
+                    "C58",
+                    "C70",
+                    "C72"
+                ],
+                "id": "91f6c485-8f24-4617-9b68-125d7051bc04",
+                "is_primary_data": "PRIMARY",
+                "is_valid": true,
+                "mean_genes_per_cell": 1847.4993519339655,
+                "name": "Healthy human liver: integrated",
+                "organism": [
+                    {
+                        "label": "Homo sapiens",
+                        "ontology_term_id": "NCBITaxon:9606"
+                    }
+                ],
+                "primary_cell_count": 73295,
+                "processing_status": {
+                    "created_at": 0,
+                    "cxg_status": "UPLOADED",
+                    "dataset_id": "91f6c485-8f24-4617-9b68-125d7051bc04",
+                    "h5ad_status": "UPLOADED",
+                    "id": "NA",
+                    "processing_status": "SUCCESS",
+                    "rds_status": "UPLOADED",
+                    "updated_at": 0,
+                    "upload_progress": 1,
+                    "upload_status": "UPLOADED",
+                    "validation_status": "VALID"
+                },
+                "published": true,
+                "published_at": 1641580062.793386,
+                "revision": 0,
+                "schema_version": "4.0.0",
+                "self_reported_ethnicity": [
+                    {
+                        "label": "unknown",
+                        "ontology_term_id": "unknown"
+                    }
+                ],
+                "sex": [
+                    {
+                        "label": "female",
+                        "ontology_term_id": "PATO:0000383"
+                    },
+                    {
+                        "label": "male",
+                        "ontology_term_id": "PATO:0000384"
+                    }
+                ],
+                "suspension_type": [
+                    "cell",
+                    "nucleus"
+                ],
+                "tissue": [
+                    {
+                        "label": "caudate lobe of liver",
+                        "ontology_term_id": "UBERON:0001117",
+                        "tissue_type": "tissue"
+                    }
+                ],
+                "tombstone": false,
+                "updated_at": 1702328276.003046
+            },
+            {
+                "assay": [
+                    {
+                        "label": "10x 3' v2",
+                        "ontology_term_id": "EFO:0009899"
+                    },
+                    {
+                        "label": "10x 3' v3",
+                        "ontology_term_id": "EFO:0009922"
+                    }
+                ],
+                "cell_count": 6289,
+                "cell_type": [
+                    {
+                        "label": "blood vessel endothelial cell",
+                        "ontology_term_id": "CL:0000071"
+                    },
+                    {
+                        "label": "endothelial cell of pericentral hepatic sinusoid",
+                        "ontology_term_id": "CL:0019022"
+                    },
+                    {
+                        "label": "endothelial cell of periportal hepatic sinusoid",
+                        "ontology_term_id": "CL:0019021"
+                    }
+                ],
+                "collection_id": "44531dd9-1388-4416-a117-af0a99de2294",
+                "created_at": 1702328091.042714,
+                "dataset_assets": [
+                    {
+                        "created_at": 0,
+                        "dataset_id": "c34daf32-cd44-4125-a74d-4bdc4c3f7189",
+                        "filename": "raw.h5ad",
+                        "filetype": "RAW_H5AD",
+                        "id": "6eba1019-c6fd-439c-939a-e0ca70cb35c7",
+                        "s3_uri": "s3://corpora-data-prod/c34daf32-cd44-4125-a74d-4bdc4c3f7189/raw.h5ad",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "c34daf32-cd44-4125-a74d-4bdc4c3f7189",
+                        "filename": "local.h5ad",
+                        "filetype": "H5AD",
+                        "id": "df80a022-5f6b-4c52-b5d5-70b1c8a9248c",
+                        "s3_uri": "s3://corpora-data-prod/c34daf32-cd44-4125-a74d-4bdc4c3f7189/local.h5ad",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "c34daf32-cd44-4125-a74d-4bdc4c3f7189",
+                        "filename": "local.rds",
+                        "filetype": "RDS",
+                        "id": "46dcf000-4602-4ba1-9c28-8277346f2347",
+                        "s3_uri": "s3://corpora-data-prod/c34daf32-cd44-4125-a74d-4bdc4c3f7189/local.rds",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "c34daf32-cd44-4125-a74d-4bdc4c3f7189",
+                        "filename": "",
+                        "filetype": "CXG",
+                        "id": "c4f95db7-ca47-45a6-98a8-75e73edb3331",
+                        "s3_uri": "s3://hosted-cellxgene-prod/c34daf32-cd44-4125-a74d-4bdc4c3f7189.cxg/",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    }
+                ],
+                "dataset_deployments": [
+                    {
+                        "url": "https://cellxgene.cziscience.com/e/bf176af2-4432-4391-9b35-e21bd86ca4f8.cxg/"
+                    }
+                ],
+                "development_stage": [
+                    {
+                        "label": "human adult stage",
+                        "ontology_term_id": "HsapDv:0000087"
+                    },
+                    {
+                        "label": "mature stage",
+                        "ontology_term_id": "HsapDv:0000204"
+                    }
+                ],
+                "disease": [
+                    {
+                        "label": "normal",
+                        "ontology_term_id": "PATO:0000461"
+                    }
+                ],
+                "donor_id": [
+                    "C41",
+                    "C58",
+                    "C70",
+                    "C72"
+                ],
+                "id": "c34daf32-cd44-4125-a74d-4bdc4c3f7189",
+                "is_primary_data": "SECONDARY",
+                "is_valid": true,
+                "mean_genes_per_cell": 1152.9804420416601,
+                "name": "Healthy human liver: liver sinusoidal endothelial cells",
+                "organism": [
+                    {
+                        "label": "Homo sapiens",
+                        "ontology_term_id": "NCBITaxon:9606"
+                    }
+                ],
+                "primary_cell_count": 0,
+                "processing_status": {
+                    "created_at": 0,
+                    "cxg_status": "UPLOADED",
+                    "dataset_id": "c34daf32-cd44-4125-a74d-4bdc4c3f7189",
+                    "h5ad_status": "UPLOADED",
+                    "id": "NA",
+                    "processing_status": "SUCCESS",
+                    "rds_status": "UPLOADED",
+                    "updated_at": 0,
+                    "upload_progress": 1,
+                    "upload_status": "UPLOADED",
+                    "validation_status": "VALID"
+                },
+                "published": true,
+                "published_at": 1641580062.793386,
+                "revision": 0,
+                "schema_version": "4.0.0",
+                "self_reported_ethnicity": [
+                    {
+                        "label": "unknown",
+                        "ontology_term_id": "unknown"
+                    }
+                ],
+                "sex": [
+                    {
+                        "label": "female",
+                        "ontology_term_id": "PATO:0000383"
+                    },
+                    {
+                        "label": "male",
+                        "ontology_term_id": "PATO:0000384"
+                    }
+                ],
+                "suspension_type": [
+                    "cell",
+                    "nucleus"
+                ],
+                "tissue": [
+                    {
+                        "label": "caudate lobe of liver",
+                        "ontology_term_id": "UBERON:0001117",
+                        "tissue_type": "tissue"
+                    }
+                ],
+                "tombstone": false,
+                "updated_at": 1702328091.042714
+            },
+            {
+                "assay": [
+                    {
+                        "label": "10x 3' v2",
+                        "ontology_term_id": "EFO:0009899"
+                    },
+                    {
+                        "label": "10x 3' v3",
+                        "ontology_term_id": "EFO:0009922"
+                    }
+                ],
+                "cell_count": 50259,
+                "cell_type": [
+                    {
+                        "label": "centrilobular region hepatocyte",
+                        "ontology_term_id": "CL:0019029"
+                    },
+                    {
+                        "label": "hepatocyte",
+                        "ontology_term_id": "CL:0000182"
+                    },
+                    {
+                        "label": "midzonal region hepatocyte",
+                        "ontology_term_id": "CL:0019028"
+                    },
+                    {
+                        "label": "periportal region hepatocyte",
+                        "ontology_term_id": "CL:0019026"
+                    }
+                ],
+                "collection_id": "44531dd9-1388-4416-a117-af0a99de2294",
+                "created_at": 1702328257.175451,
+                "dataset_assets": [
+                    {
+                        "created_at": 0,
+                        "dataset_id": "efa529ce-0efa-46ec-b9b0-bd53288bba02",
+                        "filename": "raw.h5ad",
+                        "filetype": "RAW_H5AD",
+                        "id": "f1107d7b-0120-410d-a7d3-4f0480685818",
+                        "s3_uri": "s3://corpora-data-prod/efa529ce-0efa-46ec-b9b0-bd53288bba02/raw.h5ad",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "efa529ce-0efa-46ec-b9b0-bd53288bba02",
+                        "filename": "local.h5ad",
+                        "filetype": "H5AD",
+                        "id": "f3a886ef-27a6-4ee4-ae7f-e622be689d78",
+                        "s3_uri": "s3://corpora-data-prod/efa529ce-0efa-46ec-b9b0-bd53288bba02/local.h5ad",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "efa529ce-0efa-46ec-b9b0-bd53288bba02",
+                        "filename": "local.rds",
+                        "filetype": "RDS",
+                        "id": "fa78613d-db83-4898-86d2-f2ebc6440a5d",
+                        "s3_uri": "s3://corpora-data-prod/efa529ce-0efa-46ec-b9b0-bd53288bba02/local.rds",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "efa529ce-0efa-46ec-b9b0-bd53288bba02",
+                        "filename": "",
+                        "filetype": "CXG",
+                        "id": "3c31310c-1308-462e-958b-279666ca48ae",
+                        "s3_uri": "s3://hosted-cellxgene-prod/efa529ce-0efa-46ec-b9b0-bd53288bba02.cxg/",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    }
+                ],
+                "dataset_deployments": [
+                    {
+                        "url": "https://cellxgene.cziscience.com/e/8faa2c07-0080-4627-b1d7-e645a780d752.cxg/"
+                    }
+                ],
+                "development_stage": [
+                    {
+                        "label": "human adult stage",
+                        "ontology_term_id": "HsapDv:0000087"
+                    },
+                    {
+                        "label": "mature stage",
+                        "ontology_term_id": "HsapDv:0000204"
+                    }
+                ],
+                "disease": [
+                    {
+                        "label": "normal",
+                        "ontology_term_id": "PATO:0000461"
+                    }
+                ],
+                "donor_id": [
+                    "C41",
+                    "C58",
+                    "C70",
+                    "C72"
+                ],
+                "id": "efa529ce-0efa-46ec-b9b0-bd53288bba02",
+                "is_primary_data": "SECONDARY",
+                "is_valid": true,
+                "mean_genes_per_cell": 2084.6196303149686,
+                "name": "Healthy human liver: hepatocytes",
+                "organism": [
+                    {
+                        "label": "Homo sapiens",
+                        "ontology_term_id": "NCBITaxon:9606"
+                    }
+                ],
+                "primary_cell_count": 0,
+                "processing_status": {
+                    "created_at": 0,
+                    "cxg_status": "UPLOADED",
+                    "dataset_id": "efa529ce-0efa-46ec-b9b0-bd53288bba02",
+                    "h5ad_status": "UPLOADED",
+                    "id": "NA",
+                    "processing_status": "SUCCESS",
+                    "rds_status": "UPLOADED",
+                    "updated_at": 0,
+                    "upload_progress": 1,
+                    "upload_status": "UPLOADED",
+                    "validation_status": "VALID"
+                },
+                "published": true,
+                "published_at": 1641580062.793386,
+                "revision": 0,
+                "schema_version": "4.0.0",
+                "self_reported_ethnicity": [
+                    {
+                        "label": "unknown",
+                        "ontology_term_id": "unknown"
+                    }
+                ],
+                "sex": [
+                    {
+                        "label": "female",
+                        "ontology_term_id": "PATO:0000383"
+                    },
+                    {
+                        "label": "male",
+                        "ontology_term_id": "PATO:0000384"
+                    }
+                ],
+                "suspension_type": [
+                    "cell",
+                    "nucleus"
+                ],
+                "tissue": [
+                    {
+                        "label": "caudate lobe of liver",
+                        "ontology_term_id": "UBERON:0001117",
+                        "tissue_type": "tissue"
+                    }
+                ],
+                "tombstone": false,
+                "updated_at": 1702328257.175451
+            },
+            {
+                "assay": [
+                    {
+                        "label": "10x 3' v2",
+                        "ontology_term_id": "EFO:0009899"
+                    },
+                    {
+                        "label": "10x 3' v3",
+                        "ontology_term_id": "EFO:0009922"
+                    }
+                ],
+                "cell_count": 1374,
+                "cell_type": [
+                    {
+                        "label": "fibroblast",
+                        "ontology_term_id": "CL:0000057"
+                    },
+                    {
+                        "label": "hepatic stellate cell",
+                        "ontology_term_id": "CL:0000632"
+                    },
+                    {
+                        "label": "vascular associated smooth muscle cell",
+                        "ontology_term_id": "CL:0000359"
+                    }
+                ],
+                "collection_id": "44531dd9-1388-4416-a117-af0a99de2294",
+                "created_at": 1702328146.920693,
+                "dataset_assets": [
+                    {
+                        "created_at": 0,
+                        "dataset_id": "cdbcac6d-496e-4d33-8cdb-ad2f1d26611d",
+                        "filename": "raw.h5ad",
+                        "filetype": "RAW_H5AD",
+                        "id": "da20ee7f-293a-401f-aef7-ecab70438be1",
+                        "s3_uri": "s3://corpora-data-prod/cdbcac6d-496e-4d33-8cdb-ad2f1d26611d/raw.h5ad",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "cdbcac6d-496e-4d33-8cdb-ad2f1d26611d",
+                        "filename": "local.h5ad",
+                        "filetype": "H5AD",
+                        "id": "12b11358-a0b1-405f-80e2-f2f2aa652e80",
+                        "s3_uri": "s3://corpora-data-prod/cdbcac6d-496e-4d33-8cdb-ad2f1d26611d/local.h5ad",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "cdbcac6d-496e-4d33-8cdb-ad2f1d26611d",
+                        "filename": "",
+                        "filetype": "CXG",
+                        "id": "a5380ea4-17e9-4787-9c5a-2518419411e4",
+                        "s3_uri": "s3://hosted-cellxgene-prod/cdbcac6d-496e-4d33-8cdb-ad2f1d26611d.cxg/",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "cdbcac6d-496e-4d33-8cdb-ad2f1d26611d",
+                        "filename": "local.rds",
+                        "filetype": "RDS",
+                        "id": "fbb95802-1462-47c8-abfb-456787942f81",
+                        "s3_uri": "s3://corpora-data-prod/cdbcac6d-496e-4d33-8cdb-ad2f1d26611d/local.rds",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    }
+                ],
+                "dataset_deployments": [
+                    {
+                        "url": "https://cellxgene.cziscience.com/e/524e045e-e74c-4e00-9884-d5c3bef3d862.cxg/"
+                    }
+                ],
+                "development_stage": [
+                    {
+                        "label": "human adult stage",
+                        "ontology_term_id": "HsapDv:0000087"
+                    },
+                    {
+                        "label": "mature stage",
+                        "ontology_term_id": "HsapDv:0000204"
+                    }
+                ],
+                "disease": [
+                    {
+                        "label": "normal",
+                        "ontology_term_id": "PATO:0000461"
+                    }
+                ],
+                "donor_id": [
+                    "C41",
+                    "C58",
+                    "C70",
+                    "C72"
+                ],
+                "id": "cdbcac6d-496e-4d33-8cdb-ad2f1d26611d",
+                "is_primary_data": "SECONDARY",
+                "is_valid": true,
+                "mean_genes_per_cell": 1316.8420669577874,
+                "name": "Healthy human liver: hepatic stellate cells",
+                "organism": [
+                    {
+                        "label": "Homo sapiens",
+                        "ontology_term_id": "NCBITaxon:9606"
+                    }
+                ],
+                "primary_cell_count": 0,
+                "processing_status": {
+                    "created_at": 0,
+                    "cxg_status": "UPLOADED",
+                    "dataset_id": "cdbcac6d-496e-4d33-8cdb-ad2f1d26611d",
+                    "h5ad_status": "UPLOADED",
+                    "id": "NA",
+                    "processing_status": "SUCCESS",
+                    "rds_status": "UPLOADED",
+                    "updated_at": 0,
+                    "upload_progress": 1,
+                    "upload_status": "UPLOADED",
+                    "validation_status": "VALID"
+                },
+                "published": true,
+                "published_at": 1641580062.793386,
+                "revision": 0,
+                "schema_version": "4.0.0",
+                "self_reported_ethnicity": [
+                    {
+                        "label": "unknown",
+                        "ontology_term_id": "unknown"
+                    }
+                ],
+                "sex": [
+                    {
+                        "label": "female",
+                        "ontology_term_id": "PATO:0000383"
+                    },
+                    {
+                        "label": "male",
+                        "ontology_term_id": "PATO:0000384"
+                    }
+                ],
+                "suspension_type": [
+                    "cell",
+                    "nucleus"
+                ],
+                "tissue": [
+                    {
+                        "label": "caudate lobe of liver",
+                        "ontology_term_id": "UBERON:0001117",
+                        "tissue_type": "tissue"
+                    }
+                ],
+                "tombstone": false,
+                "updated_at": 1702328146.920693
+            },
+            {
+                "assay": [
+                    {
+                        "label": "10x 3' v2",
+                        "ontology_term_id": "EFO:0009899"
+                    },
+                    {
+                        "label": "10x 3' v3",
+                        "ontology_term_id": "EFO:0009922"
+                    }
+                ],
+                "cell_count": 3977,
+                "cell_type": [
+                    {
+                        "label": "Kupffer cell",
+                        "ontology_term_id": "CL:0000091"
+                    },
+                    {
+                        "label": "inflammatory macrophage",
+                        "ontology_term_id": "CL:0000863"
+                    }
+                ],
+                "collection_id": "44531dd9-1388-4416-a117-af0a99de2294",
+                "created_at": 1702328117.026355,
+                "dataset_assets": [
+                    {
+                        "created_at": 0,
+                        "dataset_id": "3847bb0c-6d23-4eaa-a683-68e79e23bbd2",
+                        "filename": "raw.h5ad",
+                        "filetype": "RAW_H5AD",
+                        "id": "2c4d467f-faa9-4290-ab11-40c6d7617fd4",
+                        "s3_uri": "s3://corpora-data-prod/3847bb0c-6d23-4eaa-a683-68e79e23bbd2/raw.h5ad",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "3847bb0c-6d23-4eaa-a683-68e79e23bbd2",
+                        "filename": "local.h5ad",
+                        "filetype": "H5AD",
+                        "id": "166352b4-ac0a-44c0-ad61-3e9946a97aa6",
+                        "s3_uri": "s3://corpora-data-prod/3847bb0c-6d23-4eaa-a683-68e79e23bbd2/local.h5ad",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "3847bb0c-6d23-4eaa-a683-68e79e23bbd2",
+                        "filename": "local.rds",
+                        "filetype": "RDS",
+                        "id": "ea9a7371-39a1-4a8e-87c3-ace4c487f390",
+                        "s3_uri": "s3://corpora-data-prod/3847bb0c-6d23-4eaa-a683-68e79e23bbd2/local.rds",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "3847bb0c-6d23-4eaa-a683-68e79e23bbd2",
+                        "filename": "",
+                        "filetype": "CXG",
+                        "id": "474fbf79-5723-45d8-ae68-b0e7a2047ace",
+                        "s3_uri": "s3://hosted-cellxgene-prod/3847bb0c-6d23-4eaa-a683-68e79e23bbd2.cxg/",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    }
+                ],
+                "dataset_deployments": [
+                    {
+                        "url": "https://cellxgene.cziscience.com/e/3b6ed41e-10a1-47dd-b995-8cde7d041fd6.cxg/"
+                    }
+                ],
+                "development_stage": [
+                    {
+                        "label": "human adult stage",
+                        "ontology_term_id": "HsapDv:0000087"
+                    },
+                    {
+                        "label": "mature stage",
+                        "ontology_term_id": "HsapDv:0000204"
+                    }
+                ],
+                "disease": [
+                    {
+                        "label": "normal",
+                        "ontology_term_id": "PATO:0000461"
+                    }
+                ],
+                "donor_id": [
+                    "C41",
+                    "C58",
+                    "C70",
+                    "C72"
+                ],
+                "id": "3847bb0c-6d23-4eaa-a683-68e79e23bbd2",
+                "is_primary_data": "SECONDARY",
+                "is_valid": true,
+                "mean_genes_per_cell": 913.0201156650742,
+                "name": "Healthy human liver: macrophages",
+                "organism": [
+                    {
+                        "label": "Homo sapiens",
+                        "ontology_term_id": "NCBITaxon:9606"
+                    }
+                ],
+                "primary_cell_count": 0,
+                "processing_status": {
+                    "created_at": 0,
+                    "cxg_status": "UPLOADED",
+                    "dataset_id": "3847bb0c-6d23-4eaa-a683-68e79e23bbd2",
+                    "h5ad_status": "UPLOADED",
+                    "id": "NA",
+                    "processing_status": "SUCCESS",
+                    "rds_status": "UPLOADED",
+                    "updated_at": 0,
+                    "upload_progress": 1,
+                    "upload_status": "UPLOADED",
+                    "validation_status": "VALID"
+                },
+                "published": true,
+                "published_at": 1641580062.793386,
+                "revision": 0,
+                "schema_version": "4.0.0",
+                "self_reported_ethnicity": [
+                    {
+                        "label": "unknown",
+                        "ontology_term_id": "unknown"
+                    }
+                ],
+                "sex": [
+                    {
+                        "label": "female",
+                        "ontology_term_id": "PATO:0000383"
+                    },
+                    {
+                        "label": "male",
+                        "ontology_term_id": "PATO:0000384"
+                    }
+                ],
+                "suspension_type": [
+                    "cell",
+                    "nucleus"
+                ],
+                "tissue": [
+                    {
+                        "label": "caudate lobe of liver",
+                        "ontology_term_id": "UBERON:0001117",
+                        "tissue_type": "tissue"
+                    }
+                ],
+                "tombstone": false,
+                "updated_at": 1702328117.026355
+            },
+            {
+                "assay": [
+                    {
+                        "label": "10x 3' v2",
+                        "ontology_term_id": "EFO:0009899"
+                    },
+                    {
+                        "label": "10x 3' v3",
+                        "ontology_term_id": "EFO:0009922"
+                    }
+                ],
+                "cell_count": 146,
+                "cell_type": [
+                    {
+                        "label": "mature B cell",
+                        "ontology_term_id": "CL:0000785"
+                    },
+                    {
+                        "label": "plasma cell",
+                        "ontology_term_id": "CL:0000786"
+                    }
+                ],
+                "collection_id": "44531dd9-1388-4416-a117-af0a99de2294",
+                "created_at": 1702328093.807371,
+                "dataset_assets": [
+                    {
+                        "created_at": 0,
+                        "dataset_id": "90c609bd-1439-4cbf-935f-201ecadf0297",
+                        "filename": "raw.h5ad",
+                        "filetype": "RAW_H5AD",
+                        "id": "bc2d26be-f9e5-4745-97c7-d09e86ab47fa",
+                        "s3_uri": "s3://corpora-data-prod/90c609bd-1439-4cbf-935f-201ecadf0297/raw.h5ad",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "90c609bd-1439-4cbf-935f-201ecadf0297",
+                        "filename": "local.h5ad",
+                        "filetype": "H5AD",
+                        "id": "a908cc68-751a-40c9-9e63-cec219ef97c1",
+                        "s3_uri": "s3://corpora-data-prod/90c609bd-1439-4cbf-935f-201ecadf0297/local.h5ad",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "90c609bd-1439-4cbf-935f-201ecadf0297",
+                        "filename": "",
+                        "filetype": "CXG",
+                        "id": "00cf7eb6-6464-4e45-86ac-e05213c6045d",
+                        "s3_uri": "s3://hosted-cellxgene-prod/90c609bd-1439-4cbf-935f-201ecadf0297.cxg/",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "90c609bd-1439-4cbf-935f-201ecadf0297",
+                        "filename": "local.rds",
+                        "filetype": "RDS",
+                        "id": "21eaa580-6a46-4c22-af5c-c7b253444b69",
+                        "s3_uri": "s3://corpora-data-prod/90c609bd-1439-4cbf-935f-201ecadf0297/local.rds",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    }
+                ],
+                "dataset_deployments": [
+                    {
+                        "url": "https://cellxgene.cziscience.com/e/0895c838-e550-48a3-a777-dbcd35d30272.cxg/"
+                    }
+                ],
+                "development_stage": [
+                    {
+                        "label": "human adult stage",
+                        "ontology_term_id": "HsapDv:0000087"
+                    },
+                    {
+                        "label": "mature stage",
+                        "ontology_term_id": "HsapDv:0000204"
+                    }
+                ],
+                "disease": [
+                    {
+                        "label": "normal",
+                        "ontology_term_id": "PATO:0000461"
+                    }
+                ],
+                "donor_id": [
+                    "C41",
+                    "C58",
+                    "C70",
+                    "C72"
+                ],
+                "id": "90c609bd-1439-4cbf-935f-201ecadf0297",
+                "is_primary_data": "SECONDARY",
+                "is_valid": true,
+                "mean_genes_per_cell": 673.0753424657535,
+                "name": "Healthy human liver: B cells",
+                "organism": [
+                    {
+                        "label": "Homo sapiens",
+                        "ontology_term_id": "NCBITaxon:9606"
+                    }
+                ],
+                "primary_cell_count": 0,
+                "processing_status": {
+                    "created_at": 0,
+                    "cxg_status": "UPLOADED",
+                    "dataset_id": "90c609bd-1439-4cbf-935f-201ecadf0297",
+                    "h5ad_status": "UPLOADED",
+                    "id": "NA",
+                    "processing_status": "SUCCESS",
+                    "rds_status": "UPLOADED",
+                    "updated_at": 0,
+                    "upload_progress": 1,
+                    "upload_status": "UPLOADED",
+                    "validation_status": "VALID"
+                },
+                "published": true,
+                "published_at": 1641580062.793386,
+                "revision": 0,
+                "schema_version": "4.0.0",
+                "self_reported_ethnicity": [
+                    {
+                        "label": "unknown",
+                        "ontology_term_id": "unknown"
+                    }
+                ],
+                "sex": [
+                    {
+                        "label": "female",
+                        "ontology_term_id": "PATO:0000383"
+                    },
+                    {
+                        "label": "male",
+                        "ontology_term_id": "PATO:0000384"
+                    }
+                ],
+                "suspension_type": [
+                    "cell",
+                    "nucleus"
+                ],
+                "tissue": [
+                    {
+                        "label": "caudate lobe of liver",
+                        "ontology_term_id": "UBERON:0001117",
+                        "tissue_type": "tissue"
+                    }
+                ],
+                "tombstone": false,
+                "updated_at": 1702328093.807371
+            },
+            {
+                "assay": [
+                    {
+                        "label": "10x 3' v2",
+                        "ontology_term_id": "EFO:0009899"
+                    },
+                    {
+                        "label": "10x 3' v3",
+                        "ontology_term_id": "EFO:0009922"
+                    }
+                ],
+                "cell_count": 2346,
+                "cell_type": [
+                    {
+                        "label": "alpha-beta T cell",
+                        "ontology_term_id": "CL:0000789"
+                    },
+                    {
+                        "label": "gamma-delta T cell",
+                        "ontology_term_id": "CL:0000798"
+                    },
+                    {
+                        "label": "mature B cell",
+                        "ontology_term_id": "CL:0000785"
+                    },
+                    {
+                        "label": "natural killer cell",
+                        "ontology_term_id": "CL:0000623"
+                    },
+                    {
+                        "label": "plasma cell",
+                        "ontology_term_id": "CL:0000786"
+                    }
+                ],
+                "collection_id": "44531dd9-1388-4416-a117-af0a99de2294",
+                "created_at": 1702328148.520954,
+                "dataset_assets": [
+                    {
+                        "created_at": 0,
+                        "dataset_id": "99d4f935-fadf-4271-8563-1e5d5878cadb",
+                        "filename": "raw.h5ad",
+                        "filetype": "RAW_H5AD",
+                        "id": "8f548379-6a99-4232-a9cd-a0b444408c31",
+                        "s3_uri": "s3://corpora-data-prod/99d4f935-fadf-4271-8563-1e5d5878cadb/raw.h5ad",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "99d4f935-fadf-4271-8563-1e5d5878cadb",
+                        "filename": "local.h5ad",
+                        "filetype": "H5AD",
+                        "id": "8ae5ce46-ff1d-4948-bfdd-189a10edb98a",
+                        "s3_uri": "s3://corpora-data-prod/99d4f935-fadf-4271-8563-1e5d5878cadb/local.h5ad",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "99d4f935-fadf-4271-8563-1e5d5878cadb",
+                        "filename": "",
+                        "filetype": "CXG",
+                        "id": "74d30cc0-c0b1-40a3-99b4-8dba9d3e422c",
+                        "s3_uri": "s3://hosted-cellxgene-prod/99d4f935-fadf-4271-8563-1e5d5878cadb.cxg/",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "99d4f935-fadf-4271-8563-1e5d5878cadb",
+                        "filename": "local.rds",
+                        "filetype": "RDS",
+                        "id": "c1e28784-b657-4bb7-add2-c91dbc0919e1",
+                        "s3_uri": "s3://corpora-data-prod/99d4f935-fadf-4271-8563-1e5d5878cadb/local.rds",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    }
+                ],
+                "dataset_deployments": [
+                    {
+                        "url": "https://cellxgene.cziscience.com/e/a49d9109-1d0c-4b36-8139-19aa9a83428c.cxg/"
+                    }
+                ],
+                "development_stage": [
+                    {
+                        "label": "human adult stage",
+                        "ontology_term_id": "HsapDv:0000087"
+                    },
+                    {
+                        "label": "mature stage",
+                        "ontology_term_id": "HsapDv:0000204"
+                    }
+                ],
+                "disease": [
+                    {
+                        "label": "normal",
+                        "ontology_term_id": "PATO:0000461"
+                    }
+                ],
+                "donor_id": [
+                    "C41",
+                    "C58",
+                    "C70",
+                    "C72"
+                ],
+                "id": "99d4f935-fadf-4271-8563-1e5d5878cadb",
+                "is_primary_data": "SECONDARY",
+                "is_valid": true,
+                "mean_genes_per_cell": 693.6074168797954,
+                "name": "Healthy human liver: lymphocytes",
+                "organism": [
+                    {
+                        "label": "Homo sapiens",
+                        "ontology_term_id": "NCBITaxon:9606"
+                    }
+                ],
+                "primary_cell_count": 0,
+                "processing_status": {
+                    "created_at": 0,
+                    "cxg_status": "UPLOADED",
+                    "dataset_id": "99d4f935-fadf-4271-8563-1e5d5878cadb",
+                    "h5ad_status": "UPLOADED",
+                    "id": "NA",
+                    "processing_status": "SUCCESS",
+                    "rds_status": "UPLOADED",
+                    "updated_at": 0,
+                    "upload_progress": 1,
+                    "upload_status": "UPLOADED",
+                    "validation_status": "VALID"
+                },
+                "published": true,
+                "published_at": 1641580062.793386,
+                "revision": 0,
+                "schema_version": "4.0.0",
+                "self_reported_ethnicity": [
+                    {
+                        "label": "unknown",
+                        "ontology_term_id": "unknown"
+                    }
+                ],
+                "sex": [
+                    {
+                        "label": "female",
+                        "ontology_term_id": "PATO:0000383"
+                    },
+                    {
+                        "label": "male",
+                        "ontology_term_id": "PATO:0000384"
+                    }
+                ],
+                "suspension_type": [
+                    "cell",
+                    "nucleus"
+                ],
+                "tissue": [
+                    {
+                        "label": "caudate lobe of liver",
+                        "ontology_term_id": "UBERON:0001117",
+                        "tissue_type": "tissue"
+                    }
+                ],
+                "tombstone": false,
+                "updated_at": 1702328148.520954
+            },
+            {
+                "assay": [
+                    {
+                        "label": "10x 3' v2",
+                        "ontology_term_id": "EFO:0009899"
+                    },
+                    {
+                        "label": "10x 3' v3",
+                        "ontology_term_id": "EFO:0009922"
+                    }
+                ],
+                "cell_count": 1861,
+                "cell_type": [
+                    {
+                        "label": "centrilobular region hepatocyte",
+                        "ontology_term_id": "CL:0019029"
+                    },
+                    {
+                        "label": "cholangiocyte",
+                        "ontology_term_id": "CL:1000488"
+                    },
+                    {
+                        "label": "progenitor cell",
+                        "ontology_term_id": "CL:0011026"
+                    }
+                ],
+                "collection_id": "44531dd9-1388-4416-a117-af0a99de2294",
+                "created_at": 1702328150.966481,
+                "dataset_assets": [
+                    {
+                        "created_at": 0,
+                        "dataset_id": "7993fe19-5834-442a-a7f8-6e83f211e112",
+                        "filename": "raw.h5ad",
+                        "filetype": "RAW_H5AD",
+                        "id": "438e1e74-8871-4180-9c0d-2df2a546370b",
+                        "s3_uri": "s3://corpora-data-prod/7993fe19-5834-442a-a7f8-6e83f211e112/raw.h5ad",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "7993fe19-5834-442a-a7f8-6e83f211e112",
+                        "filename": "local.h5ad",
+                        "filetype": "H5AD",
+                        "id": "9969b3ca-7326-4e06-9554-c1ab54c607ee",
+                        "s3_uri": "s3://corpora-data-prod/7993fe19-5834-442a-a7f8-6e83f211e112/local.h5ad",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "7993fe19-5834-442a-a7f8-6e83f211e112",
+                        "filename": "",
+                        "filetype": "CXG",
+                        "id": "7e0e16c2-f903-4274-9c08-84ef48f66b5d",
+                        "s3_uri": "s3://hosted-cellxgene-prod/7993fe19-5834-442a-a7f8-6e83f211e112.cxg/",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    },
+                    {
+                        "created_at": 0,
+                        "dataset_id": "7993fe19-5834-442a-a7f8-6e83f211e112",
+                        "filename": "local.rds",
+                        "filetype": "RDS",
+                        "id": "af37e3df-d638-43b3-b248-b9e76666ed11",
+                        "s3_uri": "s3://corpora-data-prod/7993fe19-5834-442a-a7f8-6e83f211e112/local.rds",
+                        "updated_at": 0,
+                        "user_submitted": true
+                    }
+                ],
+                "dataset_deployments": [
+                    {
+                        "url": "https://cellxgene.cziscience.com/e/9f049476-2431-4645-a2d6-f6e85892b603.cxg/"
+                    }
+                ],
+                "development_stage": [
+                    {
+                        "label": "human adult stage",
+                        "ontology_term_id": "HsapDv:0000087"
+                    },
+                    {
+                        "label": "mature stage",
+                        "ontology_term_id": "HsapDv:0000204"
+                    }
+                ],
+                "disease": [
+                    {
+                        "label": "normal",
+                        "ontology_term_id": "PATO:0000461"
+                    }
+                ],
+                "donor_id": [
+                    "C41",
+                    "C58",
+                    "C70",
+                    "C72"
+                ],
+                "id": "7993fe19-5834-442a-a7f8-6e83f211e112",
+                "is_primary_data": "SECONDARY",
+                "is_valid": true,
+                "mean_genes_per_cell": 1940.9752821063944,
+                "name": "Healthy human liver: cholangiocytes",
+                "organism": [
+                    {
+                        "label": "Homo sapiens",
+                        "ontology_term_id": "NCBITaxon:9606"
+                    }
+                ],
+                "primary_cell_count": 0,
+                "processing_status": {
+                    "created_at": 0,
+                    "cxg_status": "UPLOADED",
+                    "dataset_id": "7993fe19-5834-442a-a7f8-6e83f211e112",
+                    "h5ad_status": "UPLOADED",
+                    "id": "NA",
+                    "processing_status": "SUCCESS",
+                    "rds_status": "UPLOADED",
+                    "updated_at": 0,
+                    "upload_progress": 1,
+                    "upload_status": "UPLOADED",
+                    "validation_status": "VALID"
+                },
+                "published": true,
+                "published_at": 1641580062.793386,
+                "revision": 0,
+                "schema_version": "4.0.0",
+                "self_reported_ethnicity": [
+                    {
+                        "label": "unknown",
+                        "ontology_term_id": "unknown"
+                    }
+                ],
+                "sex": [
+                    {
+                        "label": "female",
+                        "ontology_term_id": "PATO:0000383"
+                    },
+                    {
+                        "label": "male",
+                        "ontology_term_id": "PATO:0000384"
+                    }
+                ],
+                "suspension_type": [
+                    "cell",
+                    "nucleus"
+                ],
+                "tissue": [
+                    {
+                        "label": "caudate lobe of liver",
+                        "ontology_term_id": "UBERON:0001117",
+                        "tissue_type": "tissue"
+                    }
+                ],
+                "tombstone": false,
+                "updated_at": 1702328150.966481
+            }
+        ],
+        "collection_description": "The critical functions of the human liver are coordinated through the interactions of hepatic parenchymal and non-parenchymal cells. Recent advances in single cell transcriptional approaches have enabled an examination of the human liver with unprecedented resolution. However, dissociation related cell perturbation can limit the ability to fully capture the human liver\u2019s parenchymal cell fraction, which limits the ability to comprehensively profile this organ. Here, we report the transcriptional landscape of 73,295 cells from the human liver using matched single-cell RNA sequencing (scRNA-seq) and single-nucleus RNA sequencing (snRNA-seq). The addition of snRNA-seq enabled the characterization of interzonal hepatocytes at single-cell resolution, revealed the presence of rare subtypes of hepatic stellate cells previously only seen in disease, and detection of cholangiocyte progenitors that had only been observed during in vitro differentiation experiments. However, T and B lymphocytes and NK cells were only distinguishable using scRNA-seq, highlighting the importance of applying both technologies to obtain a complete map of tissue-resident cell-types. We validated the distinct spatial distribution of the hepatocyte, cholangiocyte and stellate cell populations by an independent spatial transcriptomics dataset and immunohistochemistry. Our study provides a systematic comparison of the transcriptomes captured by scRNA-seq and snRNA-seq and delivers a high-resolution map of the parenchymal cell populations in the healthy human liver.",
+        "collection_links": [
+            {
+                "link_name": "",
+                "link_type": "OTHER",
+                "link_url": "https://github.com/tallulandrews/Liver_sc_sn_paper_scripts"
+            },
+            {
+                "link_name": "GSE185477",
+                "link_type": "RAW_DATA",
+                "link_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE185477"
+            },
+            {
+                "link_name": "",
+                "link_type": "RAW_DATA",
+                "link_url": "https://data.humancellatlas.org/explore/projects/8a666b76-daaf-4b1f-9414-e4807a1d1e8b"
+            },
+            {
+                "link_name": "",
+                "link_type": "PROTOCOL",
+                "link_url": "https://www.protocols.io/view/human-liver-caudate-lobe-dissociation-for-scrna-se-q26g77j1gwz1/v2"
+            },
+            {
+                "link_name": "",
+                "link_type": "OTHER",
+                "link_url": "https://macparlandlab.shinyapps.io/healthylivermapspatialgui/"
+            },
+            {
+                "link_type": "DOI",
+                "link_url": "https://doi.org/10.1002/hep4.1854"
+            }
+        ],
+        "collection_name": "Single-Cell, Single-Nucleus, and Spatial RNA Sequencing of the Human Liver Identifies Cholangiocyte and Mesenchymal Heterogeneity",
+        "collection_publisher_metadata": {
+            "authors": [
+                {
+                    "family": "Andrews",
+                    "given": "Tallulah S."
+                },
+                {
+                    "family": "Atif",
+                    "given": "Jawairia"
+                },
+                {
+                    "family": "Liu",
+                    "given": "Jeff C."
+                },
+                {
+                    "family": "Perciani",
+                    "given": "Catia T."
+                },
+                {
+                    "family": "Ma",
+                    "given": "Xue\u2010Zhong"
+                },
+                {
+                    "family": "Thoeni",
+                    "given": "Cornelia"
+                },
+                {
+                    "family": "Slyper",
+                    "given": "Michal"
+                },
+                {
+                    "family": "Eraslan",
+                    "given": "G\u00f6kcen"
+                },
+                {
+                    "family": "Segerstolpe",
+                    "given": "Asa"
+                },
+                {
+                    "family": "Manuel",
+                    "given": "Justin"
+                },
+                {
+                    "family": "Chung",
+                    "given": "Sai"
+                },
+                {
+                    "family": "Winter",
+                    "given": "Erin"
+                },
+                {
+                    "family": "Cirlan",
+                    "given": "Iulia"
+                },
+                {
+                    "family": "Khuu",
+                    "given": "Nicholas"
+                },
+                {
+                    "family": "Fischer",
+                    "given": "Sandra"
+                },
+                {
+                    "family": "Rozenblatt\u2010Rosen",
+                    "given": "Orit"
+                },
+                {
+                    "family": "Regev",
+                    "given": "Aviv"
+                },
+                {
+                    "family": "McGilvray",
+                    "given": "Ian D."
+                },
+                {
+                    "family": "Bader",
+                    "given": "Gary D."
+                },
+                {
+                    "family": "MacParland",
+                    "given": "Sonya A."
+                }
+            ],
+            "is_preprint": false,
+            "journal": "Hepatology Communications",
+            "published_at": 1648771200.0,
+            "published_day": 1,
+            "published_month": 4,
+            "published_year": 2022
+        },
+        "collection_url": "https://cellxgene.cziscience.com/collections/44531dd9-1388-4416-a117-af0a99de2294",
+        "dataset_id": "90c609bd-1439-4cbf-935f-201ecadf0297",
+        "dataset_name": "Healthy human liver: B cells"
+    }
+}

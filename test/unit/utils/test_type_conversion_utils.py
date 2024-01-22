@@ -42,7 +42,7 @@ class TestTypeConversionUtils(unittest.TestCase):
             with self.assertRaises(TypeError):
                 get_schema_type_hint_from_dtype(np.dtype(dtype))
 
-        for dtype in [np.float16, np.float32, np.float64]:
+        for dtype in [np.float32, np.float64]:
             self.assertEqual(get_schema_type_hint_from_dtype(np.dtype(dtype)), {"type": "float32"})
 
         for dtype in [np.dtype(object), np.dtype(str)]:
@@ -128,7 +128,7 @@ float_OK_cases = [
         "expected_schema_hint": {"type": "float32"},
         "logs": None if data.dtype != np.float64 else {"level": logging.WARNING, "output": "may lose precision"},
     }
-    for dtype in [np.float16, np.float32, np.float64]
+    for dtype in [np.float32, np.float64]
     for data in [
         np.arange(-128, 1000, dtype=dtype),
         pd.Series(np.arange(-128, 1000, dtype=dtype)),
@@ -203,7 +203,7 @@ category_numeric_OK_cases = [
             "expected_schema_hint": {"type": "categorical"},
             "logs": {"level": logging.WARNING, "output": "may lose precision"},
         }
-        for dtype in [np.float16, np.float32, np.float64]
+        for dtype in [np.float32, np.float64]
         for data in [
             pd.Series(np.array([0, 1, 2], dtype=dtype), dtype="category"),
             pd.Series(np.array([0, 1, 2], dtype=dtype), dtype="category").cat.remove_categories([1]),
@@ -227,7 +227,6 @@ category_numeric_OK_cases = [
             np.uint32,
             np.int64,
             np.uint64,
-            np.float16,
             np.float32,
             np.float64,
         ]

@@ -409,4 +409,4 @@ class DataAdaptor(metaclass=ABCMeta):
                 mean = X.mean(axis=1, keepdims=True)
 
         col_idx = pd.Index([query_hash])
-        return encode_matrix_fbs(mean, col_idx=col_idx, row_idx=None)
+        return encode_matrix_fbs(mean, col_idx=col_idx, row_idx=None, num_bins=num_bins)
