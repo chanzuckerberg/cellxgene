@@ -275,14 +275,14 @@ class MenuBar extends React.PureComponent {
         {layoutChoice?.available?.includes(globals.spatialEmbeddingKeyword) && (
           <ButtonGroup className={styles.menubarButton}>
             <Tooltip
-              content={"Toggle image"}
+              content="Toggle image"
               position="bottom"
               hoverOpenDelay={globals.tooltipHoverOpenDelay}
             >
               <AnchorButton
                 type="button"
                 data-testid="toggle-image-underlay"
-                icon={"media"}
+                icon="media"
                 intent={imageUnderlay.isActive ? "primary" : "none"}
                 active={imageUnderlay.isActive}
                 onClick={() => {

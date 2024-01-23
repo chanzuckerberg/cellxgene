@@ -3,8 +3,6 @@ const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const TerserJSPlugin = require("terser-webpack-plugin");
-const CleanCss = require("clean-css");
-const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
@@ -27,12 +25,7 @@ const prodConfig = {
   },
   optimization: {
     minimize: true,
-    minimizer: [
-      new TerserJSPlugin({}),
-      new OptimizeCSSAssetsPlugin({
-        cssProcessor: CleanCss,
-      }),
-    ],
+    minimizer: [new TerserJSPlugin({})],
   },
   devtool: "source-map",
   module: {
