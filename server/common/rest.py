@@ -294,7 +294,9 @@ def layout_obs_get(request, data_adaptor):
 
     try:
         return make_response(
-            data_adaptor.layout_to_fbs_matrix(fields, data_adaptor.get_spatial()), HTTPStatus.OK, {"Content-Type": "application/octet-stream"}
+            data_adaptor.layout_to_fbs_matrix(fields, data_adaptor.get_spatial()),
+            HTTPStatus.OK,
+            {"Content-Type": "application/octet-stream"},
         )
     except (KeyError, DatasetAccessError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
@@ -380,7 +382,7 @@ def summarize_var_helper(request, data_adaptor, key, raw_query):
             HTTPStatus.OK,
             {"Content-Type": "application/octet-stream"},
         )
-    except (ValueError) as e:
+    except ValueError as e:
         return abort(HTTPStatus.NOT_FOUND, description=str(e))
     except (UnsupportedSummaryMethod, FilterError) as e:
         return abort(HTTPStatus.BAD_REQUEST, description=str(e))
@@ -399,9 +401,10 @@ def summarize_var_post(request, data_adaptor):
     key = request.args.get("key", default=None)
     return summarize_var_helper(request, data_adaptor, key, request.get_data())
 
+
 def spatial_image_get(request, data_adaptor):
     import io
-    import matplotlib.pyplot    
+    import matplotlib.pyplot
 
     resolution = "hires"
     spatial = data_adaptor.get_spatial()
@@ -417,7 +420,9 @@ def spatial_image_get(request, data_adaptor):
         return abort_and_log(HTTPStatus.BAD_REQUEST, "spatial information does not contain images")
 
     if resolution not in spatial[library_id]["images"]:
-        return abort_and_log(HTTPStatus.BAD_REQUEST, f"spatial information does not contain requested resolution '{resolution}'")
+        return abort_and_log(
+            HTTPStatus.BAD_REQUEST, f"spatial information does not contain requested resolution '{resolution}'"
+        )
 
     response_image = io.BytesIO()
     img = spatial[library_id]["images"][resolution]
@@ -425,7 +430,7 @@ def spatial_image_get(request, data_adaptor):
     response_image.seek(0)
 
     try:
-        return send_file(response_image, attachment_filename=f"{library_id}-{resolution}.png", mimetype="image/png")
+        return send_file(response_image, download_name=f"{library_id}-{resolution}.png", mimetype="image/png")
     except (KeyError, DatasetAccessError) as e:
         return abort_and_log(HTTPStatus.BAD_REQUEST, str(e), include_exc_info=True)
     except PrepareError:
@@ -434,4 +439,4 @@ def spatial_image_get(request, data_adaptor):
             f"No spatial image available {request.path}",
             loglevel=logging.ERROR,
             include_exc_info=True,
-        ) 
+        )
