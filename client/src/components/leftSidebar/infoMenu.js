@@ -16,7 +16,7 @@ const InformationMenu = React.memo((props) => {
             rel="noopener"
           />
           <MenuItem
-            href="https://join-cellxgene-users.herokuapp.com/"
+            href="https://czi.co/science-slack"
             target="_blank"
             icon="chat"
             text="Chat"
