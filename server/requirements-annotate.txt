@@ -1,2 +1,2 @@
-mlflow==1.27.0
+mlflow==2.13.2
 scanpy
