@@ -93,7 +93,7 @@
     "@babel/runtime": "^7.13.16",
     "@blueprintjs/eslint-plugin": "^0.3.0",
     "@sentry/webpack-plugin": "^1.15.0",
-    "babel-jest": "^26.1.0",
+    "babel-jest": "^29.7.0",
     "babel-loader": "^8.1.0",
     "babel-preset-modern-browsers": "^15.0.2",
     "chalk": "^4.1.0",
