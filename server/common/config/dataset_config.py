@@ -176,7 +176,7 @@ class DatasetConfig(BaseConfig):
         self.validate_correct_type_of_configuration_attribute("diffexp__top_n", int)
 
         data_adaptor = self.get_data_adaptor()
-        if self.diffexp__enable and data_adaptor.parameters.get("diffexp_may_be_slow", False):
+        if self.diffexp__enable and data_adaptor.parameters.get("diffexp-may-be-slow", False):
             context["messagefn"](
                 "CAUTION: due to the size of your dataset, " "running differential expression may take longer or fail."
             )
