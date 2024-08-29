@@ -16,10 +16,10 @@ class TestJsonifyStrict(unittest.TestCase):
             jsonify_strict({"nan": [np.nan]})
 
         with self.assertRaises(ValueError):
-            jsonify_strict({"pinf": [np.PINF]})
+            jsonify_strict({"pinf": [np.inf]})
 
         with self.assertRaises(ValueError):
-            jsonify_strict({"ninf": [np.NINF]})
+            jsonify_strict({"ninf": [np.inf]})
 
     def test_jsonify_numpy_ndarray(self):
         values = {

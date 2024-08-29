@@ -35,7 +35,7 @@ jobs:
       matrix:
         # note: The `macos-latest` is latest Catalina version, and not Big Sur. So we explicitly ask for Big Sur (`macos-11`)
         os: [ubuntu-latest, macos-latest, macos-11]
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.10", "3.11"]
         cellxgene_build: [main, latest]
         # add anndata pinned version test for subset of matrix configurations,
         # in order to reduce matrix cross-product explosion
