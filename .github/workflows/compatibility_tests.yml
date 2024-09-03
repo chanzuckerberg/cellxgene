@@ -6,11 +6,6 @@ on:
   push:
     branches:
       - main
-  # DEBUG
-  # DEBUG
-  # DEBUG
-  pull_request:
-    branches: "*"
 
 env:
   JEST_ENV: prod
