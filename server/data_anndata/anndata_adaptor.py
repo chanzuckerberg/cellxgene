@@ -211,7 +211,7 @@ class AnndataAdaptor(DataAdaptor):
         # heuristic
         n_values = self.data.shape[0] * self.data.shape[1]
         if (n_values > 1e8 and self.server_config.adaptor__anndata_adaptor__backed is True) or (n_values > 5e8):
-            self.parameters.update({"diffexp_may_be_slow": True})
+            self.parameters.update({"diffexp-may-be-slow": True})
 
     def _is_valid_layout(self, arr):
         """return True if this layout data is a valid array for front-end presentation:
