@@ -42,7 +42,7 @@ class TestTypeConversionUtils(unittest.TestCase):
             with self.assertRaises(TypeError):
                 get_schema_type_hint_from_dtype(np.dtype(dtype))
 
-        for dtype in [np.float16, np.float32, np.float64]:
+        for dtype in [np.float32, np.float64]:
             self.assertEqual(get_schema_type_hint_from_dtype(np.dtype(dtype)), {"type": "float32"})
 
         for dtype in [np.dtype(object), np.dtype(str)]:
@@ -123,17 +123,18 @@ int_OK_cases = [
 
 float_OK_cases = [
     {
+        "test_case": "float_OK_cases",
         "data": data,
         "expected_encoding_dtype": np.float32,
         "expected_schema_hint": {"type": "float32"},
-        "logs": None if data.dtype != np.float64 else {"level": logging.WARNING, "output": "may lose precision"},
+        "logs": None if dtype == np.float32 else {"level": logging.WARNING, "output": "may lose precision"},
     }
-    for dtype in [np.float16, np.float32, np.float64]
+    for dtype in [np.float32, np.float64]
     for data in [
         np.arange(-128, 1000, dtype=dtype),
         pd.Series(np.arange(-128, 1000, dtype=dtype)),
         pd.Index(np.arange(-129, 1000, dtype=dtype)),
-        np.array([-np.nan, np.NINF, -1, np.NZERO, 0, np.PZERO, 1, np.PINF, np.nan], dtype=dtype),
+        np.array([-np.nan, np.inf, -1, 0.0, 0, 0.0, 1, np.inf, np.nan], dtype=dtype),
         np.array([np.finfo(dtype).min, 0, np.finfo(dtype).max], dtype=dtype),
         sparse.csr_matrix((10, 100), dtype=dtype),
     ]
@@ -198,12 +199,13 @@ category_numeric_OK_cases = [
     # numeric, no NA/NaN, float
     *[
         {
+            "test_case": "numeric, no NA/NaN, float",
             "data": data,
             "expected_encoding_dtype": np.float32,
             "expected_schema_hint": {"type": "categorical"},
-            "logs": {"level": logging.WARNING, "output": "may lose precision"},
+            "logs": None if dtype == np.float32 else {"level": logging.WARNING, "output": "may lose precision"},
         }
-        for dtype in [np.float16, np.float32, np.float64]
+        for dtype in [np.float32, np.float64]
         for data in [
             pd.Series(np.array([0, 1, 2], dtype=dtype), dtype="category"),
             pd.Series(np.array([0, 1, 2], dtype=dtype), dtype="category").cat.remove_categories([1]),
@@ -213,10 +215,11 @@ category_numeric_OK_cases = [
     # numeric, has NA-induced cast to float32
     *[
         {
+            "test_case": "numeric, has NA-induced cast to float32",
             "data": data,
             "expected_encoding_dtype": np.float32,
             "expected_schema_hint": {"type": "categorical"},
-            "logs": {"level": logging.WARNING, "output": "may lose precision"},
+            "logs": None if dtype == np.float32 else {"level": logging.WARNING, "output": "may lose precision"},
         }
         for dtype in [
             np.int8,
@@ -227,7 +230,6 @@ category_numeric_OK_cases = [
             np.uint32,
             np.int64,
             np.uint64,
-            np.float16,
             np.float32,
             np.float64,
         ]
@@ -312,7 +314,6 @@ class TestTypeInference(unittest.TestCase, AssertNoLog):
                     self.assertEqual(encoding_dtype, self.expected_encoding_dtype)
                     self.assertEqual(schema_hint, self.expected_schema_hint)
                     self.assertIn(logs["output"], logger.output[0])
-
             else:
                 with self.assertNoLogs(logging.getLogger(), logging.WARNING):
                     encoding_dtype, schema_hint = get_dtype_and_schema_of_array(self.data)

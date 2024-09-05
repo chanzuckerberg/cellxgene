@@ -116,7 +116,7 @@ def _get_type_info(array: Union[np.ndarray, pd.Series, pd.Index]) -> Tuple[np.dt
         raise TypeError("Unsupported data type.")
 
     dtype = array.dtype
-
+    
     res = _get_type_info_from_dtype(dtype)
     if res is not None:
         return res
@@ -140,7 +140,6 @@ def _get_type_info(array: Union[np.ndarray, pd.Series, pd.Index]) -> Tuple[np.dt
 
     if dtype.kind in ["i", "u"] and _can_cast_array_values_to_int32(array):
         return (np.int32, {"type": "int32"})
-
     if dtype.kind == "f":
         _float64_warning(array.dtype)
         return (np.float32, {"type": "float32"})

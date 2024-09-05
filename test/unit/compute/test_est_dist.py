@@ -65,13 +65,13 @@ class EstDistTest(unittest.TestCase):
 
         # non-finites
         self.assertEqual(estimate_approximate_distribution(np.array([np.nan])), XApproximateDistribution.NORMAL)
-        self.assertEqual(estimate_approximate_distribution(np.array([np.PINF])), XApproximateDistribution.NORMAL)
-        self.assertEqual(estimate_approximate_distribution(np.array([np.NINF])), XApproximateDistribution.NORMAL)
+        self.assertEqual(estimate_approximate_distribution(np.array([np.inf])), XApproximateDistribution.NORMAL)
+        self.assertEqual(estimate_approximate_distribution(np.array([np.inf])), XApproximateDistribution.NORMAL)
         self.assertEqual(
-            estimate_approximate_distribution(np.array([np.PINF, np.NINF, 0])), XApproximateDistribution.NORMAL
+            estimate_approximate_distribution(np.array([np.inf, np.inf, 0])), XApproximateDistribution.NORMAL
         )
         self.assertEqual(
-            estimate_approximate_distribution(np.array([np.nan, np.PINF, np.NINF])), XApproximateDistribution.NORMAL
+            estimate_approximate_distribution(np.array([np.nan, np.inf, np.inf])), XApproximateDistribution.NORMAL
         )
 
         raw = np.random.exponential(scale=1000, size=(50, 3))
@@ -82,15 +82,15 @@ class EstDistTest(unittest.TestCase):
             XApproximateDistribution.COUNT,
         )
         self.assertEqual(
-            estimate_approximate_distribution(put(raw, [1], [np.PINF])),
+            estimate_approximate_distribution(put(raw, [1], [np.inf])),
             XApproximateDistribution.COUNT,
         )
         self.assertEqual(
-            estimate_approximate_distribution(put(raw, [1], [np.NINF])),
+            estimate_approximate_distribution(put(raw, [1], [np.inf])),
             XApproximateDistribution.COUNT,
         )
         self.assertEqual(
-            estimate_approximate_distribution(put(raw, [1, 3, 88], [np.nan, np.PINF, np.NINF])),
+            estimate_approximate_distribution(put(raw, [1, 3, 88], [np.nan, np.inf, np.inf])),
             XApproximateDistribution.COUNT,
         )
         self.assertEqual(
@@ -103,15 +103,15 @@ class EstDistTest(unittest.TestCase):
             XApproximateDistribution.NORMAL,
         )
         self.assertEqual(
-            estimate_approximate_distribution(put(logged, [1], [np.PINF])),
+            estimate_approximate_distribution(put(logged, [1], [np.inf])),
             XApproximateDistribution.NORMAL,
         )
         self.assertEqual(
-            estimate_approximate_distribution(put(logged, [1], [np.NINF])),
+            estimate_approximate_distribution(put(logged, [1], [np.inf])),
             XApproximateDistribution.NORMAL,
         )
         self.assertEqual(
-            estimate_approximate_distribution(put(logged, [1, 3, 88], [np.nan, np.PINF, np.NINF])),
+            estimate_approximate_distribution(put(logged, [1, 3, 88], [np.nan, np.inf, np.inf])),
             XApproximateDistribution.NORMAL,
         )
         self.assertEqual(

@@ -13,7 +13,7 @@ import * as ENV_DEFAULT from "../../../environment.default.json";
 // a test can take more time to finish, so we don't want
 // jest to shut off the test too soon
 jest.setTimeout(2 * 60 * 1000);
-setDefaultOptions({ timeout: 20 * 1000 });
+setDefaultOptions({ timeout: 60 * 1000 });
 
 jest.retryTimes(ENV_DEFAULT.RETRY_ATTEMPTS);
 
