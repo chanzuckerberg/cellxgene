@@ -14,15 +14,15 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - run: |
           git fetch --depth=1 origin +${{github.base_ref}}
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: 3.11
       - name: Node cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -45,22 +45,22 @@ jobs:
   unit-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.9 (pyenv) # pyenv needed for mlflow in cli annotate tests
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11 (pyenv) # pyenv needed for mlflow in cli annotate tests
         uses: gabrielfalcao/pyenv-action@v9
         with:
-          default: 3.9
+          default: 3.11
           command: pip install -U pip # upgrade pip after installing python
       - run: pip install virtualenv # virtualenv needed for mlflow in cli annotate tests
       - name: Python cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Node cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -78,20 +78,20 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: 3.11
       - name: Python cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Node cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
