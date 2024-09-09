@@ -134,7 +134,7 @@ float_OK_cases = [
         np.arange(-128, 1000, dtype=dtype),
         pd.Series(np.arange(-128, 1000, dtype=dtype)),
         pd.Index(np.arange(-129, 1000, dtype=dtype)),
-        np.array([-np.nan, np.inf, -1, 0.0, 0, 0.0, 1, np.inf, np.nan], dtype=dtype),
+        np.array([-np.nan, -np.inf, -1, -0.0, 0, 0.0, 1, np.inf, np.nan], dtype=dtype),
         np.array([np.finfo(dtype).min, 0, np.finfo(dtype).max], dtype=dtype),
         sparse.csr_matrix((10, 100), dtype=dtype),
     ]
