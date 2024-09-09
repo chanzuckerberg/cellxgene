@@ -32,7 +32,10 @@ jobs:
         run: |
           pip install flake8
           pip install black
-          cd client
+          pip install setuptools
+      - name: Install client dependencies
+        run: |
+          cd client 
           npm install
       - name: Format with black and lint with flake8
         run: |
