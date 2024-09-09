@@ -7,6 +7,10 @@ on:
     branches:
       - main
 
+  # For debug - uncomment below to run on all PRs
+  # pull_request:
+  #   branches: "*"
+
 env:
   JEST_ENV: prod
 
@@ -14,9 +18,9 @@ jobs:
   docker-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Build docker image
@@ -35,7 +39,7 @@ jobs:
         # add anndata pinned version test for subset of matrix configurations,
         # in order to reduce matrix cross-product explosion
         include:
-          - python-version: 3.10
+          - python-version: 3.11
             cellxgene_build: latest
             # TODO: dynamically use the literal version in requirements.txt,
             # to avoid having to update this in manually in the future
@@ -43,9 +47,9 @@ jobs:
             # matches this pinned version, to avoid a redundant test
             anndata_version: "==0.10.9"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Cache env vars
@@ -55,14 +59,14 @@ jobs:
         run: echo "BREW_CACHE=`brew --cache`" >> $GITHUB_ENV
       # FIXME: Only working for Linux
       - name: Python cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ env.PIP_CACHE }}
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Node cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -70,7 +74,7 @@ jobs:
             ${{ runner.os }}-node-
       - name: Brew cache (MacOS)
         if: startsWith(matrix.os, 'macos')
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ${{ env.BREW_CACHE }}
           key: ${{ runner.os }}-brew-
