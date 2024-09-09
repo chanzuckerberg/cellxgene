@@ -47,7 +47,7 @@ describe("metadata loads", () => {
       const element = await getOneElementInnerHTML(
         getTestId(`category-${label}`)
       );
-
+      // something new
       expect(element).toMatchSnapshot();
 
       await clickOn(`${label}:category-expand`);
