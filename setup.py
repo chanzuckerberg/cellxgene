@@ -24,7 +24,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=requirements,
-    python_requires=">=3.6",
+    python_requires=">=3.12",
     include_package_data=True,
     zip_safe=False,
     classifiers=[
