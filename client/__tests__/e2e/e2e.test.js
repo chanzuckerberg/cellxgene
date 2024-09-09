@@ -39,7 +39,7 @@ describe("did launch", () => {
   });
 });
 
-describe("metadata will load", () => {
+describe("metadata loads", () => {
   test("categories and values from dataset appear", async () => {
     await goToPage(appUrlBase);
 
