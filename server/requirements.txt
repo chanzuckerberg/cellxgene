@@ -7,7 +7,7 @@ Flask-Cors>=3.0.9
 Flask-RESTful>=0.3.6
 flask-server-timing>=0.1.2
 flask-talisman>=0.7.0
-flatbuffers==2.0.7 # cellxgene is not compatible with 2.0.0. Requires migration
+flatbuffers==2.0.7
 flatten-dict>=0.2.0
 fsspec>0.8.0
 gunicorn>=20.0.4
@@ -20,3 +20,4 @@ PyYAML>=5.4  # CVE-2020-14343
 requests>=2.22.0
 s3fs==0.4.2
 scipy>=1.4
+setuptools
