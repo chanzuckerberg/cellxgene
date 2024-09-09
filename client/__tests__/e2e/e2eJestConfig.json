@@ -6,5 +6,6 @@
   "setupFilesAfterEnv": ["expect-puppeteer", "./puppeteer.setup.js"],
   "globalSetup": "../globalSetup.js",
   "globalTeardown": "jest-environment-puppeteer/teardown",
-  "testEnvironment": "./screenshot_env.js"
+  "testEnvironment": "./screenshot_env.js",
+  "testTimeout": 30000
 }

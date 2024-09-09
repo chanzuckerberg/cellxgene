@@ -43,5 +43,4 @@ const launchConfig = LAUNCH_CONFIG_BY_ENV[jestEnv] || DEFAULT_LAUNCH_CONFIG;
 module.exports = {
   browserContext: "incognito",
   launch: launchConfig,
-  testTimeout: 80000,
 };
