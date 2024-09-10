@@ -84,6 +84,8 @@ jobs:
       - name: Install dependencies (MacOS)
         if: startsWith(matrix.os, 'macos')
         run: brew install hdf5
+      - name: Set Chromium path
+        run: echo "CHROME_EXECUTABLE_PATH=$(which chromium-browser)" >> $GITHUB_ENV
       - name: Install cellxgene from `main` branch
         if: matrix.cellxgene_build == 'main'
         run: |
