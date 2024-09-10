@@ -4,7 +4,6 @@
  * and `page` objects
  */
 
-const puppeteer = require("puppeteer");
 const ENV_DEFAULT = require("../environment.default.json");
 
 const jestEnv = process.env.JEST_ENV || ENV_DEFAULT.JEST_ENV;
@@ -15,7 +14,7 @@ const DEFAULT_LAUNCH_CONFIG = {
   headless: !isHeadful,
   args: ["--ignore-certificate-errors", "--ignore-ssl-errors"],
   ignoreHTTPSErrors: true,
-  executablePath: puppeteer.executablePath(),
+  timeout: 60000,
   defaultViewport: {
     width: 1280,
     height: 960,
