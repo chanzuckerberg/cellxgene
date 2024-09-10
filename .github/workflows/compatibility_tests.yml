@@ -110,6 +110,8 @@ jobs:
         run: make unit-test-server
       - name: Smoke Tests
         run: make smoke-test
+        env:
+          DEBUG: puppeteer:*  # Enable Puppeteer debug logs
     # FIXME: Fails intermittently. See https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/cellxgene/2415
     # - name: Smoke Tests with Annotations
     #   run: make smoke-test-annotations
