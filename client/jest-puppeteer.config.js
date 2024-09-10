@@ -7,11 +7,11 @@
 const ENV_DEFAULT = require("../environment.default.json");
 
 const jestEnv = process.env.JEST_ENV || ENV_DEFAULT.JEST_ENV;
-const isHeadful =
-  process.env.HEADFUL === "true" || process.env.HEADLESS === "false";
+// const isHeadful =
+//   process.env.HEADFUL === "true" || process.env.HEADLESS === "false";
 
 const DEFAULT_LAUNCH_CONFIG = {
-  headless: !isHeadful,
+  headless: true,
   args: ["--ignore-certificate-errors", "--ignore-ssl-errors"],
   ignoreHTTPSErrors: true,
   defaultViewport: {
@@ -23,7 +23,7 @@ const DEFAULT_LAUNCH_CONFIG = {
 const LAUNCH_CONFIG_BY_ENV = {
   [ENV_DEFAULT.DEBUG]: {
     ...DEFAULT_LAUNCH_CONFIG,
-    headless: false,
+    headless: true,
     slowMo: 100,
     devtools: true,
     defaultViewport: {
@@ -33,7 +33,7 @@ const LAUNCH_CONFIG_BY_ENV = {
   },
   [ENV_DEFAULT.DEV]: {
     ...DEFAULT_LAUNCH_CONFIG,
-    headless: false,
+    headless: true,
     slowMo: 5,
   },
 };
