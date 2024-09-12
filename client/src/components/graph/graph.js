@@ -935,7 +935,7 @@ class Graph extends React.Component {
   }
 }
 
-const ErrorLoading = ({ displayName, error, width, height }) => {
+function ErrorLoading({ displayName, error, width, height }) {
   console.log(error); // log to console as this is an unepected error
   return (
     <div
@@ -949,14 +949,10 @@ const ErrorLoading = ({ displayName, error, width, height }) => {
       <span>{`Failure loading ${displayName}`}</span>
     </div>
   );
-};
+}
 
-const StillLoading = ({ displayName, width, height }) => 
-  /*
-  Render a busy/loading indicator
-  */
-   (
-    <div
+function StillLoading({ displayName, width, height }) {
+  return <div
       style={{
         position: "fixed",
         fontWeight: 500,
@@ -976,7 +972,6 @@ const StillLoading = ({ displayName, width, height }) =>
         <span style={{ fontStyle: "italic" }}>Loading {displayName}</span>
       </div>
     </div>
-  )
-;
+}
 
 export default Graph;

@@ -1,6 +1,6 @@
 import { Colors } from "@blueprintjs/core";
+import ENV_DEFAULT from "Code/cellxgene/environment.default.json";
 import { dispatchNetworkErrorMessageToUser } from "./util/actionHelpers";
-import ENV_DEFAULT from "../../environment.default.json";
 
 /* overflow category values are created  using this string */
 export const overflowCategoryLabel = ": all other labels";

@@ -71,8 +71,7 @@ class Category extends React.PureComponent {
     const { metadataField, annotations, obsCrossfilter } = this.props;
 
     return (
-      <>
-        <AnnoDialog
+      <AnnoDialog
           isActive={
             annotations.isAddingNewLabel &&
             annotations.categoryAddingNewLabel === metadataField
@@ -105,7 +104,6 @@ class Category extends React.PureComponent {
             />
           }
         />
-      </>
     );
   }
 }

@@ -3,12 +3,8 @@ import { Button } from "@blueprintjs/core";
 
 import * as globals from "../../globals";
 
-const StillLoading = ({ zebra, displayName }) => 
-  /*
-    Render a loading indicator for the field.
-    */
-   (
-    <div
+function StillLoading({ zebra, displayName }) {
+  return <div
       data-testclass="gene-loading-spinner"
       style={{
         padding: globals.leftSidebarSectionPadding,
@@ -37,7 +33,6 @@ const StillLoading = ({ zebra, displayName }) =>
         </div>
       </div>
     </div>
-  )
-;
+}
 
 export default StillLoading;

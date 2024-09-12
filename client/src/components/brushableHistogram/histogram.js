@@ -5,7 +5,7 @@ import * as d3 from "d3";
 import maybeScientific from "../../util/maybeScientific";
 import clamp from "../../util/clamp";
 
-const Histogram = ({
+function Histogram({
   field,
   fieldForId,
   display,
@@ -18,7 +18,7 @@ const Histogram = ({
   isColorBy,
   selectionRange,
   mini,
-}) => {
+}) {
   const svgRef = useRef(null);
   const [brush, setBrush] = useState(null);
 
@@ -186,6 +186,6 @@ const Histogram = ({
       ref={svgRef}
     />
   );
-};
+}
 
 export default Histogram;

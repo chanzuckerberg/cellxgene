@@ -35,11 +35,11 @@ export default class MiniHistogram extends React.PureComponent {
     }
   };
 
-  componentDidMount = () => {
+  componentDidMount() {
     this.drawHistogram();
   };
 
-  componentDidUpdate = (prevProps) => {
+  componentDidUpdate(prevProps) {
     const { obsOrVarContinuousFieldDisplayName, bins } = this.props;
     if (
       prevProps.obsOrVarContinuousFieldDisplayName !==

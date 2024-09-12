@@ -288,11 +288,8 @@ class Category extends React.PureComponent {
 
 export default Category;
 
-const StillLoading = ({ metadataField, checkboxID }) => (
-  /*
-  We are still loading this category, so render a "busy" signal.
-  */
-  <div
+function StillLoading({ metadataField, checkboxID }) {
+  return <div
     style={{
       maxWidth: globals.maxControlsWidth,
     }}
@@ -335,8 +332,8 @@ const StillLoading = ({ metadataField, checkboxID }) => (
       </div>
     </div>
   </div>
-);
-const ErrorLoading = ({ metadataField, error }) => {
+}
+function ErrorLoading({ metadataField, error }) {
   console.error(error); // log error to console as it is unexpected.
   return (
     <div style={{ marginBottom: 10, marginTop: 4 }}>
@@ -352,7 +349,7 @@ const ErrorLoading = ({ metadataField, error }) => {
       </span>
     </div>
   );
-};
+}
 
 const CategoryHeader = React.memo(
   ({

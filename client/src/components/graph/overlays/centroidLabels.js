@@ -167,7 +167,7 @@ class CentroidLabels extends PureComponent {
   }
 }
 
-const Label = ({
+function Label({
   label,
   dilatedValue,
   coords,
@@ -177,7 +177,7 @@ const Label = ({
   displayLabel,
   onMouseEnter,
   onMouseOut,
-}) => {
+}) {
   /*
   Render a label at a given coordinate.
   */
@@ -215,4 +215,4 @@ const Label = ({
       </text>
     </g>
   );
-};
+}

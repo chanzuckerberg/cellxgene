@@ -1,7 +1,7 @@
 import React from "react";
 import icon from "../../images/icon.png";
 
-const Logo = (props) => {
+function Logo(props) {
   const { size } = props;
   return (
     <img
@@ -11,6 +11,6 @@ const Logo = (props) => {
       alt="CELLxGENE Annotate Logo"
      />
   );
-};
+}
 
 export default Logo;

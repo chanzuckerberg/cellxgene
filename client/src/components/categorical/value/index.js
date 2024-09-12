@@ -162,7 +162,7 @@ class CategoryValue extends React.Component {
     );
   };
 
-  shouldComponentUpdate = (nextProps, nextState) => {
+  shouldComponentUpdate(nextProps, nextState) {
     /*
     Checks to see if at least one of the following changed:
     * world state

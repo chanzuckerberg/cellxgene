@@ -53,8 +53,7 @@ class AddGeneToGenesetDialogue extends React.PureComponent {
     const { genesToAdd } = this.state;
 
     return (
-      <>
-        <AnnoDialog
+      <AnnoDialog
           isActive={genesetsUI.isAddingGenesToGeneset === geneset}
           inputProps={{ "data-testid": `${geneset}:create-label-dialog` }}
           primaryButtonProps={{
@@ -81,7 +80,6 @@ class AddGeneToGenesetDialogue extends React.PureComponent {
           handleSubmit={this.handleAddGeneToGeneSet}
           handleCancel={this.disableAddGeneMode}
         />
-      </>
     );
   }
 }

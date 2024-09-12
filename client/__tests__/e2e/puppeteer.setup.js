@@ -5,8 +5,8 @@
  */
 
 import { setDefaultOptions } from "expect-puppeteer";
+import * as ENV_DEFAULT from "Code/cellxgene/environment.default.json";
 import { isDebug, isDev } from "./config";
-import * as ENV_DEFAULT from "../../../environment.default.json";
 
 // (thuang): This is the max time a test can take to run.
 // Since when debugging, we run slowMo and !headless, this means

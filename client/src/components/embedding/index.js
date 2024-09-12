@@ -109,7 +109,7 @@ const loadAllEmbeddingCounts = async ({ annoMatrix, available }) => {
   }));
 };
 
-const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice }) => {
+function EmbeddingChoices({ onChange, annoMatrix, layoutChoice }) {
   const { available } = layoutChoice;
   const { data, error, isPending } = useAsync({
     promiseFn: loadAllEmbeddingCounts,
@@ -149,4 +149,4 @@ const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice }) => {
     );
   }
   return null;
-};
+}

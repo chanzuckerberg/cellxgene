@@ -125,8 +125,7 @@ class CreateGenesetDialogue extends React.PureComponent {
     const { genesetsUI, genesets } = this.props;
 
     return (
-      <>
-        <Dialog
+      <Dialog
           icon="tag"
           title="Create gene set"
           isOpen={genesetsUI.createGenesetModeActive}
@@ -210,7 +209,6 @@ class CreateGenesetDialogue extends React.PureComponent {
             </div>
           </form>
         </Dialog>
-      </>
     );
   }
 }

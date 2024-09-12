@@ -105,8 +105,7 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
     const { metadataField, annotations } = this.props;
 
     return (
-      <>
-        <AnnoDialog
+      <AnnoDialog
           isActive={
             annotations.isEditingCategoryName &&
             annotations.categoryBeingEdited === metadataField
@@ -141,7 +140,6 @@ class AnnoDialogEditCategoryName extends React.PureComponent {
             />
           }
         />
-      </>
     );
   }
 }

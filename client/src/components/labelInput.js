@@ -159,8 +159,7 @@ export default class LabelInput extends React.PureComponent {
     };
     const { queryResults } = this.state;
     return (
-      <>
-        <Suggest
+      <Suggest
           fill
           inputValueRenderer={(i) => i.target}
           items={queryResults}
@@ -172,7 +171,6 @@ export default class LabelInput extends React.PureComponent {
           inputProps={inputProps}
           onKeyDown={this.handleKeyDown}
         />
-      </>
     );
   }
 }

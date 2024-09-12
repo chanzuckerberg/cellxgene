@@ -42,12 +42,12 @@ export default class MiniStackedBar extends React.PureComponent {
     }
   };
 
-  componentDidUpdate = (prevProps) => {
+  componentDidUpdate(prevProps) {
     const { occupancy } = this.props;
     if (occupancy !== prevProps.occupancy) this.drawStacks();
   };
 
-  componentDidMount = () => {
+  componentDidMount() {
     this.drawStacks();
   };
 

@@ -32,7 +32,7 @@ const SECOND_HALF_INNER_STYLE = {
   right: 0,
 };
 
-export default (props) => {
+export default function(props) {
   const { children, isGenesetDescription, tooltipAddendum = "" } = props;
   // Truncate only support a single child with a text child
 

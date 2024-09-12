@@ -109,8 +109,7 @@ class RenameGeneset extends React.PureComponent {
     } = this.props;
 
     return (
-      <>
-        <AnnoDialog
+      <AnnoDialog
           isActive={genesetsUI.isEditingGenesetName === originalGenesetName}
           inputProps={{
             "data-testid": `${genesetsUI.isEditingGenesetName}:rename-geneset-dialog`,
@@ -161,7 +160,6 @@ class RenameGeneset extends React.PureComponent {
           handleSubmit={this.renameGeneset}
           handleCancel={this.disableEditGenesetNameMode}
         />
-      </>
     );
   }
 }

@@ -1,4 +1,4 @@
-import * as ENV_DEFAULT from "../../../environment.default.json";
+import * as ENV_DEFAULT from "Code/cellxgene/environment.default.json";
 
 export const jestEnv = process.env.JEST_ENV || ENV_DEFAULT.JEST_ENV;
 export const appUrlBase =
