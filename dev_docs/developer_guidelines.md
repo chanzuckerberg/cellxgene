@@ -3,7 +3,7 @@
 ## Requirements
 
 - npm
-- Python 3.6+
+- Python 3.10+
 - Chrome
 
 [See dev section of README](../README.md)
@@ -148,6 +148,6 @@ If you would like to run the smoke tests against a hot-reloaded version of the c
 
 ### Tips
 
-- You can also install/launch the server side code from npm scrips (requires python3.6 with virtualenv) with the `scripts/backend_dev` script.
+- You can also install/launch the server side code from npm scrips (requires python3.10 with virtualenv) with the `scripts/backend_dev` script.
 
 - Check out [e2e Tests](e2e_tests.md) for more details

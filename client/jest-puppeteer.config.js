@@ -14,6 +14,7 @@ const DEFAULT_LAUNCH_CONFIG = {
   headless: !isHeadful,
   args: ["--ignore-certificate-errors", "--ignore-ssl-errors"],
   ignoreHTTPSErrors: true,
+  timeout: 90000,
   defaultViewport: {
     width: 1280,
     height: 960,

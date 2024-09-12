@@ -18,8 +18,8 @@
   },
   "engineStrict": true,
   "engines": {
-    "npm": ">=3.0.0",
-    "node": "^16.0.0"
+    "npm": ">=9.6.7",
+    "node": "^18.17.0"
   },
   "eslintConfig": {
     "extends": "./configuration/eslint/eslint.js"
