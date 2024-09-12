@@ -14,7 +14,7 @@ with open("server/requirements-annotate.txt") as fh:
 
 setup(
     name="cellxgene",
-    version="1.2.0",
+    version="1.3.0",
     packages=find_packages(),
     url="https://github.com/chanzuckerberg/cellxgene",
     license="MIT",
