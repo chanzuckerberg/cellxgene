@@ -1,4 +1,4 @@
-<img src="./docs/cellxgene-logo.png" width="300">
+![](https://github.com/chanzuckerberg/cellxgene/raw/main/docs/cellxgene-logo.png)
 
 _an interactive explorer for single-cell transcriptomics data_
 
@@ -11,7 +11,8 @@ CZ CELLxGENE Annotate (pronounced "cell-by-gene") is an interactive data explore
 
 Whether you need to visualize one thousand cells or one million, CELLxGENE Annotate helps you gain insight into your single-cell data.
 
-<img src="https://github.com/chanzuckerberg/cellxgene/raw/main/docs/images/crossfilter.gif" width="350" height="200" hspace="30"><img src="https://github.com/chanzuckerberg/cellxgene/raw/main/docs/images/category-breakdown.gif" width="350" height="200" hspace="30">
+![](https://github.com/chanzuckerberg/cellxgene/raw/main/docs/images/crossfilter.gif)
+![](https://github.com/chanzuckerberg/cellxgene/raw/main/docs/images/category-breakdown.gif)
 
 # Getting started
 
