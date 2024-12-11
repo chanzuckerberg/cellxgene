@@ -17,13 +17,13 @@ const skipOnActions = new Set([
   "window resize",
   "reset colorscale",
   "reset centroid labels",
-  "geneset: initial load",
-  "geneset: set tid",
+  "sampleset: initial load",
+  "sampleset: set tid",
 
   "graph brush change",
   "continuous metadata histogram brush",
 
-  "request user defined gene success",
+  "request user defined sample success",
 
   "category value mouse hover start",
   "category value mouse hover end",
@@ -32,9 +32,9 @@ const skipOnActions = new Set([
   "writable obs annotations - save complete",
   "writable obs annotations - save started",
   "writable obs annotations - save error",
-  "autosave: genesets started",
-  "autosave: genesets error",
-  "autosave: genesets complete",
+  "autosave: samplesets started",
+  "autosave: samplesets error",
+  "autosave: samplesets complete",
 
   /* annotation component action */
   "annotation: activate add new label mode",
@@ -45,13 +45,13 @@ const skipOnActions = new Set([
   "annotation: cancel edit label mode",
   "set annotations collection name",
 
-  /* geneset component action */
-  "geneset: activate add new geneset mode",
-  "geneset: disable create geneset mode",
-  "geneset: activate add new genes mode",
-  "geneset: disable add new genes mode",
-  "geneset: activate rename geneset mode",
-  "geneset: disable rename geneset mode",
+  /* sampleset component action */
+  "sampleset: activate add new sampleset mode",
+  "sampleset: disable create sampleset mode",
+  "sampleset: activate add new samples mode",
+  "sampleset: disable add new samples mode",
+  "sampleset: activate rename sampleset mode",
+  "sampleset: disable rename sampleset mode",
 ]);
 
 /*
@@ -80,15 +80,15 @@ const saveOnActions = new Set([
   "color by categorical metadata",
   "color by continuous metadata",
   "color by expression",
-  "color by geneset mean expression",
+  "color by sampleset mean expression",
 
   "show centroid labels for category",
 
   "set scatterplot x",
   "set scatterplot y",
 
-  "store current cell selection as differential set 1",
-  "store current cell selection as differential set 2",
+  "store current protein selection as differential set 1",
+  "store current protein selection as differential set 2",
 
   "subset to selection",
   "set clip quantiles",
@@ -101,17 +101,17 @@ const saveOnActions = new Set([
   "annotation: add new label to category",
   "annotation: delete category",
   "annotation: label edited",
-  "annotation: label current cell selection",
+  "annotation: label current protein selection",
   "annotation: delete label",
   "annotation: category edited",
 
-  /* geneset component action */
-  "geneset: create",
-  "geneset: delete",
-  "geneset: update",
-  "geneset: add genes",
-  "geneset: delete genes",
-  "geneset: set gene description",
+  /* sampleset component action */
+  "sampleset: create",
+  "sampleset: delete",
+  "sampleset: update",
+  "sampleset: add samples",
+  "sampleset: delete samples",
+  "sampleset: set sample description",
 ]);
 
 /**

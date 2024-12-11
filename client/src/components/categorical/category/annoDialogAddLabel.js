@@ -60,7 +60,8 @@ class Category extends React.PureComponent {
     return isLabelErroneous(name, metadataField, schema);
   };
 
-  instruction = (label) => labelPrompt(this.labelNameError(label), "New, unique label", ":");
+  instruction = (label) =>
+    labelPrompt(this.labelNameError(label), "New, unique label", ":");
 
   handleChangeOrSelect = (label) => {
     this.setState({ newLabelText: label });
@@ -85,7 +86,7 @@ class Category extends React.PureComponent {
           instruction={this.instruction(newLabelText)}
           cancelTooltipContent="Close this dialog without adding a label."
           primaryButtonText="Add label"
-          secondaryButtonText={`Add label & assign ${obsCrossfilter.countSelected()} selected cells`}
+          secondaryButtonText={`Add label & assign ${obsCrossfilter.countSelected()} selected proteins`}
           handleSecondaryButtonSubmit={this.addLabelAndAssignCells}
           text={newLabelText}
           validationError={this.labelNameError(newLabelText)}

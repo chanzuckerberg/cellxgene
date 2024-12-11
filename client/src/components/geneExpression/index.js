@@ -8,8 +8,8 @@ import QuickGene from "./quickGene";
 import CreateGenesetDialogue from "./menus/createGenesetDialogue";
 
 @connect((state) => ({
-    genesets: state.genesets.genesets,
-  }))
+  genesets: state.genesets.genesets,
+}))
 class GeneExpression extends React.Component {
   constructor(props) {
     super(props);
@@ -36,14 +36,17 @@ class GeneExpression extends React.Component {
   handleActivateCreateGenesetMode = () => {
     const { dispatch } = this.props;
     const { geneSetsExpanded } = this.state;
-    dispatch({ type: "geneset: activate add new geneset mode" });
+    dispatch({ type: "sampleset: activate add new sampleset mode" });
     if (!geneSetsExpanded) {
       this.setState((state) => ({ ...state, geneSetsExpanded: true }));
     }
   };
 
   handleExpandGeneSets = () => {
-    this.setState((state) => ({ ...state, geneSetsExpanded: !state.geneSetsExpanded }));
+    this.setState((state) => ({
+      ...state,
+      geneSetsExpanded: !state.geneSetsExpanded,
+    }));
   };
 
   render() {

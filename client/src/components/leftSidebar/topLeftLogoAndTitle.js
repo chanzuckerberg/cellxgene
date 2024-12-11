@@ -60,7 +60,7 @@ class LeftSideBar extends React.Component {
               userSelect: "none",
             }}
           >
-            cell
+            protein
             <span
               style={{
                 position: "relative",
@@ -71,7 +71,7 @@ class LeftSideBar extends React.Component {
             >
               ×
             </span>
-            gene
+            location
           </span>
         </div>
         <div style={{ marginRight: 5, height: "100%" }}>

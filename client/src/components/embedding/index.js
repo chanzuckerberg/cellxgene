@@ -16,10 +16,10 @@ import actions from "../../actions";
 import { getDiscreteCellEmbeddingRowIndex } from "../../util/stateManager/viewStackHelpers";
 
 @connect((state) => ({
-    layoutChoice: state.layoutChoice, // TODO: really should clean up naming, s/layout/embedding/g
-    schema: state.annoMatrix?.schema,
-    crossfilter: state.obsCrossfilter,
-  }))
+  layoutChoice: state.layoutChoice, // TODO: really should clean up naming, s/layout/embedding/g
+  schema: state.annoMatrix?.schema,
+  crossfilter: state.obsCrossfilter,
+}))
 class Embedding extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -62,7 +62,7 @@ class Embedding extends React.PureComponent {
                 }}
               >
                 {layoutChoice?.current}: {crossfilter.countSelected()} out of{" "}
-                {crossfilter.size()} cells
+                {crossfilter.size()} proteins
               </Button>
             </Tooltip>
           }
@@ -81,7 +81,8 @@ class Embedding extends React.PureComponent {
             >
               <H4>Embedding Choice</H4>
               <p style={{ fontStyle: "italic" }}>
-                There are {schema?.dataframe?.nObs} cells in the entire dataset.
+                There are {schema?.dataframe?.nObs} proteins in the entire
+                dataset.
               </p>
               <EmbeddingChoices
                 onChange={this.handleLayoutChoiceChange}
@@ -136,7 +137,7 @@ const EmbeddingChoices = ({ onChange, annoMatrix, layoutChoice }) => {
       <RadioGroup onChange={onChange} selectedValue={layoutChoice.current}>
         {data.map((summary) => {
           const { discreteCellIndex, embeddingName } = summary;
-          const sizeHint = `${discreteCellIndex.size()} cells`;
+          const sizeHint = `${discreteCellIndex.size()} proteins`;
           return (
             <Radio
               label={`${embeddingName}: ${sizeHint}`}

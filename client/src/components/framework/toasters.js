@@ -18,7 +18,7 @@ export const postUserErrorToast = (message) =>
 
 /*
 A toast the user must dismiss manually, because they need to act on its information,
-ie., 8 bulk add genes out of 40 were bad. Manually see which ones and fix.
+ie., 8 bulk add samples out of 40 were bad. Manually see which ones and fix.
 */
 export const keepAroundErrorToast = (message) =>
   ToastTopCenter?.show({ message, timeout: 0, intent: Intent.WARNING });

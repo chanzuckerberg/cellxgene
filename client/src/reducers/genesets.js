@@ -1,9 +1,9 @@
 /**
- * Gene set state. Geneset UI state is in a different reducer.
+ * Sample set state. Sampleset UI state is in a different reducer.
  *
- * geneset reducer state is a Map object, where:
- *  key: the geneset name, a string.
- *  val: the geneset defined as an object ("geneset object")
+ * sampleset reducer state is a Map object, where:
+ *  key: the sampleset name, a string.
+ *  val: the sampleset defined as an object ("geneset object")
  *
  * A geneset object is:
  * {
@@ -15,12 +15,12 @@
  *    }>
  * }
  *
- * Geneset and genes Map order is significant, and will be preserved across
+ * Sampleset and samples Map order is significant, and will be preserved across
  * CRUD operations on either.
  *
  * This reducer does light error checking, but not as much as the backend
- * routes. Do not rely on it to enforce geneset integrity - eg, no duplicate
- * genes in a geneset.
+ * routes. Do not rely on it to enforce sampleset integrity - eg, no duplicate
+ * samples in a sampleset.
  */
 import { diffexpPopNamePrefix1, diffexpPopNamePrefix2 } from "../globals";
 
@@ -36,11 +36,11 @@ const GeneSets = (
     /**
      * Initial, load-time bootstrap.
      * {
-     *    type: "geneset: initial load"
+     *    type: "sampleset: initial load"
      *    data: JSON response
      * }
      */
-    case "geneset: initial load": {
+    case "sampleset: initial load": {
       const { data } = action;
 
       if (
@@ -79,24 +79,26 @@ const GeneSets = (
     }
 
     /**
-     * Creates a new & empty geneset with the given name and description.
+     * Creates a new & empty sampleset with the given name and description.
      * {
-     *    type: "geneset: create",
-     *    genesetName: string, // gene set name
-     *    genesetDescription: string, // geneset description
+     *    type: "sampleset: create",
+     *    genesetName: string, // sample set name
+     *    genesetDescription: string, // sampleset description
      * }
      *
      */
-    case "geneset: create": {
+    case "sampleset: create": {
       const { genesetName, genesetDescription } = action;
       if (
         typeof genesetName !== "string" ||
         !genesetName ||
         genesetDescription === undefined
       )
-        throw new Error("geneset: create -- name or description unspecified.");
+        throw new Error(
+          "sampleset: create -- name or description unspecified."
+        );
       if (state.genesets.has(genesetName))
-        throw new Error("geneset: create -- name already defined.");
+        throw new Error("sampleset: create -- name already defined.");
 
       const genesets = new Map([
         [
@@ -108,7 +110,7 @@ const GeneSets = (
           },
         ],
         ...state.genesets,
-      ]); // clone and add new geneset to beginning
+      ]); // clone and add new sampleset to beginning
 
       return {
         ...state,
@@ -117,16 +119,16 @@ const GeneSets = (
     }
 
     /**
-     * Deletes the named geneset, if it exists. Throws if it does not.
+     * Deletes the named sampleset, if it exists. Throws if it does not.
      * {
-     *    type: "geneset: delete",
+     *    type: "sampleset: delete",
      *    genesetName: string
      * }
      */
-    case "geneset: delete": {
+    case "sampleset: delete": {
       const { genesetName } = action;
       if (!state.genesets.has(genesetName))
-        throw new Error("geneset: delete -- geneset name does not exist.");
+        throw new Error("sampleset: delete -- geneset name does not exist.");
 
       const genesets = new Map(state.genesets); // clone
       genesets.delete(genesetName);
@@ -137,10 +139,10 @@ const GeneSets = (
     }
 
     /**
-     * Update the named geneset with a new name and description.  Preserves the existing
-     * order of the geneset, even when the genesetName changes.
+     * Update the named sampleset with a new name and description.  Preserves the existing
+     * order of the sampleset, even when the samplesetName changes.
      * {
-     *    type: "geneset: update",
+     *    type: "sampleset: update",
      *    genesetName: string, current name of geneset to be updated
      *    update: {
      *        genesetName: string, new name
@@ -150,12 +152,12 @@ const GeneSets = (
      *
      * For example, if you want to update JUST the description:
      *   dispatch({
-     *     action: "geneset: update",
+     *     action: "sampleset: update",
      *     genesetName: "foo",
      *     update: { genesetName: "foo", genesetDescription: "a new description"}
      *   })
      */
-    case "geneset: update": {
+    case "sampleset: update": {
       const { genesetName, update } = action;
 
       if (
@@ -164,7 +166,7 @@ const GeneSets = (
         !state.genesets.has(genesetName)
       )
         throw new Error(
-          "geneset: update -- geneset name unspecified or does not exist."
+          "sampleset: update -- geneset name unspecified or does not exist."
         );
 
       /* now that we've confirmed the gene set exists, check for duplicates */
@@ -176,7 +178,7 @@ const GeneSets = (
 
       if (genesetNameIsDuplicate && descriptionIsDuplicate)
         throw new Error(
-          "geneset: update -- update specified existing name and description."
+          "sampleset: update -- update specified existing name and description."
         );
 
       const prevGs = state.genesets.get(genesetName);
@@ -199,11 +201,11 @@ const GeneSets = (
     }
 
     /**
-     * Adds genes to the geneset.  They are appended to the END of the geneset, in the
-     * order provided. Duplicates or genes already in the geneset, will be ignored.
+     * Adds samples to the sampleset.  They are appended to the END of the sampleset, in the
+     * order provided. Duplicates or samples already in the sampleset, will be ignored.
      * {
-     *    type: "geneset: add genes"
-     *    genesetName: <string>, // gene set name
+     *    type: "sampleset: add samples"
+     *    genesetName: <string>, // sample set name
      *    genes: Array<{
      *      geneSymbol: <string>,
      *      geneDescription: <string>
@@ -213,15 +215,17 @@ const GeneSets = (
      * Example:
      *   dispatch({
      *     type: "add genes",
-     *     genesetName: "foo",
+     *     samplesetName: "foo",
      *     genes: [ { geneSymbol: "FOXP", geneDescription: "test" }]
      *   });
      */
-    case "geneset: add genes": {
+    case "sampleset: add samples": {
       const { genesetName, genes } = action;
 
       if (!state.genesets.has(genesetName))
-        throw new Error("geneset: add genes -- geneset name does not exist.");
+        throw new Error(
+          "sampleset: add samples -- sampleset name does not exist."
+        );
 
       // clone
       const genesets = new Map(state.genesets);
@@ -251,26 +255,26 @@ const GeneSets = (
     }
 
     /**
-     * Delete genes from the named geneset. Will throw if the genesetName does
+     * Delete samples from the named sampleset. Will throw if the samplesetName does
      * not exist.  Will ignore geneSymbols that do not exist.
      * {
-     *    type: "geneset: delete genes",
+     *    type: "sampleset: delete samples",
      *    genesetName: <string>, // the geneset from which to delete genes
      *    geneSymbols: [<string>, ...], // the gene symbols to delete.
      * }
      *
      * Example:
      *  dispatch({
-     *    type: "geneset: delete genes",
+     *    type: "sampleset: delete samples",
      *    genesetName: "a geneset name",
      *    geneSymbols: ["F5"]
      *  })
      */
-    case "geneset: delete genes": {
+    case "sampleset: delete samples": {
       const { genesetName, geneSymbols } = action;
       if (!state.genesets.has(genesetName))
         throw new Error(
-          "geneset: delete genes -- geneset name does not exist."
+          "sampleset: delete samples -- geneset name does not exist."
         );
 
       // clone
@@ -293,22 +297,22 @@ const GeneSets = (
     }
 
     /**
-     * Set/update the description of the gene.  NOTE that this does not allow the name
-     * of the gene to change - only "geneset: add" and "geneset: delete" can change
-     * the genes in a geneset.  Use this to update a gene description AFTER you add it
-     * to the geneset.
+     * Set/update the description of the sample.  NOTE that this does not allow the name
+     * of the sample to change - only "sampleset: add" and "sampleset: delete" can change
+     * the samples in a sampleset.  Use this to update a sample description AFTER you add it
+     * to the sampleset.
      * {
-     *    type: "geneset: set gene description",
-     *    genesetName: <string>, // the geneset to update
+     *    type: "sampleset: set sample description",
+     *    genesetName: <string>, // the sampleset to update
      *    update: {
-     *      geneSymbol: <string>, // the gene to update, MUST exist already in the geneset
+     *      geneSymbol: <string>, // the sample to update, MUST exist already in the sampleset
      *      geneDescription: <string>
      *    }
      * }
      *
      * Example:
      *  dispatch({
-     *      type: "geneset: set gene description",
+     *      type: "sampleset: set sample description",
      *      genesetName: "my fav geneset",
      *      update: {
      *        geneSymbol: "F5",
@@ -316,11 +320,11 @@ const GeneSets = (
      *      }
      *  })
      */
-    case "geneset: set gene description": {
+    case "sampleset: set sample description": {
       const { genesetName, update } = action;
       if (!state.genesets.has(genesetName))
         throw new Error(
-          "geneset: set gene description -- geneset name does not exist."
+          "sampleset: set sample description -- geneset name does not exist."
         );
 
       // clone
@@ -334,7 +338,7 @@ const GeneSets = (
       const { geneSymbol, geneDescription } = update;
       const gene = gs.genes.get(geneSymbol);
       if (!gene)
-        throw new Error("geneset: set gene description -- no such gene");
+        throw new Error("sampleset: set sample description -- no such gene");
       gs.genes.set(geneSymbol, {
         geneSymbol,
         geneDescription,
@@ -349,7 +353,7 @@ const GeneSets = (
     /**
      * Used by autosave to update the server synchronization TID
      */
-    case "geneset: set tid": {
+    case "sampleset: set tid": {
       const { tid } = action;
       if (!Number.isInteger(tid) || tid < 0)
         throw new Error("TID must be a positive integer number");

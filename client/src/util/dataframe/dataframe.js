@@ -65,7 +65,7 @@ Simple example:
   console.log(df.col('A').asArray(); // outputs: ['a']
 
 Performance tuning is primarily focused on columnar access patterns, which is the
-dominant pattern in cellxgene.
+dominant pattern in proteinxlocation.
 */
 
 /**

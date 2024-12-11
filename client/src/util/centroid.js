@@ -48,9 +48,9 @@ const getCoordinatesByLabel = (
   const { isUserAnno, categoryValueIndices, categoryValueCounts } =
     categorySummary;
 
-  // Iterate over all cells
+  // Iterate over all proteins
   for (let i = 0, len = categoryArray.length; i < len; i += 1) {
-    // Fetch the label of the current cell
+    // Fetch the label of the current protein
     const label = categoryArray[i];
 
     // Get the index of the label within the category
@@ -68,7 +68,7 @@ const getCoordinatesByLabel = (
       // Create/fetch the scratchpad value
       let coords = coordsByCategoryLabel.get(label);
       if (coords === undefined) {
-        // Get the number of cells which are in the label
+        // Get the number of proteins which are in the label
         const numInLabel = categoryValueCounts[labelIndex];
         coords = {
           hasFinite: false,

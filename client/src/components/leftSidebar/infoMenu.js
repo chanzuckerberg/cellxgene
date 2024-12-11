@@ -23,7 +23,7 @@ const InformationMenu = React.memo((props) => {
             rel="noopener"
           />
           <MenuItem
-            href="https://github.com/chanzuckerberg/cellxgene"
+            href="https://github.com/czbiohub-sf/proteinxlocation"
             target="_blank"
             icon="git-branch"
             text="Github"

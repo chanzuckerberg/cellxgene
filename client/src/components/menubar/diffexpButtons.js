@@ -39,7 +39,7 @@ class DiffexpButtons extends React.PureComponent {
       : "";
     const tipMessage = `See top differentially expressed genes${slowMsg}`;
     const tipMessageWarn = `The total number of cells for differential expression computation
-                            may not exceed ${diffexpCellcountMax}. Try reselecting new cell sets.`;
+                            may not exceed ${diffexpCellcountMax}. Try reselecting new protein sets.`;
 
     const warnMaxSizeExceeded =
       haveEitherCellSet &&

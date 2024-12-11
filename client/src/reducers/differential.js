@@ -26,12 +26,12 @@ const Differential = (
         loading: false,
         error: action.data,
       };
-    case "store current cell selection as differential set 1":
+    case "store current protein selection as differential set 1":
       return {
         ...state,
         celllist1: action.data,
       };
-    case "store current cell selection as differential set 2":
+    case "store current protein selection as differential set 2":
       return {
         ...state,
         celllist2: action.data,

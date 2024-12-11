@@ -67,7 +67,7 @@ export default class AnnoMatrix {
       * nObs, nVar - size of each dimension.  These will accurately reflect the
         size of the current annoMatrix view.  For example, if you subset the view,
         the nObs will be smaller.
-      * rowIndex - a rowIndex shared by all data on this view (ie, the list of cells).
+      * rowIndex - a rowIndex shared by all data on this view (ie, the list of proteins).
         The row index labels are as defined by the base dataset from the server.
       * isView - true if this is a view, false if not.
       * viewOf - pointer to parent annomatrix if a view, undefined/null if not a view.
@@ -196,20 +196,20 @@ export default class AnnoMatrix {
 
 		A value query allows for fetching based upon the value in another 
 		field/column, similar to a join.  Currently only supported on the var
-		dimension, allowing query of X columns by var value (eg, gene name)
+		dimension, allowing query of X columns by var value (eg, sample name)
 
 		Examples:
 
     1. Fetch the "n_genes" column the "obs":
 
 			const df = await fetch("obs", "n_genes")
-      console.log("Largest number of genes is: ", df.summarize().max);
+      console.log("Largest number of samples is: ", df.summarize().max);
 
     2. Fetch two separate columns from obs.  Returns a single dataframe containing
        the columns:
 
 			const df = await fetch("obs", ["n_genes", "louvain"])
-      console.log("Cell 0 has category: ", df.at(0, "louvain"));
+      console.log("Protein 0 has category: ", df.at(0, "louvain"));
 
     3. Fetch an entire X (expression counts) column that has a var annotation
        value "TYMP" in the var index.
@@ -272,7 +272,7 @@ export default class AnnoMatrix {
 
     Example:
 
-      addObsAnnoCategory("my cell type", "left toenail") -> AnnoMatrix
+      addObsAnnoCategory("my protein type", "left toenail") -> AnnoMatrix
 
     */
     _subclassResponsibility();
@@ -353,7 +353,7 @@ export default class AnnoMatrix {
 
     Example:
 
-      renameObsColumn('cell type', 'old cell type') -> AnnoMatrix.
+      renameObsColumn('protein type', 'old protein type') -> AnnoMatrix.
 
     */
     _subclassResponsibility();
@@ -363,8 +363,8 @@ export default class AnnoMatrix {
   async setObsColumnValues(col, obsLabels, value) {
     /*
     Set all obs with label in array 'obsLabels' to have 'value'.  Typical use would be
-    to set a group of cells to have a label on a user-created categorical anntoation
-    (eg set all selected cells to have a label).
+    to set a group of proteins to have a label on a user-created categorical anntoation
+    (eg set all selected proteins to have a label).
 
     NOTE: async method, as it may need to fetch.
 

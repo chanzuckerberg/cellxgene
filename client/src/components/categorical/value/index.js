@@ -122,7 +122,8 @@ class CategoryValue extends React.Component {
     return isLabelErroneous(name, metadataField, schema);
   };
 
-  instruction = (label) => labelPrompt(this.labelNameError(label), "New, unique label", ":");
+  instruction = (label) =>
+    labelPrompt(this.labelNameError(label), "New, unique label", ":");
 
   activateEditLabelMode = () => {
     const { dispatch, metadataField, categoryIndex, label } = this.props;
@@ -268,7 +269,7 @@ class CategoryValue extends React.Component {
   ) => {
     /*
       Knowing that colorScale is based off continuous data,
-      createHistogramBins fetches the continuous data in relation to the cells relevant to the category value.
+      createHistogramBins fetches the continuous data in relation to the proteins relevant to the category value.
       It then separates that data into 50 bins for drawing the mini-histogram
     */
     const groupBy = categoryData.col(metadataField);
@@ -310,7 +311,7 @@ class CategoryValue extends React.Component {
   ) => {
     /*
       Knowing that the color scale is based off of categorical data,
-      createOccupancyStack obtains a map showing the number if cells per colored value
+      createOccupancyStack obtains a map showing the number if proteins per colored value
       Using the colorScale a stack of colored bars is drawn representing the map
      */
     const groupBy = categoryData.col(metadataField);
@@ -350,16 +351,16 @@ class CategoryValue extends React.Component {
   isAddCurrentSelectionDisabled(crossfilter, category, value) {
     /*
     disable "add current selection to label", if one of the following is true:
-    1. no cells are selected
-    2. all currently selected cells already have this label, on this category
+    1. no proteins are selected
+    2. all currently selected proteins already have this label, on this category
     */
     const { categoryData } = this.props;
 
-    // 1. no cells selected?
+    // 1. no proteins selected?
     if (crossfilter.countSelected() === 0) {
       return true;
     }
-    // 2. all selected cells already have the label
+    // 2. all selected proteins already have the label
     const mask = crossfilter.allSelectedMask();
     if (
       AnnotationsHelpers.allHaveLabelByMask(categoryData, category, value, mask)
@@ -436,7 +437,7 @@ class CategoryValue extends React.Component {
     if (
       !this.shouldRenderStackedBarOrHistogram ||
       // This function returns true on categorical annotations(when stacked bar should not render),
-      //  in cases where the colorAccessor is a gene this function will return undefined since genes do not live on the schema
+      //  in cases where the colorAccessor is a sample this function will return undefined since samples do not live on the schema
       AnnotationsHelpers.isCategoricalAnnotation(schema, colorAccessor) === true
     ) {
       return null;

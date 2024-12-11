@@ -47,7 +47,7 @@ const getYScale = memoize(getScale);
     colors: state.colors,
     pointDilation: state.pointDilation,
 
-    // Accessors are var/gene names (strings)
+    // Accessors are var/sample names (strings)
     scatterplotXXaccessor,
     scatterplotYYaccessor,
 
@@ -218,9 +218,9 @@ class Scatterplot extends React.PureComponent {
   };
 
   getViewportDimensions = () => ({
-      height: window.innerHeight,
-      width: window.innerWidth,
-    });
+    height: window.innerHeight,
+    width: window.innerWidth,
+  });
 
   handleResize = () => {
     const { state } = this.state;

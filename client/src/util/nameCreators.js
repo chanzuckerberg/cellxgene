@@ -1,7 +1,7 @@
 /*
 
 The original motivation for this file is name collision. It's possible
-to have two of the same gene, user defined and diffexpressed, on the client
+to have two of the same sample, user defined and diffexpressed, on the client
 simultaneously, looking at the same data in the cache but with two
 dimensions and two crossfilters. It's also possible that someone could
 have a obsAnnotation named X, but we are using that for layout. So

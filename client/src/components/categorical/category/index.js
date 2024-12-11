@@ -443,7 +443,7 @@ const CategoryHeader = React.memo(
             isUserAnno={isUserAnno}
             createText="Add a new label to this category"
             editText="Edit this category's name"
-            deleteText="Delete this category, all associated labels, and remove all cell assignments"
+            deleteText="Delete this category, all associated labels, and remove all protein assignments"
           />
 
           <Tooltip

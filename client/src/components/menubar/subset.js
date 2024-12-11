@@ -14,7 +14,7 @@ const Subset = React.memo((props) => {
   return (
     <ButtonGroup className={styles.menubarButton}>
       <Tooltip
-        content="Subset to currently selected cells and associated metadata"
+        content="Subset to currently selected proteins and associated metadata"
         position="bottom"
         hoverOpenDelay={globals.tooltipHoverOpenDelay}
       >
@@ -27,7 +27,7 @@ const Subset = React.memo((props) => {
         />
       </Tooltip>
       <Tooltip
-        content="Undo subset and show all cells and associated metadata"
+        content="Undo subset and show all proteins and associated metadata"
         position="bottom"
         hoverOpenDelay={globals.tooltipHoverOpenDelay}
       >

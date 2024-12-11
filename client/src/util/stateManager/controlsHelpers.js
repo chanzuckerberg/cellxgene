@@ -99,7 +99,7 @@ export function pruneVarDataCache(varData, needed) {
 
   The value should be high enough so we are caching the maximum which will
   "typically" be used in the UI (currently: 10 for diffexp, and N for user-
-  specified genes), and low enough to account for memory use (any single
+  specified samples), and low enough to account for memory use (any single
   column size is 4 bytes * numObs, so a column can be multi-megabyte in common
   use cases).
   */

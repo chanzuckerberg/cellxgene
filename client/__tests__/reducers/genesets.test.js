@@ -10,11 +10,11 @@ describe("initial reducer state", () => {
   });
 });
 
-describe("geneset: initial load", () => {
+describe("sampleset: initial load", () => {
   test("missing JSON response", () => {
     expect(() =>
       genesetsReducer(undefined, {
-        type: "geneset: initial load",
+        type: "sampleset: initial load",
       })
     ).toThrow("missing or malformed JSON response");
   });
@@ -22,7 +22,7 @@ describe("geneset: initial load", () => {
   test("empty geneset", () => {
     expect(
       genesetsReducer(undefined, {
-        type: "geneset: initial load",
+        type: "sampleset: initial load",
         data: {
           tid: 0,
           genesets: [],
@@ -38,7 +38,7 @@ describe("geneset: initial load", () => {
   test("non-empty geneset", () => {
     expect(
       genesetsReducer(undefined, {
-        type: "geneset: initial load",
+        type: "sampleset: initial load",
         data: {
           tid: 99,
           genesets: [
@@ -94,9 +94,9 @@ describe("geneset: initial load", () => {
   });
 });
 
-describe("geneset: create", () => {
+describe("sampleset: create", () => {
   const initialState = genesetsReducer(undefined, {
-    type: "geneset: initial load",
+    type: "sampleset: initial load",
     data: {
       tid: 0,
       genesets: [],
@@ -106,7 +106,7 @@ describe("geneset: create", () => {
   test("simple create", () => {
     expect(
       genesetsReducer(initialState, {
-        type: "geneset: create",
+        type: "sampleset: create",
         genesetName: "a geneset",
         genesetDescription: "",
       })
@@ -129,12 +129,12 @@ describe("geneset: create", () => {
     expect(() => {
       genesetsReducer(
         genesetsReducer(initialState, {
-          type: "geneset: create",
+          type: "sampleset: create",
           genesetName: "foo",
           genesetDescription: "foo",
         }),
         {
-          type: "geneset: create",
+          type: "sampleset: create",
           genesetName: "foo",
           genesetDescription: "bar",
         }
@@ -145,22 +145,22 @@ describe("geneset: create", () => {
   test("error - missing required action values", () => {
     expect(() => {
       genesetsReducer(initialState, {
-        type: "geneset: create",
+        type: "sampleset: create",
         genesetDescription: "foo",
       });
     }).toThrow();
     expect(() => {
       genesetsReducer(initialState, {
-        type: "geneset: create",
+        type: "sampleset: create",
         genesetName: "foo",
       });
     }).toThrow("name or description unspecified");
   });
 });
 
-describe("geneset: delete", () => {
+describe("sampleset: delete", () => {
   const initialState = genesetsReducer(undefined, {
-    type: "geneset: initial load",
+    type: "sampleset: initial load",
     data: {
       tid: 0,
       genesets: [],
@@ -171,12 +171,12 @@ describe("geneset: delete", () => {
     expect(
       genesetsReducer(
         genesetsReducer(initialState, {
-          type: "geneset: create",
+          type: "sampleset: create",
           genesetName: "foo",
           genesetDescription: "foo",
         }),
         {
-          type: "geneset: delete",
+          type: "sampleset: delete",
           genesetName: "foo",
         }
       )
@@ -190,16 +190,16 @@ describe("geneset: delete", () => {
   test("error - missing name", () => {
     expect(() => {
       genesetsReducer(initialState, {
-        type: "geneset: delete",
+        type: "sampleset: delete",
         genesetName: "foo",
       });
     }).toThrow("name does not exist");
   });
 });
 
-describe("geneset: update", () => {
+describe("sampleset: update", () => {
   const initialState = genesetsReducer(undefined, {
-    type: "geneset: initial load",
+    type: "sampleset: initial load",
     data: {
       tid: 0,
       genesets: [],
@@ -211,18 +211,18 @@ describe("geneset: update", () => {
       genesetsReducer(
         genesetsReducer(
           genesetsReducer(initialState, {
-            type: "geneset: create",
+            type: "sampleset: create",
             genesetName: "foo1",
             genesetDescription: "foo1",
           }),
           {
-            type: "geneset: create",
+            type: "sampleset: create",
             genesetName: "foo2",
             genesetDescription: "foo2",
           }
         ),
         {
-          type: "geneset: update",
+          type: "sampleset: update",
           genesetName: "foo1",
           update: {
             genesetName: "bar",
@@ -249,7 +249,7 @@ describe("geneset: update", () => {
   test("error - unknown name", () => {
     expect(() => {
       genesetsReducer(initialState, {
-        type: "geneset: update",
+        type: "sampleset: update",
         genesetName: "foo",
         update: {
           genesetName: "foo",
@@ -263,12 +263,12 @@ describe("geneset: update", () => {
     expect(() => {
       genesetsReducer(
         genesetsReducer(initialState, {
-          type: "geneset: create",
+          type: "sampleset: create",
           genesetName: "foo",
           genesetDescription: "foo",
         }),
         {
-          type: "geneset: update",
+          type: "sampleset: update",
           genesetName: "foo",
           update: {
             genesetName: "foo",
@@ -280,17 +280,17 @@ describe("geneset: update", () => {
   });
 });
 
-describe("geneset: add genes", () => {
+describe("sampleset: add samples", () => {
   const initialState = genesetsReducer(
     genesetsReducer(undefined, {
-      type: "geneset: initial load",
+      type: "sampleset: initial load",
       data: {
         tid: 0,
         genesets: [],
       },
     }),
     {
-      type: "geneset: create",
+      type: "sampleset: create",
       genesetName: "test",
       genesetDescription: "",
     }
@@ -299,7 +299,7 @@ describe("geneset: add genes", () => {
   test("add a gene", () => {
     expect(
       genesetsReducer(initialState, {
-        type: "geneset: add genes",
+        type: "sampleset: add samples",
         genesetName: "test",
         genes: [{ geneSymbol: "F5" }],
       })
@@ -319,7 +319,7 @@ describe("geneset: add genes", () => {
 
     expect(
       genesetsReducer(initialState, {
-        type: "geneset: add genes",
+        type: "sampleset: add samples",
         genesetName: "test",
         genes: [
           { geneSymbol: "F5", geneDescription: "desc" },
@@ -347,7 +347,7 @@ describe("geneset: add genes", () => {
   test("no such geneset error", () => {
     expect(() => {
       genesetsReducer(initialState, {
-        type: "geneset: add genes",
+        type: "sampleset: add samples",
         genesetName: "mumble",
         genes: [],
       });
@@ -355,24 +355,24 @@ describe("geneset: add genes", () => {
   });
 });
 
-describe("geneset: delete genes", () => {
+describe("sampleset: delete samples", () => {
   const initialState = genesetsReducer(
     genesetsReducer(
       genesetsReducer(undefined, {
-        type: "geneset: initial load",
+        type: "sampleset: initial load",
         data: {
           tid: 0,
           genesets: [],
         },
       }),
       {
-        type: "geneset: create",
+        type: "sampleset: create",
         genesetName: "test",
         genesetDescription: "",
       }
     ),
     {
-      type: "geneset: add genes",
+      type: "sampleset: add samples",
       genesetName: "test",
       genes: [{ geneSymbol: "F5" }],
     }
@@ -381,7 +381,7 @@ describe("geneset: delete genes", () => {
   test("simple", () => {
     expect(
       genesetsReducer(initialState, {
-        type: "geneset: delete genes",
+        type: "sampleset: delete samples",
         genesetName: "test",
         geneSymbols: ["F5"],
       })
@@ -403,7 +403,7 @@ describe("geneset: delete genes", () => {
   test("no such geneset error", () => {
     expect(() => {
       genesetsReducer(initialState, {
-        type: "geneset: delete genes",
+        type: "sampleset: delete samples",
         genesetName: "mumble",
         geneSymbols: [],
       });
@@ -411,24 +411,24 @@ describe("geneset: delete genes", () => {
   });
 });
 
-describe("geneset: set gene description", () => {
+describe("sampleset: set sample description", () => {
   const initialState = genesetsReducer(
     genesetsReducer(
       genesetsReducer(undefined, {
-        type: "geneset: initial load",
+        type: "sampleset: initial load",
         data: {
           tid: 0,
           genesets: [],
         },
       }),
       {
-        type: "geneset: create",
+        type: "sampleset: create",
         genesetName: "test",
         genesetDescription: "",
       }
     ),
     {
-      type: "geneset: add genes",
+      type: "sampleset: add samples",
       genesetName: "test",
       genes: [{ geneSymbol: "F5" }],
     }
@@ -437,7 +437,7 @@ describe("geneset: set gene description", () => {
   test("simple set", () => {
     expect(
       genesetsReducer(initialState, {
-        type: "geneset: set gene description",
+        type: "sampleset: set sample description",
         genesetName: "test",
         update: {
           geneSymbol: "F5",
@@ -464,7 +464,7 @@ describe("geneset: set gene description", () => {
   test("no such geneset error", () => {
     expect(() => {
       genesetsReducer(initialState, {
-        type: "geneset: set gene description",
+        type: "sampleset: set sample description",
         genesetName: "does not exist",
         update: {
           geneSymbol: "F5",
@@ -477,7 +477,7 @@ describe("geneset: set gene description", () => {
   test("no such gene error", () => {
     expect(() => {
       genesetsReducer(initialState, {
-        type: "geneset: set gene description",
+        type: "sampleset: set sample description",
         genesetName: "test",
         update: {
           geneSymbol: "NO SUCH GENE",
@@ -488,11 +488,11 @@ describe("geneset: set gene description", () => {
   });
 });
 
-describe("geneset: set tid", () => {
+describe("sampleset: set tid", () => {
   test("simple set", () => {
     expect(
       genesetsReducer(undefined, {
-        type: "geneset: set tid",
+        type: "sampleset: set tid",
         tid: 1,
       })
     ).toMatchObject({ lastTid: 1 });
@@ -503,7 +503,7 @@ describe("geneset: set tid", () => {
       genesetsReducer(
         { lastTid: 1 },
         {
-          type: "geneset: set tid",
+          type: "sampleset: set tid",
           tid: "0",
         }
       );
@@ -515,7 +515,7 @@ describe("geneset: set tid", () => {
       genesetsReducer(
         { lastTid: 1 },
         {
-          type: "geneset: set tid",
+          type: "sampleset: set tid",
           tid: 0,
         }
       );

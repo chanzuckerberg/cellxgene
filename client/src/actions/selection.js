@@ -186,7 +186,7 @@ export const setCellSetFromSelection = (cellSetId) => (dispatch, getState) => {
   const selected = obsCrossfilter.allSelectedLabels();
 
   dispatch({
-    type: `store current cell selection as differential set ${cellSetId}`,
+    type: `store current protein selection as differential set ${cellSetId}`,
     data: selected.length > 0 ? selected : null,
   });
 };

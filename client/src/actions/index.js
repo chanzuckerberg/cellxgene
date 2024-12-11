@@ -61,13 +61,13 @@ async function genesetsFetch(dispatch, config) {
   if (config?.parameters?.annotations_genesets ?? false) {
     fetchJson("genesets").then((response) => {
       dispatch({
-        type: "geneset: initial load",
+        type: "sampleset: initial load",
         data: response ?? defaultResponse,
       });
     });
   } else {
     dispatch({
-      type: "geneset: initial load",
+      type: "sampleset: initial load",
       data: defaultResponse,
     });
   }
@@ -131,7 +131,7 @@ function requestSingleGeneExpressionCountsForColoringPOST(gene) {
 }
 
 const requestUserDefinedGene = (gene) => ({
-  type: "request user defined gene success",
+  type: "request user defined sample success",
   data: {
     genes: [gene],
   },
@@ -141,7 +141,7 @@ const dispatchDiffExpErrors = (dispatch, response) => {
   switch (response.status) {
     case 403:
       dispatchNetworkErrorMessageToUser(
-        "Too many cells selected for differential experesion calculation - please make a smaller selection."
+        "Too many proteins selected for differential experesion calculation - please make a smaller selection."
       );
       break;
     case 501:
@@ -167,7 +167,7 @@ const requestDifferentialExpression =
     try {
       /*
     Steps:
-    1. get the most differentially expressed genes
+    1. get the most differentially expressed samples
     2. get expression data for each
     */
       const { annoMatrix } = getState();

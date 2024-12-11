@@ -50,10 +50,10 @@ const filterGenes = (query, genes) =>
   });
 
 @connect((state) => ({
-    annoMatrix: state.annoMatrix,
-    userDefinedGenes: state.controls.userDefinedGenes,
-    userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
-  }))
+  annoMatrix: state.annoMatrix,
+  userDefinedGenes: state.controls.userDefinedGenes,
+  userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
+}))
 class AddGenes extends React.Component {
   constructor(props) {
     super(props);
@@ -80,17 +80,17 @@ class AddGenes extends React.Component {
     if (!g) return;
     const gene = g.target;
     if (userDefinedGenes.indexOf(gene) !== -1) {
-      postUserErrorToast("That gene already exists");
+      postUserErrorToast("That sample already exists");
     } else if (userDefinedGenes.length > globals.maxUserDefinedGenes) {
       postUserErrorToast(
-        `That's too many genes, you can have at most ${globals.maxUserDefinedGenes} user defined genes`
+        `That's too many samples, you can have at most ${globals.maxUserDefinedGenes} user defined samples`
       );
     } else if (geneNames.indexOf(gene) === undefined) {
-      postUserErrorToast("That doesn't appear to be a valid gene name.");
+      postUserErrorToast("That doesn't appear to be a valid sample name.");
     } else {
-      dispatch({ type: "single user defined gene start" });
+      dispatch({ type: "single user defined sample start" });
       dispatch(actions.requestUserDefinedGene(gene));
-      dispatch({ type: "single user defined gene complete" });
+      dispatch({ type: "single user defined sample complete" });
     }
   }
 
@@ -118,7 +118,7 @@ class AddGenes extends React.Component {
     if (bulkAdd !== "") {
       const genes = parseBulkGeneString(bulkAdd);
       if (genes.length === 0) {
-        return keepAroundErrorToast("Must enter a gene name.");
+        return keepAroundErrorToast("Must enter a sample name.");
       }
       // These gene lists are unique enough where memoization is useless
       const upperGenes = this._genesToUpper(genes);
@@ -126,12 +126,12 @@ class AddGenes extends React.Component {
 
       const upperGeneNames = this._memoGenesToUpper(geneNames);
 
-      dispatch({ type: "bulk user defined gene start" });
+      dispatch({ type: "bulk user defined sample start" });
 
       Promise.all(
         [...upperGenes.keys()].map((upperGene) => {
           if (upperUserDefinedGenes.get(upperGene) !== undefined) {
-            return keepAroundErrorToast("That gene already exists");
+            return keepAroundErrorToast("That sample already exists");
           }
 
           const indexOfGene = upperGeneNames.get(upperGene);
@@ -140,7 +140,7 @@ class AddGenes extends React.Component {
             return keepAroundErrorToast(
               `${
                 genes[upperGenes.get(upperGene)]
-              } doesn't appear to be a valid gene name.`
+              } doesn't appear to be a valid sample name.`
             );
           }
           return dispatch(
@@ -148,8 +148,8 @@ class AddGenes extends React.Component {
           );
         })
       ).then(
-        () => dispatch({ type: "bulk user defined gene complete" }),
-        () => dispatch({ type: "bulk user defined gene error" })
+        () => dispatch({ type: "bulk user defined sample complete" }),
+        () => dispatch({ type: "bulk user defined sample error" })
       );
     }
 
@@ -180,10 +180,10 @@ class AddGenes extends React.Component {
 
   placeholderGeneNames() {
     /*
-    return a string containing gene name suggestions for use as a user hint.
+    return a string containing sample name suggestions for use as a user hint.
     Eg.,    Apod, Cd74, ...
-    Will return a max of 3 genes, totalling 15 characters in length.
-    Randomly selects gene names.
+    Will return a max of 3 samples, totalling 15 characters in length.
+    Randomly selects sample names.
 
     NOTE: the random selection means it will re-render constantly.
     */
@@ -231,7 +231,7 @@ class AddGenes extends React.Component {
               this.setState({ tab: "autosuggest" });
             }}
           >
-            Autosuggest genes
+            Autosuggest samples
           </Button>
           <Button
             active={tab === "bulkadd"}
@@ -242,7 +242,7 @@ class AddGenes extends React.Component {
               this.setState({ tab: "bulkadd" });
             }}
           >
-            Bulk add genes
+            Bulk add samples
           </Button>
         </div>
         {tab === "autosuggest" ? (
@@ -257,18 +257,18 @@ class AddGenes extends React.Component {
               closeOnSelect
               resetOnClose
               itemDisabled={userDefinedGenesLoading ? () => true : () => false}
-              noResults={<MenuItem disabled text="No matching genes." />}
+              noResults={<MenuItem disabled text="No matching samples." />}
               onItemSelect={(g) => {
                 /* this happens on 'enter' */
                 this.handleClick(g);
               }}
-              initialContent={<MenuItem disabled text="Enter a gene…" />}
+              initialContent={<MenuItem disabled text="Enter a sample…" />}
               inputProps={{ "data-testid": "gene-search" }}
               inputValueRenderer={() => ""}
               itemListPredicate={filterGenes}
               onActiveItemChange={(item) => this.setState({ activeItem: item })}
               itemRenderer={renderGene}
-              items={geneNames || ["No genes"]}
+              items={geneNames || ["No samples"]}
               popoverProps={{ minimal: true }}
             />
             <Button
@@ -277,7 +277,7 @@ class AddGenes extends React.Component {
               loading={userDefinedGenesLoading}
               onClick={() => this.handleClick(activeItem)}
             >
-              Add gene
+              Add sample
             </Button>
           </ControlGroup>
         ) : null}
@@ -290,7 +290,7 @@ class AddGenes extends React.Component {
               }}
             >
               <FormGroup
-                helperText="Add a list of genes (comma delimited)"
+                helperText="Add a list of samples (comma delimited)"
                 labelFor="text-input-bulk-add"
               >
                 <ControlGroup>
@@ -308,7 +308,7 @@ class AddGenes extends React.Component {
                     onClick={this.handleBulkAddClick}
                     loading={userDefinedGenesLoading}
                   >
-                    Add genes
+                    Add samples
                   </Button>
                 </ControlGroup>
               </FormGroup>

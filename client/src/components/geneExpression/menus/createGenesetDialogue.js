@@ -33,7 +33,7 @@ class CreateGenesetDialogue extends React.PureComponent {
       nameErrorMessage: "",
     });
     dispatch({
-      type: "geneset: disable create geneset mode",
+      type: "sampleset: disable create sampleset mode",
     });
     if (e) e.preventDefault();
   };
@@ -44,7 +44,7 @@ class CreateGenesetDialogue extends React.PureComponent {
       this.state;
 
     dispatch({
-      type: "geneset: create",
+      type: "sampleset: create",
       genesetName: genesetName.trim(),
       genesetDescription,
     });
@@ -65,7 +65,7 @@ class CreateGenesetDialogue extends React.PureComponent {
       dispatch(actions.genesetAddGenes(genesetName, genesTmpHardcodedFormat));
     }
     dispatch({
-      type: "geneset: disable create geneset mode",
+      type: "sampleset: disable create sampleset mode",
     });
     this.setState({
       genesetName: "",
@@ -92,13 +92,13 @@ class CreateGenesetDialogue extends React.PureComponent {
 
   instruction = (genesetName, genesets) =>
     genesets.has(genesetName)
-      ? "Gene set name must be unique."
-      : "New, unique gene set name";
+      ? "Sample set name must be unique."
+      : "New, unique sample set name";
 
   validate = (genesetName, genesets) => {
     if (genesets.has(genesetName)) {
       this.setState({
-        nameErrorMessage: "There is already a gene set with that name",
+        nameErrorMessage: "There is already a sample set with that name",
       });
       return false;
     }
@@ -110,7 +110,7 @@ class CreateGenesetDialogue extends React.PureComponent {
     ) {
       this.setState({
         nameErrorMessage:
-          "Gene set names can only contain alphanumeric characters and the following special characters: ! ” # $ % ’ ( ) * + , - . / : ; < = > ? @  ] ^ _ ` | ~",
+          "Sample set names can only contain alphanumeric characters and the following special characters: ! ” # $ % ’ ( ) * + , - . / : ; < = > ? @  ] ^ _ ` | ~",
       });
       return false;
     }
@@ -128,7 +128,7 @@ class CreateGenesetDialogue extends React.PureComponent {
       <>
         <Dialog
           icon="tag"
-          title="Create gene set"
+          title="Create sample set"
           isOpen={genesetsUI.createGenesetModeActive}
           onClose={this.disableCreateGenesetMode}
         >
@@ -148,7 +148,7 @@ class CreateGenesetDialogue extends React.PureComponent {
                     intent: "none",
                     autoFocus: true,
                   }}
-                  newLabelMessage="Create gene set"
+                  newLabelMessage="Create sample set"
                 />
                 <p
                   style={{
@@ -162,7 +162,7 @@ class CreateGenesetDialogue extends React.PureComponent {
                 <p style={{ marginTop: 20 }}>
                   Optionally add a{" "}
                   <span style={{ fontWeight: 700 }}>description</span> for this
-                  gene set
+                  sample set
                 </p>
                 <LabelInput
                   onChange={this.handleDescriptionInputChange}
@@ -171,13 +171,13 @@ class CreateGenesetDialogue extends React.PureComponent {
                     intent: "none",
                     autoFocus: false,
                   }}
-                  newLabelMessage="Add geneset description"
+                  newLabelMessage="Add sampleset description"
                 />
 
                 <p style={{ marginTop: 20 }}>
                   Optionally add a list of comma separated{" "}
-                  <span style={{ fontWeight: 700 }}>genes</span> to populate the
-                  gene set
+                  <span style={{ fontWeight: 700 }}>samples</span> to populate
+                  the sample set
                 </p>
                 <LabelInput
                   onChange={this.handleGenesetInputChange}
@@ -186,13 +186,13 @@ class CreateGenesetDialogue extends React.PureComponent {
                     intent: "none",
                     autoFocus: false,
                   }}
-                  newLabelMessage="populate geneset with genes"
+                  newLabelMessage="populate sampleset with samples"
                 />
               </div>
             </div>
             <div className={Classes.DIALOG_FOOTER}>
               <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-                <Tooltip2 content="Close this dialog without creating a new gene set.">
+                <Tooltip2 content="Close this dialog without creating a new sample set.">
                   <Button onClick={this.disableCreateGenesetMode}>
                     Cancel
                   </Button>
@@ -204,7 +204,7 @@ class CreateGenesetDialogue extends React.PureComponent {
                   intent="primary"
                   type="submit"
                 >
-                  Create gene set
+                  Create sample set
                 </Button>
               </div>
             </div>

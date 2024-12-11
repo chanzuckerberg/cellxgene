@@ -59,13 +59,13 @@ const Controls = (
         userDefinedGenesLoading: true,
       };
     }
-    case "request user defined gene error": {
+    case "request user defined sample error": {
       return {
         ...state,
         userDefinedGenesLoading: false,
       };
     }
-    case "request user defined gene success": {
+    case "request user defined sample success": {
       const { userDefinedGenes } = state;
       const _userDefinedGenes = uniq(
         userDefinedGenes.concat(action.data.genes)
@@ -76,7 +76,7 @@ const Controls = (
         userDefinedGenesLoading: false,
       };
     }
-    case "clear user defined gene": {
+    case "clear user defined sample": {
       const { userDefinedGenes } = state;
       const newUserDefinedGenes = filter(
         userDefinedGenes,
@@ -103,7 +103,7 @@ const Controls = (
         ...state,
         graphInteractionMode: action.data,
       };
-    case "change opacity deselected cells in 2d graph background":
+    case "change opacity deselected proteins in 2d graph background":
       return {
         ...state,
         opacityForDeselectedCells: action.data,

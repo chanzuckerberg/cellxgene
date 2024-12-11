@@ -256,7 +256,7 @@ export async function assertGenesetExists(genesetName) {
 
 /*
 
-  GENE
+  SAMPLE
 
 */
 

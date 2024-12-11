@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>CELL&times;GENE | Annotate</title>
+    <title>PROTEIN&times;LOCATION | Annotate</title>
     <style>
       html,
       body,
@@ -37,27 +37,31 @@
   </head>
   <body>
     <script type="text/javascript">
+      // Global configuration for PROTEINXLOCATION
       window.CELLXGENE = {};
       window.CELLXGENE.API = {
         prefix: `${location.origin}${location.pathname}api/`,
         version: "v0.2/",
       };
     </script>
-    <noscript
-      >If you're seeing this message, that means
+    <noscript>
+      If you're seeing this message, that means
       <strong>JavaScript has been disabled on your browser</strong>, please
       <strong>enable JS</strong> to make this app work.
     </noscript>
 
     <div id="root"></div>
+
+    <!-- Dynamically injected scripts -->
     {% for script in SCRIPTS -%}
-    <script type="text/javascript"
+    <script type="text/javascript" 
       {{ ('integrity="%s"' % script.integrity) | safe if script.integrity }}
       {{ ('crossorigin="%s"' % script.crossorigin) | safe if script.crossorigin }}
-      src="{{script.src | safe}}"
-    ></script>
+      src="{{script.src | safe}}">
+    </script>
     {%- endfor %}
 
+    <!-- Inline scripts included dynamically -->
     {% for ils in INLINE_SCRIPTS %}
     <script type="text/javascript" no-csp-hash>{% include ils %}</script>
     {% endfor %}

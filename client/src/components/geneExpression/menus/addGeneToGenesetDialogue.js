@@ -19,7 +19,7 @@ class AddGeneToGenesetDialogue extends React.PureComponent {
   disableAddGeneMode = () => {
     const { dispatch } = this.props;
     dispatch({
-      type: "geneset: disable add new genes mode",
+      type: "sampleset: disable add new samples mode",
     });
   };
 
@@ -39,7 +39,7 @@ class AddGeneToGenesetDialogue extends React.PureComponent {
 
     dispatch(actions.genesetAddGenes(geneset, genesTmpHardcodedFormat));
     dispatch({
-      type: "geneset: disable add new genes mode",
+      type: "sampleset: disable add new samples mode",
     });
     if (e) e.preventDefault();
   };
@@ -60,10 +60,10 @@ class AddGeneToGenesetDialogue extends React.PureComponent {
           primaryButtonProps={{
             "data-testid": `${geneset}:submit-gene`,
           }}
-          title="Add genes to gene set"
-          instruction={`Add genes to ${geneset}`}
-          cancelTooltipContent="Close this dialog without adding genes to gene set."
-          primaryButtonText="Add genes"
+          title="Add samples to sample set"
+          instruction={`Add samples to ${geneset}`}
+          cancelTooltipContent="Close this dialog without adding samples to sample set."
+          primaryButtonText="Add samples"
           text={genesToAdd}
           validationError={false}
           annoInput={

@@ -1,6 +1,6 @@
 /**
  * The function will split string by comma or space, return unique non-empty strings
- * @param geneString - a string of comma delimited genes
+ * @param geneString - a string of comma delimited samples
  * @returns an array
  */
 import pull from "lodash.pull";

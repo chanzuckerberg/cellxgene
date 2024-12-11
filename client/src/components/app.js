@@ -41,7 +41,7 @@ class App extends React.Component {
     const { loading, error, graphRenderCounter } = this.props;
     return (
       <Container>
-        <Helmet title="CELL&times;GENE | Annotate" />
+        <Helmet title="PROTEIN&times;LOCATION | Annotate" />
         {loading ? (
           <div
             style={{
@@ -51,7 +51,7 @@ class App extends React.Component {
               left: window.innerWidth / 2 - 50,
             }}
           >
-            loading cellxgene
+            loading proteinxlocation
           </div>
         ) : null}
         {error ? (
@@ -63,7 +63,7 @@ class App extends React.Component {
               left: window.innerWidth / 2 - 50,
             }}
           >
-            error loading cellxgene
+            error loading proteinxlocation
           </div>
         ) : null}
         {loading || error ? null : (

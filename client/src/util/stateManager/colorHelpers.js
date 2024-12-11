@@ -34,7 +34,7 @@ export function createColorQuery(colorMode, colorByAccessor, schema, genesets) {
         },
       ];
     }
-    case "color by geneset mean expression": {
+    case "color by sampleset mean expression": {
       const varIndex = schema?.annotations?.var?.index;
 
       if (!varIndex) return null;
@@ -80,7 +80,7 @@ create colors scale and RGB array and return as object. Parameters:
 Returns:
   {
     scale: function, mapping label index to color scale
-    rgb: cell label to color mapping
+    rgb: protein label to color mapping
   }
 */
 function _createColorTable(
@@ -108,7 +108,7 @@ function _createColorTable(
       const { min, max } = col.summarize();
       return createColorsByContinuousMetadata(col.asArray(), min, max);
     }
-    case "color by geneset mean expression": {
+    case "color by sampleset mean expression": {
       const col = colorByData.icol(0);
       const { min, max } = col.summarize();
       return createColorsByContinuousMetadata(col.asArray(), min, max);

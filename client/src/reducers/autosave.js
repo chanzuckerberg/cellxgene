@@ -1,10 +1,10 @@
 const Autosave = (
   state = {
-    // cell labels
+    // protein labels
     obsAnnotationSaveInProgress: false,
     lastSavedAnnoMatrix: null,
 
-    // gene sets
+    // sample sets
     genesetSaveInProgress: false,
     lastSavedGenesets: null,
 
@@ -49,7 +49,7 @@ const Autosave = (
       };
     }
 
-    case "geneset: initial load": {
+    case "sampleset: initial load": {
       return {
         ...state,
         genesetSaveInProgress: false,
@@ -57,14 +57,14 @@ const Autosave = (
       };
     }
 
-    case "autosave: genesets started": {
+    case "autosave: samplesets started": {
       return {
         ...state,
         genesetSaveInProgress: true,
       };
     }
 
-    case "autosave: genesets error": {
+    case "autosave: samplesets error": {
       return {
         ...state,
         genesetSaveInProgress: false,
@@ -72,7 +72,7 @@ const Autosave = (
       };
     }
 
-    case "autosave: genesets complete": {
+    case "autosave: samplesets complete": {
       const { lastSavedGenesets } = action;
       return {
         ...state,

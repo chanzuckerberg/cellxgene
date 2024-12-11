@@ -57,7 +57,7 @@ const CategoricalSelection = (state, action, nextSharedState) => {
       return newState;
     }
 
-    case "annotation: label current cell selection":
+    case "annotation: label current protein selection":
     case "annotation: add new label to category":
     case "annotation: label edited":
     case "annotation: delete label": {

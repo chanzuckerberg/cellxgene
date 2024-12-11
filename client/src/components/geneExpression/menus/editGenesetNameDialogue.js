@@ -28,7 +28,7 @@ class RenameGeneset extends React.PureComponent {
       newGenesetDescription: originalGenesetDescription,
     });
     dispatch({
-      type: "geneset: disable rename geneset mode",
+      type: "sampleset: disable rename sampleset mode",
     });
     if (e) e.preventDefault();
   };
@@ -38,7 +38,7 @@ class RenameGeneset extends React.PureComponent {
     const { newGenesetName, newGenesetDescription } = this.state;
 
     dispatch({
-      type: "geneset: update",
+      type: "sampleset: update",
       genesetName: genesetsUI.isEditingGenesetName,
       update: {
         genesetName: newGenesetName,
@@ -46,7 +46,7 @@ class RenameGeneset extends React.PureComponent {
       },
     });
     dispatch({
-      type: "geneset: disable rename geneset mode",
+      type: "sampleset: disable rename sampleset mode",
     });
     e.preventDefault();
   };
@@ -73,7 +73,7 @@ class RenameGeneset extends React.PureComponent {
       genesets.has(newGenesetName)
     ) {
       this.setState({
-        nameErrorMessage: `There is already a gene set with that name`,
+        nameErrorMessage: `There is already a sample set with that name`,
       });
       return true;
     }
@@ -83,7 +83,7 @@ class RenameGeneset extends React.PureComponent {
     ) {
       this.setState({
         nameErrorMessage:
-          "Gene set names can only contain alphanumeric characters and the following special characters: ! ” # $ % ’ ( ) * + , - . / : ; < = > ? @  ] ^ _ ` | ~",
+          "Sample set names can only contain alphanumeric characters and the following special characters: ! ” # $ % ’ ( ) * + , - . / : ; < = > ? @  ] ^ _ ` | ~",
       });
       return true;
     }
@@ -118,14 +118,14 @@ class RenameGeneset extends React.PureComponent {
           primaryButtonProps={{
             "data-testid": `${genesetsUI.isEditingGenesetName}:submit-geneset`,
           }}
-          title="Edit gene set name and description"
+          title="Edit sample set name and description"
           instruction={
             <>
               Rename <b>{genesetsUI.isEditingGenesetName}</b>
             </>
           }
-          cancelTooltipContent="Close this dialog without renaming the gene set."
-          primaryButtonText="Edit gene set name and description"
+          cancelTooltipContent="Close this dialog without renaming the sample set."
+          primaryButtonText="Edit sample set name and description"
           text={newGenesetName}
           secondaryText={newGenesetDescription}
           validationError={this.validate(
@@ -153,7 +153,7 @@ class RenameGeneset extends React.PureComponent {
             <LabelInput
               label={newGenesetDescription}
               onChange={this.handleChangeDescription}
-              inputProps={{ "data-testid": "change geneset description" }}
+              inputProps={{ "data-testid": "change sampleset description" }}
               intent="none"
               autoFocus={false}
             />

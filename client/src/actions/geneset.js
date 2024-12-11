@@ -1,22 +1,22 @@
 import { postUserErrorToast } from "../components/framework/toasters";
 /*
-Action creators for gene sets
+Action creators for sample sets
 
 Primarily used to keep the crossfilter and underlying data in sync with the UI.
 
 The behavior manifest in these action creators:
 
-    Delete a gene set, will
-      * drop index & clear selection state on the gene set summary
-      * drop index & clear selection state of each gene in the geneset
+    Delete a sample set, will
+      * drop index & clear selection state on the sample set summary
+      * drop index & clear selection state of each sample in the sampleset
 
-    Delete a gene from a gene set, will:
-      * drop index & clear selection state on the gene set summary
-      * drop index & clear selection state on the gene
+    Delete a sample from a sample set, will:
+      * drop index & clear selection state on the sample set summary
+      * drop index & clear selection state on the sample
 
-    Add a gene to a gene set, will:
-      * drop index & clear selection state on the gene set summary
-      * will NOT touch the selection state for the gene
+    Add a sample to a sample set, will:
+      * drop index & clear selection state on the sample set summary
+      * will NOT touch the selection state for the sample
 
 Note that crossfilter indices are lazy created, as needed.
 */
@@ -33,7 +33,7 @@ export const genesetDelete = (genesetName) => (dispatch, getState) => {
     });
   }
   dispatch({
-    type: "geneset: delete",
+    type: "sampleset: delete",
     genesetName,
     obsCrossfilter,
     annoMatrix: obsCrossfilter.annoMatrix,
@@ -51,7 +51,7 @@ export const genesetAddGenes =
     genes = genes.reduce((acc, gene) => {
       if (geneNames.indexOf(gene.geneSymbol) === -1) {
         postUserErrorToast(
-          `${gene.geneSymbol} doesn't appear to be a valid gene name.`
+          `${gene.geneSymbol} doesn't appear to be a valid sample name.`
         );
       } else acc.push(gene);
       return acc;
@@ -68,7 +68,7 @@ export const genesetAddGenes =
       selection: genesetName,
     });
     return dispatch({
-      type: "geneset: add genes",
+      type: "sampleset: add samples",
       genesetName,
       genes,
       obsCrossfilter,
@@ -86,7 +86,7 @@ export const genesetDeleteGenes =
       geneSymbols
     );
     return dispatch({
-      type: "geneset: delete genes",
+      type: "sampleset: delete samples",
       genesetName,
       geneSymbols,
       obsCrossfilter,

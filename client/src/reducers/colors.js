@@ -81,7 +81,7 @@ const ColorsReducer = (
       };
     }
 
-    case "color by geneset mean expression": {
+    case "color by sampleset mean expression": {
       /* toggle between this mode and reset */
       const resetCurrent =
         action.type === state.colorMode &&

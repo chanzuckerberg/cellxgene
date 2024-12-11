@@ -38,7 +38,7 @@ class CellSetButton extends React.PureComponent {
           <span data-testid={`cellset-count-${eitherCellSetOneOrTwo}`}>
             {cellsSelected}
           </span>
-          {" cells"}
+          {" proteins"}
         </AnchorButton>
       </Tooltip>
     );

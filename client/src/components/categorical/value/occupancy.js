@@ -19,7 +19,7 @@ class Occupancy extends React.PureComponent {
   createHistogram = () => {
     /*
       Knowing that colorScale is based off continous data,
-      createHistogram fetches the continous data in relation to the cells releveant to the catagory value.
+      createHistogram fetches the continous data in relation to the proteins releveant to the catagory value.
       It then seperates that data into 50 bins for drawing the mini-histogram
     */
     const { metadataField, categoryData, colorData, categoryValue } =
@@ -72,7 +72,7 @@ class Occupancy extends React.PureComponent {
   createOccupancyStack = () => {
     /*
       Knowing that the color scale is based off of catagorical data,
-      createOccupancyStack obtains a map showing the number if cells per colored value
+      createOccupancyStack obtains a map showing the number if proteins per colored value
       Using the colorScale a stack of colored bars is drawn representing the map
      */
     const {

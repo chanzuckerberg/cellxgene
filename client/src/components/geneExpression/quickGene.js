@@ -27,10 +27,10 @@ function QuickGene() {
 
   const { annoMatrix, userDefinedGenes, userDefinedGenesLoading } = useSelector(
     (state) => ({
-        annoMatrix: state.annoMatrix,
-        userDefinedGenes: state.controls.userDefinedGenes,
-        userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
-      })
+      annoMatrix: state.annoMatrix,
+      userDefinedGenes: state.controls.userDefinedGenes,
+      userDefinedGenesLoading: state.controls.userDefinedGenesLoading,
+    })
   );
 
   const prevProps = usePrevious({ annoMatrix });
@@ -81,13 +81,13 @@ function QuickGene() {
     if (!g) return;
     const gene = g.target;
     if (userDefinedGenes.indexOf(gene) !== -1) {
-      postUserErrorToast("That gene already exists");
+      postUserErrorToast("That sample already exists");
     } else if (geneNames.indexOf(gene) === undefined) {
-      postUserErrorToast("That doesn't appear to be a valid gene name.");
+      postUserErrorToast("That doesn't appear to be a valid sample name.");
     } else {
-      dispatch({ type: "single user defined gene start" });
+      dispatch({ type: "single user defined sample start" });
       dispatch(actions.requestUserDefinedGene(gene));
-      dispatch({ type: "single user defined gene complete" });
+      dispatch({ type: "single user defined sample complete" });
     }
   };
 
@@ -99,17 +99,23 @@ function QuickGene() {
     });
 
   const removeGene = (gene) => () => {
-    dispatch({ type: "clear user defined gene", data: gene });
+    dispatch({ type: "clear user defined sample", data: gene });
   };
 
-  const QuickGenes = useMemo(() => userDefinedGenes.reverse().map((gene) => (
-        <Gene
-          key={`quick=${gene}`}
-          gene={gene}
-          removeGene={removeGene}
-          quickGene
-        />
-      )), [userDefinedGenes]);
+  const QuickGenes = useMemo(
+    () =>
+      userDefinedGenes
+        .reverse()
+        .map((gene) => (
+          <Gene
+            key={`quick=${gene}`}
+            gene={gene}
+            removeGene={removeGene}
+            quickGene
+          />
+        )),
+    [userDefinedGenes]
+  );
 
   return (
     <div style={{ width: "100%", marginBottom: "16px" }}>
@@ -138,22 +144,22 @@ function QuickGene() {
               closeOnSelect
               resetOnClose
               itemDisabled={userDefinedGenesLoading ? () => true : () => false}
-              noResults={<MenuItem disabled text="No matching genes." />}
+              noResults={<MenuItem disabled text="No matching samples." />}
               onItemSelect={(g) => {
                 /* this happens on 'enter' */
                 handleClick(g);
               }}
-              initialContent={<MenuItem disabled text="Enter a gene…" />}
+              initialContent={<MenuItem disabled text="Enter a sample…" />}
               inputProps={{
                 "data-testid": "gene-search",
-                placeholder: "Quick Gene Search",
+                placeholder: "Quick Sample Search",
                 leftIcon: IconNames.SEARCH,
                 fill: true,
               }}
               inputValueRenderer={() => ""}
               itemListPredicate={filterGenes}
               itemRenderer={renderGene}
-              items={geneNames || ["No genes"]}
+              items={geneNames || ["No samples"]}
               popoverProps={{ minimal: true }}
               fill
             />

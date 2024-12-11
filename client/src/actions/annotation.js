@@ -142,7 +142,7 @@ export const annotationCreateLabelInCategory =
   (categoryName, labelName, assignSelected) => async (dispatch, getState) => {
     /*
   Add a new label to a user-defined category.  If assignSelected is true, assign
-  the label to all currently selected cells.
+  the label to all currently selected proteins.
   */
     const { annoMatrix: prevAnnoMatrix, obsCrossfilter: prevObsCrossfilter } =
       getState();
@@ -248,7 +248,7 @@ export const annotationLabelCurrentSelection =
     );
 
     dispatch({
-      type: "annotation: label current cell selection",
+      type: "annotation: label current protein selection",
       metadataField: categoryName,
       label: labelName,
       obsCrossfilter,
@@ -363,7 +363,7 @@ export const saveObsAnnotationsAction = () => async (dispatch, getState) => {
 export const saveGenesetsAction = () => async (dispatch, getState) => {
   const state = getState();
 
-  // bail if gene sets not available, or in readonly mode.
+  // bail if sample sets not available, or in readonly mode.
   const { config } = state;
   const { lastTid, genesets } = state.genesets;
 
@@ -374,13 +374,13 @@ export const saveGenesetsAction = () => async (dispatch, getState) => {
   if (!genesetsAreAvailable || genesetsReadonly) {
     // our non-save was completed!
     return dispatch({
-      type: "autosave: genesets complete",
+      type: "autosave: samplesets complete",
       lastSavedGenesets: genesets,
     });
   }
 
   dispatch({
-    type: "autosave: genesets started",
+    type: "autosave: samplesets started",
   });
 
   /* Create the JSON OTA data structure */
@@ -430,24 +430,24 @@ export const saveGenesetsAction = () => async (dispatch, getState) => {
     );
     if (!res.ok) {
       return dispatch({
-        type: "autosave: genesets error",
+        type: "autosave: samplesets error",
         message: `HTTP error ${res.status} - ${res.statusText}`,
         res,
       });
     }
     return Promise.all([
       dispatch({
-        type: "autosave: genesets complete",
+        type: "autosave: samplesets complete",
         lastSavedGenesets: genesets,
       }),
       dispatch({
-        type: "geneset: set tid",
+        type: "sampleset: set tid",
         tid,
       }),
     ]);
   } catch (error) {
     return dispatch({
-      type: "autosave: genesets error",
+      type: "autosave: samplesets error",
       message: error.toString(),
       error,
     });

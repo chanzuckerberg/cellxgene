@@ -45,7 +45,7 @@ class GeneSet extends React.Component {
   render() {
     const { setName, genesetDescription, setGenes } = this.props;
     const { isOpen } = this.state;
-    const genesetNameLengthVisible = 150; /* this magic number determines how much of a long geneset name we see */
+    const genesetNameLengthVisible = 150; /* this magic number determines how much of a long sampleset name we see */
     const genesetIsEmpty = setGenes.size === 0;
     let testClass = "geneset-expand";
 
@@ -112,7 +112,7 @@ class GeneSet extends React.Component {
         <div style={{ marginLeft: 15, marginTop: 5, marginRight: 0 }}>
           {isOpen && genesetIsEmpty && (
             <p style={{ fontStyle: "italic", color: "lightgrey" }}>
-              No genes to display
+              No samples to display
             </p>
           )}
         </div>

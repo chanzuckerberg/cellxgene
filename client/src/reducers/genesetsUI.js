@@ -1,5 +1,5 @@
 /*
-Reducers for geneset UI-state.
+Reducers for sampleset UI-state.
 */
 const GeneSetsUI = (
   state = {
@@ -11,58 +11,58 @@ const GeneSetsUI = (
 ) => {
   switch (action.type) {
     /**
-     * Activate interface for adding a new geneset
+     * Activate interface for adding a new sampleset
      * No params, if the action is fired we flip
      * a boolean here.
      */
-    case "geneset: activate add new geneset mode": {
+    case "sampleset: activate add new sampleset mode": {
       return {
         ...state,
         createGenesetModeActive: true,
       };
     }
     /**
-     * Disable interface for adding a new geneset
+     * Disable interface for adding a new sampleset
      * No params, if the action is fired we flip
      * a boolean here.
      */
-    case "geneset: disable create geneset mode": {
+    case "sampleset: disable create sampleset mode": {
       return {
         ...state,
         createGenesetModeActive: false,
       };
     }
     /**
-     * Activate the interface for adding new genes to a geneset
+     * Activate the interface for adding new samples to a sampleset
      * isAddingGenesToGeneset {
-     *  geneset: string, name of geneset
+     *  sampleset: string, name of geneset
      * },
      */
-    case "geneset: activate add new genes mode": {
+    case "sampleset: activate add new samples mode": {
       return {
         ...state,
         isAddingGenesToGeneset: action.geneset,
       };
     }
     /**
-     * Disable the interface for adding new genes to a geneset
+     * Disable the interface for adding new samples to a sampleset
      * No params, if the action is fired we flip
      * a boolean here.
      */
-    case "geneset: disable add new genes mode": {
+    case "sampleset: disable add new samples mode": {
       return {
         ...state,
         isAddingGenesToGeneset: false,
       };
     }
     /**
-     * Activate the interface for renaming a geneset
+     * Activate the interface for renaming a sampleset
      * isEditingGenesetName: {
-     *   type: "geneset: activate rename geneset mode",
-     *   data: geneset, // a string, name of geneset
+     *   type: "sampleset: activate rename sampleset mode",
+     *   data: geneset, // a string, name of sampleset
      * }
      */
-    case "geneset: activate rename geneset mode": {
+    case "sampleset: activate rename sampleset mode": {
       return {
         ...state,
         isEditingGenesetName: action.data,
@@ -73,7 +73,7 @@ const GeneSetsUI = (
      * No params, if the action is fired we flip
      * a boolean here.
      */
-    case "geneset: disable rename geneset mode": {
+    case "sampleset: disable rename sampleset mode": {
       return {
         ...state,
         isEditingGenesetName: false,

@@ -90,53 +90,50 @@ class HistogramBrush extends React.PureComponent {
   };
 
   onBrushEnd = (selection, x) => () => {
-      const { dispatch, field, isObs, isUserDefined, isGeneSetSummary } =
-        this.props;
-      const minAllowedBrushSize = 10;
-      const smallAmountToAvoidInfiniteLoop = 0.1;
+    const { dispatch, field, isObs, isUserDefined, isGeneSetSummary } =
+      this.props;
+    const minAllowedBrushSize = 10;
+    const smallAmountToAvoidInfiniteLoop = 0.1;
 
-      // ignore programmatically generated events
-      if (!d3.event.sourceEvent) return;
-      // ignore cascading events, which are programmatically generated
-      if (d3.event.sourceEvent.sourceEvent) return;
+    // ignore programmatically generated events
+    if (!d3.event.sourceEvent) return;
+    // ignore cascading events, which are programmatically generated
+    if (d3.event.sourceEvent.sourceEvent) return;
 
-      let type;
-      let range = null;
-      if (d3.event.selection) {
-        type = "continuous metadata histogram end";
-        if (
-          d3.event.selection[1] - d3.event.selection[0] >
-          minAllowedBrushSize
-        ) {
-          range = [x(d3.event.selection[0]), x(d3.event.selection[1])];
-        } else {
-          /* the user selected range is too small and will be hidden #587, so take control of it procedurally */
-          /* https://stackoverflow.com/questions/12354729/d3-js-limit-size-of-brush */
-
-          const procedurallyResizedBrushWidth =
-            d3.event.selection[0] +
-            minAllowedBrushSize +
-            smallAmountToAvoidInfiniteLoop; //
-
-          range = [x(d3.event.selection[0]), x(procedurallyResizedBrushWidth)];
-        }
+    let type;
+    let range = null;
+    if (d3.event.selection) {
+      type = "continuous metadata histogram end";
+      if (d3.event.selection[1] - d3.event.selection[0] > minAllowedBrushSize) {
+        range = [x(d3.event.selection[0]), x(d3.event.selection[1])];
       } else {
-        type = "continuous metadata histogram cancel";
-      }
+        /* the user selected range is too small and will be hidden #587, so take control of it procedurally */
+        /* https://stackoverflow.com/questions/12354729/d3-js-limit-size-of-brush */
 
-      const query = this.createQuery();
-      const otherProps = {
-        selection: field,
-        continuousNamespace: {
-          isObs,
-          isUserDefined,
-          isGeneSetSummary,
-        },
-      };
-      dispatch(
-        actions.selectContinuousMetadataAction(type, query, range, otherProps)
-      );
+        const procedurallyResizedBrushWidth =
+          d3.event.selection[0] +
+          minAllowedBrushSize +
+          smallAmountToAvoidInfiniteLoop; //
+
+        range = [x(d3.event.selection[0]), x(procedurallyResizedBrushWidth)];
+      }
+    } else {
+      type = "continuous metadata histogram cancel";
+    }
+
+    const query = this.createQuery();
+    const otherProps = {
+      selection: field,
+      continuousNamespace: {
+        isObs,
+        isUserDefined,
+        isGeneSetSummary,
+      },
     };
+    dispatch(
+      actions.selectContinuousMetadataAction(type, query, range, otherProps)
+    );
+  };
 
   handleSetGeneAsScatterplotX = () => {
     const { dispatch, field } = this.props;
@@ -163,7 +160,7 @@ class HistogramBrush extends React.PureComponent {
       isScatterplotYYaccessor,
     } = this.props;
     dispatch({
-      type: "clear user defined gene",
+      type: "clear user defined sample",
       data: field,
     });
     if (isColorAccessor) {

@@ -56,7 +56,7 @@ class Autosave extends React.Component {
   };
 
   needToSaveObsAnnotations = () => {
-    /* return true if we need to save obs cell labels, false if we don't */
+    /* return true if we need to save obs protein labels, false if we don't */
     const { annoMatrix, lastSavedAnnoMatrix } = this.props;
     return actions.needToSaveObsAnnotations(annoMatrix, lastSavedAnnoMatrix);
   };

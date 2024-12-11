@@ -45,7 +45,7 @@ class GenesetMenus extends React.PureComponent {
     annoMatrix
       .fetch(
         ...createColorQuery(
-          "color by geneset mean expression",
+          "color by sampleset mean expression",
           geneset,
           schema,
           genesets
@@ -57,7 +57,7 @@ class GenesetMenus extends React.PureComponent {
   activateAddGeneToGenesetMode = () => {
     const { dispatch, geneset } = this.props;
     dispatch({
-      type: "geneset: activate add new genes mode",
+      type: "sampleset: activate add new samples mode",
       geneset,
     });
   };
@@ -66,7 +66,7 @@ class GenesetMenus extends React.PureComponent {
     const { dispatch, geneset } = this.props;
 
     dispatch({
-      type: "geneset: activate rename geneset mode",
+      type: "sampleset: activate rename sampleset mode",
       data: geneset,
     });
   };
@@ -75,7 +75,7 @@ class GenesetMenus extends React.PureComponent {
     const { dispatch, geneset } = this.props;
     this.fetchOurData(); // just in case data was flushed from cache
     dispatch({
-      type: "color by geneset mean expression",
+      type: "color by sampleset mean expression",
       geneset,
     });
   };
@@ -122,7 +122,7 @@ class GenesetMenus extends React.PureComponent {
                     data-testclass="activateEditGenesetNameMode"
                     data-testid={`${geneset}:edit-genesetName-mode`}
                     onClick={this.activateEditGenesetNameMode}
-                    text="Edit gene set name and description"
+                    text="Edit sample set name and description"
                   />
                   <MenuItem
                     icon="trash"
@@ -130,7 +130,7 @@ class GenesetMenus extends React.PureComponent {
                     data-testclass="handleDeleteGeneset"
                     data-testid={`${geneset}:delete-geneset`}
                     onClick={this.handleDeleteGeneset}
-                    text="Delete this gene set (destructive, will remove set and collection of genes)"
+                    text="Delete this sample set (destructive, will remove set and collection of samples)"
                   />
                 </Menu>
               }
@@ -145,7 +145,7 @@ class GenesetMenus extends React.PureComponent {
               />
             </Popover>
             <Tooltip2
-              content={`Color by gene set ${geneset} mean`}
+              content={`Color by sample set ${geneset} mean`}
               position={Position.BOTTOM}
               hoverOpenDelay={globals.tooltipHoverOpenDelay}
             >
