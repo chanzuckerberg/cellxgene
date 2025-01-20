@@ -1,6 +1,5 @@
 import React from "react";
 import { connect } from "react-redux";
-import GeneExpression from "../geneExpression";
 import * as globals from "../../globals";
 
 @connect((state) => ({
@@ -23,7 +22,7 @@ class RightSidebar extends React.Component {
           padding: globals.leftSidebarSectionPadding,
         }}
       >
-        <GeneExpression />
+        <span>Todo: Chat Region</span>
       </div>
     );
   }

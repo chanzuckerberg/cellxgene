@@ -7,9 +7,11 @@ import GeneSet from "./geneSet";
 import QuickGene from "./quickGene";
 import CreateGenesetDialogue from "./menus/createGenesetDialogue";
 
+import * as globals from "../../globals";
+
 @connect((state) => ({
-    genesets: state.genesets.genesets,
-  }))
+  genesets: state.genesets.genesets,
+}))
 class GeneExpression extends React.Component {
   constructor(props) {
     super(props);
@@ -43,13 +45,16 @@ class GeneExpression extends React.Component {
   };
 
   handleExpandGeneSets = () => {
-    this.setState((state) => ({ ...state, geneSetsExpanded: !state.geneSetsExpanded }));
+    this.setState((state) => ({
+      ...state,
+      geneSetsExpanded: !state.geneSetsExpanded,
+    }));
   };
 
   render() {
     const { geneSetsExpanded } = this.state;
     return (
-      <div>
+      <div style={{ padding: globals.leftSidebarSectionPadding }}>
         <QuickGene />
         <div>
           <div

@@ -5,6 +5,7 @@ import * as globals from "../../globals";
 import DynamicScatterplot from "../scatterplot/scatterplot";
 import TopLeftLogoAndTitle from "./topLeftLogoAndTitle";
 import Continuous from "../continuous/continuous";
+import GeneExpression from "../geneExpression";
 
 @connect((state) => ({
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
@@ -29,9 +30,15 @@ class LeftSideBar extends React.Component {
             height: "100%",
             width: globals.leftSidebarWidth,
             overflowY: "auto",
+
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "stretch",
+            rowGap: "20px",
           }}
         >
           <Categorical />
+          <GeneExpression />
           <Continuous />
         </div>
         {scatterplotXXaccessor && scatterplotYYaccessor ? (
