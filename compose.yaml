@@ -1,0 +1,12 @@
+services:
+  cellxgene:
+    container_name: cellxgene
+    image: registry.vinoai.net/cellxgene
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: launch --host 0.0.0.0 /dataset/Spatial_Drug.h5ad
+    ports:
+      - "5005:5005"
+    volumes:
+      - ./dataset:/dataset
