@@ -19,10 +19,24 @@ class RightSidebar extends React.Component {
           overflowY: "inherit",
           height: "inherit",
           width: "inherit",
-          padding: globals.leftSidebarSectionPadding,
         }}
       >
-        <span>Todo: Chat Region</span>
+        <div
+          style={{
+            flex: 1,
+            borderBottom: `0.5px solid ${globals.lightGrey}`,
+            overflowY: "inherit",
+            padding: globals.leftSidebarSectionPadding,
+          }}
+        />
+        <div
+          style={{
+            flex: 1,
+            borderTop: `0.5px solid ${globals.lightGrey}`,
+            overflowY: "inherit",
+            padding: globals.leftSidebarSectionPadding,
+          }}
+        />
       </div>
     );
   }
