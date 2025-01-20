@@ -60,18 +60,7 @@ class LeftSideBar extends React.Component {
               userSelect: "none",
             }}
           >
-            cell
-            <span
-              style={{
-                position: "relative",
-                top: 1,
-                fontWeight: 300,
-                fontSize: 24,
-              }}
-            >
-              ×
-            </span>
-            gene
+            Dandelion
           </span>
         </div>
         <div style={{ marginRight: 5, height: "100%" }}>
