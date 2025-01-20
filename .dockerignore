@@ -1,5 +1,5 @@
 bin
 client
-dist
+#dist
 docs
 server
