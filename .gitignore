@@ -58,3 +58,6 @@ ignoreE2E*
 
 # annotate subcmd
 .models_cache
+
+# auto generated csv
+*.csv

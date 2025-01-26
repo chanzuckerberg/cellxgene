@@ -1,5 +1,5 @@
 bin
 client
-#dist
 docs
 server
+*.csv
