@@ -2,7 +2,7 @@
   "CXG_CLIENT_PORT": 3000,
   "CXG_OPTIONS": "--debug",
   "CXG_SERVER_PORT": 5005,
-  "DATASET": "example-dataset/pbmc3k.h5ad",
+  "DATASET": "example-dataset/Spatial_Drug.h5ad",
   "DEBUG": "debug",
   "DEV": "dev",
   "JEST_ENV": "prod",
