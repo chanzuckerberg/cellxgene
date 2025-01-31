@@ -83,13 +83,17 @@ const loadState = () => {
 };
 
 // 保存状态到 localStorage
-const saveState = (state) => {
-  try {
-    const serializedState = JSON.stringify(state);
-    localStorage.setItem(CACHE_KEY, serializedState);
-  } catch (err) {
-    console.error("Failed to save state to localStorage", err);
-  }
+// const saveState = (state) => {
+//   try {
+//     const serializedState = JSON.stringify(state);
+//     localStorage.setItem(CACHE_KEY, serializedState);
+//   } catch (err) {
+//     console.error("Failed to save state to localStorage", err);
+//   }
+// };
+const saveState = () => {
+  // 暂时不保存
+  
 };
 
 const initialState = loadState();
@@ -128,7 +132,7 @@ const ChatReducer = (state = initialState, action) => {
 
     case "chat: create session": {
       console.log(action);
-      const { prompt, polygon } = action;
+      const { prompt, polygon, indexes } = action;
       const session = {
         id: 0,
         context: {
@@ -140,7 +144,7 @@ const ChatReducer = (state = initialState, action) => {
               // 数据集ID
               datasetId: "",
               // 选中的细胞Index
-              indexes: [],
+              indexes,
             },
           ],
         },

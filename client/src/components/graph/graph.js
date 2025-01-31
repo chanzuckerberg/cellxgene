@@ -457,11 +457,7 @@ class Graph extends React.Component {
 
   handleChatSessionCreate(prompt) {
     const { dispatch, currentSelection } = this.props;
-    dispatch({
-      type: "chat: create session",
-      prompt,
-      polygon: currentSelection.polygon,
-    });
+    dispatch(actions.chatCreateSession(prompt, currentSelection.polygon));
   }
 
   setReglCanvas = (canvas) => {
