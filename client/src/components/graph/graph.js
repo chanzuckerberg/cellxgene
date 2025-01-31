@@ -21,8 +21,6 @@ import CentroidLabels from "./overlays/centroidLabels";
 import actions from "../../actions";
 import renderThrottle from "../../util/renderThrottle";
 
-import SelectionPrompt from "../selection-prompt";
-
 import {
   flagBackground,
   flagSelected,
@@ -80,7 +78,6 @@ function createModelTF() {
   colors: state.colors,
   pointDilation: state.pointDilation,
   genesets: state.genesets.genesets,
-  chat: state.chat,
 }))
 class Graph extends React.Component {
   static createReglState(canvas) {
@@ -253,10 +250,6 @@ class Graph extends React.Component {
         pointDilationDf: null,
       },
     };
-
-    this.handleSelectionPromptClose =
-      this.handleSelectionPromptClose.bind(this);
-    this.handleChatSessionCreate = this.handleChatSessionCreate.bind(this);
   }
 
   componentDidMount() {
@@ -423,7 +416,6 @@ class Graph extends React.Component {
     } else {
       const selection = polygon.map((xy) => this.mapScreenToPoint(xy));
       dispatch(actions.graphLassoEndAction(layoutChoice.current, selection));
-      // dispatch({ type: "chat: open temp session" });
     }
   }
 
@@ -449,16 +441,6 @@ class Graph extends React.Component {
       type: "change opacity deselected cells in 2d graph background",
       data: e.target.value,
     });
-  }
-
-  handleSelectionPromptClose() {
-    const { dispatch } = this.props;
-    dispatch({ type: "chat: close temp session" });
-  }
-
-  handleChatSessionCreate(prompt) {
-    const { dispatch, currentSelection } = this.props;
-    dispatch(actions.chatCreateSession(prompt, currentSelection.polygon));
   }
 
   setReglCanvas = (canvas) => {
@@ -850,7 +832,6 @@ class Graph extends React.Component {
       layoutChoice,
       pointDilation,
       crossfilter,
-      chat,
     } = this.props;
     const { modelTF, projectionTF, camera, viewport, regl } = this.state;
     const cameraTF = camera?.view()?.slice();
@@ -909,12 +890,6 @@ class Graph extends React.Component {
           onMouseMove={this.handleCanvasEvent}
           onDoubleClick={this.handleCanvasEvent}
           onWheel={this.handleCanvasEvent}
-        />
-
-        <SelectionPrompt
-          visible={chat.tmp.visible}
-          onClose={this.handleSelectionPromptClose}
-          onSubmit={this.handleChatSessionCreate}
         />
 
         <Async
