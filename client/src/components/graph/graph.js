@@ -21,6 +21,8 @@ import CentroidLabels from "./overlays/centroidLabels";
 import actions from "../../actions";
 import renderThrottle from "../../util/renderThrottle";
 
+import SelectionPrompt from "../selection-prompt";
+
 import {
   flagBackground,
   flagSelected,
@@ -77,6 +79,7 @@ function createModelTF() {
   colors: state.colors,
   pointDilation: state.pointDilation,
   genesets: state.genesets.genesets,
+  chat: state.chat,
 }))
 class Graph extends React.Component {
   static createReglState(canvas) {
@@ -249,6 +252,10 @@ class Graph extends React.Component {
         pointDilationDf: null,
       },
     };
+
+    this.handleSelectionPromptClose =
+      this.handleSelectionPromptClose.bind(this);
+    this.handleChatSessionCreate = this.handleChatSessionCreate.bind(this);
   }
 
   componentDidMount() {
@@ -317,7 +324,10 @@ class Graph extends React.Component {
     if (e.type !== "wheel") e.preventDefault();
     if (camera.handleEvent(e, projectionTF)) {
       this.renderCanvas();
-      this.setState((state) => ({ ...state, updateOverlay: !state.updateOverlay }));
+      this.setState((state) => ({
+        ...state,
+        updateOverlay: !state.updateOverlay,
+      }));
     }
   };
 
@@ -410,12 +420,9 @@ class Graph extends React.Component {
       // if less than three points, or super small area, treat as a clear selection.
       dispatch(actions.graphLassoDeselectAction(layoutChoice.current));
     } else {
-      dispatch(
-        actions.graphLassoEndAction(
-          layoutChoice.current,
-          polygon.map((xy) => this.mapScreenToPoint(xy))
-        )
-      );
+      const selection = polygon.map((xy) => this.mapScreenToPoint(xy));
+      dispatch(actions.graphLassoEndAction(layoutChoice.current, selection));
+      dispatch({ type: "chat: open temp session" });
     }
   }
 
@@ -440,6 +447,20 @@ class Graph extends React.Component {
     dispatch({
       type: "change opacity deselected cells in 2d graph background",
       data: e.target.value,
+    });
+  }
+
+  handleSelectionPromptClose() {
+    const { dispatch } = this.props;
+    dispatch({ type: "chat: close temp session" });
+  }
+
+  handleChatSessionCreate(prompt) {
+    const { dispatch, currentSelection } = this.props;
+    dispatch({
+      type: "chat: create session",
+      prompt,
+      polygon: currentSelection.polygon,
     });
   }
 
@@ -832,9 +853,12 @@ class Graph extends React.Component {
       layoutChoice,
       pointDilation,
       crossfilter,
+      chat,
     } = this.props;
     const { modelTF, projectionTF, camera, viewport, regl } = this.state;
     const cameraTF = camera?.view()?.slice();
+
+    console.log(chat);
 
     return (
       <div
@@ -890,6 +914,12 @@ class Graph extends React.Component {
           onMouseMove={this.handleCanvasEvent}
           onDoubleClick={this.handleCanvasEvent}
           onWheel={this.handleCanvasEvent}
+        />
+
+        <SelectionPrompt
+          visible={chat.tmp.visible}
+          onClose={this.handleSelectionPromptClose}
+          onSubmit={this.handleChatSessionCreate}
         />
 
         <Async
@@ -951,32 +981,29 @@ const ErrorLoading = ({ displayName, error, width, height }) => {
   );
 };
 
-const StillLoading = ({ displayName, width, height }) => 
+const StillLoading = ({ displayName, width, height }) => (
   /*
-  Render a busy/loading indicator
-  */
-   (
+Render a busy/loading indicator
+*/
+  <div
+    style={{
+      position: "fixed",
+      fontWeight: 500,
+      top: height / 2,
+      width,
+    }}
+  >
     <div
       style={{
-        position: "fixed",
-        fontWeight: 500,
-        top: height / 2,
-        width,
+        display: "flex",
+        justifyContent: "center",
+        justifyItems: "center",
+        alignItems: "center",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          justifyItems: "center",
-          alignItems: "center",
-        }}
-      >
-        <Button minimal loading intent="primary" />
-        <span style={{ fontStyle: "italic" }}>Loading {displayName}</span>
-      </div>
+      <Button minimal loading intent="primary" />
+      <span style={{ fontStyle: "italic" }}>Loading {displayName}</span>
     </div>
-  )
-;
-
+  </div>
+);
 export default Graph;
