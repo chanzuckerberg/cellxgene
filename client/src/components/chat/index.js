@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { H4, TextArea } from "@blueprintjs/core";
+import { Button, H4, TextArea } from "@blueprintjs/core";
 
 import { Observable } from "rxjs";
 import * as globals from "../../globals";
@@ -32,7 +32,6 @@ const source = new Observable((observer) => {
       }
 
       observer.complete();
-      
     });
   };
 
@@ -56,6 +55,7 @@ class Chat extends React.Component {
     this.bindMessagesRef = this.bindMessagesRef.bind(this);
     this.onChange = this.onChange.bind(this);
     this.onKeyDown = this.onKeyDown.bind(this);
+    this.archive = this.archive.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -145,6 +145,30 @@ class Chat extends React.Component {
     });
   }
 
+  archive() {
+    const { session } = this.props;
+    const { messages } = session;
+
+    const text = messages
+      .map(
+        (msg) =>
+          `[${new Date(msg.timestamp).toLocaleString()}] ${msg.role}: ${
+            msg.content
+          }`
+      )
+      .join("\n\n");
+
+    console.log(text);
+
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "chat_archive.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   render() {
     const { session } = this.props;
 
@@ -165,7 +189,20 @@ class Chat extends React.Component {
           rowGap: "1em",
         }}
       >
-        <H4>Chat</H4>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <H4>Chat</H4>
+          <Button
+            icon="archive"
+            disabled={messages.length === 0 || output.length > 0}
+            onClick={this.archive}
+          />
+        </div>
         <div
           ref={this.bindMessagesRef}
           style={{
