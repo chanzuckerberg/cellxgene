@@ -5,7 +5,7 @@
  *   id: string;
  *   // 角色
  *   role: UserRole;
- *   // 消息类型
+ *   // 消息内容
  *   content: string;
  *   // 消息时间（时间戳）
  *   timestamp: number;
@@ -49,6 +49,16 @@ const initialState = {
 
 const ChatReducer = (state = initialState, action) => {
   switch (action.type) {
+    case "chat: new message": {
+      const { message } = action;
+      return {
+        ...state,
+        session: {
+          ...state.session,
+          messages: [...state.session.messages, message],
+        },
+      };
+    }
     default: {
       return state;
     }
