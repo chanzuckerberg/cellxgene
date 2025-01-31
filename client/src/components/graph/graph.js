@@ -74,6 +74,7 @@ function createModelTF() {
   crossfilter: state.obsCrossfilter,
   selectionTool: state.graphSelection.tool,
   currentSelection: state.graphSelection.selection,
+  selections: state.graphSelection.selections,
   layoutChoice: state.layoutChoice,
   graphInteractionMode: state.controls.graphInteractionMode,
   colors: state.colors,
@@ -422,7 +423,7 @@ class Graph extends React.Component {
     } else {
       const selection = polygon.map((xy) => this.mapScreenToPoint(xy));
       dispatch(actions.graphLassoEndAction(layoutChoice.current, selection));
-      dispatch({ type: "chat: open temp session" });
+      // dispatch({ type: "chat: open temp session" });
     }
   }
 
@@ -853,8 +854,6 @@ class Graph extends React.Component {
     } = this.props;
     const { modelTF, projectionTF, camera, viewport, regl } = this.state;
     const cameraTF = camera?.view()?.slice();
-
-    console.log(chat);
 
     return (
       <div

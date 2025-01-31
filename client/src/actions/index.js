@@ -169,10 +169,10 @@ const requestDifferentialExpression =
     dispatch({ type: "request differential expression started" });
     try {
       /*
-      Steps:
-      1. get the most differentially expressed genes
-      2. get expression data for each
-      */
+        Steps:
+        1. get the most differentially expressed genes
+        2. get expression data for each
+        */
       const { annoMatrix } = getState();
       const varIndexName = annoMatrix.schema.annotations.var.index;
 
@@ -256,6 +256,7 @@ export default {
   graphLassoEndAction: selnActions.graphLassoEndAction,
   graphLassoCancelAction: selnActions.graphLassoCancelAction,
   graphLassoDeselectAction: selnActions.graphLassoDeselectAction,
+  graphRedisplaySelection: selnActions.redisplaySelection,
   clipAction: viewActions.clipAction,
   subsetAction: viewActions.subsetAction,
   resetSubsetAction: viewActions.resetSubsetAction,

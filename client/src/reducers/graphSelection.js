@@ -1,7 +1,32 @@
+// interface Selection {
+//   emb: string;
+//   name: string;
+//   polygon: vec2[];
+//   indexes: number[];
+// }
+
+const createSelection = (() => {
+  const createName = (() => {
+    let index = 0;
+    return () => {
+      index += 1;
+      return `s${index}`;
+    };
+  })();
+
+  return (s) => ({
+    emb: s.emb,
+    name: s.name || createName(),
+    polygon: s.polygon,
+    indexes: s.indexes,
+  });
+})();
+
 const GraphSelection = (
   state = {
     tool: "lasso", // what selection tool mode (lasso, brush, ...)
     selection: { mode: "all" }, // current selection, which is tool specific
+    selections: [],
   },
   action
 ) => {
@@ -31,14 +56,28 @@ const GraphSelection = (
     }
 
     case "graph lasso end": {
-      const { polygon } = action;
-      return {
+      const { emb, polygon, indexes, recordable = true } = action;
+
+      const newState = {
         ...state,
         selection: {
           mode: "within-polygon",
           polygon,
         },
+        selections: [...state.selections],
       };
+
+      if (recordable) {
+        const selection = createSelection({
+          emb,
+          name: undefined,
+          polygon,
+          indexes,
+        });
+        newState.selections.push(selection);
+      }
+
+      return newState;
     }
 
     case "graph lasso cancel":

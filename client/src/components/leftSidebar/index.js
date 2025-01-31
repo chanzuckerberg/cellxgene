@@ -1,11 +1,14 @@
 import React from "react";
 import { connect } from "react-redux";
+import { Divider } from "@blueprintjs/core";
 import Categorical from "../categorical";
 import * as globals from "../../globals";
 import DynamicScatterplot from "../scatterplot/scatterplot";
 import TopLeftLogoAndTitle from "./topLeftLogoAndTitle";
 import Continuous from "../continuous/continuous";
 import GeneExpression from "../geneExpression";
+import Selections from "../selections";
+
 
 @connect((state) => ({
   scatterplotXXaccessor: state.controls.scatterplotXXaccessor,
@@ -38,7 +41,11 @@ class LeftSideBar extends React.Component {
           }}
         >
           <Categorical />
+          <Divider />
           <GeneExpression />
+          <Divider />
+          <Selections />
+          <Divider />
           <Continuous />
         </div>
         {scatterplotXXaccessor && scatterplotYYaccessor ? (
