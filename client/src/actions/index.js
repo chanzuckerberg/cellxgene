@@ -11,6 +11,7 @@ import * as annoActions from "./annotation";
 import * as viewActions from "./viewStack";
 import * as embActions from "./embedding";
 import * as genesetActions from "./geneset";
+import * as chatActions from "./chat";
 
 function setGlobalConfig(config) {
   /**
@@ -101,6 +102,8 @@ const doInitialDataLoad = () =>
       const baseDataUrl = `${globals.API.prefix}${globals.API.version}`;
       const annoMatrix = new AnnoMatrixLoader(baseDataUrl, schema.schema);
       const obsCrossfilter = new AnnoMatrixObsCrossfilter(annoMatrix);
+      console.log("annoMatrix", annoMatrix);
+      console.log("initial obsCrossfilter", obsCrossfilter);
       prefetchEmbeddings(annoMatrix);
 
       dispatch({
@@ -166,10 +169,10 @@ const requestDifferentialExpression =
     dispatch({ type: "request differential expression started" });
     try {
       /*
-    Steps:
-    1. get the most differentially expressed genes
-    2. get expression data for each
-    */
+      Steps:
+      1. get the most differentially expressed genes
+      2. get expression data for each
+      */
       const { annoMatrix } = getState();
       const varIndexName = annoMatrix.schema.annotations.var.index;
 
@@ -272,4 +275,5 @@ export default {
   genesetDelete: genesetActions.genesetDelete,
   genesetAddGenes: genesetActions.genesetAddGenes,
   genesetDeleteGenes: genesetActions.genesetDeleteGenes,
+  chatCreateSession: chatActions.createSession,
 };
