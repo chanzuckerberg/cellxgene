@@ -4,8 +4,9 @@
 2. cellxgene launch ./example-dataset/Spatial_Drug.h5ad -->
 
 0. pip install virtualenv
-1. ./scripts/backend_dev (in $PROJECT_ROOT)
-2. make start-frontend (in $PROJECT_ROOT/client)
+<!-- 1. ./scripts/backend_dev (in $PROJECT_ROOT) -->
+1. `cellxgene launch --debug example-dataset/Spatial_Drug.h5ad` (in $PROJECT_ROOT)
+2. `make start-frontend` (in $PROJECT_ROOT/client)
 3. open `http://localhost:3000`
 
 ## build
