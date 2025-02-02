@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { connect } from "react-redux";
 import { H4 } from "@blueprintjs/core";
 import cls from "./index.css";
@@ -8,37 +7,16 @@ import actions from "../../actions";
 
 import { Selection } from "./selection";
 
-@connect((state) => ({
-  selections: state.graphSelection.selections,
-  layoutChoice: state.layoutChoice,
-}))
-class Selections extends React.Component {
-  constructor(props) {
-    super(props);
+const Selections = ({ selections, layoutChoice, dispatch }) => {
+  const ref = useRef(null);
 
-    this.onMouseOver = this.onMouseOver.bind(this);
-    // this.onMouseLeave = this.onMouseLeave.bind(this);
-    this.handleSelectionsRef = this.handleSelectionsRef.bind(this);
-
-    this.selectionsRef = null;
-  }
-
-  componentDidUpdate(prevProps) {
-    const { selections: prevSelections } = prevProps;
-    const { selections } = this.props;
-    if (selections.length !== prevSelections.length) {
-      if (this.selectionsRef) {
-        this.selectionsRef.scrollTop = this.selectionsRef.scrollHeight;
-      }
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.scrollTop = ref.current.scrollHeight;
     }
-  }
+  }, [selections]);
 
-  handleSelectionsRef(ref) {
-    this.selectionsRef = ref;
-  }
-
-  onMouseOver(name) {
-    const { dispatch, selections, layoutChoice } = this.props;
+  const onMouseOver = (name) => {
     const sel = selections.find((s) => s.name === name);
     if (!sel) {
       return;
@@ -50,41 +28,37 @@ class Selections extends React.Component {
         sel.indexes
       )
     );
-  }
+  };
 
   // todo: 与undo功能冲突，在确定需要该功能时再修复
-  // onMouseLeave() {
-  //   const { dispatch, layoutChoice } = this.props;
+  // const onMouseLeave = () => {
   //   dispatch(actions.graphLassoDeselectAction(layoutChoice.current));
   // }
 
-  render() {
-    const { selections, layoutChoice } = this.props;
-
-    // const currentEmbSelections = selections.filter(
-    //   (s) => s.emb === layoutChoice.current
-    // );
-
-    return (
-      <div className={cls.root}>
-        <H4>Region Sets ({layoutChoice.current})</H4>
-        <div className={cls.list} ref={this.handleSelectionsRef}>
-          {selections.length === 0 ? (
-            <span className={cls.empty}>Empty</span>
-          ) : null}
-          {selections.map((s) => (
-            <Selection
-              key={s.name}
-              name={s.name}
-              indexes={s.indexes}
-              onMouseOver={() => this.onMouseOver(s.name)}
-              // onMouseLeave={() => this.onMouseLeave()}
-            />
-          ))}
-        </div>
+  return (
+    <div className={cls.root}>
+      <H4>Region Sets ({layoutChoice.current})</H4>
+      <div className={cls.list} ref={ref}>
+        {selections.length === 0 ? (
+          <span className={cls.empty}>Empty</span>
+        ) : null}
+        {selections.map((s) => (
+          <Selection
+            key={s.name}
+            name={s.name}
+            indexes={s.indexes}
+            onMouseOver={() => onMouseOver(s.name)}
+            // onMouseLeave={() => onMouseLeave()}
+          />
+        ))}
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
-export default Selections;
+const mapStateToProps = (state) => ({
+  selections: state.graphSelection.selections,
+  layoutChoice: state.layoutChoice,
+});
+
+export default connect(mapStateToProps)(Selections);
