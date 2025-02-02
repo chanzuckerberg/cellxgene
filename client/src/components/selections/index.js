@@ -1,8 +1,8 @@
+
 import React from "react";
 import { connect } from "react-redux";
 import { H4 } from "@blueprintjs/core";
-
-import * as globals from "../../globals";
+import cls from "./index.css";
 
 import actions from "../../actions";
 
@@ -61,36 +61,18 @@ class Selections extends React.Component {
   render() {
     const { selections, layoutChoice } = this.props;
 
-    const currentEmbSelections = selections.filter(
-      (s) => s.emb === layoutChoice.current
-    );
+    // const currentEmbSelections = selections.filter(
+    //   (s) => s.emb === layoutChoice.current
+    // );
 
     return (
-      <div
-        style={{
-          padding: globals.leftSidebarSectionPadding,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "stretch",
-          rowGap: "1em",
-        }}
-      >
-        <H4>Selections ({layoutChoice.current})</H4>
-        <div
-          ref={this.handleSelectionsRef}
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "stretch",
-            rowGap: "1em",
-            overflowY: "auto",
-            maxHeight: 200,
-          }}
-        >
-          {currentEmbSelections.length === 0 ? (
-            <span style={{ opacity: 0.5 }}>Empty</span>
+      <div className={cls.root}>
+        <H4>Region Sets ({layoutChoice.current})</H4>
+        <div className={cls.list} ref={this.handleSelectionsRef}>
+          {selections.length === 0 ? (
+            <span className={cls.empty}>Empty</span>
           ) : null}
-          {currentEmbSelections.map((s) => (
+          {selections.map((s) => (
             <Selection
               key={s.name}
               name={s.name}

@@ -1,4 +1,6 @@
 import React from "react";
+import cls from "./selection.css";
+
 
 export class Selection extends React.PureComponent {
   render() {
@@ -6,13 +8,7 @@ export class Selection extends React.PureComponent {
 
     return (
       <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "2ch",
-          cursor: "pointer",
-        }}
+        className={cls.root}
         onFocus={onMouseOver}
         onMouseOver={onMouseOver}
         onMouseLeave={onMouseLeave}
