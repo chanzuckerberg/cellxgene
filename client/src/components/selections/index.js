@@ -1,17 +1,19 @@
 import React, { useRef, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { H4 } from "@blueprintjs/core";
+import { H4 , Button } from "@blueprintjs/core";
+import { Tree } from "antd";
 import cls from "./index.css";
 
 import actions from "../../actions";
 
 import { Selection } from "./selection";
-import { SelectionGroupTitle } from './title'
-import { SelectionCreator } from './creator'
-import { getSelectionByPath, getSelectionPath } from '../../reducers/graphSelection'
+import { SelectionGroupTitle } from "./title";
+import { SelectionCreator } from "./creator";
+import {
+  getSelectionByPath,
+  getSelectionPath,
+} from "../../reducers/graphSelection";
 
-import { Tree } from 'antd';
-import { Button } from '@blueprintjs/core'
 
 const Selections = ({ selections, layoutChoice, dispatch }) => {
   const ref = useRef(null);
@@ -38,7 +40,7 @@ const Selections = ({ selections, layoutChoice, dispatch }) => {
       // 只展示二级选区
       return;
     }
-    const selection = getSelectionByPath(selections, paths)
+    const selection = getSelectionByPath(selections, paths);
 
     if (selection.emb !== layoutChoice.current) {
       return;
@@ -58,44 +60,54 @@ const Selections = ({ selections, layoutChoice, dispatch }) => {
       type: "graph create selection",
       emb: layoutChoice.current,
       name,
-    })
-  }
+    });
+  };
 
   const onDrop = (e) => {
     const { dragNode, node } = e;
 
-    console.log(dragNode, node)
+    console.log(dragNode, node);
 
     dispatch({
       type: "graph move selection",
       fromId: dragNode.key,
       toId: node.key,
-    })
+    });
   };
 
   const onRemove = (selectionId) => {
     dispatch({
       type: "graph remove selection",
       selectionId,
-    })
-  }
-
-  const convertSelectionToTreeData = (s, depth = 0) => {
-    return ({
-      key: s.id,
-      title: depth === 0 ? <SelectionGroupTitle name={s.name} onRemove={() => onRemove(s.id)} /> : <Selection emb={s.emb} name={s.name} indexes={s.indexes} onRemove={() => onRemove(s.id)} />,
-      // isLeaf: depth > 0,
-      children: s.children.map(c => convertSelectionToTreeData(c, depth + 1))
     });
   };
 
-  const treeData = selections.map(s => convertSelectionToTreeData(s));
+  const convertSelectionToTreeData = (s, depth = 0) => ({
+      key: s.id,
+      title:
+        depth === 0 ? (
+          <SelectionGroupTitle name={s.name} onRemove={() => onRemove(s.id)} />
+        ) : (
+          <Selection
+            emb={s.emb}
+            name={s.name}
+            indexes={s.indexes}
+            onRemove={() => onRemove(s.id)}
+          />
+        ),
+      // isLeaf: depth > 0,
+      children: s.children.map((c) => convertSelectionToTreeData(c, depth + 1)),
+    });
+
+  const treeData = selections.map((s) => convertSelectionToTreeData(s));
 
   return (
     <div className={cls.root}>
       <div className={cls.header}>
-        <H4>Region Sets ({layoutChoice.current})</H4>
-        <Button intent="primary" onClick={() => setCreatorVisible(true)}>Create new</Button>
+        <H4>Region Sets</H4>
+        <Button intent="primary" onClick={() => setCreatorVisible(true)}>
+          Create new
+        </Button>
       </div>
       <Tree
         draggable
@@ -107,7 +119,11 @@ const Selections = ({ selections, layoutChoice, dispatch }) => {
         treeData={treeData}
         onSelect={reselectSelection}
       />
-      <SelectionCreator visible={creatorVisible} onClose={() => setCreatorVisible(false)} onCreate={onSelectionCreate} />
+      <SelectionCreator
+        visible={creatorVisible}
+        onClose={() => setCreatorVisible(false)}
+        onCreate={onSelectionCreate}
+      />
     </div>
   );
 };
