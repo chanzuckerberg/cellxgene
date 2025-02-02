@@ -102,11 +102,24 @@ const moveSelection = (selections, fromSelectionId, toGroupId) => {
   toSelection.children = [...toSelection.children, fromSelection]
 }
 
+// 删除选区
+const removeSelection = (selections, selectionId) => {
+  const paths = getSelectionPath(selections, selectionId);
+  if (paths.length === 1) {
+    selections.splice(paths[0], 1)
+    return;
+  }
+  const parentPaths = paths.slice(0, -1);
+  const parentSelection = getSelectionByPath(selections, parentPaths);
+  parentSelection.children = parentSelection.children.filter(s => s.id !== selectionId)
+}
+
 const GraphSelection = (
   state = {
     tool: "lasso", // what selection tool mode (lasso, brush, ...)
     selection: { mode: "all" }, // current selection, which is tool specific
     selections: [], // 记录所有选区
+    currentSelectionId: undefined, // 当前选中的选区ID
   },
   action
 ) => {
@@ -210,6 +223,19 @@ const GraphSelection = (
         selections,
       })
 
+    }
+
+    case "graph remove selection": {
+      const { selectionId } = action;
+
+      const selections = [...state.selections]
+
+      removeSelection(selections, selectionId);
+
+      return ({
+        ...state,
+        selections,
+      })
     }
 
     case "graph lasso cancel":

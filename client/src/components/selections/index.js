@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useMemo, useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { H4 } from "@blueprintjs/core";
 import cls from "./index.css";
@@ -6,20 +6,12 @@ import cls from "./index.css";
 import actions from "../../actions";
 
 import { Selection } from "./selection";
+import { SelectionGroupTitle } from './title'
 import { SelectionCreator } from './creator'
 import { getSelectionByPath, getSelectionPath } from '../../reducers/graphSelection'
 
 import { Tree } from 'antd';
 import { Button } from '@blueprintjs/core'
-
-function convertSelectionToTreeData(s, depth = 0) {
-  return ({
-    key: s.id,
-    title: depth === 0 ? s.name : <Selection emb={s.emb} name={s.name} indexes={s.indexes} />,
-    // isLeaf: depth > 0,
-    children: s.children.map(c => convertSelectionToTreeData(c, depth + 1))
-  });
-}
 
 const Selections = ({ selections, layoutChoice, dispatch }) => {
   const ref = useRef(null);
@@ -31,6 +23,11 @@ const Selections = ({ selections, layoutChoice, dispatch }) => {
       ref.current.scrollTop = ref.current.scrollHeight;
     }
   }, [selections]);
+
+  // todo: 与undo功能冲突，在确定需要该功能时再修复
+  // const onMouseLeave = () => {
+  //   dispatch(actions.graphLassoDeselectAction(layoutChoice.current));
+  // }
 
   const reselectSelection = ([key]) => {
     if (!key) {
@@ -76,14 +73,23 @@ const Selections = ({ selections, layoutChoice, dispatch }) => {
     })
   };
 
-  const treeData = useMemo(() => selections.map(s => convertSelectionToTreeData(s)), [selections])
+  const onRemove = (selectionId) => {
+    dispatch({
+      type: "graph remove selection",
+      selectionId,
+    })
+  }
 
-  console.log(treeData)
+  const convertSelectionToTreeData = (s, depth = 0) => {
+    return ({
+      key: s.id,
+      title: depth === 0 ? <SelectionGroupTitle name={s.name} onRemove={() => onRemove(s.id)} /> : <Selection emb={s.emb} name={s.name} indexes={s.indexes} onRemove={() => onRemove(s.id)} />,
+      // isLeaf: depth > 0,
+      children: s.children.map(c => convertSelectionToTreeData(c, depth + 1))
+    });
+  };
 
-  // todo: 与undo功能冲突，在确定需要该功能时再修复
-  // const onMouseLeave = () => {
-  //   dispatch(actions.graphLassoDeselectAction(layoutChoice.current));
-  // }
+  const treeData = selections.map(s => convertSelectionToTreeData(s));
 
   return (
     <div className={cls.root}>
@@ -91,20 +97,6 @@ const Selections = ({ selections, layoutChoice, dispatch }) => {
         <H4>Region Sets ({layoutChoice.current})</H4>
         <Button intent="primary" onClick={() => setCreatorVisible(true)}>Create new</Button>
       </div>
-      {/* <div className={cls.list} ref={ref}>
-        {selections.length === 0 ? (
-          <span className={cls.empty}>Empty</span>
-        ) : null}
-        {selections.map((s) => (
-          <Selection
-            key={s.name}
-            name={s.name}
-            indexes={s.indexes}
-            onMouseOver={() => onMouseOver(s.name)}
-          // onMouseLeave={() => onMouseLeave()}
-          />
-        ))}
-      </div> */}
       <Tree
         draggable
         blockNode
