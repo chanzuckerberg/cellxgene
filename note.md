@@ -11,8 +11,9 @@
 
 ## build
 
-1. make pydist
-2. docker build . -t cellxgene
+1. `make pydist`
+<!-- 2. docker build . -t cellxgene -->
+2. `docker compose build --push`
 3. docker run -it -v ./example-dataset:/example-dataset -p 5005:5005 cellxgene launch --host 0.0.0.0 /example-dataset/Spatial_Drug.h5ad
 
 ```yaml
