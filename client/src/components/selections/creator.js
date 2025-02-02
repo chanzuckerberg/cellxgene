@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Dialog, Classes } from "@blueprintjs/core";
-import { Button, Input } from "antd";
+import { Input } from "antd";
+import { Button } from '@blueprintjs/core'
 
 export const SelectionCreator = ({ visible, onClose, onCreate }) => {
   const [name, setName] = useState("");
@@ -34,7 +35,7 @@ export const SelectionCreator = ({ visible, onClose, onCreate }) => {
           onChange={(e) => setName(e.target.value)}
         />
 
-        <Button htmlType="submit" type="primary">
+        <Button type="submit" intent="primary">
           Create
         </Button>
       </form>

@@ -5,6 +5,13 @@
   row-gap: 1em;
   padding: 10px;
 
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1ch;
+  }
+
   .list {
     display: flex;
     flex-direction: column;
