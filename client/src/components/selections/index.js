@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { H4 , Button } from "@blueprintjs/core";
+import { H4, Button } from "@blueprintjs/core";
 import { Tree } from "antd";
 import cls from "./index.css";
 
@@ -66,8 +66,6 @@ const Selections = ({ selections, layoutChoice, dispatch }) => {
   const onDrop = (e) => {
     const { dragNode, node } = e;
 
-    console.log(dragNode, node);
-
     dispatch({
       type: "graph move selection",
       fromId: dragNode.key,
@@ -83,21 +81,21 @@ const Selections = ({ selections, layoutChoice, dispatch }) => {
   };
 
   const convertSelectionToTreeData = (s, depth = 0) => ({
-      key: s.id,
-      title:
-        depth === 0 ? (
-          <SelectionGroupTitle name={s.name} onRemove={() => onRemove(s.id)} />
-        ) : (
-          <Selection
-            emb={s.emb}
-            name={s.name}
-            indexes={s.indexes}
-            onRemove={() => onRemove(s.id)}
-          />
-        ),
-      // isLeaf: depth > 0,
-      children: s.children.map((c) => convertSelectionToTreeData(c, depth + 1)),
-    });
+    key: s.id,
+    title:
+      depth === 0 ? (
+        <SelectionGroupTitle name={s.name} onRemove={() => onRemove(s.id)} />
+      ) : (
+        <Selection
+          emb={s.emb}
+          name={s.name}
+          indexes={s.indexes}
+          onRemove={() => onRemove(s.id)}
+        />
+      ),
+    // isLeaf: depth > 0,
+    children: s.children.map((c) => convertSelectionToTreeData(c, depth + 1)),
+  });
 
   const treeData = selections.map((s) => convertSelectionToTreeData(s));
 

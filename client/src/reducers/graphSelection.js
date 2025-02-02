@@ -9,19 +9,17 @@
 //   children: Selection[]; // 子选区
 // }
 
+// import { load, save } from "../util/storage";
+
+import { nanoid } from 'nanoid'
+
+// const SELECTIONS_LOCAL_STORAGE_KEY = "GRAPH_SELECTIONS"
+
 const DEFAULT_SELECTION_GROUP_NAME = "ungrouped"
 
 const createSelection = (() => {
-  const createName = (() => {
-    let index = -1;
-    return () => {
-      index += 1;
-      return `s${index}`;
-    };
-  })();
-
   return (s) => {
-    const id = createName();
+    const id = `s-${nanoid(6)}`;
     const name = s.name || id;
 
     return ({
@@ -78,11 +76,6 @@ const moveSelection = (selections, fromSelectionId, toGroupId) => {
   const fromPaths = getSelectionPath(selections, fromSelectionId)
   let toPaths = getSelectionPath(selections, toGroupId)
 
-
-  console.log(selections, fromSelectionId, toGroupId)
-  console.log('fromPaths', fromPaths);
-  console.log('toPaths', toPaths);
-
   // 起始点必须为二级
   // 目标必须大于等于一级
   if (fromPaths.length !== 2 || toPaths.length === 0) {
@@ -114,10 +107,13 @@ const removeSelection = (selections, selectionId) => {
   parentSelection.children = parentSelection.children.filter(s => s.id !== selectionId)
 }
 
+// const loadedSelections = load(SELECTIONS_LOCAL_STORAGE_KEY, [])
+
 const GraphSelection = (
   state = {
     tool: "lasso", // what selection tool mode (lasso, brush, ...)
     selection: { mode: "all" }, // current selection, which is tool specific
+    // selections: loadedSelections, // 记录所有选区
     selections: [], // 记录所有选区
     currentSelectionId: undefined, // 当前选中的选区ID
   },
@@ -190,6 +186,8 @@ const GraphSelection = (
         group.children.push(selection);
       }
 
+      // save(SELECTIONS_LOCAL_STORAGE_KEY, newState.selections)
+
       return newState;
     }
 
@@ -200,14 +198,16 @@ const GraphSelection = (
         name,
       })
 
-      console.log(s)
+      const newSelections = [
+        ...state.selections,
+        s,
+      ]
+
+      // save(SELECTIONS_LOCAL_STORAGE_KEY, newSelections)
 
       return ({
         ...state,
-        selections: [
-          ...state.selections,
-          s,
-        ]
+        selections: newSelections
       })
     }
 
@@ -217,6 +217,8 @@ const GraphSelection = (
       const selections = [...state.selections]
 
       moveSelection(selections, fromId, toId);
+
+      // save(SELECTIONS_LOCAL_STORAGE_KEY, selections)
 
       return ({
         ...state,
@@ -231,6 +233,8 @@ const GraphSelection = (
       const selections = [...state.selections]
 
       removeSelection(selections, selectionId);
+
+      // save(SELECTIONS_LOCAL_STORAGE_KEY, selections)
 
       return ({
         ...state,
