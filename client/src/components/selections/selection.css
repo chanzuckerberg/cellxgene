@@ -1,4 +1,4 @@
-.root {
+:local(.root) {
   display: flex;
   align-items: center;
   justify-content: space-between;
