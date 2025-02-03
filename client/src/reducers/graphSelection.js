@@ -9,17 +9,29 @@
 //   children: Selection[]; // 子选区
 // }
 
-// import { load, save } from "../util/storage";
+import { load, save } from "../util/storage";
 
-import { nanoid } from 'nanoid'
+// import { nanoid } from 'nanoid'
 
 // const SELECTIONS_LOCAL_STORAGE_KEY = "GRAPH_SELECTIONS"
 
 const DEFAULT_SELECTION_GROUP_NAME = "ungrouped"
 
+const SELECTION_LAST_ID = "selection-last-id"
+
 const createSelection = (() => {
+  const getId = (() => {
+    let id = load(SELECTION_LAST_ID, -1);
+
+    return () => {
+      id += 1;
+      save(SELECTION_LAST_ID, id)
+      return id;
+    }
+  })()
+
   return (s) => {
-    const id = `s-${nanoid(6)}`;
+    const id = `region${getId()}`;
     const name = s.name || id;
 
     return ({
