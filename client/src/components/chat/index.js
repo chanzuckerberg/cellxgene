@@ -1,9 +1,10 @@
+
 import React from "react";
 import { connect } from "react-redux";
 import { Button, H4, TextArea } from "@blueprintjs/core";
 
 import { Observable } from "rxjs";
-import * as globals from "../../globals";
+import cls from "./index.css";
 
 const generateId = (() => {
   let id = 0;
@@ -177,25 +178,8 @@ class Chat extends React.Component {
     const { messages } = session;
 
     return (
-      <div
-        style={{
-          flex: 2,
-          borderTop: `0.5px solid ${globals.lightGrey}`,
-          overflowY: "inherit",
-          padding: globals.leftSidebarSectionPadding,
-
-          display: "flex",
-          flexDirection: "column",
-          rowGap: "1em",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
+      <div className={cls.root}>
+        <div className={cls.title}>
           <H4>Chat</H4>
           <Button
             icon="archive"
@@ -203,22 +187,9 @@ class Chat extends React.Component {
             onClick={this.archive}
           />
         </div>
-        <div
-          ref={this.bindMessagesRef}
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            display: "flex",
-            flexDirection: "column",
-            rowGap: "1em",
-            paddingRight: 16,
-          }}
-        >
+        <div ref={this.bindMessagesRef} className={cls.messages}>
           {messages.map((msg) => (
-            <div
-              key={msg.id}
-              style={{ display: "flex", alignItems: "flex-start", gap: "1ch" }}
-            >
+            <div key={msg.id} className={cls.message}>
               <span style={{ width: "10ch" }}>{msg.role}</span>
               <span
                 style={{

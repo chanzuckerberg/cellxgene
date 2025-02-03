@@ -17,14 +17,6 @@ class RightSidebar extends React.PureComponent {
           width: "inherit",
         }}
       >
-        <div
-          style={{
-            flex: 1,
-            borderBottom: `0.5px solid ${globals.lightGrey}`,
-            overflowY: "inherit",
-            padding: globals.leftSidebarSectionPadding,
-          }}
-        />
         <Chat />
       </div>
     );
