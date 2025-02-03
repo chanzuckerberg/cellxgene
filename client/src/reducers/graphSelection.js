@@ -107,6 +107,15 @@ const removeSelection = (selections, selectionId) => {
   parentSelection.children = parentSelection.children.filter(s => s.id !== selectionId)
 }
 
+// 修改选区
+const updateSelection = (selections, selectionId, props = {}) => {
+  const paths = getSelectionPath(selections, selectionId);
+  const selection = getSelectionByPath(selections, paths);
+  Object.entries(props).forEach(([k, v]) => {
+    selection[k] = v;
+  })
+}
+
 // const loadedSelections = load(SELECTIONS_LOCAL_STORAGE_KEY, [])
 
 const GraphSelection = (
@@ -233,6 +242,21 @@ const GraphSelection = (
       const selections = [...state.selections]
 
       removeSelection(selections, selectionId);
+
+      // save(SELECTIONS_LOCAL_STORAGE_KEY, selections)
+
+      return ({
+        ...state,
+        selections,
+      })
+    }
+
+    case "graph update selection": {
+      const { selectionId, props } = action;
+
+      const selections = [...state.selections]
+
+      updateSelection(selections, selectionId, props);
 
       // save(SELECTIONS_LOCAL_STORAGE_KEY, selections)
 

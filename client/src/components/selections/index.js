@@ -80,17 +80,26 @@ const Selections = ({ selections, layoutChoice, dispatch }) => {
     });
   };
 
+  const onUpdate = (selectionId, props) => {
+    dispatch({
+      type: "graph update selection",
+      selectionId,
+      props,
+    });
+  };
+
   const convertSelectionToTreeData = (s, depth = 0) => ({
     key: s.id,
     title:
       depth === 0 ? (
-        <SelectionGroupTitle name={s.name} onRemove={() => onRemove(s.id)} />
+        <SelectionGroupTitle name={s.name} onRemove={() => onRemove(s.id)} onUpdate={(props) => onUpdate(s.id, props)} />
       ) : (
         <Selection
           emb={s.emb}
           name={s.name}
           indexes={s.indexes}
           onRemove={() => onRemove(s.id)}
+          onUpdate={(props) => onUpdate(s.id, props)}
         />
       ),
     // isLeaf: depth > 0,
@@ -98,6 +107,8 @@ const Selections = ({ selections, layoutChoice, dispatch }) => {
   });
 
   const treeData = selections.map((s) => convertSelectionToTreeData(s));
+
+  console.log('selections', selections)
 
   return (
     <div className={cls.root}>
