@@ -67,6 +67,7 @@
     "react": "^17.0.2",
     "react-async": "^10.0.1",
     "react-dom": "^17.0.2",
+    "react-draggable": "^4.4.6",
     "react-flip-toolkit": "^7.0.12",
     "react-helmet": "^6.1.0",
     "react-icons": "^4.2.0",
