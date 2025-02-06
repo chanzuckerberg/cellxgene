@@ -39,6 +39,7 @@
     "not Safari > 0"
   ],
   "dependencies": {
+    "@ant-design/icons": "^5.6.0",
     "@babel/eslint-parser": "^7.15.0",
     "@blueprintjs/core": "^3.44.0",
     "@blueprintjs/icons": "^3.19.0",
