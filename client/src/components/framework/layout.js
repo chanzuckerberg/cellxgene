@@ -1,6 +1,15 @@
-import React from "react";
-import * as globals from "../../globals";
 
+import React from "react";
+import { connect } from "react-redux";
+
+import { FilterOutlined, HistoryOutlined } from "@ant-design/icons";
+import { Button } from "antd";
+import * as globals from "../../globals";
+import cls from "./layout.css";
+
+@connect((state) => ({
+  pin: state.pin,
+}))
 class Layout extends React.Component {
   /*
     Layout - this react component contains all the layout style and logic for the application once it has loaded.
@@ -12,7 +21,6 @@ class Layout extends React.Component {
     app is dynamically-sized. It must have access to the containing viewport in order to know how large the graph
     should be.
   */
-
   componentDidMount() {
     /*
       This is a bit of a hack. In order for the graph to size correctly, it needs to know the size of the parent
@@ -22,49 +30,30 @@ class Layout extends React.Component {
   }
 
   render() {
-    const { children } = this.props;
+    const { children, pin, dispatch } = this.props;
     const [leftSidebar, renderGraph, rightSidebar] = children;
+
     return (
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: `
-          [left-sidebar-start] ${globals.leftSidebarWidth + 1}px
-          [left-sidebar-end graph-start] auto
-          [graph-end right-sidebar-start] ${
-            globals.rightSidebarWidth + 1
-          }px [right-sidebar-end]
-        `,
-          gridTemplateRows: "[top] auto [bottom]",
-          gridTemplateAreas: "left-sidebar | graph | right-sidebar",
-          columnGap: "0px",
-          justifyItems: "stretch",
-          alignItems: "stretch",
-          height: "inherit",
-          width: "inherit",
-          position: "relative",
-          top: 0,
-          left: 0,
-          minWidth: "1240px",
-        }}
-      >
-        <div
-          style={{
-            gridArea: "top / left-sidebar-start / bottom / left-sidebar-end",
-            position: "relative",
-            height: "inherit",
-            overflowY: "auto",
-          }}
-        >
+      <div className={cls.root}>
+        <div className={`${cls.left} ${pin.left ? cls.pinned : ""}`}>
           {leftSidebar}
+          {!pin.left && (
+            <Button
+              className={cls.trigger}
+              type="dashed"
+              icon={<FilterOutlined />}
+              onClick={() => {
+                dispatch({
+                  type: "pin: update",
+                  loc: "left",
+                  pinned: true,
+                });
+              }}
+            />
+          )}
         </div>
         <div
-          style={{
-            zIndex: 0,
-            gridArea: "top / graph-start / bottom / graph-end",
-            position: "relative",
-            height: "inherit",
-          }}
+          className={cls.graph}
           ref={(ref) => {
             this.viewportRef = ref;
           }}
@@ -72,14 +61,24 @@ class Layout extends React.Component {
           {this.viewportRef ? renderGraph(this.viewportRef) : null}
         </div>
         <div
-          style={{
-            gridArea: "top / right-sidebar-start / bottom / right-sidebar-end",
-            position: "relative",
-            height: "100%",
-            overflow: "hidden",
-          }}
+          className={`${cls.right} ${pin.right ? cls.pinned : ""}`}
+          style={{ borderLeft: `1px solid ${globals.lightGrey}` }}
         >
           {rightSidebar}
+          {!pin.right && (
+            <Button
+              className={cls.trigger}
+              type="dashed"
+              icon={<HistoryOutlined />}
+              onClick={() => {
+                dispatch({
+                  type: "pin: update",
+                  loc: "right",
+                  pinned: true,
+                });
+              }}
+            />
+          )}
         </div>
       </div>
     );

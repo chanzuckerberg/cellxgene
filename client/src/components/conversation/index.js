@@ -1,8 +1,8 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button } from "@blueprintjs/core";
 import { Input } from "antd";
+import { PushpinOutlined } from "@ant-design/icons";
 import cls from "./index.css";
 
 import { messageOutputSource } from "./util";
@@ -12,8 +12,9 @@ const { TextArea } = Input;
 
 const Conversation = () => {
   const dispatch = useDispatch();
-  const { conversation } = useSelector((state) => ({
+  const { conversation, pinned } = useSelector((state) => ({
     conversation: state.conversation.conversation,
+    pinned: state.pin.right,
   }));
 
   const ref = useRef(null);
@@ -69,6 +70,14 @@ const Conversation = () => {
     }
   };
 
+  const unpin = () => {
+    dispatch({
+      type: "pin: update",
+      loc: "right",
+      pinned: false,
+    });
+  };
+
   useEffect(() => {
     const ele = ref.current;
     if (!ele) {
@@ -94,6 +103,7 @@ const Conversation = () => {
   return (
     <div className={cls.root}>
       <div className={cls.header}>
+        {pinned && <Button icon={<PushpinOutlined />} onClick={unpin} />}
         <span>Conversation</span>
         <Button
           icon="archive"

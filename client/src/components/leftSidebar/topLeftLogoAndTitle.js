@@ -1,8 +1,12 @@
 import React from "react";
 import { connect } from "react-redux";
 
+import { Button } from "@blueprintjs/core";
+import { PushpinOutlined } from "@ant-design/icons";
 import * as globals from "../../globals";
 import Logo from "../framework/logo";
+
+
 // import Truncate from "../util/truncate";
 // import InformationMenu from "./infoMenu";
 
@@ -20,25 +24,26 @@ import Logo from "../framework/logo";
     tosURL: state.config?.parameters?.about_legal_tos,
     privacyURL: state.config?.parameters?.about_legal_privacy,
     title: correctVersion ? corporaProps?.title : undefined,
+    pinned: state.pin.left,
   };
 })
 class LeftSideBar extends React.Component {
   render() {
-    // const {
-    //   datasetTitle,
-    //   libraryVersions,
-    //   aboutLink,
-    //   privacyURL,
-    //   tosURL,
-    //   dispatch,
-    //   title,
-    // } = this.props;
+    const {
+      // datasetTitle,
+      // libraryVersions,
+      // aboutLink,
+      // privacyURL,
+      // tosURL,
+      dispatch,
+      // title,
+      pinned,
+    } = this.props;
 
     return (
       <div
         style={{
-          paddingLeft: 8,
-          paddingTop: 8,
+          padding: 8,
           width: globals.leftSidebarWidth,
           zIndex: 1,
           borderBottom: `1px solid ${globals.lighterGrey}`,
@@ -87,6 +92,18 @@ class LeftSideBar extends React.Component {
             }}
           />
         </div> */}
+        {pinned && (
+          <Button
+            icon={<PushpinOutlined />}
+            onClick={() => {
+              dispatch({
+                type: "pin: update",
+                loc: "left",
+                pinned: false,
+              });
+            }}
+          />
+        )}
       </div>
     );
   }

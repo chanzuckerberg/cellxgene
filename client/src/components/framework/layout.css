@@ -1,0 +1,86 @@
+:root {
+  --left-sidebar-width: 365px;
+  --right-sidebar-width: 365px;
+  --sidebar-trigger-width: 0px;
+}
+
+:local(.root) {
+  position: relative;
+
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+
+  display: flex;
+  justify-content: center;
+}
+
+:local(.graph) {
+  position: relative;
+  z-index: 0;
+
+  flex: 1;
+  height: 100%;
+}
+
+:local(.left) {
+  position: absolute;
+  top: 0;
+  left: calc(-1 * var(--left-sidebar-width) + var(--sidebar-trigger-width));
+  transition: left ease-out 0.2s;
+
+  width: var(--left-sidebar-width);
+  height: 100%;
+
+  background-color: white;
+
+  overflow-y: "auto";
+
+  z-index: 1;
+}
+
+:local(.left:hover) {
+  left: 0;
+}
+
+:local(.left .trigger) {
+  position: absolute;
+  top: 50%;
+  right: -31px;
+
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+:local(.right) {
+  position: absolute;
+  top: 0;
+  right: calc(-1 * var(--right-sidebar-width) + var(--sidebar-trigger-width));
+  transition: right ease-out 0.2s;
+
+  width: var(--right-sidebar-width);
+  height: 100%;
+
+  background-color: white;
+
+  overflow-y: "auto";
+
+  z-index: 1;
+}
+
+:local(.right:hover) {
+  right: 0;
+}
+
+:local(.right .trigger) {
+  position: absolute;
+  top: 50%;
+  left: -32px;
+
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+:local(.pinned) {
+  position: static;
+}
