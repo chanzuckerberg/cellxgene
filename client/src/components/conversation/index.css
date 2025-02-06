@@ -1,0 +1,26 @@
+:local(.root) {
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  row-gap: 1em;
+
+  padding: 10px;
+}
+
+:local(.header) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+:local(.records) {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  row-gap: 1em;
+
+  overflow-y: auto;
+}

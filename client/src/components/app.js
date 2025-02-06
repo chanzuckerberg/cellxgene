@@ -5,12 +5,12 @@ import { connect } from "react-redux";
 import Container from "./framework/container";
 import Layout from "./framework/layout";
 import LeftSideBar from "./leftSidebar";
-import RightSideBar from "./rightSidebar";
 import Legend from "./continuousLegend";
 import Graph from "./graph/graph";
 import MenuBar from "./menubar";
 import Autosave from "./autosave";
 import Embedding from "./embedding";
+import Conversation from "./conversation";
 
 import actions from "../actions";
 
@@ -78,7 +78,7 @@ class App extends React.Component {
                 <Graph key={graphRenderCounter} viewportRef={viewportRef} />
               </>
             )}
-            <RightSideBar />
+            <Conversation />
           </Layout>
         )}
       </Container>

@@ -75,8 +75,8 @@ class Layout extends React.Component {
           style={{
             gridArea: "top / right-sidebar-start / bottom / right-sidebar-end",
             position: "relative",
-            height: "inherit",
-            overflowY: "auto",
+            height: "100%",
+            overflow: "hidden",
           }}
         >
           {rightSidebar}

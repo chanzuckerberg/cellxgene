@@ -1,0 +1,23 @@
+:local(.message) {
+  display: flex;
+  flex-direction: column;
+  row-gap: 1em;
+}
+
+:local(.message .header) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1ch;
+}
+
+:local(.message .header .role) {
+  font-weight: bold;
+}
+
+:local(.message .header .ctime) {
+  opacity: 70%;
+}
+
+:local(.message .content) {
+}
