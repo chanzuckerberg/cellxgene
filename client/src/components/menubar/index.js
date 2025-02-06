@@ -5,11 +5,11 @@ import { ButtonGroup, AnchorButton, Tooltip } from "@blueprintjs/core";
 import * as globals from "../../globals";
 import styles from "./menubar.css";
 import actions from "../../actions";
-import Clip from "./clip";
+// import Clip from "./clip";
 
-import Subset from "./subset";
-import UndoRedoReset from "./undoRedo";
-import DiffexpButtons from "./diffexpButtons";
+// import Subset from "./subset";
+// import UndoRedoReset from "./undoRedo";
+// import DiffexpButtons from "./diffexpButtons";
 import { getEmbSubsetView } from "../../util/stateManager/viewStackHelpers";
 
 @connect((state) => {
@@ -194,22 +194,22 @@ class MenuBar extends React.PureComponent {
   render() {
     const {
       dispatch,
-      disableDiffexp,
-      undoDisabled,
-      redoDisabled,
+      // disableDiffexp,
+      // undoDisabled,
+      // redoDisabled,
       selectionTool,
-      clipPercentileMin,
-      clipPercentileMax,
+      // clipPercentileMin,
+      // clipPercentileMax,
       graphInteractionMode,
-      showCentroidLabels,
-      categoricalSelection,
-      colorAccessor,
-      subsetPossible,
-      subsetResetPossible,
+      // showCentroidLabels,
+      // categoricalSelection,
+      // colorAccessor,
+      // subsetPossible,
+      // subsetResetPossible,
     } = this.props;
-    const { pendingClipPercentiles } = this.state;
+    // const { pendingClipPercentiles } = this.state;
 
-    const isColoredByCategorical = !!categoricalSelection?.[colorAccessor];
+    // const isColoredByCategorical = !!categoricalSelection?.[colorAccessor];
 
     // constants used to create selection tool button
     const [selectionTooltip, selectionButtonIcon] =
@@ -231,12 +231,12 @@ class MenuBar extends React.PureComponent {
           zIndex: 3,
         }}
       >
-        <UndoRedoReset
+        {/* <UndoRedoReset
           dispatch={dispatch}
           undoDisabled={undoDisabled}
           redoDisabled={redoDisabled}
-        />
-        <Clip
+        /> */}
+        {/* <Clip
           pendingClipPercentiles={pendingClipPercentiles}
           clipPercentileMin={clipPercentileMin}
           clipPercentileMax={clipPercentileMax}
@@ -251,8 +251,8 @@ class MenuBar extends React.PureComponent {
           handleClipPercentileMinValueChange={
             this.handleClipPercentileMinValueChange
           }
-        />
-        <Tooltip
+        /> */}
+        {/* <Tooltip
           content="When a category is colored by, show labels on the graph"
           position="bottom"
           disabled={graphInteractionMode === "zoom"}
@@ -267,7 +267,7 @@ class MenuBar extends React.PureComponent {
             intent={showCentroidLabels ? "primary" : "none"}
             disabled={!isColoredByCategorical}
           />
-        </Tooltip>
+        </Tooltip> */}
         <ButtonGroup className={styles.menubarButton}>
           <Tooltip
             content={selectionTooltip}
@@ -306,13 +306,13 @@ class MenuBar extends React.PureComponent {
             />
           </Tooltip>
         </ButtonGroup>
-        <Subset
+        {/* <Subset
           subsetPossible={subsetPossible}
           subsetResetPossible={subsetResetPossible}
           handleSubset={this.handleSubset}
           handleSubsetReset={this.handleSubsetReset}
         />
-        {disableDiffexp ? null : <DiffexpButtons />}
+        {disableDiffexp ? null : <DiffexpButtons />} */}
       </div>
     );
   }

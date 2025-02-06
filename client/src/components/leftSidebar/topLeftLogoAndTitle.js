@@ -3,10 +3,10 @@ import { connect } from "react-redux";
 
 import * as globals from "../../globals";
 import Logo from "../framework/logo";
-import Truncate from "../util/truncate";
-import InformationMenu from "./infoMenu";
+// import Truncate from "../util/truncate";
+// import InformationMenu from "./infoMenu";
 
-const DATASET_TITLE_FONT_SIZE = 14;
+// const DATASET_TITLE_FONT_SIZE = 14;
 
 @connect((state) => {
   const { corpora_props: corporaProps } = state.config;
@@ -24,15 +24,15 @@ const DATASET_TITLE_FONT_SIZE = 14;
 })
 class LeftSideBar extends React.Component {
   render() {
-    const {
-      datasetTitle,
-      libraryVersions,
-      aboutLink,
-      privacyURL,
-      tosURL,
-      dispatch,
-      title,
-    } = this.props;
+    // const {
+    //   datasetTitle,
+    //   libraryVersions,
+    //   aboutLink,
+    //   privacyURL,
+    //   tosURL,
+    //   dispatch,
+    //   title,
+    // } = this.props;
 
     return (
       <div
@@ -63,7 +63,7 @@ class LeftSideBar extends React.Component {
             Dandelion
           </span>
         </div>
-        <div style={{ marginRight: 5, height: "100%" }}>
+        {/* <div style={{ marginRight: 5, height: "100%" }}>
           <span
             minimal
             style={{
@@ -86,7 +86,7 @@ class LeftSideBar extends React.Component {
               dispatch,
             }}
           />
-        </div>
+        </div> */}
       </div>
     );
   }

@@ -8,7 +8,7 @@ import LeftSideBar from "./leftSidebar";
 import Legend from "./continuousLegend";
 import Graph from "./graph/graph";
 import MenuBar from "./menubar";
-import Autosave from "./autosave";
+// import Autosave from "./autosave";
 import Embedding from "./embedding";
 import Conversation from "./conversation";
 
@@ -73,7 +73,7 @@ class App extends React.Component {
               <>
                 <MenuBar />
                 <Embedding />
-                <Autosave />
+                {/* <Autosave /> */}
                 <Legend viewportRef={viewportRef} />
                 <Graph key={graphRenderCounter} viewportRef={viewportRef} />
               </>
