@@ -40,8 +40,10 @@ const Conversation = () => {
     }
     dispatch({
       type: "conversation: add message",
-      role: "user",
-      content: input,
+      data: {
+        role: "user",
+        content: input,
+      },
     });
     setInput("");
 
@@ -54,8 +56,10 @@ const Conversation = () => {
       complete: () => {
         dispatch({
           type: "conversation: add message",
-          role: "assistant",
-          content: chunks,
+          data: {
+            role: "assistant",
+            content: chunks,
+          },
         });
         setOutput("");
       },

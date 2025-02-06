@@ -82,14 +82,25 @@ export const getConversationById = (root, conversationId) => {
   );
 };
 
+const initialConversation = (() => {
+  const c = createConversation();
+  // c.records.push(createRecord("message", { role: 'user', content: 'hi' }))
+  // c.records.push(createRecord("message", { role: 'assistant', content: 'hello, what can i do?' }))
+  // c.records.push(createRecord("log", { type: 'Selection Create', content: '123 cells' }))
+  // c.records.push(createRecord("conversation"))
+  // c.records.push(createRecord("log", { type: 'Selection Remove', content: '123 cells' }))
+  return c;
+})();
+
 const initialState = {
-  conversation: createConversation(),
+  conversation: initialConversation,
 };
 
 const ConversationReducer = (state = initialState, action) => {
   switch (action.type) {
     case "conversation: add log": {
-      const { type, content } = action;
+      const { data } = action;
+      const { type, content } = data;
       const record = createRecord("log", { type, content });
       return {
         ...state,
@@ -112,7 +123,8 @@ const ConversationReducer = (state = initialState, action) => {
     }
 
     case "conversation: add message": {
-      const { role, content } = action;
+      const { data } = action;
+      const { role, content } = data;
       const record = createRecord("message", { role, content });
       return {
         ...state,
