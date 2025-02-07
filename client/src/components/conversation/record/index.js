@@ -16,7 +16,9 @@ export const ConversationRecord = ({ record }) => {
   }
 
   if (type === "conversation") {
-    return <ConversationConversation conversation={data} />;
+    return (
+      <ConversationConversation conversation={data} recordId={record.id} />
+    );
   }
 
   console.warn(

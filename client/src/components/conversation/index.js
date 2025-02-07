@@ -7,6 +7,7 @@ import cls from "./index.css";
 
 import { messageOutputSource } from "./util";
 import { ConversationRecord } from "./record";
+import ConversationModal from "./modal";
 
 const { TextArea } = Input;
 
@@ -39,7 +40,7 @@ const Conversation = () => {
       return;
     }
     dispatch({
-      type: "conversation: add message",
+      type: "conversation: add message in root",
       data: {
         role: "user",
         content: input,
@@ -55,7 +56,7 @@ const Conversation = () => {
       },
       complete: () => {
         dispatch({
-          type: "conversation: add message",
+          type: "conversation: add message in root",
           data: {
             role: "assistant",
             content: chunks,
@@ -90,8 +91,6 @@ const Conversation = () => {
     ele.scrollTop = ele.scrollHeight;
   }, [conversation.records.length, output]);
 
-  console.log(conversation);
-
   const { records } = conversation;
 
   const tmpRecord = {
@@ -105,34 +104,38 @@ const Conversation = () => {
   };
 
   return (
-    <div className={cls.root}>
-      <div className={cls.header}>
-        {pinned && <Button icon={<PushpinOutlined />} onClick={unpin} />}
-        <span>Conversation</span>
-        <Button
-          icon="archive"
-          disabled={records.length === 0 || output.length > 0}
-          onClick={archive}
+    <>
+      <div className={cls.root}>
+        <div className={cls.header}>
+          {pinned && <Button icon={<PushpinOutlined />} onClick={unpin} />}
+          <span>Conversation</span>
+          <Button
+            icon="archive"
+            disabled={records.length === 0 || output.length > 0}
+            onClick={archive}
+          />
+        </div>
+
+        <div ref={ref} className={cls.records}>
+          {records.map((r) => (
+            <ConversationRecord key={r.id} record={r} />
+          ))}
+          {tmpRecord.data.content && (
+            <ConversationRecord key={tmpRecord.id} record={tmpRecord} />
+          )}
+        </div>
+
+        <TextArea
+          value={input}
+          onChange={onChange}
+          onKeyDown={onKeyDown}
+          placeholder="Press Enter to send, Shift+Enter for newline"
+          autoSize={{ minRows: 3, maxRows: 6 }}
         />
       </div>
 
-      <div ref={ref} className={cls.records}>
-        {records.map((r) => (
-          <ConversationRecord key={r.id} record={r} />
-        ))}
-        {tmpRecord.data.content && (
-          <ConversationRecord key={tmpRecord.id} record={tmpRecord} />
-        )}
-      </div>
-
-      <TextArea
-        value={input}
-        onChange={onChange}
-        onKeyDown={onKeyDown}
-        placeholder="Press Enter to send, Shift+Enter for newline"
-        autoSize={{ minRows: 3, maxRows: 6 }}
-      />
-    </div>
+      <ConversationModal />
+    </>
   );
 };
 

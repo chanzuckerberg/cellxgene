@@ -18,6 +18,7 @@ import { nanoid } from "nanoid";
 
 // interface Conversation {
 //   id: string;
+//   selectionIds: number[];
 //   records: Record[];
 //   ctime: number;
 // }
@@ -44,6 +45,7 @@ export const createLog = ({ type, content }) => ({
 
 export const createConversation = () => ({
   id: `conversation-${nanoid(6)}`,
+  selectionIds: [],
   records: [],
   ctime: Date.now(),
 });
@@ -68,18 +70,17 @@ export const createRecord = (type, data) => {
 };
 
 /**
- * 从root中找到指定conversation
+ * 从root records中找到指定record
  * @param {*} root 根会话
- * @param {*} conversationId 目标会话ID
- * @returns Conversation | undefined
+ * @param {*} finder 检索函数, `(record, index) => boolean`
+ * @returns [record, recordIndex]
  */
-export const getConversationById = (root, conversationId) => {
-  if (root.id === conversationId) {
-    return root;
+export const findConversationRecord = (root, finder) => {
+  const recordIndex = root.records.findIndex(finder);
+  if (recordIndex === -1) {
+    return [null, recordIndex];
   }
-  return root.records.find(
-    (r) => r.type === "conversation" && r.data.id === conversationId
-  );
+  return [root.records[recordIndex], recordIndex];
 };
 
 const initialConversation = (() => {
@@ -94,6 +95,7 @@ const initialConversation = (() => {
 
 const initialState = {
   conversation: initialConversation,
+  currentConversationRecordId: null,
 };
 
 const ConversationReducer = (state = initialState, action) => {
@@ -115,6 +117,7 @@ const ConversationReducer = (state = initialState, action) => {
       const record = createRecord("conversation");
       return {
         ...state,
+        currentConversationRecordId: record.id,
         conversation: {
           ...state.conversation,
           records: [...state.conversation.records, record],
@@ -122,16 +125,62 @@ const ConversationReducer = (state = initialState, action) => {
       };
     }
 
-    case "conversation: add message": {
+    case "conversation: add message in root": {
+      // 直接在根会话添加消息
       const { data } = action;
       const { role, content } = data;
+
       const record = createRecord("message", { role, content });
+
       return {
         ...state,
         conversation: {
           ...state.conversation,
           records: [...state.conversation.records, record],
         },
+      };
+    }
+
+    case "conversation: add message in conversation record": {
+      // 在会话记录中添加消息
+      const { data } = action;
+      const { recordId, role, content } = data;
+
+      const record = createRecord("message", { role, content });
+
+      // 找到目标会话记录
+      const [conversationRecord, recordIndex] = findConversationRecord(
+        state.conversation,
+        (r) => r.type === "conversation" && r.id === recordId
+      );
+      if (recordIndex < 0) {
+        return state;
+      }
+      return {
+        ...state,
+        conversation: {
+          ...state.conversation,
+          records: [
+            ...state.conversation.records.slice(0, recordIndex),
+            {
+              ...conversationRecord,
+              data: {
+                ...conversationRecord.data,
+                records: [...conversationRecord.data.records, record],
+              },
+            },
+            ...state.conversation.records.slice(recordIndex + 1),
+          ],
+        },
+      };
+    }
+
+    case "conversation: update current conversation record": {
+      const { recordId } = action;
+
+      return {
+        ...state,
+        currentConversationRecordId: recordId,
       };
     }
 

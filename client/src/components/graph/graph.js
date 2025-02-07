@@ -416,6 +416,9 @@ class Graph extends React.Component {
     } else {
       const selection = polygon.map((xy) => this.mapScreenToPoint(xy));
       dispatch(actions.graphLassoEndAction(layoutChoice.current, selection));
+      dispatch({
+        type: "conversation: add conversation",
+      });
     }
   }
 

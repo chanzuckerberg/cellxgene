@@ -1,11 +1,21 @@
 import React from "react";
 import { Button } from "antd";
+import { useDispatch } from "react-redux";
 import cls from "./index.css";
 
 import { RecordTag } from "./tag";
 
-export const ConversationConversation = ({ conversation }) => {
+export const ConversationConversation = ({ recordId, conversation }) => {
   const { ctime } = conversation;
+
+  const dispatch = useDispatch();
+
+  const openConversation = () => {
+    dispatch({
+      type: "conversation: update current conversation record",
+      recordId,
+    });
+  };
 
   return (
     <div className={cls.message}>
@@ -13,7 +23,7 @@ export const ConversationConversation = ({ conversation }) => {
         <RecordTag tag="Conversation" />
         <span className={cls.ctime}>{new Date(ctime).toLocaleString()}</span>
       </div>
-      <Button onClick={() => console.log(conversation)}>Reopen</Button>
+      <Button onClick={openConversation}>Reopen</Button>
     </div>
   );
 };
