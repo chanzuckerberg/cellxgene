@@ -136,7 +136,6 @@ const GraphSelection = (
     selection: { mode: "all" }, // current selection, which is tool specific
     // selections: loadedSelections, // 记录所有选区
     selections: [], // 记录所有选区
-    currentSelectionId: undefined, // 当前选中的选区ID
   },
   action
 ) => {
