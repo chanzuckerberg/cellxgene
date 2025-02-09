@@ -6,7 +6,6 @@ import { PushpinOutlined } from "@ant-design/icons";
 import * as globals from "../../globals";
 import Logo from "../framework/logo";
 
-
 // import Truncate from "../util/truncate";
 // import InformationMenu from "./infoMenu";
 
@@ -54,7 +53,7 @@ class LeftSideBar extends React.Component {
       >
         <div>
           <Logo size={28} />
-          <span
+          {/* <span
             style={{
               fontSize: 24,
               position: "relative",
@@ -66,7 +65,7 @@ class LeftSideBar extends React.Component {
             }}
           >
             Dandelion
-          </span>
+          </span> */}
         </div>
         {/* <div style={{ marginRight: 5, height: "100%" }}>
           <span
