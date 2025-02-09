@@ -20,6 +20,8 @@ import autosave from "./autosave";
 import centroidLabels from "./centroidLabels";
 import pointDialation from "./pointDilation";
 import { gcMiddleware as annoMatrixGC } from "../annoMatrix";
+import conversation from "./conversation";
+import pin from "./pin";
 
 import undoableConfig from "./undoableConfig";
 
@@ -41,6 +43,8 @@ const Reducer = undoable(
     ["centroidLabels", centroidLabels],
     ["pointDilation", pointDialation],
     ["autosave", autosave],
+    ["conversation", conversation],
+    ["pin", pin],
   ]),
   [
     "annoMatrix",

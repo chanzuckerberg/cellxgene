@@ -1,12 +1,15 @@
 import React from "react";
 import { connect } from "react-redux";
 
+import { Button } from "@blueprintjs/core";
+import { PushpinOutlined } from "@ant-design/icons";
 import * as globals from "../../globals";
 import Logo from "../framework/logo";
-import Truncate from "../util/truncate";
-import InformationMenu from "./infoMenu";
 
-const DATASET_TITLE_FONT_SIZE = 14;
+// import Truncate from "../util/truncate";
+// import InformationMenu from "./infoMenu";
+
+// const DATASET_TITLE_FONT_SIZE = 14;
 
 @connect((state) => {
   const { corpora_props: corporaProps } = state.config;
@@ -20,25 +23,26 @@ const DATASET_TITLE_FONT_SIZE = 14;
     tosURL: state.config?.parameters?.about_legal_tos,
     privacyURL: state.config?.parameters?.about_legal_privacy,
     title: correctVersion ? corporaProps?.title : undefined,
+    pinned: state.pin.left,
   };
 })
 class LeftSideBar extends React.Component {
   render() {
     const {
-      datasetTitle,
-      libraryVersions,
-      aboutLink,
-      privacyURL,
-      tosURL,
+      // datasetTitle,
+      // libraryVersions,
+      // aboutLink,
+      // privacyURL,
+      // tosURL,
       dispatch,
-      title,
+      // title,
+      pinned,
     } = this.props;
 
     return (
       <div
         style={{
-          paddingLeft: 8,
-          paddingTop: 8,
+          padding: 8,
           width: globals.leftSidebarWidth,
           zIndex: 1,
           borderBottom: `1px solid ${globals.lighterGrey}`,
@@ -49,7 +53,7 @@ class LeftSideBar extends React.Component {
       >
         <div>
           <Logo size={28} />
-          <span
+          {/* <span
             style={{
               fontSize: 24,
               position: "relative",
@@ -61,9 +65,9 @@ class LeftSideBar extends React.Component {
             }}
           >
             Dandelion
-          </span>
+          </span> */}
         </div>
-        <div style={{ marginRight: 5, height: "100%" }}>
+        {/* <div style={{ marginRight: 5, height: "100%" }}>
           <span
             minimal
             style={{
@@ -86,7 +90,19 @@ class LeftSideBar extends React.Component {
               dispatch,
             }}
           />
-        </div>
+        </div> */}
+        {pinned && (
+          <Button
+            icon={<PushpinOutlined />}
+            onClick={() => {
+              dispatch({
+                type: "pin: update",
+                loc: "left",
+                pinned: false,
+              });
+            }}
+          />
+        )}
       </div>
     );
   }

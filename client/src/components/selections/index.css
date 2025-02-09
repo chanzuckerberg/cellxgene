@@ -1,0 +1,27 @@
+:local(.root) {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  row-gap: 1em;
+  padding: 10px;
+}
+
+:local(.header) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1ch;
+}
+
+:local(.list) {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  row-gap: 1em;
+  overflow-y: auto;
+  max-height: 200px;
+}
+
+:local(.empty) {
+  opacity: 50%;
+}

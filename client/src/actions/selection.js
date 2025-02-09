@@ -1,5 +1,5 @@
 /*
-Action creators for selection 
+Action creators for selection
 */
 export const selectContinuousMetadataAction =
   (type, query, range, oldProps = {}) =>
@@ -158,23 +158,30 @@ export const graphLassoDeselectAction = (embName) =>
   _graphAllAction("graph lasso cancel", embName);
 
 export const graphLassoEndAction =
-  (embName, polygon) => async (dispatch, getState) => {
+  (embName, polygon, recordable = true) =>
+  async (dispatch, getState) => {
     const { obsCrossfilter: prevObsCrossfilter } = getState();
 
     const selection = {
       mode: "within-polygon",
       polygon,
     };
+
     const obsCrossfilter = await prevObsCrossfilter.select(
       "emb",
       embName,
       selection
     );
 
+    const selected = obsCrossfilter.allSelectedLabels();
+
     dispatch({
       type: "graph lasso end",
       obsCrossfilter,
+      emb: embName,
       polygon,
+      indexes: selected,
+      recordable,
     });
   };
 
@@ -190,3 +197,30 @@ export const setCellSetFromSelection = (cellSetId) => (dispatch, getState) => {
     data: selected.length > 0 ? selected : null,
   });
 };
+
+export const redisplaySelection =
+  (embName, polygon, indexes) => async (dispatch, getState) => {
+    const { obsCrossfilter: prevObsCrossfilter } = getState();
+
+    let obsCrossfilter = await prevObsCrossfilter.select("emb", embName, {
+      mode: "all",
+    });
+
+    dispatch({ type: "graph lasso start" });
+
+    const selection = {
+      mode: "within-polygon",
+      polygon,
+    };
+
+    obsCrossfilter = await obsCrossfilter.select("emb", embName, selection);
+
+    dispatch({
+      type: "graph lasso end",
+      obsCrossfilter,
+      emb: embName,
+      polygon,
+      indexes,
+      recordable: false,
+    });
+  };

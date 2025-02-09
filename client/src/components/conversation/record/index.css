@@ -1,0 +1,29 @@
+:local(.ctime) {
+  opacity: 70%;
+}
+
+:local(.tag) {
+  min-width: 120px;
+  text-align: center;
+}
+
+/* Message */
+:local(.message) {
+  display: flex;
+  flex-direction: column;
+  row-gap: 0.5em;
+}
+
+:local(.message .header) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1ch;
+}
+
+/* Log */
+:local(.log) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}

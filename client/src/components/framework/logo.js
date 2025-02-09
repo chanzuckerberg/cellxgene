@@ -6,10 +6,10 @@ const Logo = (props) => {
   return (
     <img
       src={icon}
-      height={size}
+      // height={size}
       width={size}
       alt="CELLxGENE Annotate Logo"
-     />
+    />
   );
 };
 
