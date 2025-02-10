@@ -1,5 +1,6 @@
 :local(.mask) {
   pointer-events: none;
+  overflow: hidden !important;
 }
 
 :local(.root) {

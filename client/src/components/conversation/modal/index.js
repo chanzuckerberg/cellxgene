@@ -1,17 +1,17 @@
+
 import React, { useRef, useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { Input, Modal } from "antd";
-// import Draggable from "react-draggable";
 import cls from "./index.css";
 
 import { findConversationRecord } from "../../../reducers/conversation";
 import { ConversationRecord } from "../record";
 import { messageOutputSource } from "../util";
 
-const { TextArea } = Input;
+import { Draggable } from "../../draggable";
 
-// const defaultBounds = { left: 0, top: 0, bottom: 0, right: 0 };
+const { TextArea } = Input;
 
 const ConversationModal = () => {
   const dispatch = useDispatch();
@@ -38,9 +38,6 @@ const ConversationModal = () => {
     return record;
   })();
 
-  // const draggleRef = useRef(null);
-  // const [bounds, setBounds] = useState(defaultBounds);
-
   const recordsRef = useRef(null);
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
@@ -63,20 +60,6 @@ const ConversationModal = () => {
       recordId: null,
     });
   };
-
-  // const onStart = (_event, uiData) => {
-  //   const { clientWidth, clientHeight } = window.document.documentElement;
-  //   const targetRect = draggleRef.current?.getBoundingClientRect();
-  //   if (!targetRect) {
-  //     return;
-  //   }
-  //   setBounds({
-  //     left: -targetRect.left + uiData.x,
-  //     right: clientWidth - (targetRect.right - uiData.x),
-  //     top: -targetRect.top + uiData.y,
-  //     bottom: clientHeight - (targetRect.bottom - uiData.y),
-  //   });
-  // };
 
   const onChange = (e) => setInput(e.target.value);
 
@@ -126,17 +109,6 @@ const ConversationModal = () => {
     return null;
   }
 
-  // const modalRender = (modal) => (
-  //   <Draggable
-  //     bounds={bounds}
-  //     nodeRef={draggleRef}
-  //     onStart={onStart}
-  //     defaultClassName={cls.mask}
-  //   >
-  //     <div ref={draggleRef}>{modal}</div>
-  //   </Draggable>
-  // );
-
   const { records } = currentConversationRecord.data;
 
   const tmpRecord = {
@@ -156,7 +128,7 @@ const ConversationModal = () => {
       mask={false}
       maskClosable={false}
       classNames={{ mask: cls.mask, wrapper: cls.mask, body: cls.root }}
-      // modalRender={modalRender}
+      modalRender={(modal) => <Draggable>{modal}</Draggable>}
       footer={null}
       title="Chat"
     >
