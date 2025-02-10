@@ -158,7 +158,7 @@ const ConversationModal = () => {
       classNames={{ mask: cls.mask, wrapper: cls.mask, body: cls.root }}
       // modalRender={modalRender}
       footer={null}
-      title={`Conversation(${currentConversationRecordId})`}
+      title="Chat"
     >
       <div ref={recordsRef} className={cls.records}>
         {records.map((r) => (
