@@ -40,7 +40,7 @@ export const Draggable = ({ children }) => {
   return (
     <div
       ref={dragRef}
-      aria-hidden
+      role="presentation"
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
         cursor: isDragging ? "grabbing" : "grab",
