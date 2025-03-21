@@ -47,7 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python 3.12 (pyenv) # pyenv needed for mlflow in cli annotate tests
-        uses: gabrielfalcao/pyenv-action@v9
+        uses: gabrielfalcao/pyenv-action@a1fc55906be92612782934c70e3985b940bd0165
         with:
           default: 3.12
           command: pip install -U pip # upgrade pip after installing python
