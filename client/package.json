@@ -135,7 +135,7 @@
     "lodash.zip": "^4.2.0",
     "mini-css-extract-plugin": "^1.5.0",
     "prettier": "^2.0.5",
-    "puppeteer": "^10.4.0",
+    "puppeteer": "^24.4.0",
     "rimraf": "^3.0.2",
     "serve-favicon": "^2.5.0",
     "terser-webpack-plugin": "^5.1.1",
