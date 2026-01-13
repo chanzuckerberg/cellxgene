@@ -173,13 +173,25 @@ class AnndataAdaptor(DataAdaptor):
             )
         except MemoryError:
             raise DatasetAccessError("Out of memory - file is too large for available memory.")
-        except Exception:
+        except Exception as e:
             import traceback
+            error_msg = str(e)
 
-            message = (
-                "File not found or is inaccessible. File must be an .h5ad object. "
-                "Please check your input and try again."
-            )
+            # IMPROVEMENT: Broadly catch ANY version incompatibility
+            if "No read method registered" in error_msg and "IOSpec" in error_msg:
+                message = (
+                    "Error loading file: This H5AD file uses a newer internal format that "
+                    "your version of 'anndata' cannot read.\n"
+                    "The specific error was: " + error_msg + "\n"
+                    "Please upgrade anndata in your environment (pip install --upgrade anndata) "
+                    "or recreate your environment with Python >= 3.11."
+                )
+            else:
+                message = (
+                    "File not found or is inaccessible. File must be an .h5ad object. "
+                    "Please check your input and try again."
+                )
+
             if self.server_config.app__verbose:
                 message += f"\n{traceback.format_exc()}"
             raise DatasetAccessError(message)
