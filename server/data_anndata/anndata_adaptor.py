@@ -183,8 +183,7 @@ class AnndataAdaptor(DataAdaptor):
                     "Error loading file: This H5AD file uses a newer internal format that "
                     "your version of 'anndata' cannot read.\n"
                     "The specific error was: " + error_msg + "\n"
-                    "Please upgrade anndata in your environment (pip install --upgrade anndata) "
-                    "or recreate your environment with Python >= 3.11."
+                    "Please upgrade anndata in your environment (pip install --upgrade anndata)."
                 )
             else:
                 message = (
