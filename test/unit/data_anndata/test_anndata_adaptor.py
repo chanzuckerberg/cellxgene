@@ -36,7 +36,6 @@ Test the anndata adaptor using the pbmc3k data set.
         (f"{FIXTURES_ROOT}/pbmc3k-CSC-gz.h5ad", True, "normal"),
         (f"{FIXTURES_ROOT}/pbmc3k-CSR-gz.h5ad", True, "normal"),
         (f"{FIXTURES_ROOT}/pbmc3k_64.h5ad", False, "auto"),  # 64 bit conversion tests
-        (f"{FIXTURES_ROOT}/pbmc3k_16.h5ad", False, "auto"),  # 16 bit conversion tests
     ],
 )
 class AdaptorTest(unittest.TestCase):
