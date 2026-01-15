@@ -1,6 +1,6 @@
 black
 bumpversion>=0.5
-codecov>=2.0.15
+coverage>=5.0
 parameterized>=0.7.0
 pytest>=3.6.3
 python-jose>=3.2.0
