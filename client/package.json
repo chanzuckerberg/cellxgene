@@ -91,7 +91,7 @@
     "@babel/preset-env": "^7.22.20",
     "@babel/preset-react": "^7.13.13",
     "@babel/register": "^7.13.16",
-    "@babel/runtime": "^7.13.16",
+    "@babel/runtime": "^7.28.6",
     "@blueprintjs/eslint-plugin": "^0.3.0",
     "@sentry/webpack-plugin": "^1.15.0",
     "babel-jest": "^26.1.0",
