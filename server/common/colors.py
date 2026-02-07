@@ -228,6 +228,6 @@ def convert_anndata_category_colors_to_cxg_category_colors(data):
 
         # create the cellxgene color entry for this category
         cxg_colors[category_name] = dict(
-            zip(data.obs[category_name].cat.categories, [convert_color_to_hex_format(c) for c in data.uns[uns_key]])
+            zip(data.obs[category_name].astype('category').cat.categories, [convert_color_to_hex_format(c) for c in data.uns[uns_key]])
         )
     return cxg_colors
