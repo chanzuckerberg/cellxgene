@@ -128,12 +128,12 @@ def prepare(
             raise click.FileError(data, hint="not a valid file or path")
 
         if not set_obs_names == "":
-            if set_obs_names not in adata.obs_keys():
-                raise click.UsageError(f"obs {set_obs_names} not found, options are: {adata.obs_keys()}")
+            if set_obs_names not in list(adata.obs.keys()):
+                raise click.UsageError(f"obs {set_obs_names} not found, options are: {list(adata.obs.keys())}")
             adata.obs_names = adata.obs[set_obs_names]
         if not set_var_names == "":
-            if set_var_names not in adata.var_keys():
-                raise click.UsageError(f"var {set_var_names} not found, options are: {adata.var_keys()}")
+            if set_var_names not in list(adata.var.keys()):
+                raise click.UsageError(f"var {set_var_names} not found, options are: {list(adata.var.keys())}")
             adata.var_names = adata.var[set_var_names]
         if make_obs_names_unique:
             adata.obs.index = make_index_unique(adata.obs.index)

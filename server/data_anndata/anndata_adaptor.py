@@ -1,4 +1,5 @@
 import warnings
+import importlib.metadata
 
 import anndata
 import numpy as np
@@ -16,7 +17,7 @@ from server.common.utils.type_conversion_utils import get_schema_type_hint_of_ar
 from server.data_common.data_adaptor import DataAdaptor
 from server.common.fbs.matrix import encode_matrix_fbs
 
-anndata_version = version.parse(str(anndata.__version__)).release
+anndata_version = version.parse(str(importlib.metadata.version('anndata'))).release
 
 
 def anndata_version_is_pre_070():
@@ -63,7 +64,7 @@ class AnndataAdaptor(DataAdaptor):
         return "cellxgene anndata adaptor version"
 
     def get_library_versions(self):
-        return dict(anndata=str(anndata.__version__))
+        return dict(anndata=str(importlib.metadata.version('anndata')))
 
     @staticmethod
     def _create_unique_column_name(df, col_name_prefix):
@@ -313,11 +314,11 @@ class AnndataAdaptor(DataAdaptor):
         layouts = self.dataset_config.embeddings__names
 
         if layouts is None or len(layouts) == 0:
-            layouts = [key[2:] for key in self.data.obsm_keys() if type(key) is str and key.startswith("X_")]
+            layouts = [key[2:] for key in list(self.data.obsm.keys()) if type(key) is str and key.startswith("X_")]
 
         # remove invalid layouts
         valid_layouts = []
-        obsm_keys = self.data.obsm_keys()
+        obsm_keys = list(self.data.obsm.keys())
         for layout in layouts:
             layout_name = f"X_{layout}"
             if layout_name not in obsm_keys:
