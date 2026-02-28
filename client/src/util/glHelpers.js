@@ -54,19 +54,25 @@ export const glPointFlags = `
 Point Size:
   Calculate point size for scatter plot based upon pseudo density.
 
-  Current approach: linear scaling of point size, clamped to [1,10],
-  between two points that are based on empirical testing.
+  Linear scaling of point size, clamped to [minSize, maxSize],
+  between two anchor points based on empirical testing.
 
-    - 1M points on a 500x500 canvas: 1M/(500*500) -> 0.5
-    - 1000 points on a 1440x1440 canvas:  1000/(1440*1440) -> 5
+  Anchor points:
+    - 5M points on a 500x500 canvas: density=20 -> 1.0 (minimum visible)
+    - 1000 points on a 1440x1440 canvas: density~=0.0005 -> 5.0
 
-  The domain is pseudo density (numPoints / minViewportDimension^2)
-  The range is web gl point size.
+  The domain is pseudo density (numPoints / minViewportDimension^2).
+  The range is WebGL point size.
+
+  The minimum is 1.0 because WebGL implementations clamp gl_PointSize
+  to ALIASED_POINT_SIZE_RANGE (typically [1, max]). Sub-pixel point
+  sizes cause rendering inconsistencies across GPU drivers and make
+  selection state invisible. See issue #2709.
 */
 
-// configuration
-const domain = [1000000 / (500 * 500), 1000 / (1440 * 1440)];
-const range = [0.5, 5];
+// configuration - extended domain to support datasets up to ~10M cells
+const domain = [5000000 / (500 * 500), 1000 / (1440 * 1440)];
+const range = [1.0, 5];
 
 // derived from configuration
 const scale = (range[1] - range[0]) / (domain[1] - domain[0]);
@@ -80,8 +86,24 @@ export const glPointSize = `
       ${range[0].toFixed(4)}, 
       ${range[1].toFixed(4)});
 
-    if (isHighlight) return 2. * pointSize;
-    if (isSelected) return pointSize;
-    return pointSize / 3.;
+    if (isHighlight) return max(2. * pointSize, 2.0);
+    if (isSelected) return max(pointSize, 1.0);
+    return max(pointSize / 3., 0.5);
+  }
+`;
+
+/*
+Point Alpha:
+  Provide alpha-based differentiation between selected and unselected
+  cells, so the selection state remains visible even when point sizes
+  are at their minimum. This ensures large datasets (4M+ cells)
+  are visually distinguishable. See issue #2709.
+*/
+export const glPointAlpha = `
+  float pointAlpha(bool isBackground, bool isSelected, bool isHighlight) {
+    if (isHighlight) return 1.0;
+    if (isBackground) return 0.9;
+    if (!isSelected) return 0.3;
+    return 1.0;
   }
 `;

@@ -1,4 +1,4 @@
-import { glPointFlags, glPointSize } from "../../util/glHelpers";
+import { glPointFlags, glPointSize, glPointAlpha } from "../../util/glHelpers";
 
 export default function drawPointsRegl(regl) {
   return regl({
@@ -26,18 +26,21 @@ export default function drawPointsRegl(regl) {
     // get pointSize()
     ${glPointSize}
 
+    // get pointAlpha()
+    ${glPointAlpha}
+
     void main() {
       bool isBackground, isSelected, isHighlight;
       getFlags(flag, isBackground, isSelected, isHighlight);
 
       float size = pointSize(nPoints, minViewportDimension, isSelected, isHighlight);
-      gl_PointSize = size * pow(distance, 0.5);
+      gl_PointSize = max(size * pow(distance, 0.5), 1.0);
 
       float z = isBackground ? zBottom : (isHighlight ? zTop : zMiddle);
       vec3 xy = projView * vec3(position, 1.);
       gl_Position = vec4(xy.xy, z, 1.);
 
-      float alpha = isBackground ? 0.9 : 1.0;
+      float alpha = pointAlpha(isBackground, isSelected, isHighlight);
       fragColor = vec4(color, alpha);
     }`,
 
