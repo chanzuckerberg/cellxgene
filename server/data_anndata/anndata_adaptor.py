@@ -1,3 +1,4 @@
+import unicodedata
 import warnings
 import importlib.metadata
 
@@ -164,13 +165,23 @@ class AnndataAdaptor(DataAdaptor):
                 backed = "r" if self.server_config.adaptor__anndata_adaptor__backed else None
                 self.data = anndata.read_h5ad(lh, backed=backed)
 
-        except ValueError:
+        except ValueError as e:
+            error_msg = str(e)
+            # Check if the error is related to Unicode encoding issues in metadata
+            if any(term in error_msg.lower() for term in ["codec", "encode", "decode", "unicode", "utf"]):
+                raise DatasetAccessError(
+                    "Error reading h5ad file: the file contains characters in its metadata that "
+                    "could not be decoded. This can happen when annotation labels contain "
+                    "special Unicode characters (e.g. Greek letters like 'φ'). "
+                    f"The specific error was: {error_msg}. "
+                    "Please ensure all metadata strings use valid UTF-8 encoding."
+                )
             raise DatasetAccessError(
                 "File must be in the .h5ad format. Please read "
                 "https://github.com/theislab/scanpy_usage/blob/master/170505_seurat/info_h5ad.md to "
                 "learn more about this format. You may be able to convert your file into this format "
                 "using `cellxgene prepare`, please run `cellxgene prepare --help` for more "
-                "information."
+                f"information. (Original error: {error_msg})"
             )
         except MemoryError:
             raise DatasetAccessError("Out of memory - file is too large for available memory.")
@@ -196,6 +207,42 @@ class AnndataAdaptor(DataAdaptor):
                 message += f"\n{traceback.format_exc()}"
             raise DatasetAccessError(message)
 
+    @staticmethod
+    def _normalize_unicode_strings(df):
+        """Normalize Unicode strings in a DataFrame to NFC form.
+
+        This prevents issues with non-ASCII characters (e.g. Greek letters
+        like 'φ') in annotation labels that can cause encoding errors
+        during serialization. See: https://github.com/chanzuckerberg/cellxgene/issues/2754
+        """
+        for col in df.columns:
+            if df[col].dtype == object or hasattr(df[col], 'cat'):
+                try:
+                    if hasattr(df[col], 'cat'):
+                        # For categorical columns, normalize the categories
+                        new_categories = [
+                            unicodedata.normalize("NFC", str(c)) if isinstance(c, str) else c
+                            for c in df[col].cat.categories
+                        ]
+                        df[col] = df[col].cat.rename_categories(
+                            dict(zip(df[col].cat.categories, new_categories))
+                        )
+                    else:
+                        df[col] = df[col].apply(
+                            lambda x: unicodedata.normalize("NFC", x) if isinstance(x, str) else x
+                        )
+                except Exception:
+                    # If normalization fails for a column, skip it
+                    pass
+        # Also normalize index if it contains strings
+        if df.index.dtype == object:
+            try:
+                df.index = df.index.map(
+                    lambda x: unicodedata.normalize("NFC", x) if isinstance(x, str) else x
+                )
+            except Exception:
+                pass
+
     def _validate_and_initialize(self):
         if anndata_version_is_pre_070():
             warnings.warn(
@@ -206,6 +253,11 @@ class AnndataAdaptor(DataAdaptor):
         # var and obs column names must be unique
         if not self.data.obs.columns.is_unique or not self.data.var.columns.is_unique:
             raise KeyError("All annotation column names must be unique.")
+
+        # Normalize Unicode strings in obs and var metadata to prevent
+        # encoding issues with special characters (fixes #2754)
+        self._normalize_unicode_strings(self.data.obs)
+        self._normalize_unicode_strings(self.data.var)
 
         self._alias_annotation_names()
         self._validate_data_types()
