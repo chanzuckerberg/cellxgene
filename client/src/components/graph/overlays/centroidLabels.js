@@ -150,7 +150,7 @@ class CentroidLabels extends PureComponent {
                   dilatedValue={dilatedValue}
                   coords={coords}
                   inverseTransform={inverseTransform}
-                  opactity={selected ? 1 : deselectOpacity}
+                  opacity={selected ? 1 : deselectOpacity}
                   colorAccessor={colorAccessor}
                   displayLabel={displayLabel}
                   onMouseEnter={this.handleMouseEnter}
@@ -205,7 +205,7 @@ const Label = ({
           fontWeight,
           fill: "black",
           userSelect: "none",
-          opacity: { opacity },
+          opacity,
         }}
         onMouseEnter={(e) => onMouseEnter(e, colorAccessor, label)}
         onMouseOut={(e) => onMouseOut(e, colorAccessor, label)}
