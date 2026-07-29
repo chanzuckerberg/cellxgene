@@ -180,7 +180,13 @@ class DataAdaptor(metaclass=ABCMeta):
             elif axis == Axis.OBS:
                 anno_data = self.query_obs_array(name)
 
-            if anno_data.dtype.name in ["boolean", "category", "object"]:
+            # Discrete/label columns are filtered by exact value. This must
+            # include the pandas string dtypes that modern anndata writes for
+            # gene names and obs labels: StringDtype ("string"/"string[pyarrow]")
+            # and, under pandas 3.0 (or pandas 2.x with future.infer_string), the
+            # NumPy-backed "str" dtype that replaces object for text. Otherwise
+            # the value filter is silently skipped and the whole axis is selected.
+            if anno_data.dtype.name in ["boolean", "category", "object"] or pd.api.types.is_string_dtype(anno_data):
                 values = v.get("values", [])
                 key_idx = np.in1d(anno_data, values)
                 mask = np.logical_and(mask, key_idx)

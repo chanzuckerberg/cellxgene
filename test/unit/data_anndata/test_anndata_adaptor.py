@@ -8,6 +8,7 @@ import pytest
 from parameterized import parameterized_class
 
 import test.decode_fbs as decode_fbs
+from server.common.constants import Axis
 from server.common.utils.data_locator import DataLocator
 from server.common.errors import FilterError
 from server.data_anndata.anndata_adaptor import AnndataAdaptor
@@ -210,3 +211,34 @@ class AdaptorTest(unittest.TestCase):
         self.assertEqual(data["n_rows"], 2638)
         self.assertEqual(data["n_cols"], 3)
         self.assertTrue((data["col_idx"] == [15, 1818, 1837]).all())
+
+
+class StringDtypeFilterMaskTest(unittest.TestCase):
+    """Regression: value filters on pandas string columns (as modern anndata
+    writes for the gene-name index and obs labels) must select the matching
+    rows. Previously the dtype gate only allowed boolean/category/object, so a
+    string-typed column was skipped and the whole axis was selected — which for
+    a single gene fetch tripped the column-request limit and returned 400.
+
+    Covers both StringDtype ("string") and the pandas 3.0 NumPy-backed "str"
+    dtype (opted into here via future.infer_string) that replaces object."""
+
+    def _assert_value_filter(self, genes):
+        adaptor = AnndataAdaptor.__new__(AnndataAdaptor)  # no dataset needed
+        adaptor.query_var_array = lambda name: genes
+        mask = adaptor._annotation_filter_to_mask(
+            Axis.VAR, [{"name": "name_0", "values": ["Sox3"]}], len(genes)
+        )
+        self.assertEqual(mask.tolist(), [False, True, False])
+
+    def test_string_extension_dtype(self):
+        genes = pd.Series(["Xkr4", "Sox3", "Actb"], dtype="string")
+        self.assertEqual(genes.dtype.name, "string")
+        self._assert_value_filter(genes)
+
+    def test_pandas3_str_dtype(self):
+        with pd.option_context("future.infer_string", True):
+            genes = pd.Series(["Xkr4", "Sox3", "Actb"])
+            self.assertTrue(pd.api.types.is_string_dtype(genes))
+            self.assertNotIn(genes.dtype.name, ["object", "category", "boolean"])
+            self._assert_value_filter(genes)
