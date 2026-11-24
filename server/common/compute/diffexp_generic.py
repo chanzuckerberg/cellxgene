@@ -1,3 +1,4 @@
+import numba
 import numpy as np
 from scipy import sparse, stats
 from server.common.constants import XApproximateDistribution
@@ -32,15 +33,10 @@ def diffexp_ttest(adaptor, maskA, maskB, top_n=8, diffexp_lfc_cutoff=0.01):
     """
 
     X_approximate_distribution = adaptor.get_X_approximate_distribution()
-    dataA = adaptor.get_X_array(maskA, None)
-    dataB = adaptor.get_X_array(maskB, None)
-
-    # mean, variance, N - calculate for both selections
-    meanA, vA, nA = mean_var_n(dataA, X_approximate_distribution)
-    meanB, vB, nB = mean_var_n(dataB, X_approximate_distribution)
-    res = diffexp_ttest_from_mean_var(meanA, vA, nA, meanB, vB, nB, top_n, diffexp_lfc_cutoff)
-
-    return res
+    # A selection can itself be large. Release each group's matrix before acquiring the next one.
+    meanA, vA, nA = mean_var_n(adaptor.get_X_array(maskA, None), X_approximate_distribution)
+    meanB, vB, nB = mean_var_n(adaptor.get_X_array(maskB, None), X_approximate_distribution)
+    return diffexp_ttest_from_mean_var(meanA, vA, nA, meanB, vB, nB, top_n, diffexp_lfc_cutoff)
 
 
 def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp_lfc_cutoff):
@@ -113,13 +109,97 @@ def diffexp_ttest_from_mean_var(meanA, varA, nA, meanB, varB, nB, top_n, diffexp
     return result
 
 
-# Convenience function which handles sparse data
+# Size chunks by stored entries, with a single oversized row or column as the minimum unit.
+_SPARSE_BLOCK_ENTRIES = 1 << 20
+
+
+def _sparse_boundaries(indptr):
+    start = 0
+    while start < len(indptr) - 1:
+        target = int(indptr[start]) + _SPARSE_BLOCK_ENTRIES
+        stop = max(start + 1, np.searchsorted(indptr, target, side="right") - 1)
+        yield slice(start, stop)
+        start = stop
+
+
+@numba.njit(nogil=True)
+def _column_moments(values, indptr, rows):
+    """Return each column's mean and sum of squared deviations, including implicit zeros."""
+    means = np.zeros(len(indptr) - 1)
+    m2 = np.zeros_like(means)
+    invalid = np.zeros(len(means), dtype=np.bool_)
+    for column in range(len(means)):
+        begin, end = indptr[column], indptr[column + 1]
+        count = end - begin
+        if not count:
+            continue
+        mean = 0.0
+        sumsq = 0.0
+        for i in range(begin, end):
+            value = values[i]
+            if not np.isfinite(value):
+                invalid[column] = True
+                break
+            delta = value - mean
+            mean += delta / (i - begin + 1)
+            sumsq += delta * (value - mean)
+        if not invalid[column]:
+            # Merge the stored observations with a second batch of zeros. Keep the exact
+            # mean of a fully stored constant column, even for different group sizes.
+            weight = count / rows
+            means[column] = mean * weight
+            zeros = rows - count
+            m2[column] = sumsq + (mean * mean * weight * zeros if zeros else 0.0)
+    return means, m2, invalid
+
+
+def _sparse_block_moments(block, distribution):
+    # Work on an owned slice. Coalesce before log1p so duplicates denote one value.
+    block = block.tocsc(copy=False)
+    block.sum_duplicates()
+    if distribution == XApproximateDistribution.COUNT:
+        with np.errstate(divide="ignore", invalid="ignore"):
+            block = block.log1p()
+    return _column_moments(block.data.astype(np.float64, copy=False), block.indptr, block.shape[0])
+
+
+def _sparse_mean_var_n(matrix, distribution):
+    rows, columns = matrix.shape
+    mean = np.zeros(columns)
+    m2 = np.zeros(columns)
+    invalid = np.zeros(columns, dtype=bool)
+    if rows == 0:
+        return mean, m2, rows
+    if matrix.format != "csr":
+        matrix = matrix.tocsc(copy=False)
+        for span in _sparse_boundaries(matrix.indptr):
+            mean[span], m2[span], invalid[span] = _sparse_block_moments(matrix[:, span], distribution)
+    else:
+        seen = 0
+        for span in _sparse_boundaries(matrix.indptr):
+            count = span.stop - span.start
+            block_mean, block_m2, block_invalid = _sparse_block_moments(matrix[span, :], distribution)
+            if seen == 0:
+                mean, m2 = block_mean, block_m2
+            else:
+                delta = block_mean - mean
+                m2 += block_m2 + delta**2 * (seen * count / (seen + count))
+                mean += delta * (count / (seen + count))
+            seen += count
+            invalid |= block_invalid
+    mean[invalid] = 0
+    m2[invalid] = 0
+    return mean, m2 / (rows - 1) if rows > 1 else np.zeros_like(m2), rows
+
+
 def mean_var_n(X, X_approximate_distribution=XApproximateDistribution.NORMAL):
     """
-    Two-pass variance calculation.  Numerically (more) stable
-    than naive methods (and same method used by numpy.var())
-    https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Two-pass
+    Compute each column's mean and sample variance and return the number of rows.
+    Dense arrays use two passes. Sparse arrays combine running moments by block.
     """
+    if sparse.issparse(X):
+        return _sparse_mean_var_n(X, X_approximate_distribution)
+
     # fp_err_occurred is a flag indicating that a floating point error
     # occured somewhere in our compute.  Used to trigger non-finite
     # number handling.
@@ -131,20 +211,12 @@ def mean_var_n(X, X_approximate_distribution=XApproximateDistribution.NORMAL):
 
     with np.errstate(divide="call", invalid="call", call=fp_err_set):
         n = X.shape[0]
-        if sparse.issparse(X):
-            if X_approximate_distribution == XApproximateDistribution.COUNT:
-                X = X.log1p()
-            mean = X.mean(axis=0).A1
-            dfm = X - mean
-            sumsq = np.sum(np.multiply(dfm, dfm), axis=0).A1
-            v = sumsq / (n - 1)
-        else:
-            if X_approximate_distribution == XApproximateDistribution.COUNT:
-                X = np.log1p(X)
-            mean = X.mean(axis=0)
-            dfm = X - mean
-            sumsq = np.sum(np.multiply(dfm, dfm), axis=0)
-            v = sumsq / (n - 1)
+        if X_approximate_distribution == XApproximateDistribution.COUNT:
+            X = np.log1p(X)
+        mean = X.mean(axis=0)
+        dfm = X - mean
+        sumsq = np.sum(np.multiply(dfm, dfm), axis=0)
+        v = sumsq / (n - 1)
 
     # AnnData does not guarantee that operations on a view of X will
     # return an ndarray, so force the cast if it wasn't done for us.
